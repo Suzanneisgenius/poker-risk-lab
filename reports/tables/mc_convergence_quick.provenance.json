@@ -1,0 +1,45 @@
+{
+  "timestamp_utc": "2026-07-13T08:52:28+00:00",
+  "git_commit": null,
+  "platform": "Linux-6.8.0-124-generic-aarch64-with-glibc2.35",
+  "packages": {
+    "python": "3.10.12",
+    "numpy": "2.2.6",
+    "scipy": "1.15.3",
+    "pandas": "2.3.3",
+    "matplotlib": "3.10.9"
+  },
+  "parameters": {
+    "experiment": "monte_carlo_convergence",
+    "scenario": {
+      "winrate_bb100": 3.0,
+      "std_bb100": 90.0,
+      "bankroll_bb": 2000.0,
+      "ruin_threshold_bb": 0.0,
+      "n_hands": 30000,
+      "step_hands": 100
+    },
+    "budgets": [
+      1000,
+      2500,
+      5000,
+      10000,
+      20000
+    ],
+    "n_seeds": 10,
+    "reference": 0.07753333333333333,
+    "rate": {
+      "slope": -0.5525278207530662,
+      "slope_se": 0.027082777645181595,
+      "intercept": -0.7037997010789052
+    },
+    "sequential_result": {
+      "paths_used": 10000,
+      "estimate": 0.0793,
+      "ci_low": 0.07416415265319184,
+      "ci_high": 0.08475894357589542,
+      "final_halfwidth": 0.0052973954613517865,
+      "stopping_reason": "tolerance met"
+    }
+  }
+}

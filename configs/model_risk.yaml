@@ -1,0 +1,17 @@
+# Model-misspecification stress test.
+# Same edge/volatility across models; differences isolate tails and dependence.
+scenario:
+  winrate_bb100: 2.0
+  std_bb100: 90.0
+  bankroll_bb: 1500.0        # ~15 buy-ins: thin enough for a meaningful ruin rate
+  ruin_threshold_bb: 0.0
+  n_hands: 100000
+  step_hands: 100
+models: [gaussian, student_t, shock_mixture, ar1, regime_switching]
+params:
+  student_t: {df: 3.0}                       # heavy tails (finite variance)
+  shock_mixture: {p: 0.03, shock_mean: -4.0, shock_scale: 2.5}
+  ar1: {phi: 0.3}                            # positive serial dependence
+  regime_switching: {p_stay_normal: 0.98, p_stay_adverse: 0.90, mu_adverse: -5.0, vol_mult: 1.6}
+n_paths: 40000              # high precision; use --n-paths 10000 for a fast pass
+seed: 20240601

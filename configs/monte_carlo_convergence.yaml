@@ -1,0 +1,20 @@
+# Monte Carlo convergence / coverage / cost-scaling experiment.
+# High-precision config for local runs; reduce n_seeds / reference_paths for a quick pass.
+scenario:
+  winrate_bb100: 3.0
+  std_bb100: 90.0
+  bankroll_bb: 3000.0        # ~0.07 ruin prob at this horizon (non-trivial)
+  ruin_threshold_bb: 0.0
+  n_hands: 100000
+  step_hands: 100
+budgets: [1000, 2500, 5000, 10000, 25000, 50000, 100000]
+n_seeds: 40                  # independent replicates per budget (SeedSequence split)
+base_seed: 20240501
+reference_paths: 500000      # high-precision reference estimand
+reference_seed: 999
+sequential:
+  tol_halfwidth: 0.005       # stop when Wilson half-width <= 0.5 pts
+  min_paths: 2000
+  max_paths: 200000
+  batch: 5000
+  seed: 7

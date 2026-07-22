@@ -1,0 +1,21 @@
+# Parameter-uncertainty -> ruin-risk experiment.
+# A realistic case: a modest observed edge over a limited sample, so the true
+# win rate is genuinely uncertain and the plug-in estimate understates risk.
+data:
+  # Provide a CSV path (columns: hands, profit_bb) to use real history instead.
+  csv: null
+  true_winrate: 3.0        # ground truth for the synthetic history
+  true_std: 100.0
+  block_hands: 1000
+  n_blocks: 50             # ~50k hands: SE of the edge is non-trivial
+  seed: 1
+prior:
+  kind: weakly-informative   # skeptical | weakly-informative | empirical | custom
+  std: 10.0
+risk:
+  bankroll_bb: 2000.0
+  n_hands: 100000
+  ruin_threshold_bb: 0.0
+n_draws: 20000
+seed: 0
+confidence_level: 0.95
