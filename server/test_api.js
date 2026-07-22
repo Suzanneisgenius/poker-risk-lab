@@ -99,7 +99,16 @@ async function main() {
     assert.equal(detailedRisk.status, 200);
     assert.equal((await detailedRisk.json()).curve, null);
 
-    process.stdout.write("API, cache, security-header, validation, and public-bundle tests passed.\n");
+    const limitHeaders = { "X-Forwarded-For": "203.0.113.10" };
+    for (let request = 1; request <= 100; request += 1) {
+      const withinLimit = await post("/api/ev", { pot: request, call: 1, equityPct: 50 }, limitHeaders);
+      assert.equal(withinLimit.status, 200, `request ${request} should fit within the 100-point limit`);
+    }
+    const overLimit = await post("/api/ev", { pot: 101, call: 1, equityPct: 50 }, limitHeaders);
+    assert.equal(overLimit.status, 429);
+    assert.ok(Number(overLimit.headers.get("retry-after")) >= 1);
+
+    process.stdout.write("API, cache, 100-point rate limit, security-header, validation, and public-bundle tests passed.\n");
   } finally {
     server.kill("SIGTERM");
   }

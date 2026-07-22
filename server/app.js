@@ -15,6 +15,7 @@ const rateBuckets = new Map();
 const calculationCache = new Map();
 const CACHE_TTL_MS = 10 * 60 * 1000;
 const CACHE_MAX_ENTRIES = 40;
+const RATE_LIMIT_POINTS = 100;
 
 const routes = new Map([
   ["/api/equity", { type: "equity", weight: 3, timeout: 30000 }],
@@ -79,7 +80,7 @@ function chargeRateLimit(request, weight) {
   if (!bucket || now - bucket.startedAt >= 60000) bucket = { startedAt: now, used: 0 };
   bucket.used += weight;
   rateBuckets.set(key, bucket);
-  return { allowed: bucket.used <= 80, retryAfter: Math.max(1, Math.ceil((60000 - (now - bucket.startedAt)) / 1000)) };
+  return { allowed: bucket.used <= RATE_LIMIT_POINTS, retryAfter: Math.max(1, Math.ceil((60000 - (now - bucket.startedAt)) / 1000)) };
 }
 
 setInterval(() => {
