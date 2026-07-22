@@ -1,6 +1,7 @@
 "use strict";
 
 const http = require("node:http");
+const crypto = require("node:crypto");
 const fs = require("node:fs/promises");
 const path = require("node:path");
 const { CalculationPool } = require("./pool.js");
@@ -11,6 +12,9 @@ const PORT = Number(process.env.PORT) || 4174;
 const HOST = process.env.HOST || "0.0.0.0";
 const pool = new CalculationPool(Math.max(1, Math.min(4, Number(process.env.CALC_WORKERS) || 2)), 16);
 const rateBuckets = new Map();
+const calculationCache = new Map();
+const CACHE_TTL_MS = 10 * 60 * 1000;
+const CACHE_MAX_ENTRIES = 40;
 
 const routes = new Map([
   ["/api/equity", { type: "equity", weight: 3, timeout: 30000 }],
@@ -33,8 +37,34 @@ function securityHeaders(contentType, api = false) {
 }
 
 function json(response, status, body, extraHeaders = {}) {
+  if (response.destroyed || response.writableEnded) return;
   response.writeHead(status, { ...securityHeaders("application/json; charset=utf-8", true), ...extraHeaders });
   response.end(JSON.stringify(body));
+}
+
+function cacheKey(type, input) {
+  return crypto.createHash("sha256").update(type).update("\0").update(JSON.stringify(input)).digest("base64url");
+}
+
+function cachedResult(key) {
+  const entry = calculationCache.get(key);
+  if (!entry) return null;
+  if (entry.expiresAt <= Date.now()) {
+    calculationCache.delete(key);
+    return null;
+  }
+  // Refresh insertion order so frequently compared scenarios remain available.
+  calculationCache.delete(key);
+  calculationCache.set(key, entry);
+  return entry.result;
+}
+
+function rememberResult(key, result) {
+  calculationCache.delete(key);
+  while (calculationCache.size >= CACHE_MAX_ENTRIES) {
+    calculationCache.delete(calculationCache.keys().next().value);
+  }
+  calculationCache.set(key, { result, expiresAt: Date.now() + CACHE_TTL_MS });
 }
 
 function clientIp(request) {
@@ -103,14 +133,34 @@ async function handleApi(request, response, route) {
   }
   try {
     const input = await readJson(request);
+    const key = cacheKey(route.type, input);
+    const cached = cachedResult(key);
+    if (cached) {
+      json(response, 200, cached, { "X-Calculation-Cache": "HIT" });
+      return;
+    }
     const rate = chargeRateLimit(request, requestWeight(route, input));
     if (!rate.allowed) {
       json(response, 429, { error: "Too many calculations. Please wait a moment and try again." }, { "Retry-After": String(rate.retryAfter) });
       return;
     }
-    const result = await pool.run(route.type, input, route.timeout);
-    json(response, 200, result);
+    const controller = new AbortController();
+    const cancel = () => controller.abort();
+    const cancelOnClose = () => {
+      if (!response.writableEnded) cancel();
+    };
+    request.once("aborted", cancel);
+    response.once("close", cancelOnClose);
+    try {
+      const result = await pool.run(route.type, input, route.timeout, { signal: controller.signal });
+      rememberResult(key, result);
+      json(response, 200, result, { "X-Calculation-Cache": "MISS" });
+    } finally {
+      request.removeListener("aborted", cancel);
+      response.removeListener("close", cancelOnClose);
+    }
   } catch (error) {
+    if (response.destroyed || response.writableEnded || error?.name === "AbortError") return;
     const message = error instanceof Error ? error.message : "Calculation failed.";
     const isInputError = /must|invalid|Choose|same card|above|JSON|Request body|Send the request/.test(message);
     json(response, isInputError ? 400 : 503, { error: message });

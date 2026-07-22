@@ -223,18 +223,22 @@ function normalizeBankroll(input, maxPaths) {
 
 function riskCurve(params, divisor) {
   const low = Math.max(params.thr + divisor, params.bank * 0.3);
+  // The fan chart uses the full requested budget. The secondary comparison
+  // curve only needs enough samples to show direction alongside its smooth
+  // analytical benchmark; capping it prevents nine hidden full simulations.
+  const pathsPerPoint = clamp(Math.round(params.paths * 0.1), 200, 500);
   const xs = [];
   const monteCarlo = [];
   const analytical = [];
   for (let index = 0; index < 9; index += 1) {
     const bank = low + ((params.bank * 2 - low) * index) / 8;
     const scenario = { ...params, bank, seed: params.seed + index * 7919 };
-    const simulation = simulateBankroll(scenario, 1500, 0);
+    const simulation = simulateBankroll(scenario, pathsPerPoint, 0);
     xs.push(bank / divisor);
     monteCarlo.push(simulation.ruinedCount / simulation.pathCount);
     analytical.push(brownFinite(params.wr, params.sd, bank, params.thr, params.hands));
   }
-  return { xs, monteCarlo, analytical };
+  return { xs, monteCarlo, analytical, pathsPerPoint };
 }
 
 function computeBankroll(input) {

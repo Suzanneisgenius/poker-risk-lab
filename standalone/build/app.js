@@ -58,8 +58,13 @@ function rollNumber(el,finalText){
 function rollKpis(containerId){requestAnimationFrame(()=>document.querySelectorAll(`#${containerId} .kv`).forEach(el=>rollNumber(el,el.textContent)));}
 function animateResultBar(el){if(!el||reducedMotion()||typeof el.animate!=='function')return;el.animate([{transform:'scaleX(.04)'},{transform:'scaleX(1)'}],{duration:520,easing:'cubic-bezier(.2,.75,.25,1)'});}
 const clamp=(value,min,max)=>Math.min(max,Math.max(min,value));
-async function apiJSON(path,payload,timeoutMs=60000){
-  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);
+async function apiJSON(path,payload,timeoutMs=60000,externalSignal=null){
+  const controller=new AbortController();
+  let timedOut=false;
+  const abortFromOutside=()=>controller.abort();
+  if(externalSignal?.aborted)controller.abort();
+  else externalSignal?.addEventListener('abort',abortFromOutside,{once:true});
+  const timer=setTimeout(()=>{timedOut=true;controller.abort();},timeoutMs);
   try{
     const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
       credentials:'same-origin',body:JSON.stringify(payload),signal:controller.signal});
@@ -67,15 +72,18 @@ async function apiJSON(path,payload,timeoutMs=60000){
     if(!response.ok)throw new Error(data.error||'The calculation service is temporarily unavailable.');
     return data;
   }catch(error){
-    if(error?.name==='AbortError')throw new Error('The calculation took too long. Try a lower precision setting.');
+    if(error?.name==='AbortError'){
+      const aborted=new Error(timedOut?'The calculation took too long. Try a lower precision setting.':'Calculation cancelled.');
+      aborted.name='AbortError';throw aborted;
+    }
     if(error instanceof TypeError)throw new Error('Cannot reach the private calculation service. Check your connection and try again.');
     throw error;
-  }finally{clearTimeout(timer);}
+  }finally{clearTimeout(timer);externalSignal?.removeEventListener('abort',abortFromOutside);}
 }
 function errorMessage(error){return error instanceof Error?error.message:'Calculation failed. Please try again.';}
 function setBusy(button,busy,busyLabel){
   if(!button)return;
-  if(busy){button.dataset.idleLabel=button.textContent;button.textContent=busyLabel;button.disabled=true;button.setAttribute('aria-busy','true');}
+  if(busy){if(!button.hasAttribute('aria-busy'))button.dataset.idleLabel=button.textContent;button.textContent=busyLabel;button.disabled=true;button.setAttribute('aria-busy','true');}
   else{button.textContent=button.dataset.idleLabel||button.textContent;button.disabled=false;button.removeAttribute('aria-busy');}
 }
 const plotlyReady=()=>typeof globalThis.Plotly!=="undefined";
@@ -106,7 +114,7 @@ tabs.forEach((t,index)=>{
     if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
     event.preventDefault();
     const next=event.key==='Home'?0:event.key==='End'?tabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;
-    tabs[next].focus();activateTab(tabs[next]);
+    tabs[next].focus();activateTab(tabs[next]);initializeModule(tabs[next].dataset.mod);
   });
 });
 const initialTab=tabs.find(t=>'#'+t.dataset.mod===location.hash)||tabs[0];
@@ -208,6 +216,7 @@ document.querySelectorAll('.exbtn').forEach(b=>b.addEventListener('click',()=>{
 }));
 
 let equityRequest=0;
+let equityController=null;
 async function runEquity(showResult=false){
   $('eq_err').textContent='';
   const hero=SLOTS.hero.map(s=>cardState[s]).filter(v=>v!=null);
@@ -225,11 +234,13 @@ async function runEquity(showResult=false){
   const trials=clamp(parseInt($('eq_trials').value)||30000,1000,200000);
   $('eq_trials').value=trials;
   const seed=parseInt($('eq_seed').value)||42;
+  equityController?.abort();
   $('eq_spin').style.display='block';
   setBusy($('eq_run'),true,'Calculating…');
   const request=++equityRequest;
+  const controller=new AbortController();equityController=controller;
   try{
-    const {result:res,methodText:methodTxt}=await apiJSON('/api/equity',{hero,opponents,board,trials,seed});
+    const {result:res,methodText:methodTxt}=await apiJSON('/api/equity',{hero,opponents,board,trials,seed},60000,controller.signal);
     if(request!==equityRequest)return;
     const eqp=res.equity*100, w=res.win/res.trials*100, t=res.tie/res.trials*100, l=res.lose/res.trials*100;
     // plain-language verdict for beginners
@@ -259,13 +270,13 @@ async function runEquity(showResult=false){
   }catch(error){
     if(request===equityRequest)$('eq_err').textContent=errorMessage(error);
   }finally{
-    if(request===equityRequest){$('eq_spin').style.display='none';setBusy($('eq_run'),false);}
+    if(request===equityRequest){equityController=null;$('eq_spin').style.display='none';setBusy($('eq_run'),false);}
   }
 }
 $('eq_run').addEventListener('click',()=>runEquity(true));
 $('eq_toev').addEventListener('click',()=>{
   useCardEquity(false);
-  document.querySelector('.nav .t[data-mod="ev"]').click(); runEV();
+  document.querySelector('.nav .t[data-mod="ev"]').click();
 });
 
 /* ================= 2. POT ODDS & EV ================= */
@@ -281,6 +292,7 @@ function useCardEquity(recalculate=true){
   updateEVEquitySource();if(recalculate)runEV();
 }
 let evRequest=0;
+let evController=null;
 async function runEV(){
   const pot=parseFloat($('ev_pot').value),bet=parseFloat($('ev_bet').value),equityPct=parseFloat($('ev_eq').value);
   $('ev_err').textContent='';
@@ -288,8 +300,9 @@ async function runEV(){
     $('ev_err').textContent='Enter a non-negative pot, a call above 0, and equity from 0% to 100%.';return;
   }
   const request=++evRequest;
+  evController?.abort();const controller=new AbortController();evController=controller;
   try{
-  const result=await apiJSON('/api/ev',{pot,call:bet,equityPct},15000);
+  const result=await apiJSON('/api/ev',{pot,call:bet,equityPct},15000,controller.signal);
   if(request!==evRequest)return;
   const eq=result.equity,potOdds=result.potOdds,reqEq=result.requiredEquity,evCall=result.evCall,good=result.profitable;
   $('ev_kpis').innerHTML=
@@ -312,6 +325,7 @@ async function runEV(){
   $('ev_expl').innerHTML=`Calling ${bet} bb into a ${pot} bb pot means you risk ${bet} to win ${(pot+bet).toFixed(0)}. `+
     `Break-even equity is ${(reqEq*100).toFixed(1)}%. This ignores future betting (implied/reverse-implied odds).`;
   }catch(error){if(request===evRequest)$('ev_err').textContent=errorMessage(error);}
+  finally{if(request===evRequest)evController=null;}
 }
 $('ev_run').addEventListener('click',runEV);
 $('ev_choose_hand').addEventListener('click',()=>document.querySelector('.nav .t[data-mod="equity"]').click());
@@ -322,6 +336,7 @@ let _evT=null;
 
 /* ================= 3. BANKROLL RISK ================= */
 let bankrollRequest=0;
+let bankrollController=null;
 async function runBankroll(){
   const BI=100;
   const p={wr:+$('bk_wr').value,sd:Math.max(0,+$('bk_sd').value),bank:+$('bk_bank').value*BI,thr:+$('bk_thr').value*BI,
@@ -330,9 +345,10 @@ async function runBankroll(){
   $('bk_hands').value=p.hands;$('bk_paths').value=p.paths;
   if(p.bank<=p.thr){$('bk_kpis').innerHTML=kpiCard('Error','—','bankroll must exceed threshold');return;}
   const request=++bankrollRequest;
+  bankrollController?.abort();const controller=new AbortController();bankrollController=controller;
   setBusy($('bk_run'),true,'Simulating…');
   try{
-  const result=await apiJSON('/api/bankroll',p);
+  const result=await apiJSON('/api/bankroll',p,60000,controller.signal);
   if(request!==bankrollRequest)return;
   const r=result.fan,curve=result.curve,metrics=result.metrics;
   const ror=metrics.risk,med=metrics.medianTerminal,p95=metrics.p95Drawdown,pp=metrics.profitProbability;
@@ -360,7 +376,7 @@ async function runBankroll(){
   Plotly.react('bk_curve',[{x:curve.xs,y:curve.monteCarlo,mode:'lines+markers',line:{color:C.accent,width:2.2},name:'Monte Carlo'},
     {x:curve.xs,y:curve.analytical,mode:'lines',line:{color:C.muted,dash:'dash',width:1.5},name:'Brownian (finite)'}],lay2,CFG);
   }catch(error){if(request===bankrollRequest)$('bk_kpis').innerHTML=kpiCard('Service error','—',errorMessage(error));}
-  finally{if(request===bankrollRequest)setBusy($('bk_run'),false);}
+  finally{if(request===bankrollRequest){bankrollController=null;setBusy($('bk_run'),false);}}
 }
 $('bk_run').addEventListener('click',runBankroll);
 document.querySelectorAll('.bkpreset').forEach(button=>button.addEventListener('click',()=>{
@@ -380,6 +396,7 @@ const KUHN_LABELS={J:'J (bet/check first)',Q:'Q (bet/check first)',K:'K (bet/che
   Jb:'J facing a bet',Qb:'Q facing a bet',Kb:'K facing a bet',
   Jpb:'J facing a bet (after checking)',Qpb:'Q facing a bet (after checking)',Kpb:'K facing a bet (after checking)'};
 let gtoRequest=0;
+let gtoController=null;
 async function runGTO(){
   const iters=clamp(parseInt($('gto_iters').value)||300000,10000,500000);
   const seed=parseInt($('gto_seed').value)||42;
@@ -387,8 +404,9 @@ async function runGTO(){
   $('gto_spin').style.display='block';
   setBusy($('gto_run'),true,'Training…');
   const request=++gtoRequest;
+  gtoController?.abort();const controller=new AbortController();gtoController=controller;
   try{
-    const r=await apiJSON('/api/gto',{iterations:iters,seed});
+    const r=await apiJSON('/api/gto',{iterations:iters,seed},60000,controller.signal);
     if(request!==gtoRequest)return;
     const exact=r.value;
     $('gto_kpis').innerHTML=kpiCard('Game value (P1)',exact.toFixed(4),'theory −0.0556')+
@@ -408,13 +426,21 @@ async function runGTO(){
     const ratio=r.checks.kingJackRatio==null?'—':r.checks.kingJackRatio.toFixed(2);
     $('gto_check').innerHTML=`Equilibrium checks: value ≈ −1/18 ✓ · bluff-bet K/J ratio = ${ratio} (theory ≈ 3) · Q rarely bets first (${(bQ*100).toFixed(1)}%). These match the known Kuhn solution.`;
   }catch(error){if(request===gtoRequest)$('gto_check').textContent=errorMessage(error);}
-  finally{if(request===gtoRequest){$('gto_spin').style.display='none';setBusy($('gto_run'),false);}}
+  finally{if(request===gtoRequest){gtoController=null;$('gto_spin').style.display='none';setBusy($('gto_run'),false);}}
 }
 $('gto_run').addEventListener('click',runGTO);
 
 /* ================= RISK LAB (research dashboard) ================= */
+const LAB_QUICK_PATHS=2000;
+const LAB_DETAILED_PATHS=12000;
 function labParams(paths){return {wr:+$('lab_wr').value,sd:+$('lab_sd').value,bank:(+$('lab_bank').value)*100,thr:0,
   hands:Math.round(+$('lab_hn').value),paths:paths,seed:42};}
+function updateLabLabels(){
+  $('lab_wr_v').textContent=(+$('lab_wr').value).toFixed(1)+' bb/100';
+  $('lab_bank_v').textContent=(+$('lab_bank').value)+' buy-ins';
+  $('lab_sd_v').textContent=(+$('lab_sd').value)+' bb/100';
+  $('lab_hn_v').textContent=(Math.round(+$('lab_hn').value/1000))+'k hands';
+}
 function renderLab(result){
   const div=100,p=result.params,r=result.fan,ror=result.metrics.risk,[lo,hi]=result.metrics.confidenceInterval;
   rollNumber($('lab_ror'),(ror*100).toFixed(1)+'%');
@@ -481,34 +507,44 @@ function renderLabCurve(p,curve){
 }
 let _labT=null;
 let labRequest=0;
+let labController=null;
+let labTrigger=null;
 async function runLab(paths,trigger=null){
-  const p=labParams(paths||4000);
-  $('lab_wr_v').textContent=(+$('lab_wr').value).toFixed(1)+' bb/100';
-  $('lab_bank_v').textContent=(+$('lab_bank').value)+' buy-ins';
-  $('lab_sd_v').textContent=(+$('lab_sd').value)+' bb/100';
-  $('lab_hn_v').textContent=(Math.round(+$('lab_hn').value/1000))+'k hands';
+  const p=labParams(paths||LAB_QUICK_PATHS);
+  updateLabLabels();
+  labController?.abort();
+  if(labTrigger)setBusy(labTrigger,false);
+  const controller=new AbortController();labController=controller;labTrigger=trigger;
   $('lab_status').textContent=p.paths.toLocaleString()+' paths · seed 42 · simulating…';
-  if(trigger)setBusy(trigger,true,'Running 40k paths…');
+  if(trigger)setBusy(trigger,true,`Running ${Math.round(p.paths/1000)}k paths…`);
   const request=++labRequest;
   try{
-    const result=await apiJSON('/api/risk-lab',p,70000);
+    const result=await apiJSON('/api/risk-lab',p,70000,controller.signal);
     if(request!==labRequest)return;
     renderLab(result);renderLabCurve(result.params,result.curve);
     $('lab_status').textContent=p.paths.toLocaleString()+' paths · seed 42 · private server';
   }catch(error){if(request===labRequest){$('lab_status').textContent=errorMessage(error);$('lab_insight').className='result-insight negative';$('lab_insight').textContent=errorMessage(error);}}
-  finally{if(request===labRequest&&trigger)setBusy(trigger,false);}
+  finally{if(request===labRequest){labController=null;labTrigger=null;if(trigger)setBusy(trigger,false);}}
 }
 document.querySelectorAll('.labpreset').forEach(button=>button.addEventListener('click',()=>{
   $('lab_wr').value=button.dataset.wr;$('lab_bank').value=button.dataset.bank;$('lab_sd').value=button.dataset.sd;$('lab_hn').value=button.dataset.hands;
   document.querySelectorAll('.labpreset').forEach(x=>x.setAttribute('aria-pressed',String(x===button)));
-  document.querySelectorAll('.sdpreset').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.sd===button.dataset.sd)));runLab(4000);
+  document.querySelectorAll('.sdpreset').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.sd===button.dataset.sd)));runLab(LAB_QUICK_PATHS);
 }));
 document.querySelectorAll('.sdpreset').forEach(button=>button.addEventListener('click',()=>{
   $('lab_sd').value=button.dataset.sd;document.querySelectorAll('.sdpreset').forEach(x=>x.setAttribute('aria-pressed',String(x===button)));
-  document.querySelectorAll('.labpreset').forEach(x=>x.setAttribute('aria-pressed','false'));runLab(4000);
+  document.querySelectorAll('.labpreset').forEach(x=>x.setAttribute('aria-pressed','false'));runLab(LAB_QUICK_PATHS);
 }));
-['lab_wr','lab_sd','lab_bank','lab_hn'].forEach(id=>$(id).addEventListener('input',()=>{document.querySelectorAll('.labpreset').forEach(x=>x.setAttribute('aria-pressed','false'));if(id==='lab_sd')document.querySelectorAll('.sdpreset').forEach(x=>x.setAttribute('aria-pressed','false'));clearTimeout(_labT);_labT=setTimeout(()=>runLab(4000),140);}));
-$('lab_hp').addEventListener('click',()=>runLab(40000,$('lab_hp')));
+['lab_wr','lab_sd','lab_bank','lab_hn'].forEach(id=>{
+  const input=$(id);
+  input.addEventListener('input',()=>{
+    document.querySelectorAll('.labpreset').forEach(x=>x.setAttribute('aria-pressed','false'));
+    if(id==='lab_sd')document.querySelectorAll('.sdpreset').forEach(x=>x.setAttribute('aria-pressed','false'));
+    updateLabLabels();clearTimeout(_labT);$('lab_status').textContent='Release the slider to update the simulation.';
+  });
+  input.addEventListener('change',()=>{clearTimeout(_labT);_labT=setTimeout(()=>runLab(LAB_QUICK_PATHS),80);});
+});
+$('lab_hp').addEventListener('click',()=>runLab(LAB_DETAILED_PATHS,$('lab_hp')));
 
 /* ================= press Enter to run ================= */
 [[['eq_trials','eq_seed'],runEquity],
@@ -519,4 +555,14 @@ $('lab_hp').addEventListener('click',()=>runLab(40000,$('lab_hp')));
 }));
 
 /* ================= initial state ================= */
-renderSlots(); runEquity(); runEV(); runBankroll(); runLab();
+const initializedModules=new Set();
+function initializeModule(id){
+  if(initializedModules.has(id))return;
+  initializedModules.add(id);
+  if(id==='risklab')runLab(LAB_QUICK_PATHS);
+  else if(id==='equity')runEquity();
+  else if(id==='ev')runEV();
+  else if(id==='bankroll')runBankroll();
+}
+tabs.forEach(tab=>tab.addEventListener('click',()=>initializeModule(tab.dataset.mod)));
+renderSlots();initializeModule(initialTab.dataset.mod);

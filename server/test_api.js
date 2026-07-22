@@ -56,9 +56,13 @@ async function main() {
 
     const ev = await post("/api/ev", { pot: 10, call: 5, equityPct: 40 });
     assert.equal(ev.status, 200);
+    assert.equal(ev.headers.get("x-calculation-cache"), "MISS");
     const evResult = await ev.json();
     assert.equal(evResult.profitable, true);
     assert.ok(Math.abs(evResult.evCall - 1) < 1e-12);
+    const cachedEv = await post("/api/ev", { pot: 10, call: 5, equityPct: 40 });
+    assert.equal(cachedEv.status, 200);
+    assert.equal(cachedEv.headers.get("x-calculation-cache"), "HIT");
 
     const equity = await post("/api/equity", {
       hero: [51, 38],
@@ -88,8 +92,9 @@ async function main() {
     assert.equal(riskResult.fan.paths.length, 80);
     assert.equal(riskResult.fan.p50.length, riskResult.fan.xs.length);
     assert.equal(riskResult.curve.xs.length, 9);
+    assert.equal(riskResult.curve.pathsPerPoint, 200);
 
-    process.stdout.write("API, security-header, validation, and public-bundle tests passed.\n");
+    process.stdout.write("API, cache, security-header, validation, and public-bundle tests passed.\n");
   } finally {
     server.kill("SIGTERM");
   }

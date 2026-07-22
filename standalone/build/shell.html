@@ -311,7 +311,7 @@
         <div class="lab-chart-key" aria-label="Chart legend">
           <span><i class="key-50"></i>Middle 50%</span><span><i></i>Middle 90%</span><span><i class="key-median"></i>Median</span><span><i class="key-ruin"></i>Ruin</span>
         </div>
-        <p class="cap">Bands use every simulation; example paths add context without changing the result. Drag a slider to recompute.</p>
+        <p class="cap">Bands use every simulation; example paths add context without changing the result. Release a slider to recompute.</p>
       </div>
       <div class="panel">
         <div class="parameter-help" role="note"><strong>You do not need to calculate everything yourself.</strong>Bankroll and horizon are choices you know. Win rate and standard deviation normally come from tracking software; without enough history, use a starting assumption below and compare several scenarios.</div>
@@ -333,8 +333,8 @@
         <div class="ctl"><label for="lab_bank">Bankroll <b id="lab_bank_v">30 buy-ins</b></label><input id="lab_bank" type="range" min="5" max="60" step="1" value="30"></div>
         <div class="ctl"><label for="lab_sd">Game swings <b id="lab_sd_v">90 bb/100</b></label><p class="ctlhelp" id="lab_sd_help">The cards above set this for you. Only adjust it manually if your tracking software reports standard deviation.</p><input id="lab_sd" aria-describedby="lab_sd_help" type="range" min="60" max="160" step="5" value="90"></div>
         <div class="ctl"><label for="lab_hn">Planning horizon <b id="lab_hn_v">100k hands</b></label><input id="lab_hn" type="range" min="20000" max="300000" step="20000" value="100000"></div>
-        <button class="btn primary" id="lab_hp">High-precision run (40k paths)</button>
-        <div class="cap" id="lab_status" role="status" aria-live="polite">4,000 paths · seed 42</div>
+        <button class="btn primary" id="lab_hp">Detailed run (12k paths)</button>
+        <div class="cap" id="lab_status" role="status" aria-live="polite">2,000 paths · seed 42</div>
       </div>
     </div>
     <div class="kgrid k4">
