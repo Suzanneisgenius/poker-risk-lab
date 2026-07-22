@@ -140,6 +140,10 @@ function brownFinite(winRate, standardDeviation, bankroll, threshold, hands) {
 function simulateBankroll(params, pathCount, storeCount) {
   const steps = Math.ceil(params.hands / params.step);
   const finalStep = params.hands - (steps - 1) * params.step;
+  const regularDrift = (params.wr * params.step) / 100;
+  const regularSwing = params.sd * Math.sqrt(params.step / 100);
+  const finalDrift = (params.wr * finalStep) / 100;
+  const finalSwing = params.sd * Math.sqrt(finalStep / 100);
   const gaussian = gaussFactory(params.seed);
   const terminals = new Float64Array(pathCount);
   const drawdowns = new Float64Array(pathCount);
@@ -160,15 +164,20 @@ function simulateBankroll(params, pathCount, storeCount) {
     const keep = index < storeCount;
     const line = keep ? [params.bank] : null;
     for (let step = 1; step <= steps; step += 1) {
-      const size = step === steps ? finalStep : params.step;
       if (!ruined) {
-        bankroll += (params.wr * size) / 100 + params.sd * Math.sqrt(size / 100) * gaussian();
+        const isFinalStep = step === steps;
+        bankroll += (isFinalStep ? finalDrift : regularDrift) + (isFinalStep ? finalSwing : regularSwing) * gaussian();
         if (bankroll <= params.thr) {
           bankroll = params.thr;
           ruined = true;
         }
-        peak = Math.max(peak, bankroll);
-        maxDrawdown = Math.max(maxDrawdown, peak - bankroll);
+        if (bankroll > peak) peak = bankroll;
+        const drawdown = peak - bankroll;
+        if (drawdown > maxDrawdown) maxDrawdown = drawdown;
+        // Non-visual paths need no plateau points after absorption. Leaving the
+        // loop here preserves the exact result and avoids thousands of empty
+        // iterations in high-risk scenarios.
+        if (ruined && !keep) break;
       }
       if (keep && (step % plotStep === 0 || step === steps)) line.push(bankroll);
     }
@@ -293,7 +302,7 @@ function computeRiskLab(input) {
       ruinFlags: simulation.ruinFlags,
       ...bands(simulation.paths, divisor),
     },
-    curve: riskCurve(params, divisor),
+    curve: input.includeCurve === false ? null : riskCurve(params, divisor),
   };
 }
 

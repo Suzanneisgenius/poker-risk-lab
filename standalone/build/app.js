@@ -432,9 +432,9 @@ $('gto_run').addEventListener('click',runGTO);
 
 /* ================= RISK LAB (research dashboard) ================= */
 const LAB_QUICK_PATHS=2000;
-const LAB_DETAILED_PATHS=12000;
-function labParams(paths){return {wr:+$('lab_wr').value,sd:+$('lab_sd').value,bank:(+$('lab_bank').value)*100,thr:0,
-  hands:Math.round(+$('lab_hn').value),paths:paths,seed:42};}
+const LAB_DETAILED_PATHS=16000;
+function labParams(paths,includeCurve=true){return {wr:+$('lab_wr').value,sd:+$('lab_sd').value,bank:(+$('lab_bank').value)*100,thr:0,
+  hands:Math.round(+$('lab_hn').value),paths:paths,seed:42,includeCurve};}
 function updateLabLabels(){
   $('lab_wr_v').textContent=(+$('lab_wr').value).toFixed(1)+' bb/100';
   $('lab_bank_v').textContent=(+$('lab_bank').value)+' buy-ins';
@@ -509,8 +509,10 @@ let _labT=null;
 let labRequest=0;
 let labController=null;
 let labTrigger=null;
+let labHasCurve=false;
 async function runLab(paths,trigger=null){
-  const p=labParams(paths||LAB_QUICK_PATHS);
+  const reuseCurve=Boolean(trigger&&labHasCurve);
+  const p=labParams(paths||LAB_QUICK_PATHS,!reuseCurve);
   updateLabLabels();
   labController?.abort();
   if(labTrigger)setBusy(labTrigger,false);
@@ -521,7 +523,8 @@ async function runLab(paths,trigger=null){
   try{
     const result=await apiJSON('/api/risk-lab',p,70000,controller.signal);
     if(request!==labRequest)return;
-    renderLab(result);renderLabCurve(result.params,result.curve);
+    renderLab(result);
+    if(result.curve){renderLabCurve(result.params,result.curve);labHasCurve=true;}
     $('lab_status').textContent=p.paths.toLocaleString()+' paths · seed 42 · private server';
   }catch(error){if(request===labRequest){$('lab_status').textContent=errorMessage(error);$('lab_insight').className='result-insight negative';$('lab_insight').textContent=errorMessage(error);}}
   finally{if(request===labRequest){labController=null;labTrigger=null;if(trigger)setBusy(trigger,false);}}

@@ -93,6 +93,11 @@ async function main() {
     assert.equal(riskResult.fan.p50.length, riskResult.fan.xs.length);
     assert.equal(riskResult.curve.xs.length, 9);
     assert.equal(riskResult.curve.pathsPerPoint, 200);
+    const detailedRisk = await post("/api/risk-lab", {
+      wr: 3, sd: 90, bank: 3000, thr: 0, hands: 1000, paths: 100, seed: 42, includeCurve: false,
+    });
+    assert.equal(detailedRisk.status, 200);
+    assert.equal((await detailedRisk.json()).curve, null);
 
     process.stdout.write("API, cache, security-header, validation, and public-bundle tests passed.\n");
   } finally {
