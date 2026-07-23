@@ -22,6 +22,7 @@ const routes = new Map([
   ["/api/ev", { type: "ev", weight: 1, timeout: 10000 }],
   ["/api/bankroll", { type: "bankroll", weight: 8, timeout: 45000 }],
   ["/api/risk-lab", { type: "risk-lab", weight: 12, timeout: 55000 }],
+  ["/api/preflop", { type: "preflop", weight: 1, timeout: 10000 }],
   ["/api/gto", { type: "gto", weight: 10, timeout: 45000 }],
 ]);
 

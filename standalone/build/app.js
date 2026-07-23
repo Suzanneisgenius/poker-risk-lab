@@ -430,6 +430,220 @@ async function runGTO(){
 }
 $('gto_run').addEventListener('click',runGTO);
 
+/* ================= 5. PREFLOP RANGE LIBRARY ================= */
+const PF_ACTIONS=['raise','call','jam','fold'];
+const PF_LABELS={raise:'Raise',call:'Call',jam:'Jam',fold:'Fold'};
+const PF_COLORS={raise:'#38BDF8',call:'#22C55E',jam:'#EC4899',fold:'#4B5563'};
+let pfDataset=null;
+let pfScenarios=[];
+let pfScenario=null;
+let pfSelectedHand='A5s';
+let pfCompareHand='A5s';
+let pfMode='library';
+let pfRequest=0;
+const pfCache=new Map();
+const pfTrainer={index:0,hand:'A5s',answered:false,attempts:0,correct:0,mixed:0,streak:0};
+const PF_TRAINER_HANDS=['A5s','KQo','76s','99','AJo','K2s','QQ','AQo','54s','22','AKs','JTs','A4o','88','Q9s','ATo','65s','JJ','A2s','KJo'];
+
+function pfHandMap(scenario){return new Map((scenario?.hands||[]).map(hand=>[hand.hand,hand]));}
+function pfHand(scenario,name){return (scenario?.hands||[]).find(hand=>hand.hand===name)||scenario?.hands?.[0]||null;}
+function pfStrategyBackground(actions){
+  let cursor=0;
+  const stops=[];
+  PF_ACTIONS.forEach(action=>{
+    const value=Math.max(0,Number(actions[action])||0);
+    if(!value)return;
+    const next=Math.min(100,cursor+value);
+    stops.push(`${PF_COLORS[action]} ${cursor}% ${next}%`);
+    cursor=next;
+  });
+  if(cursor<100)stops.push(`${PF_COLORS.fold} ${cursor}% 100%`);
+  return `linear-gradient(90deg,${stops.join(',')})`;
+}
+function pfActionAria(hand){
+  return `${hand.hand}: `+PF_ACTIONS.filter(action=>hand.actions[action]>0).map(action=>`${PF_LABELS[action]} ${hand.actions[action]} percent`).join(', ');
+}
+function renderPfMatrix(targetId,scenario,selectedName=pfSelectedHand){
+  const target=$(targetId);if(!target||!scenario)return;
+  target.innerHTML=scenario.hands.map(hand=>{
+    const active=hand.hand===selectedName;
+    const mixed=PF_ACTIONS.filter(action=>hand.actions[action]>0).length>1;
+    const dominant=PF_ACTIONS.reduce((best,action)=>hand.actions[action]>hand.actions[best]?action:best,'fold');
+    const note=mixed?`<small>${hand.actions[dominant]}%</small>`:'';
+    return `<button type="button" class="pf-cell${active?' is-selected':''}${hand.actions.jam>0?' has-jam':''}" role="gridcell" data-pf-hand="${hand.hand}" style="background:${pfStrategyBackground(hand.actions)}" aria-label="${pfActionAria(hand)}" aria-pressed="${active}">${hand.hand}${note}</button>`;
+  }).join('');
+}
+function pfCardHtml(handName){
+  const pair=handName.length===2;
+  const suited=handName.endsWith('s');
+  const rankA=handName[0],rankB=handName[1];
+  const secondSuit=pair?'♥':suited?'♠':'♦';
+  return `<div class="pf-card"><strong>${rankA}</strong><span>♠</span></div><div class="pf-card${secondSuit==='♥'||secondSuit==='♦'?' red':''}"><strong>${rankB}</strong><span>${secondSuit}</span></div>`;
+}
+function pfActionRows(actions){
+  return PF_ACTIONS.map(action=>`<div class="pf-action-row"><i class="pf-swatch ${action}"></i><span>${PF_LABELS[action]}</span><output>${actions[action]}%</output><span class="pf-mix-track"><i style="width:${actions[action]}%;background:${PF_COLORS[action]}"></i></span></div>`).join('');
+}
+function pfSummary(scenario){
+  const totals={raise:0,call:0,jam:0,fold:0};
+  let combos=0;
+  scenario.hands.forEach(hand=>{
+    combos+=hand.combos;
+    PF_ACTIONS.forEach(action=>totals[action]+=hand.combos*hand.actions[action]/100);
+  });
+  const pct=action=>100*totals[action]/combos;
+  return {vpip:100-pct('fold'),raise:pct('raise'),call:pct('call'),jam:pct('jam'),fold:pct('fold')};
+}
+function renderPfSummary(scenario,targetId='pf_summary'){
+  const summary=pfSummary(scenario);
+  $(targetId).innerHTML=`<div class="label"><span>Range summary</span><strong>${scenario.stack}bb</strong></div>`+
+    `<div><span>VPIP</span><strong>${summary.vpip.toFixed(1)}%</strong></div>`+
+    `<div class="raise"><span>Raise</span><strong>${summary.raise.toFixed(1)}%</strong></div>`+
+    `<div class="call"><span>Call</span><strong>${summary.call.toFixed(1)}%</strong></div>`+
+    `<div class="jam"><span>Jam</span><strong>${summary.jam.toFixed(1)}%</strong></div>`+
+    `<div class="fold"><span>Fold</span><strong>${summary.fold.toFixed(1)}%</strong></div>`;
+}
+function renderPfMeta(scenario){
+  $('pf_meta').innerHTML=[
+    ['Game',scenario.game],['Table',scenario.table],['Stack',scenario.stack+'bb'],['Hero',scenario.hero],
+    ['Situation',scenario.situation],['Opponent',scenario.opponent],['Open size',scenario.openSize],
+  ].map(([label,value])=>`<div><dt>${label}</dt><dd>${value}</dd></div>`).join('');
+}
+function renderPfHandDetail(hand){
+  if(!hand)return;
+  $('pf_mix_hand').textContent=hand.hand;$('pf_hand_mix').innerHTML=pfActionRows(hand.actions);
+  $('pf_cards').innerHTML=pfCardHtml(hand.hand);$('pf_hand_name').textContent=hand.hand;
+  $('pf_detail_mix').innerHTML=pfActionRows(hand.actions);
+  $('pf_guidance').textContent=hand.guidance;
+}
+function fillPfScenarioSelects(){
+  const options=pfScenarios.map(s=>`<option value="${s.id}">${s.title}</option>`).join('');
+  ['pf_scenario','pf_compare_a','pf_compare_b'].forEach(id=>{const el=$(id);if(el)el.innerHTML=options;});
+  $('pf_scenario').value=pfScenario.id;
+  $('pf_compare_a').value=pfScenario.id;
+  const counterpart=pfScenarios.find(s=>s.hero===pfScenario.hero&&s.situation===pfScenario.situation&&s.stack!==pfScenario.stack)||pfScenarios[1]||pfScenarios[0];
+  $('pf_compare_b').value=counterpart.id;
+}
+function renderPfLibrary(){
+  if(!pfScenario)return;
+  $('pf_title').textContent=pfScenario.title;
+  renderPfMeta(pfScenario);
+  renderPfMatrix('pf_matrix',pfScenario,pfSelectedHand);
+  renderPfSummary(pfScenario);
+  renderPfHandDetail(pfHand(pfScenario,pfSelectedHand));
+  $('pf_dataset_note').textContent=pfDataset.note;
+}
+async function getPfScenario(id){
+  if(pfCache.has(id))return pfCache.get(id);
+  const result=await apiJSON('/api/preflop',{scenarioId:id},15000);
+  pfDataset=result.dataset;
+  pfScenarios=result.scenarios;
+  pfCache.set(result.scenario.id,result.scenario);
+  return result.scenario;
+}
+async function loadPreflop(scenarioId){
+  const request=++pfRequest;
+  $('pf_status').textContent='Loading demonstration range…';
+  try{
+    const scenario=await getPfScenario(scenarioId||'cash-6max-100-btn-rfi-25');
+    if(request!==pfRequest)return;
+    pfScenario=scenario;
+    fillPfScenarioSelects();
+    renderPfLibrary();
+    $('pf_status').textContent=`${pfScenarios.length} demo scenarios · 169 starting hands · private range API`;
+  }catch(error){if(request===pfRequest)$('pf_status').textContent=errorMessage(error);}
+}
+function activatePfMode(mode){
+  pfMode=mode;
+  document.querySelectorAll('.pf-mode').forEach(button=>{
+    const active=button.dataset.pfMode===mode;
+    button.setAttribute('aria-selected',String(active));
+    button.tabIndex=active?0:-1;
+  });
+  document.querySelectorAll('.pf-view').forEach(view=>{view.hidden=view.id!==`pf-view-${mode}`;});
+  if(mode==='compare')renderPfCompare();
+  if(mode==='trainer')renderPfTrainer();
+}
+async function renderPfCompare(){
+  if(!pfScenarios.length)return;
+  $('pf_status').textContent='Loading compared ranges…';
+  try{
+    const [scenarioA,scenarioB]=await Promise.all([getPfScenario($('pf_compare_a').value),getPfScenario($('pf_compare_b').value)]);
+    $('pf_compare_title_a').textContent=scenarioA.title;
+    $('pf_compare_title_b').textContent=scenarioB.title;
+    renderPfMatrix('pf_matrix_a',scenarioA,pfCompareHand);
+    renderPfMatrix('pf_matrix_b',scenarioB,pfCompareHand);
+    const handA=pfHand(scenarioA,pfCompareHand),handB=pfHand(scenarioB,pfCompareHand);
+    const deltas=PF_ACTIONS.map(action=>({action,value:handB.actions[action]-handA.actions[action]}));
+    const largest=[...deltas].sort((a,b)=>Math.abs(b.value)-Math.abs(a.value))[0];
+    const direction=largest.value===0?'is unchanged':`${largest.value>0?'increases':'decreases'} ${Math.abs(largest.value)} pp`;
+    $('pf_delta').innerHTML=`<h3>${pfCompareHand}: ${PF_LABELS[largest.action]} ${direction}</h3><p>Range B minus Range A. Frequencies are from the demonstration dataset.</p><div class="pf-delta-grid">`+
+      deltas.map(delta=>`<div class="pf-delta-item"><span>${PF_LABELS[delta.action]}</span><strong style="color:${PF_COLORS[delta.action]}">${delta.value>0?'+':''}${delta.value} pp</strong></div>`).join('')+'</div>';
+    $('pf_status').textContent='Comparison ready · select any hand in either matrix';
+  }catch(error){$('pf_status').textContent=errorMessage(error);}
+}
+function trainerScenario(){return pfScenario||pfCache.values().next().value;}
+function renderPfTrainer(){
+  const scenario=trainerScenario();if(!scenario)return;
+  const hand=pfHand(scenario,pfTrainer.hand)||pfHand(scenario,PF_TRAINER_HANDS[pfTrainer.index%PF_TRAINER_HANDS.length]);
+  pfTrainer.hand=hand.hand;
+  $('pf_trainer_scenario').textContent=scenario.title+' · Demo strategy dataset';
+  $('pf_trainer_cards').innerHTML=pfCardHtml(hand.hand);
+  $('pf_trainer_hand').textContent=hand.hand;
+  $('pf_trainer_guidance').textContent=pfTrainer.answered?hand.guidance:'Choose an action to reveal the demonstration frequencies.';
+  $('pf_trainer_bar').innerHTML=PF_ACTIONS.filter(action=>hand.actions[action]>0).map(action=>`<span style="width:${hand.actions[action]}%;background:${PF_COLORS[action]}"></span>`).join('');
+  $('pf_trainer_bar').setAttribute('aria-label',pfActionAria(hand));
+  document.querySelectorAll('.pf-action-button').forEach(button=>{button.disabled=pfTrainer.answered;button.classList.remove('is-chosen');});
+  if(!pfTrainer.answered){$('pf_feedback').className='pf-feedback';$('pf_feedback').innerHTML='';}
+  $('pf_stat_hands').textContent=`${Math.min(pfTrainer.attempts,20)} / 20`;
+  $('pf_stat_accuracy').textContent=pfTrainer.attempts?Math.round(100*pfTrainer.correct/pfTrainer.attempts)+'%':'—';
+  $('pf_stat_mixed').textContent=pfTrainer.mixed;
+  $('pf_stat_streak').textContent=pfTrainer.streak;
+  $('pf_status').textContent='Trainer ready · choices are checked against the demo frequencies';
+}
+function answerPfTrainer(action,button){
+  if(pfTrainer.answered)return;
+  const hand=pfHand(trainerScenario(),pfTrainer.hand);if(!hand)return;
+  pfTrainer.answered=true;pfTrainer.attempts+=1;
+  const acceptable=hand.actions[action]>0;
+  const mixed=PF_ACTIONS.filter(name=>hand.actions[name]>0).length>1;
+  if(acceptable){pfTrainer.correct+=1;pfTrainer.streak+=1;}else pfTrainer.streak=0;
+  if(mixed)pfTrainer.mixed+=1;
+  button.classList.add('is-chosen');
+  document.querySelectorAll('.pf-action-button').forEach(item=>item.disabled=true);
+  const title=acceptable?(mixed?'Good decision — mixed strategy':'Good decision for this demo range'):'Not included in this demo mix';
+  $('pf_feedback').className='pf-feedback is-visible';
+  $('pf_feedback').innerHTML=`<strong>${title}</strong><p>${PF_LABELS[action]} appears ${hand.actions[action]}% of the time. ${pfActionAria(hand)}.</p>`;
+  $('pf_trainer_guidance').textContent=hand.guidance;
+  $('pf_stat_hands').textContent=`${Math.min(pfTrainer.attempts,20)} / 20`;
+  $('pf_stat_accuracy').textContent=Math.round(100*pfTrainer.correct/pfTrainer.attempts)+'%';
+  $('pf_stat_mixed').textContent=pfTrainer.mixed;$('pf_stat_streak').textContent=pfTrainer.streak;
+}
+function nextPfTrainerHand(){
+  pfTrainer.index=(pfTrainer.index+1)%PF_TRAINER_HANDS.length;
+  pfTrainer.hand=PF_TRAINER_HANDS[pfTrainer.index];
+  pfTrainer.answered=false;
+  renderPfTrainer();
+}
+function selectPfHand(name,sourceId){
+  pfSelectedHand=name;pfCompareHand=name;
+  if(sourceId==='pf_matrix')renderPfLibrary();
+  else renderPfCompare();
+}
+
+document.querySelectorAll('.pf-mode').forEach(button=>button.addEventListener('click',()=>activatePfMode(button.dataset.pfMode)));
+$('pf_scenario').addEventListener('change',async()=>{
+  const scenario=await getPfScenario($('pf_scenario').value);
+  pfScenario=scenario;renderPfLibrary();$('pf_status').textContent='Range loaded · select a hand for its exact mix';
+});
+['pf_compare_a','pf_compare_b'].forEach(id=>$(id).addEventListener('change',renderPfCompare));
+$('pf_swap').addEventListener('click',()=>{const a=$('pf_compare_a').value;$('pf_compare_a').value=$('pf_compare_b').value;$('pf_compare_b').value=a;renderPfCompare();});
+['pf_matrix','pf_matrix_a','pf_matrix_b'].forEach(id=>$(id).addEventListener('click',event=>{const cell=event.target.closest('[data-pf-hand]');if(cell)selectPfHand(cell.dataset.pfHand,id);}));
+$('pf_compare_hand').addEventListener('click',()=>{pfCompareHand=pfSelectedHand;activatePfMode('compare');});
+$('pf_practice_hand').addEventListener('click',()=>{pfTrainer.hand=pfSelectedHand;pfTrainer.answered=false;activatePfMode('trainer');});
+$('pf_decision_actions').addEventListener('click',event=>{const button=event.target.closest('[data-action]');if(button)answerPfTrainer(button.dataset.action,button);});
+$('pf_next_hand').addEventListener('click',nextPfTrainerHand);
+$('pf_view_range').addEventListener('click',()=>{pfSelectedHand=pfTrainer.hand;activatePfMode('library');renderPfLibrary();});
+
 /* ================= RISK LAB (research dashboard) ================= */
 const LAB_QUICK_PATHS=2000;
 const LAB_DETAILED_PATHS=16000;
@@ -566,6 +780,7 @@ function initializeModule(id){
   else if(id==='equity')runEquity();
   else if(id==='ev')runEV();
   else if(id==='bankroll')runBankroll();
+  else if(id==='preflop')loadPreflop();
 }
 tabs.forEach(tab=>tab.addEventListener('click',()=>initializeModule(tab.dataset.mod)));
 renderSlots();initializeModule(initialTab.dataset.mod);

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Interactive poker equity, pot-odds, bankroll-risk, and game-theory tools powered by a private calculation service.">
+<meta name="description" content="Interactive poker equity, pot-odds, bankroll-risk, preflop-range, and game-theory tools powered by a private calculation service.">
 <meta name="theme-color" content="#0B1220">
 <title>Poker Analytics Suite</title>
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
@@ -25,6 +25,7 @@
   ::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-track{background:rgba(255,255,255,.035)}::-webkit-scrollbar-thumb{background:linear-gradient(135deg,rgba(56,189,248,.55),rgba(185,103,255,.46));border:2px solid rgba(8,17,31,.78);border-radius:999px}
   .skip{position:absolute;left:12px;top:-60px;background:var(--accent);color:#04121d;padding:9px 12px;border-radius:7px;z-index:100;font-weight:700}
   .skip:focus{top:12px}
+  .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
   header{padding:24px clamp(18px,2.6vw,54px) 18px;max-width:1920px;margin:0 auto;position:relative}
   header::after{content:"";position:absolute;left:clamp(18px,2.6vw,54px);bottom:0;width:clamp(80px,12vw,220px);height:1px;background:linear-gradient(90deg,var(--accent),transparent);box-shadow:0 0 16px rgba(56,189,248,.5);transform-origin:left;animation:keyline-in .65s cubic-bezier(.2,.75,.25,1) both}
   .brandrow{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
@@ -208,6 +209,76 @@
   .glossary{background:var(--surface);border:1px solid var(--grid);border-radius:12px;padding:6px 20px}
   .glossary dt{color:var(--accent);font-weight:700;margin-top:12px;font-size:14px}
   .glossary dd{margin:3px 0 0;color:var(--muted);font-size:14px;line-height:1.55}
+  /* ---- Preflop range library ---- */
+  #preflop{--pf-fold:#4B5563;--pf-call:#22C55E;--pf-raise:#38BDF8;--pf-jam:#EC4899;--pf-jam-strong:#DB2777;--pf-mixed:#F59E0B}
+  .pf-modebar{display:flex;width:min(520px,100%);border:1px solid rgba(56,189,248,.2);border-radius:14px;padding:5px;background:rgba(8,17,31,.48);margin:0 0 18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}
+  .pf-mode{flex:1;min-height:42px;border:0;border-radius:10px;background:transparent;color:var(--muted);font:inherit;font-weight:650;cursor:pointer;transition:.18s ease}
+  .pf-mode:hover{color:var(--text);background:rgba(56,189,248,.05)}
+  .pf-mode[aria-selected="true"]{color:#effbff;background:linear-gradient(125deg,rgba(56,189,248,.2),rgba(14,165,233,.08));box-shadow:inset 0 0 0 1px rgba(56,189,248,.42),0 8px 24px rgba(0,0,0,.16)}
+  .pf-view[hidden]{display:none}
+  .pf-library{display:grid;grid-template-columns:minmax(205px,250px) minmax(580px,1fr) minmax(230px,280px);gap:16px;align-items:start}
+  .pf-side,.pf-detail,.pf-main,.pf-compare-panel,.pf-trainer-main,.pf-trainer-side{border:1px solid var(--glass-border);border-radius:17px;background:linear-gradient(145deg,rgba(255,255,255,.035),transparent 34%),rgba(12,24,42,.76);box-shadow:0 18px 46px rgba(0,7,18,.2),inset 0 1px 0 rgba(255,255,255,.04);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur)}
+  .pf-side{padding:17px 18px}
+  .pf-side h2,.pf-detail h2{font-size:12px;letter-spacing:.1em;margin-bottom:13px}
+  .pf-scenario-select{width:100%;min-height:44px;border:1px solid rgba(56,189,248,.24);border-radius:9px;background:#122039;color:var(--text);padding:8px 9px;font:inherit;margin-bottom:13px}
+  .pf-meta{margin:0}
+  .pf-meta div{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid rgba(111,128,151,.17)}
+  .pf-meta div:last-child{border-bottom:0}
+  .pf-meta dt{color:var(--muted);font-size:13px}.pf-meta dd{margin:0;color:var(--text);font-size:13px;font-weight:650;text-align:right}
+  .pf-mix-panel{margin-top:16px;padding-top:16px;border-top:1px solid rgba(56,189,248,.15)}
+  .pf-mix-title{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}.pf-mix-title strong{font-size:13px}.pf-mix-title span{color:var(--dim);font-size:12px}
+  .pf-action-row{display:grid;grid-template-columns:12px 1fr auto;gap:8px;align-items:center;margin:11px 0;color:var(--muted);font-size:13px}
+  .pf-swatch{width:11px;height:11px;border-radius:3px;box-shadow:0 0 12px color-mix(in srgb,currentColor 35%,transparent)}
+  .pf-swatch.raise{background:var(--pf-raise);color:var(--pf-raise)}.pf-swatch.call{background:var(--pf-call);color:var(--pf-call)}
+  .pf-swatch.jam{background:var(--pf-jam);color:var(--pf-jam);box-shadow:0 0 14px rgba(236,72,153,.45)}.pf-swatch.fold{background:var(--pf-fold);color:var(--pf-fold)}
+  .pf-action-row output{color:var(--text);font:700 13px ui-monospace,SFMono-Regular,Menlo,monospace}
+  .pf-mix-track{grid-column:2/4;height:5px;border-radius:999px;background:rgba(111,128,151,.15);overflow:hidden;margin-top:-3px}.pf-mix-track i{display:block;height:100%;border-radius:inherit}
+  .pf-main{padding:14px 14px 13px;min-width:0;background:radial-gradient(circle at 86% 0,rgba(168,85,247,.08),transparent 32%),linear-gradient(145deg,rgba(56,189,248,.04),rgba(8,17,31,.78))}
+  .pf-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 2px 12px}
+  .pf-head h2{margin:0;color:var(--text);font-size:clamp(18px,1.4vw,24px);text-transform:none;letter-spacing:-.025em}
+  .pf-demo-badge{flex:0 0 auto;color:#C4B5FD;border:1px solid rgba(168,85,247,.25);background:rgba(168,85,247,.08);border-radius:999px;padding:4px 9px;font-size:11px}
+  .pf-matrix-wrap{overflow:auto;border-radius:10px;box-shadow:0 0 0 1px rgba(56,189,248,.19),0 18px 42px rgba(0,0,0,.18),0 0 34px rgba(56,189,248,.055)}
+  .pf-matrix{display:grid;grid-template-columns:repeat(13,minmax(38px,1fr));min-width:570px;background:#0d192b}
+  .pf-cell{position:relative;aspect-ratio:1.1/1;min-height:39px;border:0;border-right:1px solid rgba(4,12,24,.78);border-bottom:1px solid rgba(4,12,24,.78);color:#EAF2F8;font:650 12px ui-monospace,SFMono-Regular,Menlo,monospace;cursor:pointer;text-shadow:0 1px 2px rgba(0,0,0,.45);transition:filter .13s ease,transform .13s ease,box-shadow .13s ease;isolation:isolate}
+  .pf-cell:hover{filter:brightness(1.18);z-index:3;box-shadow:inset 0 0 0 2px rgba(255,255,255,.46)}
+  .pf-cell.is-selected{z-index:4;box-shadow:inset 0 0 0 2px var(--pf-mixed),0 0 0 1px #08111f,0 0 18px rgba(245,158,11,.62)}
+  .pf-cell.has-jam{box-shadow:inset 0 -2px 0 var(--pf-jam-strong),0 0 11px rgba(236,72,153,.15)}
+  .pf-cell.is-selected.has-jam{box-shadow:inset 0 0 0 2px var(--pf-mixed),0 0 0 1px #08111f,0 0 20px rgba(236,72,153,.52)}
+  .pf-cell small{display:block;margin-top:2px;font-size:9px;line-height:1;color:rgba(255,255,255,.78)}
+  .pf-legend{display:flex;gap:10px 19px;flex-wrap:wrap;align-items:center;padding:12px 2px 6px;color:var(--muted);font-size:12px}
+  .pf-legend span{display:inline-flex;align-items:center;gap:6px}.pf-legend .pf-swatch{width:12px;height:12px}
+  .pf-mixed-key{width:13px;height:13px;border:2px solid var(--pf-mixed);border-radius:3px}
+  .pf-summary{display:grid;grid-template-columns:1.25fr repeat(5,1fr);border-top:1px solid rgba(56,189,248,.14);margin-top:6px;padding-top:11px}
+  .pf-summary div{padding:2px 11px;border-right:1px solid rgba(111,128,151,.2);text-align:center}.pf-summary div:last-child{border-right:0}
+  .pf-summary span{display:block;color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.05em}.pf-summary strong{display:block;margin-top:2px;font:700 20px ui-monospace,SFMono-Regular,Menlo,monospace}
+  .pf-summary .label{text-align:left}.pf-summary .raise strong{color:var(--pf-raise)}.pf-summary .call strong{color:var(--pf-call)}.pf-summary .jam strong{color:var(--pf-jam);text-shadow:0 0 15px rgba(236,72,153,.35)}.pf-summary .fold strong{color:#94A3B8}
+  .pf-detail{padding:17px 18px;border-color:rgba(168,85,247,.32);box-shadow:0 18px 48px rgba(0,7,18,.22),0 0 32px rgba(168,85,247,.07),inset 0 1px 0 rgba(255,255,255,.045)}
+  .pf-cards{display:flex;justify-content:center;gap:10px;margin:3px 0 11px}
+  .pf-card{width:74px;height:102px;border-radius:10px;background:#F5F7FA;color:#0B1220;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 14px 28px rgba(0,0,0,.24)}
+  .pf-card.red{color:#D8324B}.pf-card strong{font-size:35px;line-height:1}.pf-card span{font-size:26px;line-height:1.1}
+  .pf-hand-name{text-align:center;font-size:30px;letter-spacing:-.04em;margin:0 0 10px}
+  .pf-detail-mix{margin:11px 0 15px;padding-bottom:12px;border-bottom:1px solid rgba(111,128,151,.22)}
+  .pf-guidance{color:var(--muted);font-size:13px;line-height:1.55;min-height:88px}
+  .pf-detail .btn{margin-top:9px}
+  .pf-disclaimer{margin:13px 2px 0;color:var(--dim);font-size:12px;line-height:1.5}
+  .pf-compare-controls{display:grid;grid-template-columns:1fr auto 1fr;gap:11px;align-items:end;margin-bottom:15px}.pf-compare-controls .fld{margin:0}.pf-swap{width:44px;min-height:42px;border:1px solid var(--glass-border);border-radius:10px;background:rgba(56,189,248,.07);color:var(--accent);font:700 18px ui-monospace,monospace;cursor:pointer}
+  .pf-compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.pf-compare-panel{padding:13px;min-width:0}.pf-compare-panel h3{margin:0 0 10px;font-size:15px}
+  .pf-compare-panel .pf-matrix{min-width:455px}.pf-compare-panel .pf-cell{min-height:31px;font-size:10px}
+  .pf-delta{margin-top:15px;padding:16px 18px;border:1px solid rgba(245,158,11,.26);border-radius:14px;background:linear-gradient(120deg,rgba(245,158,11,.075),rgba(8,17,31,.62))}
+  .pf-delta h3{margin:0 0 5px}.pf-delta p{margin:0;color:var(--muted)}
+  .pf-delta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}.pf-delta-item{padding:10px;border-radius:9px;background:rgba(8,17,31,.45)}.pf-delta-item span{display:block;color:var(--dim);font-size:11px}.pf-delta-item strong{font:700 16px ui-monospace,monospace}
+  .pf-trainer{display:grid;grid-template-columns:minmax(0,1fr) minmax(230px,285px);gap:16px}.pf-trainer-main,.pf-trainer-side{padding:20px}
+  .pf-trainer-scenario{color:var(--muted);font-size:13px}.pf-trainer-hand{display:flex;align-items:center;gap:17px;margin:19px 0}.pf-trainer-hand .pf-cards{justify-content:flex-start;margin:0}.pf-trainer-hand h2{font-size:34px;color:var(--text);text-transform:none;margin:0;letter-spacing:-.04em}
+  .pf-decision-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0 15px}.pf-action-button{min-height:58px;border:1px solid var(--grid);border-radius:11px;background:rgba(23,36,58,.72);color:var(--text);font:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:.16s ease}.pf-action-button:hover{transform:translateY(-1px);border-color:currentColor}.pf-action-button[data-action="raise"]{color:var(--pf-raise)}.pf-action-button[data-action="call"]{color:var(--pf-call)}.pf-action-button[data-action="jam"]{color:#fff;border-color:rgba(236,72,153,.5);background:linear-gradient(120deg,rgba(236,72,153,.28),rgba(219,39,119,.14));box-shadow:0 0 24px rgba(236,72,153,.17)}.pf-action-button[data-action="fold"]{color:#B0BAC8}
+  .pf-action-button.is-chosen{box-shadow:inset 0 0 0 2px currentColor,0 0 20px color-mix(in srgb,currentColor 25%,transparent)}
+  .pf-feedback{display:none;border-left:3px solid var(--pf-mixed);background:rgba(245,158,11,.07);border-radius:8px;padding:13px 14px;margin:10px 0 15px}.pf-feedback.is-visible{display:block}.pf-feedback strong{display:block;color:#FBBF24;margin-bottom:3px}.pf-feedback p{margin:0;color:var(--muted);font-size:13px}
+  .pf-frequency-bar{height:12px;border-radius:999px;overflow:hidden;display:flex;background:var(--pf-fold);margin:11px 0}.pf-frequency-bar span{height:100%}
+  .pf-trainer-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+  .pf-stat{padding:14px 0;border-bottom:1px solid rgba(111,128,151,.2)}.pf-stat span{display:block;color:var(--muted);font-size:12px}.pf-stat strong{display:block;margin-top:3px;font:700 24px ui-monospace,monospace}.pf-stat .accent{color:var(--accent)}.pf-stat .mixed{color:var(--pf-mixed)}
+  .pf-status{min-height:22px;margin:0 0 8px;color:var(--accent);font-size:13px}
+  @media(max-width:1220px){.pf-library{grid-template-columns:220px minmax(560px,1fr)}.pf-detail{grid-column:1/-1;display:grid;grid-template-columns:auto 150px 1fr 220px;gap:16px;align-items:center}.pf-detail h2{grid-column:1/-1}.pf-cards{margin:0}.pf-hand-name{margin:0}.pf-detail-mix{margin:0;border:0;padding:0}.pf-guidance{min-height:0}.pf-detail .btn{margin:4px 0}.pf-detail-actions{display:grid;gap:5px}}
+  @media(max-width:900px){.pf-library{grid-template-columns:1fr}.pf-side,.pf-detail{grid-column:auto;display:block}.pf-detail .pf-cards{margin:3px 0 11px}.pf-compare-grid{grid-template-columns:1fr}.pf-trainer{grid-template-columns:1fr}.pf-summary{grid-template-columns:repeat(3,1fr)}.pf-summary .label{grid-column:1/-1}.pf-decision-actions{grid-template-columns:1fr 1fr}}
+  @media(max-width:600px){.pf-main,.pf-side,.pf-detail,.pf-trainer-main,.pf-trainer-side{padding:13px}.pf-modebar{width:100%}.pf-head{align-items:flex-start;flex-direction:column}.pf-matrix{min-width:520px}.pf-compare-controls{grid-template-columns:1fr}.pf-swap{width:100%}.pf-delta-grid{grid-template-columns:1fr 1fr}.pf-trainer-actions{grid-template-columns:1fr}}
   /* ---- Risk Lab research dashboard ---- */
   .labhead{margin-bottom:8px}
   .eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--accent);font-size:13px;letter-spacing:.14em}
@@ -275,7 +346,7 @@
 <noscript><p class="explainer" style="margin:16px">This interactive suite requires JavaScript.</p></noscript>
 <header>
   <div class="brandrow">
-    <div><h1>Poker Analytics Suite</h1><p class="sub">Explore equity, pot odds, bankroll risk, and game theory in one place.</p></div>
+    <div><h1>Poker Analytics Suite</h1><p class="sub">Explore equity, pot odds, bankroll risk, preflop ranges, and game theory in one place.</p></div>
     <div class="trust" aria-label="Product assurances"><span>Private server calculations</span><span>No account required</span><span>Seeded &amp; reproducible</span></div>
   </div>
   <p class="disc">Built for learning and research. Results are model estimates, not financial or gambling advice.</p>
@@ -285,6 +356,7 @@
   <button type="button" class="t" id="tab-equity" data-mod="equity" role="tab" aria-controls="equity" aria-selected="false" tabindex="-1">Hand Equity</button>
   <button type="button" class="t" id="tab-ev" data-mod="ev" role="tab" aria-controls="ev" aria-selected="false" tabindex="-1">Pot Odds &amp; EV</button>
   <button type="button" class="t" id="tab-bankroll" data-mod="bankroll" role="tab" aria-controls="bankroll" aria-selected="false" tabindex="-1">Bankroll Risk</button>
+  <button type="button" class="t" id="tab-preflop" data-mod="preflop" role="tab" aria-controls="preflop" aria-selected="false" tabindex="-1">Preflop</button>
   <button type="button" class="t" id="tab-gto" data-mod="gto" role="tab" aria-controls="gto" aria-selected="false" tabindex="-1">GTO Trainer</button>
   <button type="button" class="t" id="tab-about" data-mod="about" role="tab" aria-controls="about" aria-selected="false" tabindex="-1">About</button>
 </nav>
@@ -519,6 +591,96 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
     </div>
   </section>
 
+  <!-- ===================== PREFLOP ===================== -->
+  <section class="mod" id="preflop" role="tabpanel" aria-labelledby="tab-preflop">
+    <div class="explainer"><b>Browse, compare, and practise preflop ranges.</b> This first release uses an explicitly labelled demonstration dataset so the complete workflow can be evaluated before licensed solver exports are imported.</div>
+    <div class="pf-modebar" role="tablist" aria-label="Preflop modes">
+      <button type="button" class="pf-mode" id="pf-mode-library" data-pf-mode="library" role="tab" aria-controls="pf-view-library" aria-selected="true">Library</button>
+      <button type="button" class="pf-mode" id="pf-mode-compare" data-pf-mode="compare" role="tab" aria-controls="pf-view-compare" aria-selected="false">Compare</button>
+      <button type="button" class="pf-mode" id="pf-mode-trainer" data-pf-mode="trainer" role="tab" aria-controls="pf-view-trainer" aria-selected="false">Trainer</button>
+    </div>
+    <p class="pf-status" id="pf_status" role="status" aria-live="polite">Choose Preflop to load the demonstration range library.</p>
+
+    <div class="pf-view" id="pf-view-library" role="tabpanel" aria-labelledby="pf-mode-library">
+      <div class="pf-library">
+        <aside class="pf-side">
+          <h2>Scenario</h2>
+          <label class="sr-only" for="pf_scenario">Preflop scenario</label>
+          <select class="pf-scenario-select" id="pf_scenario"></select>
+          <dl class="pf-meta" id="pf_meta"></dl>
+          <div class="pf-mix-panel">
+            <div class="pf-mix-title"><strong>Action frequencies</strong><span id="pf_mix_hand">A5s</span></div>
+            <div id="pf_hand_mix"></div>
+          </div>
+        </aside>
+        <div class="pf-main">
+          <div class="pf-head"><h2 id="pf_title">Loading preflop range…</h2><span class="pf-demo-badge">Demo strategy dataset</span></div>
+          <div class="pf-matrix-wrap"><div class="pf-matrix" id="pf_matrix" role="grid" aria-label="Preflop starting hand range"></div></div>
+          <div class="pf-legend" aria-label="Strategy colors">
+            <span><i class="pf-swatch raise"></i>Raise</span><span><i class="pf-swatch call"></i>Call</span><span><i class="pf-swatch jam"></i>Jam</span><span><i class="pf-swatch fold"></i>Fold</span><span><i class="pf-mixed-key"></i>Mixed</span>
+          </div>
+          <div class="pf-summary" id="pf_summary"></div>
+          <p class="pf-disclaimer" id="pf_dataset_note"></p>
+        </div>
+        <aside class="pf-detail">
+          <h2>Selected hand</h2>
+          <div class="pf-cards" id="pf_cards"></div>
+          <h3 class="pf-hand-name" id="pf_hand_name">A5s</h3>
+          <div class="pf-detail-mix" id="pf_detail_mix"></div>
+          <p class="pf-guidance" id="pf_guidance"></p>
+          <div class="pf-detail-actions">
+            <button type="button" class="btn primary" id="pf_compare_hand">Compare range</button>
+            <button type="button" class="btn ghost" id="pf_practice_hand">Practice this spot</button>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <div class="pf-view" id="pf-view-compare" role="tabpanel" aria-labelledby="pf-mode-compare" hidden>
+      <div class="pf-compare-controls">
+        <div class="fld"><label for="pf_compare_a">Range A</label><select id="pf_compare_a"></select></div>
+        <button type="button" class="pf-swap" id="pf_swap" aria-label="Swap compared ranges">Swap</button>
+        <div class="fld"><label for="pf_compare_b">Range B</label><select id="pf_compare_b"></select></div>
+      </div>
+      <div class="pf-compare-grid">
+        <div class="pf-compare-panel"><h3 id="pf_compare_title_a">Range A</h3><div class="pf-matrix-wrap"><div class="pf-matrix" id="pf_matrix_a" role="grid" aria-label="Preflop comparison range A"></div></div></div>
+        <div class="pf-compare-panel"><h3 id="pf_compare_title_b">Range B</h3><div class="pf-matrix-wrap"><div class="pf-matrix" id="pf_matrix_b" role="grid" aria-label="Preflop comparison range B"></div></div></div>
+      </div>
+      <div class="pf-delta" id="pf_delta"></div>
+    </div>
+
+    <div class="pf-view" id="pf-view-trainer" role="tabpanel" aria-labelledby="pf-mode-trainer" hidden>
+      <div class="pf-trainer">
+        <div class="pf-trainer-main">
+          <div class="pf-trainer-scenario" id="pf_trainer_scenario">Loading training spot…</div>
+          <div class="pf-trainer-hand"><div class="pf-cards" id="pf_trainer_cards"></div><div><p class="quicklabel">Your hand</p><h2 id="pf_trainer_hand">A5s</h2></div></div>
+          <h3>What is your decision?</h3>
+          <div class="pf-decision-actions" id="pf_decision_actions">
+            <button type="button" class="pf-action-button" data-action="raise">Raise</button>
+            <button type="button" class="pf-action-button" data-action="call">Call</button>
+            <button type="button" class="pf-action-button" data-action="jam">Jam</button>
+            <button type="button" class="pf-action-button" data-action="fold">Fold</button>
+          </div>
+          <div class="pf-feedback" id="pf_feedback" role="status" aria-live="polite"></div>
+          <div class="pf-frequency-bar" id="pf_trainer_bar" aria-label="Strategy frequencies"></div>
+          <p class="pf-guidance" id="pf_trainer_guidance">Choose an action to reveal the demonstration frequencies.</p>
+          <div class="pf-trainer-actions">
+            <button type="button" class="btn primary" id="pf_next_hand">Next hand</button>
+            <button type="button" class="btn ghost" id="pf_view_range">View full range</button>
+          </div>
+        </div>
+        <aside class="pf-trainer-side">
+          <h2>Session progress</h2>
+          <div class="pf-stat"><span>Hands practised</span><strong id="pf_stat_hands">0 / 20</strong></div>
+          <div class="pf-stat"><span>Accuracy</span><strong class="accent" id="pf_stat_accuracy">—</strong></div>
+          <div class="pf-stat"><span>Mixed decisions</span><strong class="mixed" id="pf_stat_mixed">0</strong></div>
+          <div class="pf-stat"><span>Current streak</span><strong id="pf_stat_streak">0</strong></div>
+          <p class="pf-disclaimer">A choice counts as acceptable when the demonstration range assigns it a non-zero frequency.</p>
+        </aside>
+      </div>
+    </div>
+  </section>
+
   <!-- ===================== GTO ===================== -->
   <section class="mod" id="gto" role="tabpanel" aria-labelledby="tab-gto">
     <div class="explainer"><b>Watch a poker strategy learn toward equilibrium.</b> This teaching demo uses tiny three-card Kuhn poker so the known mathematical answer can verify the training.
@@ -554,6 +716,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
       <li><b>Hand Equity</b> — expected pot share against up to five fixed or random opponent hands and an optional board. Heads-up spots can use exact enumeration; multiway spots use seeded Monte Carlo.</li>
       <li><b>Pot Odds &amp; EV</b> — uses the latest card-derived equity for a call/fold decision with expected value in big blinds; manual equity is optional.</li>
       <li><b>Bankroll Risk</b> — Monte Carlo risk of ruin with a finite-horizon Brownian cross-check (the full Python engine adds a Markov-chain check and file export).</li>
+      <li><b>Preflop</b> — browse, compare, and practise 169-hand strategy matrices. The current ranges are an illustrative demonstration dataset, not solver-verified output.</li>
       <li><b>GTO Trainer</b> — CFR on Kuhn poker, validated against the known game value and equilibrium constraints.</li>
     </ul>
     <h3>The through-line: reproducibility and validation</h3>
@@ -576,6 +739,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
     <ul class="doc">
       <li>Equity supports up to five fixed or uniformly random opponent hands. It does not yet model weighted opponent ranges or betting-action-based ranges.</li>
       <li>Bankroll assumes i.i.d. Normal results and a stationary win rate; real poker violates both.</li>
+      <li>Preflop frequencies are illustrative demo data for evaluating the interface. They should not be treated as Nash-equilibrium or optimal play until licensed solver exports replace them.</li>
       <li>GTO here is a toy game — the concepts transfer, the specific numbers do not scale to full Hold'em.</li>
       <li>All outputs are conditional model estimates, not guarantees.</li>
     </ul>
@@ -1023,6 +1187,220 @@ async function runGTO(){
 }
 $('gto_run').addEventListener('click',runGTO);
 
+/* ================= 5. PREFLOP RANGE LIBRARY ================= */
+const PF_ACTIONS=['raise','call','jam','fold'];
+const PF_LABELS={raise:'Raise',call:'Call',jam:'Jam',fold:'Fold'};
+const PF_COLORS={raise:'#38BDF8',call:'#22C55E',jam:'#EC4899',fold:'#4B5563'};
+let pfDataset=null;
+let pfScenarios=[];
+let pfScenario=null;
+let pfSelectedHand='A5s';
+let pfCompareHand='A5s';
+let pfMode='library';
+let pfRequest=0;
+const pfCache=new Map();
+const pfTrainer={index:0,hand:'A5s',answered:false,attempts:0,correct:0,mixed:0,streak:0};
+const PF_TRAINER_HANDS=['A5s','KQo','76s','99','AJo','K2s','QQ','AQo','54s','22','AKs','JTs','A4o','88','Q9s','ATo','65s','JJ','A2s','KJo'];
+
+function pfHandMap(scenario){return new Map((scenario?.hands||[]).map(hand=>[hand.hand,hand]));}
+function pfHand(scenario,name){return (scenario?.hands||[]).find(hand=>hand.hand===name)||scenario?.hands?.[0]||null;}
+function pfStrategyBackground(actions){
+  let cursor=0;
+  const stops=[];
+  PF_ACTIONS.forEach(action=>{
+    const value=Math.max(0,Number(actions[action])||0);
+    if(!value)return;
+    const next=Math.min(100,cursor+value);
+    stops.push(`${PF_COLORS[action]} ${cursor}% ${next}%`);
+    cursor=next;
+  });
+  if(cursor<100)stops.push(`${PF_COLORS.fold} ${cursor}% 100%`);
+  return `linear-gradient(90deg,${stops.join(',')})`;
+}
+function pfActionAria(hand){
+  return `${hand.hand}: `+PF_ACTIONS.filter(action=>hand.actions[action]>0).map(action=>`${PF_LABELS[action]} ${hand.actions[action]} percent`).join(', ');
+}
+function renderPfMatrix(targetId,scenario,selectedName=pfSelectedHand){
+  const target=$(targetId);if(!target||!scenario)return;
+  target.innerHTML=scenario.hands.map(hand=>{
+    const active=hand.hand===selectedName;
+    const mixed=PF_ACTIONS.filter(action=>hand.actions[action]>0).length>1;
+    const dominant=PF_ACTIONS.reduce((best,action)=>hand.actions[action]>hand.actions[best]?action:best,'fold');
+    const note=mixed?`<small>${hand.actions[dominant]}%</small>`:'';
+    return `<button type="button" class="pf-cell${active?' is-selected':''}${hand.actions.jam>0?' has-jam':''}" role="gridcell" data-pf-hand="${hand.hand}" style="background:${pfStrategyBackground(hand.actions)}" aria-label="${pfActionAria(hand)}" aria-pressed="${active}">${hand.hand}${note}</button>`;
+  }).join('');
+}
+function pfCardHtml(handName){
+  const pair=handName.length===2;
+  const suited=handName.endsWith('s');
+  const rankA=handName[0],rankB=handName[1];
+  const secondSuit=pair?'♥':suited?'♠':'♦';
+  return `<div class="pf-card"><strong>${rankA}</strong><span>♠</span></div><div class="pf-card${secondSuit==='♥'||secondSuit==='♦'?' red':''}"><strong>${rankB}</strong><span>${secondSuit}</span></div>`;
+}
+function pfActionRows(actions){
+  return PF_ACTIONS.map(action=>`<div class="pf-action-row"><i class="pf-swatch ${action}"></i><span>${PF_LABELS[action]}</span><output>${actions[action]}%</output><span class="pf-mix-track"><i style="width:${actions[action]}%;background:${PF_COLORS[action]}"></i></span></div>`).join('');
+}
+function pfSummary(scenario){
+  const totals={raise:0,call:0,jam:0,fold:0};
+  let combos=0;
+  scenario.hands.forEach(hand=>{
+    combos+=hand.combos;
+    PF_ACTIONS.forEach(action=>totals[action]+=hand.combos*hand.actions[action]/100);
+  });
+  const pct=action=>100*totals[action]/combos;
+  return {vpip:100-pct('fold'),raise:pct('raise'),call:pct('call'),jam:pct('jam'),fold:pct('fold')};
+}
+function renderPfSummary(scenario,targetId='pf_summary'){
+  const summary=pfSummary(scenario);
+  $(targetId).innerHTML=`<div class="label"><span>Range summary</span><strong>${scenario.stack}bb</strong></div>`+
+    `<div><span>VPIP</span><strong>${summary.vpip.toFixed(1)}%</strong></div>`+
+    `<div class="raise"><span>Raise</span><strong>${summary.raise.toFixed(1)}%</strong></div>`+
+    `<div class="call"><span>Call</span><strong>${summary.call.toFixed(1)}%</strong></div>`+
+    `<div class="jam"><span>Jam</span><strong>${summary.jam.toFixed(1)}%</strong></div>`+
+    `<div class="fold"><span>Fold</span><strong>${summary.fold.toFixed(1)}%</strong></div>`;
+}
+function renderPfMeta(scenario){
+  $('pf_meta').innerHTML=[
+    ['Game',scenario.game],['Table',scenario.table],['Stack',scenario.stack+'bb'],['Hero',scenario.hero],
+    ['Situation',scenario.situation],['Opponent',scenario.opponent],['Open size',scenario.openSize],
+  ].map(([label,value])=>`<div><dt>${label}</dt><dd>${value}</dd></div>`).join('');
+}
+function renderPfHandDetail(hand){
+  if(!hand)return;
+  $('pf_mix_hand').textContent=hand.hand;$('pf_hand_mix').innerHTML=pfActionRows(hand.actions);
+  $('pf_cards').innerHTML=pfCardHtml(hand.hand);$('pf_hand_name').textContent=hand.hand;
+  $('pf_detail_mix').innerHTML=pfActionRows(hand.actions);
+  $('pf_guidance').textContent=hand.guidance;
+}
+function fillPfScenarioSelects(){
+  const options=pfScenarios.map(s=>`<option value="${s.id}">${s.title}</option>`).join('');
+  ['pf_scenario','pf_compare_a','pf_compare_b'].forEach(id=>{const el=$(id);if(el)el.innerHTML=options;});
+  $('pf_scenario').value=pfScenario.id;
+  $('pf_compare_a').value=pfScenario.id;
+  const counterpart=pfScenarios.find(s=>s.hero===pfScenario.hero&&s.situation===pfScenario.situation&&s.stack!==pfScenario.stack)||pfScenarios[1]||pfScenarios[0];
+  $('pf_compare_b').value=counterpart.id;
+}
+function renderPfLibrary(){
+  if(!pfScenario)return;
+  $('pf_title').textContent=pfScenario.title;
+  renderPfMeta(pfScenario);
+  renderPfMatrix('pf_matrix',pfScenario,pfSelectedHand);
+  renderPfSummary(pfScenario);
+  renderPfHandDetail(pfHand(pfScenario,pfSelectedHand));
+  $('pf_dataset_note').textContent=pfDataset.note;
+}
+async function getPfScenario(id){
+  if(pfCache.has(id))return pfCache.get(id);
+  const result=await apiJSON('/api/preflop',{scenarioId:id},15000);
+  pfDataset=result.dataset;
+  pfScenarios=result.scenarios;
+  pfCache.set(result.scenario.id,result.scenario);
+  return result.scenario;
+}
+async function loadPreflop(scenarioId){
+  const request=++pfRequest;
+  $('pf_status').textContent='Loading demonstration range…';
+  try{
+    const scenario=await getPfScenario(scenarioId||'cash-6max-100-btn-rfi-25');
+    if(request!==pfRequest)return;
+    pfScenario=scenario;
+    fillPfScenarioSelects();
+    renderPfLibrary();
+    $('pf_status').textContent=`${pfScenarios.length} demo scenarios · 169 starting hands · private range API`;
+  }catch(error){if(request===pfRequest)$('pf_status').textContent=errorMessage(error);}
+}
+function activatePfMode(mode){
+  pfMode=mode;
+  document.querySelectorAll('.pf-mode').forEach(button=>{
+    const active=button.dataset.pfMode===mode;
+    button.setAttribute('aria-selected',String(active));
+    button.tabIndex=active?0:-1;
+  });
+  document.querySelectorAll('.pf-view').forEach(view=>{view.hidden=view.id!==`pf-view-${mode}`;});
+  if(mode==='compare')renderPfCompare();
+  if(mode==='trainer')renderPfTrainer();
+}
+async function renderPfCompare(){
+  if(!pfScenarios.length)return;
+  $('pf_status').textContent='Loading compared ranges…';
+  try{
+    const [scenarioA,scenarioB]=await Promise.all([getPfScenario($('pf_compare_a').value),getPfScenario($('pf_compare_b').value)]);
+    $('pf_compare_title_a').textContent=scenarioA.title;
+    $('pf_compare_title_b').textContent=scenarioB.title;
+    renderPfMatrix('pf_matrix_a',scenarioA,pfCompareHand);
+    renderPfMatrix('pf_matrix_b',scenarioB,pfCompareHand);
+    const handA=pfHand(scenarioA,pfCompareHand),handB=pfHand(scenarioB,pfCompareHand);
+    const deltas=PF_ACTIONS.map(action=>({action,value:handB.actions[action]-handA.actions[action]}));
+    const largest=[...deltas].sort((a,b)=>Math.abs(b.value)-Math.abs(a.value))[0];
+    const direction=largest.value===0?'is unchanged':`${largest.value>0?'increases':'decreases'} ${Math.abs(largest.value)} pp`;
+    $('pf_delta').innerHTML=`<h3>${pfCompareHand}: ${PF_LABELS[largest.action]} ${direction}</h3><p>Range B minus Range A. Frequencies are from the demonstration dataset.</p><div class="pf-delta-grid">`+
+      deltas.map(delta=>`<div class="pf-delta-item"><span>${PF_LABELS[delta.action]}</span><strong style="color:${PF_COLORS[delta.action]}">${delta.value>0?'+':''}${delta.value} pp</strong></div>`).join('')+'</div>';
+    $('pf_status').textContent='Comparison ready · select any hand in either matrix';
+  }catch(error){$('pf_status').textContent=errorMessage(error);}
+}
+function trainerScenario(){return pfScenario||pfCache.values().next().value;}
+function renderPfTrainer(){
+  const scenario=trainerScenario();if(!scenario)return;
+  const hand=pfHand(scenario,pfTrainer.hand)||pfHand(scenario,PF_TRAINER_HANDS[pfTrainer.index%PF_TRAINER_HANDS.length]);
+  pfTrainer.hand=hand.hand;
+  $('pf_trainer_scenario').textContent=scenario.title+' · Demo strategy dataset';
+  $('pf_trainer_cards').innerHTML=pfCardHtml(hand.hand);
+  $('pf_trainer_hand').textContent=hand.hand;
+  $('pf_trainer_guidance').textContent=pfTrainer.answered?hand.guidance:'Choose an action to reveal the demonstration frequencies.';
+  $('pf_trainer_bar').innerHTML=PF_ACTIONS.filter(action=>hand.actions[action]>0).map(action=>`<span style="width:${hand.actions[action]}%;background:${PF_COLORS[action]}"></span>`).join('');
+  $('pf_trainer_bar').setAttribute('aria-label',pfActionAria(hand));
+  document.querySelectorAll('.pf-action-button').forEach(button=>{button.disabled=pfTrainer.answered;button.classList.remove('is-chosen');});
+  if(!pfTrainer.answered){$('pf_feedback').className='pf-feedback';$('pf_feedback').innerHTML='';}
+  $('pf_stat_hands').textContent=`${Math.min(pfTrainer.attempts,20)} / 20`;
+  $('pf_stat_accuracy').textContent=pfTrainer.attempts?Math.round(100*pfTrainer.correct/pfTrainer.attempts)+'%':'—';
+  $('pf_stat_mixed').textContent=pfTrainer.mixed;
+  $('pf_stat_streak').textContent=pfTrainer.streak;
+  $('pf_status').textContent='Trainer ready · choices are checked against the demo frequencies';
+}
+function answerPfTrainer(action,button){
+  if(pfTrainer.answered)return;
+  const hand=pfHand(trainerScenario(),pfTrainer.hand);if(!hand)return;
+  pfTrainer.answered=true;pfTrainer.attempts+=1;
+  const acceptable=hand.actions[action]>0;
+  const mixed=PF_ACTIONS.filter(name=>hand.actions[name]>0).length>1;
+  if(acceptable){pfTrainer.correct+=1;pfTrainer.streak+=1;}else pfTrainer.streak=0;
+  if(mixed)pfTrainer.mixed+=1;
+  button.classList.add('is-chosen');
+  document.querySelectorAll('.pf-action-button').forEach(item=>item.disabled=true);
+  const title=acceptable?(mixed?'Good decision — mixed strategy':'Good decision for this demo range'):'Not included in this demo mix';
+  $('pf_feedback').className='pf-feedback is-visible';
+  $('pf_feedback').innerHTML=`<strong>${title}</strong><p>${PF_LABELS[action]} appears ${hand.actions[action]}% of the time. ${pfActionAria(hand)}.</p>`;
+  $('pf_trainer_guidance').textContent=hand.guidance;
+  $('pf_stat_hands').textContent=`${Math.min(pfTrainer.attempts,20)} / 20`;
+  $('pf_stat_accuracy').textContent=Math.round(100*pfTrainer.correct/pfTrainer.attempts)+'%';
+  $('pf_stat_mixed').textContent=pfTrainer.mixed;$('pf_stat_streak').textContent=pfTrainer.streak;
+}
+function nextPfTrainerHand(){
+  pfTrainer.index=(pfTrainer.index+1)%PF_TRAINER_HANDS.length;
+  pfTrainer.hand=PF_TRAINER_HANDS[pfTrainer.index];
+  pfTrainer.answered=false;
+  renderPfTrainer();
+}
+function selectPfHand(name,sourceId){
+  pfSelectedHand=name;pfCompareHand=name;
+  if(sourceId==='pf_matrix')renderPfLibrary();
+  else renderPfCompare();
+}
+
+document.querySelectorAll('.pf-mode').forEach(button=>button.addEventListener('click',()=>activatePfMode(button.dataset.pfMode)));
+$('pf_scenario').addEventListener('change',async()=>{
+  const scenario=await getPfScenario($('pf_scenario').value);
+  pfScenario=scenario;renderPfLibrary();$('pf_status').textContent='Range loaded · select a hand for its exact mix';
+});
+['pf_compare_a','pf_compare_b'].forEach(id=>$(id).addEventListener('change',renderPfCompare));
+$('pf_swap').addEventListener('click',()=>{const a=$('pf_compare_a').value;$('pf_compare_a').value=$('pf_compare_b').value;$('pf_compare_b').value=a;renderPfCompare();});
+['pf_matrix','pf_matrix_a','pf_matrix_b'].forEach(id=>$(id).addEventListener('click',event=>{const cell=event.target.closest('[data-pf-hand]');if(cell)selectPfHand(cell.dataset.pfHand,id);}));
+$('pf_compare_hand').addEventListener('click',()=>{pfCompareHand=pfSelectedHand;activatePfMode('compare');});
+$('pf_practice_hand').addEventListener('click',()=>{pfTrainer.hand=pfSelectedHand;pfTrainer.answered=false;activatePfMode('trainer');});
+$('pf_decision_actions').addEventListener('click',event=>{const button=event.target.closest('[data-action]');if(button)answerPfTrainer(button.dataset.action,button);});
+$('pf_next_hand').addEventListener('click',nextPfTrainerHand);
+$('pf_view_range').addEventListener('click',()=>{pfSelectedHand=pfTrainer.hand;activatePfMode('library');renderPfLibrary();});
+
 /* ================= RISK LAB (research dashboard) ================= */
 const LAB_QUICK_PATHS=2000;
 const LAB_DETAILED_PATHS=16000;
@@ -1159,6 +1537,7 @@ function initializeModule(id){
   else if(id==='equity')runEquity();
   else if(id==='ev')runEV();
   else if(id==='bankroll')runBankroll();
+  else if(id==='preflop')loadPreflop();
 }
 tabs.forEach(tab=>tab.addEventListener('click',()=>initializeModule(tab.dataset.mod)));
 renderSlots();initializeModule(initialTab.dataset.mod);

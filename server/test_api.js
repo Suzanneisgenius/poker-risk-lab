@@ -39,7 +39,7 @@ async function post(endpoint, body, headers = {}) {
 
 async function main() {
   const publicPage = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
-  for (const secretMarker of ["function equityMC", "function equityExact", "function simulateBankroll", "function trainKuhnTracked", "averageGameValue("]) {
+  for (const secretMarker of ["function equityMC", "function equityExact", "function simulateBankroll", "function trainKuhnTracked", "function rfiStrategy", "averageGameValue("]) {
     assert.equal(publicPage.includes(secretMarker), false, `public HTML leaked ${secretMarker}`);
   }
 
@@ -53,6 +53,7 @@ async function main() {
     assert.equal(page.status, 200);
     assert.match(page.headers.get("content-security-policy"), /frame-ancestors 'none'/);
     assert.equal((await fetch(`${base}/standalone/engines/equity.js`)).status, 404);
+    assert.equal((await fetch(`${base}/server/preflop.js`)).status, 404);
 
     const ev = await post("/api/ev", { pot: 10, call: 5, equityPct: 40 });
     assert.equal(ev.status, 200);
@@ -98,6 +99,26 @@ async function main() {
     });
     assert.equal(detailedRisk.status, 200);
     assert.equal((await detailedRisk.json()).curve, null);
+
+    const preflop = await post("/api/preflop", { scenarioId: "cash-6max-100-btn-rfi-25" });
+    assert.equal(preflop.status, 200);
+    const preflopResult = await preflop.json();
+    assert.equal(preflopResult.dataset.solverVerified, false);
+    assert.equal(preflopResult.scenarios.length, 5);
+    assert.equal(preflopResult.scenario.hands.length, 169);
+    for (const hand of preflopResult.scenario.hands) {
+      assert.equal(
+        Object.values(hand.actions).reduce((total, frequency) => total + frequency, 0),
+        100,
+        `${hand.hand} action frequencies should total 100`,
+      );
+    }
+    const a5s = preflopResult.scenario.hands.find((hand) => hand.hand === "A5s");
+    assert.deepEqual(a5s.actions, { raise: 60, call: 0, jam: 0, fold: 40 });
+    const jamRange = await post("/api/preflop", { scenarioId: "cash-6max-40-sb-vs-btn" });
+    assert.equal(jamRange.status, 200);
+    const jamResult = await jamRange.json();
+    assert.ok(jamResult.scenario.hands.some((hand) => hand.actions.jam > 0));
 
     const limitHeaders = { "X-Forwarded-For": "203.0.113.10" };
     for (let request = 1; request <= 100; request += 1) {

@@ -129,7 +129,7 @@ and CFR implementation remain in the private server repository and are never
 included in the public bundle. See [SECURE_DEPLOY.md](SECURE_DEPLOY.md) for the
 deployment flow.
 
-The suite provides four cross-validated tools behind one dark UI:
+The suite provides five tools behind one dark UI:
 
 - **Hand Equity** — expected pot share against up to five fixed or random
   opponent hands and an optional board. Heads-up spots use exact enumeration
@@ -138,6 +138,10 @@ The suite provides four cross-validated tools behind one dark UI:
   decision with EV in big blinds; manual equity remains an advanced option.
 - **Bankroll Risk** — the Monte Carlo risk-of-ruin engine with a finite-horizon
   Brownian reference line.
+- **Preflop** — browse, compare, and practise five 169-hand demonstration
+  ranges. These illustrative frequencies validate the complete product workflow
+  but are not solver-verified; the private API is ready for licensed solver
+  exports to replace them later.
 - **GTO Trainer** — CFR on Kuhn poker, with a live convergence curve to the known
   game value (−1/18) and the equilibrium strategy table.
 

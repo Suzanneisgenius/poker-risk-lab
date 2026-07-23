@@ -7,6 +7,7 @@ const {
   nRunouts,
 } = require("../standalone/engines/equity.js");
 const { trainKuhnTracked, averageGameValue } = require("../standalone/engines/cfr.js");
+const { getPreflopDataset } = require("./preflop.js");
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
@@ -328,6 +329,11 @@ function computeGto(input) {
   };
 }
 
+function computePreflop(input) {
+  const scenarioId = typeof input.scenarioId === "string" ? input.scenarioId : undefined;
+  return getPreflopDataset(scenarioId);
+}
+
 function compute(type, input) {
   if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("Request body must be a JSON object.");
   switch (type) {
@@ -335,9 +341,10 @@ function compute(type, input) {
     case "ev": return computeEv(input);
     case "bankroll": return computeBankroll(input);
     case "risk-lab": return computeRiskLab(input);
+    case "preflop": return computePreflop(input);
     case "gto": return computeGto(input);
     default: throw new Error("Unknown calculation type.");
   }
 }
 
-module.exports = { compute, computeEquity, computeEv, computeBankroll, computeRiskLab, computeGto };
+module.exports = { compute, computeEquity, computeEv, computeBankroll, computeRiskLab, computePreflop, computeGto };

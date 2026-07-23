@@ -9,3 +9,5 @@ node_modules/
 .env.*
 *.log
 coverage/
+preflop-design-comparison.png
+preflop-implementation-*.png
