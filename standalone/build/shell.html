@@ -256,6 +256,13 @@
   .pf-cards{display:flex;justify-content:center;gap:10px;margin:3px 0 11px}
   .pf-card{width:74px;height:102px;border-radius:10px;background:#F5F7FA;color:#0B1220;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 14px 28px rgba(0,0,0,.24)}
   .pf-card.red{color:#D8324B}.pf-card strong{font-size:35px;line-height:1}.pf-card span{font-size:26px;line-height:1.1}
+  .pf-card-slots{justify-content:center;margin:3px 0 10px}
+  .pf-card-slots .cardslot{width:74px;height:102px;border-radius:10px;box-shadow:0 14px 28px rgba(0,0,0,.24)}
+  .pf-card-slots .cardslot .rk{font-size:35px}.pf-card-slots .cardslot .su{font-size:26px}
+  .pf-card-slots .cardslot.empty .rk{font-size:34px}
+  .pf-change-hand{width:100%;min-height:42px;margin:0 0 10px;border:1px solid rgba(56,189,248,.35);border-radius:10px;background:rgba(56,189,248,.07);color:var(--pf-raise);font:inherit;font-weight:700;cursor:pointer;transition:.16s ease}
+  .pf-change-hand:hover{border-color:var(--pf-raise);background:rgba(56,189,248,.13);box-shadow:0 0 20px rgba(56,189,248,.11)}
+  .pf-change-status{min-height:34px;margin:0 0 8px;color:var(--dim);font-size:11px;line-height:1.45;text-align:center}
   .pf-hand-name{text-align:center;font-size:30px;letter-spacing:-.04em;margin:0 0 10px}
   .pf-detail-mix{margin:11px 0 15px;padding-bottom:12px;border-bottom:1px solid rgba(111,128,151,.22)}
   .pf-guidance{color:var(--muted);font-size:13px;line-height:1.55;min-height:88px}
@@ -624,7 +631,9 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
         </div>
         <aside class="pf-detail">
           <h2>Selected hand</h2>
-          <div class="pf-cards" id="pf_cards"></div>
+          <div class="slots pf-card-slots" id="slots_preflop" aria-label="Selected preflop cards"></div>
+          <button type="button" class="pf-change-hand" id="pf_change_hand">Change hand</button>
+          <p class="pf-change-status" id="pf_change_status" role="status" aria-live="polite">Choose two cards; their ranks and suits determine the range class.</p>
           <h3 class="pf-hand-name" id="pf_hand_name">A5s</h3>
           <div class="pf-detail-mix" id="pf_detail_mix"></div>
           <p class="pf-guidance" id="pf_guidance"></p>

@@ -122,20 +122,20 @@ activateTab(initialTab,false);
 
 /* ================= 1. HAND EQUITY (visual card picker) ================= */
 const SUIT_SYM=['♣','♦','♥','♠'];   // c d h s  (index = suit)
-const SLOTS={hero:['hero0','hero1'],board:['board0','board1','board2','board3','board4']};
+const SLOTS={hero:['hero0','hero1'],board:['board0','board1','board2','board3','board4'],preflop:['pf0','pf1']};
 const opponentSlots=index=>[`opp${index}a`,`opp${index}b`];
 // defaults: A of diamonds + K of spades vs Q of hearts + Q of clubs
 const cardState={hero0:25,hero1:50,
-  board0:null,board1:null,board2:null,board3:null,board4:null};
+  board0:null,board1:null,board2:null,board3:null,board4:null,pf0:51,pf1:42};
 for(let i=0;i<5;i++){cardState[`opp${i}a`]=i===0?36:null;cardState[`opp${i}b`]=i===0?10:null;}
 let activeOpponents=[0];
 const randomOpponents=[false,false,false,false,false];
 let activeSlot=null;
 let pickerReturnFocus=null;
 const cardRed=idx=>{const s=Math.floor(idx/13);return s===1||s===2;};   // d,h
-const groupOf=sid=>sid.startsWith('hero')?'hero':sid.startsWith('opp')?'opponent':'board';
+const groupOf=sid=>sid.startsWith('hero')?'hero':sid.startsWith('opp')?'opponent':sid.startsWith('pf')?'preflop':'board';
 const opponentIndexOf=sid=>sid.startsWith('opp')?parseInt(sid.slice(3),10):null;
-const slotLabel=sid=>sid.startsWith('hero')?'your hand card '+(+sid.at(-1)+1):sid.startsWith('opp')?'opponent '+(activeOpponents.indexOf(opponentIndexOf(sid))+1)+' card '+(sid.endsWith('a')?1:2):'board card '+(+sid.at(-1)+1);
+const slotLabel=sid=>sid.startsWith('hero')?'your hand card '+(+sid.at(-1)+1):sid.startsWith('opp')?'opponent '+(activeOpponents.indexOf(opponentIndexOf(sid))+1)+' card '+(sid.endsWith('a')?1:2):sid.startsWith('pf')?'selected preflop card '+(+sid.at(-1)+1):'board card '+(+sid.at(-1)+1);
 
 function slotsHTML(ids,disabled=false){
   return ids.map(sid=>{
@@ -159,7 +159,11 @@ function markEquityDirty(){const verdict=$('eq_verdict');if(verdict.style.displa
 function openPicker(slotId){
   activeSlot=slotId;
   pickerReturnFocus=document.activeElement;
-  const used=new Set(Object.entries(cardState).filter(([k,v])=>v!=null&&k!==slotId).map(([,v])=>v));
+  const context=groupOf(slotId)==='preflop'?'preflop':'equity';
+  const used=new Set(Object.entries(cardState).filter(([key,value])=>{
+    const keyContext=groupOf(key)==='preflop'?'preflop':'equity';
+    return value!=null&&key!==slotId&&keyContext===context;
+  }).map(([,value])=>value));
   let html='';
   for(const su of [3,2,1,0]){            // spades, hearts, diamonds, clubs
     for(let r=12;r>=0;r--){               // A .. 2
@@ -175,18 +179,25 @@ function openPicker(slotId){
 }
 function closePicker(){$('picker').classList.remove('on');if(pickerReturnFocus?.isConnected)pickerReturnFocus.focus();}
 function fillSlot(idx){
-  const g=groupOf(activeSlot); cardState[activeSlot]=idx; renderSlots();markEquityDirty();
+  const g=groupOf(activeSlot); cardState[activeSlot]=idx;
+  if(g==='preflop'){renderPfHandSlots();syncPfHandFromCards();}
+  else{renderSlots();markEquityDirty();}
   const el=$('slot_'+activeSlot); if(el) el.classList.add('pop');
   closePicker();
-  if(g!=='board'){const ids=g==='hero'?SLOTS.hero:opponentSlots(opponentIndexOf(activeSlot));const next=ids.find(s=>cardState[s]==null);
+  if(g!=='board'){const ids=g==='hero'?SLOTS.hero:g==='preflop'?SLOTS.preflop:opponentSlots(opponentIndexOf(activeSlot));const next=ids.find(s=>cardState[s]==null);
     if(next) setTimeout(()=>openPicker(next),140); }
 }
-function clearSlot(sid){cardState[sid]=null;renderSlots();markEquityDirty();}
+function clearSlot(sid){
+  cardState[sid]=null;
+  if(groupOf(sid)==='preflop'){renderPfHandSlots();$('pf_change_status').textContent='Choose the missing card to update the range class.';}
+  else{renderSlots();markEquityDirty();}
+}
 function handleSlotClick(e){
   const clr=e.target.closest('[data-clear]'); if(clr){clearSlot(clr.dataset.clear);e.stopPropagation();return;}
   const slot=e.target.closest('.cardslot'); if(slot&&!slot.classList.contains('disabled')) openPicker(slot.dataset.slot);
 }
 $('slots_hero').addEventListener('click',handleSlotClick);$('slots_board').addEventListener('click',handleSlotClick);
+$('slots_preflop').addEventListener('click',handleSlotClick);
 $('opponents_list').addEventListener('click',e=>{
   const remove=e.target.closest('[data-remove-opponent]');if(remove){const idx=+remove.dataset.removeOpponent;activeOpponents=activeOpponents.filter(x=>x!==idx);opponentSlots(idx).forEach(s=>cardState[s]=null);randomOpponents[idx]=false;renderSlots();runEquity();return;}
   handleSlotClick(e);
@@ -500,6 +511,35 @@ function pfCardHtml(handName){
   const secondSuit=pair?'♥':suited?'♠':'♦';
   return `<div class="pf-card"><strong>${rankA}</strong><span>♠</span></div><div class="pf-card${secondSuit==='♥'||secondSuit==='♦'?' red':''}"><strong>${rankB}</strong><span>${secondSuit}</span></div>`;
 }
+function pfClassFromCards(first,second){
+  const firstRank=first%13,secondRank=second%13;
+  if(firstRank===secondRank)return RANKS[firstRank]+RANKS[secondRank];
+  const high=Math.max(firstRank,secondRank),low=Math.min(firstRank,secondRank);
+  const suited=Math.floor(first/13)===Math.floor(second/13);
+  return RANKS[high]+RANKS[low]+(suited?'s':'o');
+}
+function pfCardsFromClass(handName){
+  const firstRank=RANKS.indexOf(handName[0]),secondRank=RANKS.indexOf(handName[1]);
+  if(handName.length===2)return [3*13+firstRank,2*13+secondRank];
+  if(handName.endsWith('s'))return [3*13+firstRank,3*13+secondRank];
+  return [3*13+firstRank,2*13+secondRank];
+}
+function setPfCardsFromClass(handName){
+  [cardState.pf0,cardState.pf1]=pfCardsFromClass(handName);
+  renderPfHandSlots();
+}
+function renderPfHandSlots(){
+  const target=$('slots_preflop');if(!target)return;
+  target.innerHTML=slotsHTML(SLOTS.preflop);
+}
+function syncPfHandFromCards(){
+  if(cardState.pf0==null||cardState.pf1==null)return;
+  const handName=pfClassFromCards(cardState.pf0,cardState.pf1);
+  pfSelectedHand=handName;pfCompareHand=handName;
+  renderPfLibrary();
+  const describe=card=>RANKS[card%13]+SUIT_SYM[Math.floor(card/13)];
+  $('pf_change_status').textContent=`${describe(cardState.pf0)} ${describe(cardState.pf1)} maps to ${handName}.`;
+}
 function pfActionRows(actions){
   return PF_ACTIONS.map(action=>`<div class="pf-action-row"><i class="pf-swatch ${action}"></i><span>${PF_LABELS[action]}</span><output>${actions[action]}%</output><span class="pf-mix-track"><i style="width:${actions[action]}%;background:${PF_COLORS[action]}"></i></span></div>`).join('');
 }
@@ -531,7 +571,7 @@ function renderPfMeta(scenario){
 function renderPfHandDetail(hand){
   if(!hand)return;
   $('pf_mix_hand').textContent=hand.hand;$('pf_hand_mix').innerHTML=pfActionRows(hand.actions);
-  $('pf_cards').innerHTML=pfCardHtml(hand.hand);$('pf_hand_name').textContent=hand.hand;
+  renderPfHandSlots();$('pf_hand_name').textContent=hand.hand;
   $('pf_detail_mix').innerHTML=pfActionRows(hand.actions);
   $('pf_guidance').textContent=hand.guidance;
 }
@@ -654,6 +694,8 @@ function nextPfTrainerHand(){
 }
 function selectPfHand(name,sourceId){
   pfSelectedHand=name;pfCompareHand=name;
+  setPfCardsFromClass(name);
+  $('pf_change_status').textContent='Click either card, or choose Change hand, to select exact cards.';
   if(sourceId==='pf_matrix')renderPfLibrary();
   else renderPfCompare();
 }
@@ -667,6 +709,11 @@ $('pf_scenario').addEventListener('change',async()=>{
 $('pf_swap').addEventListener('click',()=>{const a=$('pf_compare_a').value;$('pf_compare_a').value=$('pf_compare_b').value;$('pf_compare_b').value=a;renderPfCompare();});
 ['pf_matrix','pf_matrix_a','pf_matrix_b'].forEach(id=>$(id).addEventListener('click',event=>{const cell=event.target.closest('[data-pf-hand]');if(cell)selectPfHand(cell.dataset.pfHand,id);}));
 $('pf_compare_hand').addEventListener('click',()=>{pfCompareHand=pfSelectedHand;activatePfMode('compare');});
+$('pf_change_hand').addEventListener('click',()=>{
+  cardState.pf0=null;cardState.pf1=null;renderPfHandSlots();
+  $('pf_change_status').textContent='Choose your first card; the second card picker opens automatically.';
+  openPicker('pf0');
+});
 $('pf_practice_hand').addEventListener('click',()=>{
   const scenario=trainerScenario();if(!scenario)return;
   ensurePfTrainer(scenario);
@@ -675,7 +722,7 @@ $('pf_practice_hand').addEventListener('click',()=>{
 });
 $('pf_decision_actions').addEventListener('click',event=>{const button=event.target.closest('[data-action]');if(button)answerPfTrainer(button.dataset.action,button);});
 $('pf_next_hand').addEventListener('click',nextPfTrainerHand);
-$('pf_view_range').addEventListener('click',()=>{pfSelectedHand=pfTrainer.hand;activatePfMode('library');renderPfLibrary();});
+$('pf_view_range').addEventListener('click',()=>{pfSelectedHand=pfTrainer.hand;setPfCardsFromClass(pfSelectedHand);activatePfMode('library');renderPfLibrary();});
 
 /* ================= RISK LAB (research dashboard) ================= */
 const LAB_QUICK_PATHS=2000;
