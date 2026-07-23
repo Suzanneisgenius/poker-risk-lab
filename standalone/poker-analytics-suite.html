@@ -225,6 +225,9 @@
   .pf-meta div{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid rgba(111,128,151,.17)}
   .pf-meta div:last-child{border-bottom:0}
   .pf-meta dt{color:var(--muted);font-size:13px}.pf-meta dd{margin:0;color:var(--text);font-size:13px;font-weight:650;text-align:right}
+  .pf-context-note{margin:14px 0 0;padding:11px 12px;border-left:3px solid var(--pf-raise);border-radius:8px;background:rgba(56,189,248,.075);color:var(--muted);font-size:12px;line-height:1.5}
+  .pf-context-note strong{display:block;margin-bottom:2px;color:var(--text);font-size:12px}
+  .pf-trainer-main>.pf-context-note{margin:10px 0 16px}
   .pf-mix-panel{margin-top:16px;padding-top:16px;border-top:1px solid rgba(56,189,248,.15)}
   .pf-mix-title{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}.pf-mix-title strong{font-size:13px}.pf-mix-title span{color:var(--dim);font-size:12px}
   .pf-action-row{display:grid;grid-template-columns:12px 1fr auto;gap:8px;align-items:center;margin:11px 0;color:var(--muted);font-size:13px}
@@ -276,7 +279,8 @@
   .pf-delta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}.pf-delta-item{padding:10px;border-radius:9px;background:rgba(8,17,31,.45)}.pf-delta-item span{display:block;color:var(--dim);font-size:11px}.pf-delta-item strong{font:700 16px ui-monospace,monospace}
   .pf-trainer{display:grid;grid-template-columns:minmax(0,1fr) minmax(230px,285px);gap:16px}.pf-trainer-main,.pf-trainer-side{padding:20px}
   .pf-trainer-scenario{color:var(--muted);font-size:13px}.pf-trainer-hand{display:flex;align-items:center;gap:17px;margin:19px 0}.pf-trainer-hand .pf-cards{justify-content:flex-start;margin:0}.pf-trainer-hand h2{font-size:34px;color:var(--text);text-transform:none;margin:0;letter-spacing:-.04em}
-  .pf-decision-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0 15px}.pf-action-button{min-height:58px;border:1px solid var(--grid);border-radius:11px;background:rgba(23,36,58,.72);color:var(--text);font:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:.16s ease}.pf-action-button:hover{transform:translateY(-1px);border-color:currentColor}.pf-action-button[data-action="raise"]{color:var(--pf-raise)}.pf-action-button[data-action="call"]{color:var(--pf-call)}.pf-action-button[data-action="jam"]{color:#fff;border-color:rgba(236,72,153,.5);background:linear-gradient(120deg,rgba(236,72,153,.28),rgba(219,39,119,.14));box-shadow:0 0 24px rgba(236,72,153,.17)}.pf-action-button[data-action="fold"]{color:#B0BAC8}
+  .pf-decision-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0 15px}.pf-action-button{min-height:58px;border:1px solid var(--grid);border-radius:11px;background:rgba(23,36,58,.72);color:var(--text);font:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:.16s ease}.pf-action-button:not(:disabled):hover{transform:translateY(-1px);border-color:currentColor}.pf-action-button[data-action="raise"]{color:var(--pf-raise)}.pf-action-button[data-action="call"]{color:var(--pf-call)}.pf-action-button[data-action="jam"]{color:#fff;border-color:rgba(236,72,153,.5);background:linear-gradient(120deg,rgba(236,72,153,.28),rgba(219,39,119,.14));box-shadow:0 0 24px rgba(236,72,153,.17)}.pf-action-button[data-action="fold"]{color:#B0BAC8}
+  .pf-action-button.is-unavailable{opacity:.3;filter:grayscale(.72);cursor:not-allowed;box-shadow:none;background:rgba(23,36,58,.42);border-color:var(--grid);color:var(--muted)}
   .pf-action-button.is-chosen{box-shadow:inset 0 0 0 2px currentColor,0 0 20px color-mix(in srgb,currentColor 25%,transparent)}
   .pf-feedback{display:none;border-left:3px solid var(--pf-mixed);background:rgba(245,158,11,.07);border-radius:8px;padding:13px 14px;margin:10px 0 15px}.pf-feedback.is-visible{display:block}.pf-feedback strong{display:block;color:#FBBF24;margin-bottom:3px}.pf-feedback p{margin:0;color:var(--muted);font-size:13px}
   .pf-frequency-bar{height:12px;border-radius:999px;overflow:hidden;display:flex;background:var(--pf-fold);margin:11px 0}.pf-frequency-bar span{height:100%}
@@ -615,6 +619,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
           <label class="sr-only" for="pf_scenario">Preflop scenario</label>
           <select class="pf-scenario-select" id="pf_scenario"></select>
           <dl class="pf-meta" id="pf_meta"></dl>
+          <div class="pf-context-note" id="pf_context_note" role="note"></div>
           <div class="pf-mix-panel">
             <div class="pf-mix-title"><strong>Action frequencies</strong><span id="pf_mix_hand">A5s</span></div>
             <div id="pf_hand_mix"></div>
@@ -662,13 +667,14 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
       <div class="pf-trainer">
         <div class="pf-trainer-main">
           <div class="pf-trainer-scenario" id="pf_trainer_scenario">Loading training spot…</div>
+          <div class="pf-context-note" id="pf_trainer_context" role="note"></div>
           <div class="pf-trainer-hand"><div class="pf-cards" id="pf_trainer_cards"></div><div><p class="quicklabel">Your hand</p><h2 id="pf_trainer_hand">A5s</h2></div></div>
           <h3>What is your decision?</h3>
           <div class="pf-decision-actions" id="pf_decision_actions">
-            <button type="button" class="pf-action-button" data-action="raise">Raise</button>
-            <button type="button" class="pf-action-button" data-action="call">Call</button>
-            <button type="button" class="pf-action-button" data-action="jam">Jam</button>
-            <button type="button" class="pf-action-button" data-action="fold">Fold</button>
+            <button type="button" class="pf-action-button" data-action="raise" aria-describedby="pf_trainer_context">Raise</button>
+            <button type="button" class="pf-action-button" data-action="call" aria-describedby="pf_trainer_context">Call</button>
+            <button type="button" class="pf-action-button" data-action="jam" aria-describedby="pf_trainer_context">Jam</button>
+            <button type="button" class="pf-action-button" data-action="fold" aria-describedby="pf_trainer_context">Fold</button>
           </div>
           <div class="pf-feedback" id="pf_feedback" role="status" aria-live="polite"></div>
           <div class="pf-frequency-bar" id="pf_trainer_bar" aria-label="Strategy frequencies"></div>
@@ -1328,11 +1334,33 @@ function renderPfSummary(scenario,targetId='pf_summary'){
     `<div class="jam"><span>Jam</span><strong>${summary.jam.toFixed(1)}%</strong></div>`+
     `<div class="fold"><span>Fold</span><strong>${summary.fold.toFixed(1)}%</strong></div>`;
 }
+function pfScenarioAvailability(scenario){
+  return Object.fromEntries(PF_ACTIONS.map(action=>[action,scenario.hands.some(hand=>hand.actions[action]>0)]));
+}
+function pfScenarioContext(scenario){
+  const availability=pfScenarioAvailability(scenario);
+  const used=PF_ACTIONS.filter(action=>availability[action]).map(action=>PF_LABELS[action]);
+  if(scenario.situation==='First in'){
+    return {
+      title:'Why is Call unavailable?',
+      text:`Everyone before you has folded, so there is no bet to call. This spot uses ${used.join(' or ')}.`,
+    };
+  }
+  return {
+    title:'You are facing an open raise',
+    text:`There is already a bet to match, so Call is available. This demo scenario uses ${used.join(', ').replace(/, ([^,]*)$/,', or $1')}.`,
+  };
+}
+function renderPfContext(scenario,targetId){
+  const context=pfScenarioContext(scenario);
+  $(targetId).innerHTML=`<strong>${context.title}</strong>${context.text}`;
+}
 function renderPfMeta(scenario){
   $('pf_meta').innerHTML=[
     ['Game',scenario.game],['Table',scenario.table],['Stack',scenario.stack+'bb'],['Hero',scenario.hero],
     ['Situation',scenario.situation],['Opponent',scenario.opponent],['Open size',scenario.openSize],
   ].map(([label,value])=>`<div><dt>${label}</dt><dd>${value}</dd></div>`).join('');
+  renderPfContext(scenario,'pf_context_note');
 }
 function renderPfHandDetail(hand){
   if(!hand)return;
@@ -1415,12 +1443,20 @@ function renderPfTrainer(){
   const hand=pfHand(scenario,pfTrainer.hand)||pfHand(scenario,pfTrainer.order[pfTrainer.position]);
   pfTrainer.hand=hand.hand;
   $('pf_trainer_scenario').textContent=scenario.title+' · Demo strategy dataset';
+  renderPfContext(scenario,'pf_trainer_context');
   $('pf_trainer_cards').innerHTML=pfCardHtml(hand.hand);
   $('pf_trainer_hand').textContent=hand.hand;
   $('pf_trainer_guidance').textContent=pfTrainer.answered?hand.guidance:'Choose an action to reveal the demonstration frequencies.';
   $('pf_trainer_bar').innerHTML=PF_ACTIONS.filter(action=>hand.actions[action]>0).map(action=>`<span style="width:${hand.actions[action]}%;background:${PF_COLORS[action]}"></span>`).join('');
   $('pf_trainer_bar').setAttribute('aria-label',pfActionAria(hand));
-  document.querySelectorAll('.pf-action-button').forEach(button=>{button.disabled=pfTrainer.answered;button.classList.remove('is-chosen');});
+  const availability=pfScenarioAvailability(scenario);
+  document.querySelectorAll('.pf-action-button').forEach(button=>{
+    const unavailable=!availability[button.dataset.action];
+    button.disabled=pfTrainer.answered||unavailable;
+    button.classList.remove('is-chosen');
+    button.classList.toggle('is-unavailable',unavailable);
+    button.title=unavailable?'This action is not available in the selected scenario.':'';
+  });
   if(!pfTrainer.answered){$('pf_feedback').className='pf-feedback';$('pf_feedback').innerHTML='';}
   $('pf_stat_hands').textContent=`${Math.min(pfTrainer.attempts,pfTrainer.order.length)} / ${pfTrainer.order.length}`;
   $('pf_stat_accuracy').textContent=pfTrainer.attempts?Math.round(100*pfTrainer.correct/pfTrainer.attempts)+'%':'—';

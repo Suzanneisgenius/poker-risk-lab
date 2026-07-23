@@ -562,11 +562,33 @@ function renderPfSummary(scenario,targetId='pf_summary'){
     `<div class="jam"><span>Jam</span><strong>${summary.jam.toFixed(1)}%</strong></div>`+
     `<div class="fold"><span>Fold</span><strong>${summary.fold.toFixed(1)}%</strong></div>`;
 }
+function pfScenarioAvailability(scenario){
+  return Object.fromEntries(PF_ACTIONS.map(action=>[action,scenario.hands.some(hand=>hand.actions[action]>0)]));
+}
+function pfScenarioContext(scenario){
+  const availability=pfScenarioAvailability(scenario);
+  const used=PF_ACTIONS.filter(action=>availability[action]).map(action=>PF_LABELS[action]);
+  if(scenario.situation==='First in'){
+    return {
+      title:'Why is Call unavailable?',
+      text:`Everyone before you has folded, so there is no bet to call. This spot uses ${used.join(' or ')}.`,
+    };
+  }
+  return {
+    title:'You are facing an open raise',
+    text:`There is already a bet to match, so Call is available. This demo scenario uses ${used.join(', ').replace(/, ([^,]*)$/,', or $1')}.`,
+  };
+}
+function renderPfContext(scenario,targetId){
+  const context=pfScenarioContext(scenario);
+  $(targetId).innerHTML=`<strong>${context.title}</strong>${context.text}`;
+}
 function renderPfMeta(scenario){
   $('pf_meta').innerHTML=[
     ['Game',scenario.game],['Table',scenario.table],['Stack',scenario.stack+'bb'],['Hero',scenario.hero],
     ['Situation',scenario.situation],['Opponent',scenario.opponent],['Open size',scenario.openSize],
   ].map(([label,value])=>`<div><dt>${label}</dt><dd>${value}</dd></div>`).join('');
+  renderPfContext(scenario,'pf_context_note');
 }
 function renderPfHandDetail(hand){
   if(!hand)return;
@@ -649,12 +671,20 @@ function renderPfTrainer(){
   const hand=pfHand(scenario,pfTrainer.hand)||pfHand(scenario,pfTrainer.order[pfTrainer.position]);
   pfTrainer.hand=hand.hand;
   $('pf_trainer_scenario').textContent=scenario.title+' · Demo strategy dataset';
+  renderPfContext(scenario,'pf_trainer_context');
   $('pf_trainer_cards').innerHTML=pfCardHtml(hand.hand);
   $('pf_trainer_hand').textContent=hand.hand;
   $('pf_trainer_guidance').textContent=pfTrainer.answered?hand.guidance:'Choose an action to reveal the demonstration frequencies.';
   $('pf_trainer_bar').innerHTML=PF_ACTIONS.filter(action=>hand.actions[action]>0).map(action=>`<span style="width:${hand.actions[action]}%;background:${PF_COLORS[action]}"></span>`).join('');
   $('pf_trainer_bar').setAttribute('aria-label',pfActionAria(hand));
-  document.querySelectorAll('.pf-action-button').forEach(button=>{button.disabled=pfTrainer.answered;button.classList.remove('is-chosen');});
+  const availability=pfScenarioAvailability(scenario);
+  document.querySelectorAll('.pf-action-button').forEach(button=>{
+    const unavailable=!availability[button.dataset.action];
+    button.disabled=pfTrainer.answered||unavailable;
+    button.classList.remove('is-chosen');
+    button.classList.toggle('is-unavailable',unavailable);
+    button.title=unavailable?'This action is not available in the selected scenario.':'';
+  });
   if(!pfTrainer.answered){$('pf_feedback').className='pf-feedback';$('pf_feedback').innerHTML='';}
   $('pf_stat_hands').textContent=`${Math.min(pfTrainer.attempts,pfTrainer.order.length)} / ${pfTrainer.order.length}`;
   $('pf_stat_accuracy').textContent=pfTrainer.attempts?Math.round(100*pfTrainer.correct/pfTrainer.attempts)+'%':'—';
