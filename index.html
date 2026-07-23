@@ -671,11 +671,11 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
         </div>
         <aside class="pf-trainer-side">
           <h2>Session progress</h2>
-          <div class="pf-stat"><span>Hands practised</span><strong id="pf_stat_hands">0 / 20</strong></div>
+          <div class="pf-stat"><span>Hands practised</span><strong id="pf_stat_hands">0 / 169</strong></div>
           <div class="pf-stat"><span>Accuracy</span><strong class="accent" id="pf_stat_accuracy">—</strong></div>
           <div class="pf-stat"><span>Mixed decisions</span><strong class="mixed" id="pf_stat_mixed">0</strong></div>
           <div class="pf-stat"><span>Current streak</span><strong id="pf_stat_streak">0</strong></div>
-          <p class="pf-disclaimer">A choice counts as acceptable when the demonstration range assigns it a non-zero frequency.</p>
+          <p class="pf-disclaimer">The session covers all 169 starting-hand classes in a reproducible shuffled order. A choice counts as acceptable when the demonstration range assigns it a non-zero frequency.</p>
         </aside>
       </div>
     </div>
@@ -1199,11 +1199,31 @@ let pfCompareHand='A5s';
 let pfMode='library';
 let pfRequest=0;
 const pfCache=new Map();
-const pfTrainer={index:0,hand:'A5s',answered:false,attempts:0,correct:0,mixed:0,streak:0};
-const PF_TRAINER_HANDS=['A5s','KQo','76s','99','AJo','K2s','QQ','AQo','54s','22','AKs','JTs','A4o','88','Q9s','ATo','65s','JJ','A2s','KJo'];
+const pfTrainer={position:0,hand:'A5s',answered:false,attempts:0,correct:0,mixed:0,streak:0,scenarioId:null,order:[]};
 
 function pfHandMap(scenario){return new Map((scenario?.hands||[]).map(hand=>[hand.hand,hand]));}
 function pfHand(scenario,name){return (scenario?.hands||[]).find(hand=>hand.hand===name)||scenario?.hands?.[0]||null;}
+function pfSeed(text){return [...text].reduce((seed,char)=>(Math.imul(seed,31)+char.charCodeAt(0))>>>0,2166136261);}
+function pfFullTrainerOrder(scenario){
+  const order=scenario.hands.map(hand=>hand.hand);
+  let seed=pfSeed(scenario.id);
+  for(let index=order.length-1;index>0;index-=1){
+    seed=(Math.imul(seed,1664525)+1013904223)>>>0;
+    const swapIndex=seed%(index+1);
+    [order[index],order[swapIndex]]=[order[swapIndex],order[index]];
+  }
+  return order;
+}
+function resetPfTrainer(scenario,preferredHand='A5s'){
+  pfTrainer.scenarioId=scenario.id;
+  pfTrainer.order=pfFullTrainerOrder(scenario);
+  pfTrainer.position=Math.max(0,pfTrainer.order.indexOf(preferredHand));
+  pfTrainer.hand=pfTrainer.order[pfTrainer.position];
+  pfTrainer.answered=false;pfTrainer.attempts=0;pfTrainer.correct=0;pfTrainer.mixed=0;pfTrainer.streak=0;
+}
+function ensurePfTrainer(scenario){
+  if(pfTrainer.scenarioId!==scenario.id||pfTrainer.order.length!==scenario.hands.length)resetPfTrainer(scenario,pfTrainer.hand);
+}
 function pfStrategyBackground(actions){
   let cursor=0;
   const stops=[];
@@ -1304,6 +1324,7 @@ async function loadPreflop(scenarioId){
     const scenario=await getPfScenario(scenarioId||'cash-6max-100-btn-rfi-25');
     if(request!==pfRequest)return;
     pfScenario=scenario;
+    if(pfTrainer.scenarioId!==scenario.id)resetPfTrainer(scenario);
     fillPfScenarioSelects();
     renderPfLibrary();
     $('pf_status').textContent=`${pfScenarios.length} demo scenarios · 169 starting hands · private range API`;
@@ -1341,7 +1362,8 @@ async function renderPfCompare(){
 function trainerScenario(){return pfScenario||pfCache.values().next().value;}
 function renderPfTrainer(){
   const scenario=trainerScenario();if(!scenario)return;
-  const hand=pfHand(scenario,pfTrainer.hand)||pfHand(scenario,PF_TRAINER_HANDS[pfTrainer.index%PF_TRAINER_HANDS.length]);
+  ensurePfTrainer(scenario);
+  const hand=pfHand(scenario,pfTrainer.hand)||pfHand(scenario,pfTrainer.order[pfTrainer.position]);
   pfTrainer.hand=hand.hand;
   $('pf_trainer_scenario').textContent=scenario.title+' · Demo strategy dataset';
   $('pf_trainer_cards').innerHTML=pfCardHtml(hand.hand);
@@ -1351,11 +1373,11 @@ function renderPfTrainer(){
   $('pf_trainer_bar').setAttribute('aria-label',pfActionAria(hand));
   document.querySelectorAll('.pf-action-button').forEach(button=>{button.disabled=pfTrainer.answered;button.classList.remove('is-chosen');});
   if(!pfTrainer.answered){$('pf_feedback').className='pf-feedback';$('pf_feedback').innerHTML='';}
-  $('pf_stat_hands').textContent=`${Math.min(pfTrainer.attempts,20)} / 20`;
+  $('pf_stat_hands').textContent=`${Math.min(pfTrainer.attempts,pfTrainer.order.length)} / ${pfTrainer.order.length}`;
   $('pf_stat_accuracy').textContent=pfTrainer.attempts?Math.round(100*pfTrainer.correct/pfTrainer.attempts)+'%':'—';
   $('pf_stat_mixed').textContent=pfTrainer.mixed;
   $('pf_stat_streak').textContent=pfTrainer.streak;
-  $('pf_status').textContent='Trainer ready · choices are checked against the demo frequencies';
+  $('pf_status').textContent=`Trainer ready · all ${pfTrainer.order.length} starting hands included`;
 }
 function answerPfTrainer(action,button){
   if(pfTrainer.answered)return;
@@ -1371,13 +1393,19 @@ function answerPfTrainer(action,button){
   $('pf_feedback').className='pf-feedback is-visible';
   $('pf_feedback').innerHTML=`<strong>${title}</strong><p>${PF_LABELS[action]} appears ${hand.actions[action]}% of the time. ${pfActionAria(hand)}.</p>`;
   $('pf_trainer_guidance').textContent=hand.guidance;
-  $('pf_stat_hands').textContent=`${Math.min(pfTrainer.attempts,20)} / 20`;
+  $('pf_stat_hands').textContent=`${Math.min(pfTrainer.attempts,pfTrainer.order.length)} / ${pfTrainer.order.length}`;
   $('pf_stat_accuracy').textContent=Math.round(100*pfTrainer.correct/pfTrainer.attempts)+'%';
   $('pf_stat_mixed').textContent=pfTrainer.mixed;$('pf_stat_streak').textContent=pfTrainer.streak;
 }
 function nextPfTrainerHand(){
-  pfTrainer.index=(pfTrainer.index+1)%PF_TRAINER_HANDS.length;
-  pfTrainer.hand=PF_TRAINER_HANDS[pfTrainer.index];
+  const scenario=trainerScenario();if(!scenario)return;
+  ensurePfTrainer(scenario);
+  if(pfTrainer.attempts>=pfTrainer.order.length){
+    resetPfTrainer(scenario);
+  }else{
+    pfTrainer.position=(pfTrainer.position+1)%pfTrainer.order.length;
+    pfTrainer.hand=pfTrainer.order[pfTrainer.position];
+  }
   pfTrainer.answered=false;
   renderPfTrainer();
 }
@@ -1390,13 +1418,18 @@ function selectPfHand(name,sourceId){
 document.querySelectorAll('.pf-mode').forEach(button=>button.addEventListener('click',()=>activatePfMode(button.dataset.pfMode)));
 $('pf_scenario').addEventListener('change',async()=>{
   const scenario=await getPfScenario($('pf_scenario').value);
-  pfScenario=scenario;renderPfLibrary();$('pf_status').textContent='Range loaded · select a hand for its exact mix';
+  pfScenario=scenario;resetPfTrainer(scenario);renderPfLibrary();$('pf_status').textContent='Range loaded · select a hand for its exact mix';
 });
 ['pf_compare_a','pf_compare_b'].forEach(id=>$(id).addEventListener('change',renderPfCompare));
 $('pf_swap').addEventListener('click',()=>{const a=$('pf_compare_a').value;$('pf_compare_a').value=$('pf_compare_b').value;$('pf_compare_b').value=a;renderPfCompare();});
 ['pf_matrix','pf_matrix_a','pf_matrix_b'].forEach(id=>$(id).addEventListener('click',event=>{const cell=event.target.closest('[data-pf-hand]');if(cell)selectPfHand(cell.dataset.pfHand,id);}));
 $('pf_compare_hand').addEventListener('click',()=>{pfCompareHand=pfSelectedHand;activatePfMode('compare');});
-$('pf_practice_hand').addEventListener('click',()=>{pfTrainer.hand=pfSelectedHand;pfTrainer.answered=false;activatePfMode('trainer');});
+$('pf_practice_hand').addEventListener('click',()=>{
+  const scenario=trainerScenario();if(!scenario)return;
+  ensurePfTrainer(scenario);
+  pfTrainer.position=Math.max(0,pfTrainer.order.indexOf(pfSelectedHand));
+  pfTrainer.hand=pfSelectedHand;pfTrainer.answered=false;activatePfMode('trainer');
+});
 $('pf_decision_actions').addEventListener('click',event=>{const button=event.target.closest('[data-action]');if(button)answerPfTrainer(button.dataset.action,button);});
 $('pf_next_hand').addEventListener('click',nextPfTrainerHand);
 $('pf_view_range').addEventListener('click',()=>{pfSelectedHand=pfTrainer.hand;activatePfMode('library');renderPfLibrary();});
