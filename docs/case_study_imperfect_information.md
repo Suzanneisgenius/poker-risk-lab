@@ -66,9 +66,9 @@ strategy, and translating that strategy back to the full game in real time.
   Monte Carlo error follows the expected rate (fitted log-log slope
   **−0.55 ± 0.03 ≈ O(N⁻¹ᐟ²)**).
 - **Uncertainty matters:** with an observed 1.86 bb/100 edge over 50k hands, the
-  win rate's confidence interval still includes zero (P(edge > 0) ≈ **65%**);
+  win rate's confidence interval still includes zero (P(edge > 0) ≈ **67%**);
   propagating that uncertainty raises modeled ruin risk from **27.3%** (plug-in)
-  to **37.4%** (**×1.37**).
+  to **36.5%** (**×1.34**).
 - **Model risk:** at the same +3 bb/100 edge (30 buy-ins, 90 bb/100, 100k
   hands, ruin observed at 100-hand checkpoints; `reports/case-study/assumptions.json`),
   swings that carry over between steps raise ruin risk — AR(1) **×2.87**, with the

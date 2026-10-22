@@ -57,6 +57,47 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-10-22 — `src/inference.py`: the page's stability check instead of lag-1
+
+- **`estimate_edge` widens the standard error the way the page does.** The
+  blocks, in time order, are cut into up to 10 consecutive groups and their
+  win rates compared (chi-square, flagged at p < 0.05). When the check flags,
+  the SE becomes the between-group one (×1 to ×10). It replaces the lag-1
+  autocorrelation adjustment, which `checks/session-lengths/` showed rarely
+  noticed a drifting win rate (5–14% of drifting histories, against 20–40%)
+  and barely helped when it did. `widen=None` follows the check, `True`
+  always widens, `False` never. New fields: `stability_groups`,
+  `stability_q`, `stability_p`, `stability_flag`, `se_between_groups`,
+  `stability_multiplier`, `se_multiplier`; `lag1_autocorr` and
+  `effective_n_blocks` are gone. Fewer than 20 blocks: no check, and a warning.
+- **Same check on both sides.** `checks/session-import-python/` now takes the
+  stability numbers from `estimate_edge` itself, not from its own copy; the
+  same 5,600 numbers agree as before.
+- **The saved uncertainty case changed** (`reports/tables/uncertainty_risk_demo.json`,
+  the Risk Lab's "Uncertainty" reference, figures in `reports/figures/`).
+  Its 50 blocks are steady (stability p = 0.55), so the SE is no longer
+  widened: 4.37 → 3.98 bb/100 (lag-1 had widened it ×1.10 for a correlation
+  of +0.09).
+
+  | | Before | Now |
+  |---|---|---|
+  | SE used for the posterior | 4.37 | 3.98 |
+  | 95% CI for the win rate | −6.92 to 10.63 | −6.14 to 9.86 |
+  | Posterior mean / SD (bb/100) | 1.56 / 4.00 | 1.60 / 3.70 |
+  | P(win rate > 0) | 65.2% | 66.8% |
+  | Plug-in ruin risk | 27.3% | 27.3% (unchanged) |
+  | Average ruin risk over the posterior | 37.4% | 36.5% |
+  | Average ÷ plug-in | ×1.37 | ×1.34 |
+  | Median ruin risk | 30.4% | 30.0% |
+  | 95% posterior interval of ruin risk | 0.9%–97.3% | 1.2%–95.7% |
+  | P(risk > 5% / 10% / 25%) | 85.9% / 75.5% / 55.3% | 87.6% / 76.8% / 55.2% |
+
+  Before regenerating, the old code reproduced the saved file on this machine
+  to the last digit or two of floating point, so the change comes from the
+  check alone. Settings and seeds are unchanged; the provenance now records
+  commit 6cc3626 and macOS with numpy 2.5.4 / scipy 1.18.1 (was Linux, numpy
+  2.2.6 / scipy 1.15.3).
+
 ## 2026-10-22 — Bankroll Risk: import your sessions (CSV)
 
 - **Import a CSV of sessions** instead of typing totals: one row per session
@@ -94,7 +135,8 @@ How each change splits up at the same seed:
   `src/inference.py`) flagged drift only 5–13.5% of the time and widening by it
   barely helped, and a variance-ratio F test raised about 16% false alarms
   with heavy-tailed sessions. The page uses a block-based stability check and
-  a test on absolute deviations instead. `src/inference.py` is unchanged.
+  a test on absolute deviations instead. (`src/inference.py` followed in
+  the entry above.)
 - **Checked against the Python research code** (`checks/session-import-python/`,
   internal, in CI): 5 synthetic files (1,040 sessions) read by pandas, with
   every selection and grouping recomputed by `estimate_edge` and scipy; 5,600

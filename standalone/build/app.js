@@ -2038,7 +2038,8 @@ function renderUncertaintyReference(){
   const sources=[
     ['Synthetic history',`${cfg.data.n_blocks} blocks × ${cfg.data.block_hands.toLocaleString()} hands; generating win rate ${cfg.data.true_winrate} and SD ${cfg.data.true_std} bb/100; seed ${cfg.data.seed}.`],
     ['Observed estimate',`${estimate.winrate_bb100.toFixed(2)} bb/100; estimated SD ${estimate.std_bb100.toFixed(2)} bb/100.`],
-    ['Estimation uncertainty',`Autocorrelation-adjusted SE ${estimate.se_winrate_adjusted.toFixed(2)} bb/100; effective blocks ${estimate.effective_n_blocks.toFixed(1)}. This SE enters the posterior.`],
+    ['Estimation uncertainty',`Standard error ${estimate.se_winrate_adjusted.toFixed(2)} bb/100${estimate.se_multiplier>1?`, widened ×${estimate.se_multiplier.toFixed(2)}`:''}. Stability check: ${!estimate.stability_groups?'not run (fewer than 20 blocks)'
+      :`the win rate ${estimate.stability_flag?'differs':'does not differ'} between ${estimate.stability_groups} consecutive groups of blocks more than chance allows (p = ${estimate.stability_p.toFixed(2)})`}. This SE enters the posterior.`],
     ['Prior',`Normal with mean ${r.prior.mean} and SD ${r.prior.std} bb/100.`],
     ['Risk calculation',`Finite-horizon Brownian first-passage model; threshold ${cfg.risk.ruin_threshold_bb} bb; estimated volatility held fixed; posterior draw seed ${cfg.seed}.`],
     ['Saved output',`${provenance.timestamp_utc.slice(0,10)} UTC. The page reads the existing result and settings; this presentation update does not rerun the analysis.`],

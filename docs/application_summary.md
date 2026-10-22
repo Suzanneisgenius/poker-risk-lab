@@ -89,7 +89,7 @@ seed, and is covered by 108 unit, statistical, and property-based tests.
   shrinks, but underestimates ruin by ≈8% at a 500-hand step; a Brownian-bridge
   correction removes almost all of that bias at negligible cost.
 - **Plug-in estimates understate risk.** With an observed 1.86 bb/100 edge over
-  50k hands, the win rate's 95% CI still includes zero and P(edge > 0) ≈ 65%;
+  50k hands, the win rate's 95% CI still includes zero and P(edge > 0) ≈ 67%;
   propagating that uncertainty raises modeled ruin risk from 27% (plug-in) to
   37% (integrated), and puts the probability that true risk exceeds 25% at ≈55%.
 - **Dependence, not marginal tails, is the dangerous misspecification.** Holding
@@ -128,8 +128,9 @@ This project foregrounds the distinction between **sampling uncertainty,
 parameter uncertainty, and model uncertainty**. It separates the volatility of
 outcomes (which does not shrink with data) from the **standard error of the
 estimated edge** (which does), estimates that edge from block-level history with
-autocorrelation-adjusted intervals, and then places a Normal prior on the true
-win rate to form a conjugate posterior. The key statistical result is
+intervals widened when a stability check finds the win rate changing over time,
+and then places a Normal prior on the true win rate to form a conjugate
+posterior. The key statistical result is
 **posterior predictive risk**: integrating parameter uncertainty through a convex
 ruin-risk function shows that a **plug-in estimator materially understates risk**,
 a point made quantitative with credible intervals and threshold-exceedance
