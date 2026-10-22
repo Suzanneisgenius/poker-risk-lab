@@ -91,9 +91,9 @@
     }
   ],
   "provenance": {
-    "timestamp_utc": "2026-10-22T14:49:43+00:00",
-    "git_commit": "0241bdb",
-    "code_changed_since_commit": true,
+    "timestamp_utc": "2026-10-22T15:01:36+00:00",
+    "git_commit": "cb62ca5",
+    "code_changed_since_commit": false,
     "platform": "macOS-26.6.2-arm64-arm-64bit",
     "packages": {
       "python": "3.12.14",
