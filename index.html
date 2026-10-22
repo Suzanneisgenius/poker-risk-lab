@@ -100,6 +100,37 @@
   .opponent-head label{cursor:pointer}.opp-remove{background:transparent;border:0;color:var(--ruin);font:inherit;font-size:12px;cursor:pointer;padding:4px}
   .add-opponent{width:auto;margin:0 0 12px}.opponent-count{color:var(--dim);font-size:12px;margin-left:6px}
   .random-hand-placeholder{border:1px dashed var(--grid);border-radius:8px;padding:12px;color:var(--dim);font-size:12px;line-height:1.45}
+  .opp-mode{display:inline-flex;border:1px solid var(--grid);border-radius:8px;padding:2px;margin:0;gap:2px}
+  .opp-mode label{position:relative;display:flex}
+  .opp-mode input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+  .opp-mode span{padding:5px 9px;border-radius:6px;font-size:12px;color:var(--muted)}
+  .opp-mode input:checked+span{background:var(--surface3);color:var(--text);box-shadow:inset 0 0 0 1px rgba(56,189,248,.45)}
+  .opp-mode input:focus-visible+span{outline:2px solid var(--accent);outline-offset:1px}
+  .opp-mode label.is-off span{color:var(--dim);opacity:.55}.opp-mode label.is-off input{cursor:not-allowed}
+  .opp-note{margin:-6px 0 12px}
+  .range-editor{background:var(--surface2);border:1px solid var(--grid);border-radius:10px;padding:4px 11px 11px;margin:0 0 10px}
+  .range-label{display:block;color:var(--muted);font-size:13px;margin:6px 0 5px}
+  .range-editor textarea{width:100%;box-sizing:border-box;resize:vertical;min-height:52px;background:var(--surface);color:var(--text);border:1px solid var(--grid);border-radius:8px;padding:8px 10px;font:500 14px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace}
+  .range-editor textarea:focus{outline:none;border-color:var(--accent)}
+  .range-status{margin:5px 0 8px;font-size:12px;color:var(--muted);line-height:1.45}.range-status[data-state=error]{color:var(--ruin)}
+  .range-tools{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:9px;font-size:13px;color:var(--muted)}
+  .range-tools input{width:62px;background:var(--surface);color:var(--text);border:1px solid var(--grid);border-radius:7px;padding:6px 7px;font:inherit}
+  .range-tools .btn{width:auto;margin:0;padding:6px 10px;font-size:12px}
+  .range-matrix{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:1px;background:rgba(4,12,24,.78);border-radius:8px;overflow:hidden}
+  .range-cell{--w:0%;aspect-ratio:1/1;min-width:0;border:0;padding:0;font:600 clamp(8px,2.4vw,11px) ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:-.04em;color:var(--muted);cursor:pointer;background:linear-gradient(to top,rgba(56,189,248,.82) var(--w),var(--surface3) var(--w))}
+  .range-cell.is-on{color:#04121d}.range-cell.is-part{color:var(--text);text-shadow:0 1px 2px rgba(0,0,0,.8)}
+  .range-cell:hover{filter:brightness(1.2)}
+  .range-cell:focus-visible{outline:2px solid #fff;outline-offset:-2px;position:relative;z-index:1}
+  .range-breakdown{margin-top:14px}.range-breakdown h3{font-size:15px;margin:0 0 4px}.range-breakdown p{margin:4px 0}
+  .range-split{margin:6px 0 10px}
+  .range-table-wrap{max-height:330px;overflow:auto;border:1px solid var(--grid);border-radius:10px}
+  .range-table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+  .range-table th,.range-table td{padding:6px 10px;text-align:left;border-bottom:1px solid rgba(111,128,151,.18);white-space:nowrap}
+  .range-table thead th{position:sticky;top:0;background:var(--surface2);color:var(--muted);font-weight:600;font-size:12px}
+  .range-table tbody th{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .range-table .dim{color:var(--dim);font-size:12px;margin-left:4px}
+  .range-eq{display:inline-block;width:64px;height:7px;border-radius:4px;background:var(--surface3);margin-right:8px;vertical-align:middle;overflow:hidden}
+  .range-eq span{display:block;height:100%}.range-eq.ahead span{background:var(--pos)}.range-eq.behind span{background:var(--ruin)}.range-eq.even span{background:var(--muted)}
   .cardslot{width:46px;height:64px;border-radius:8px;border:1px dashed var(--grid);background:var(--surface2);
     display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;
     transition:transform .15s,border-color .15s,box-shadow .15s;user-select:none;color:var(--muted);font-weight:700}
@@ -807,8 +838,8 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
 
   <!-- ===================== EQUITY ===================== -->
   <section class="mod" id="equity" role="tabpanel" aria-labelledby="tab-equity">
-    <div class="explainer"><b>Compare your hand against as many as five opponents.</b> Enter known cards, mark unknown opponents as random, and add any community cards already dealt. The result is your expected share of the pot.
-      <details class="learnmore"><summary>How the estimate works</summary><p>The calculator deals every unknown opponent hand and remaining board card without duplicates, then compares all players at showdown. A tied pot is split by the number of winning players.</p></details>
+    <div class="explainer"><b>Compare your hand against as many as five opponents.</b> Enter known cards, give one opponent a range of hands such as QQ+, AKs, or mark opponents as random, and add any community cards already dealt. The result is your expected share of the pot.
+      <details class="learnmore"><summary>How the estimate works</summary><p>The calculator deals every unknown opponent hand and remaining board card without duplicates, then compares all players at showdown. A tied pot is split by the number of winning players.</p><p>Against a range, combos that use your cards or the board are removed first (card removal) and the rest keep their weights. On the flop, turn and river every combo is played out on every runout, so the result is exact. Before the flop it is Monte Carlo: each hand in the range gets trials in proportion to its share.</p></details>
     </div>
     <div class="grid2">
       <div class="panel">
@@ -819,6 +850,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
             <button class="btn ghost exbtn" data-ex="aakk">AA vs KK</button>
             <button class="btn ghost exbtn" data-ex="aks22">AK suited vs 22</button>
             <button class="btn ghost exbtn" data-ex="random">AK suited vs random</button>
+            <button class="btn ghost exbtn" data-ex="range">AK suited vs a range</button>
           </div>
         </div>
         <div class="slotgroup">
@@ -826,7 +858,25 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
           <div class="slots" id="slots_hero"></div>
         </div>
         <div class="slotgroup"><div class="gl"><span>Opponents</span><span class="opponent-count" id="eq_opp_count">1 of 5</span></div><div class="opponents-list" id="opponents_list"></div></div>
+        <div class="range-editor" id="eq_range_editor" hidden>
+          <label class="range-label" for="eq_range_text">Opponent's range</label>
+          <textarea id="eq_range_text" rows="2" spellcheck="false" autocomplete="off" autocapitalize="off" aria-describedby="eq_range_status" placeholder="QQ+, AKs, AQo+">TT+, AQs+, AKo</textarea>
+          <p class="range-status" id="eq_range_status" aria-live="polite"></p>
+          <div class="range-tools">
+            <label for="eq_range_top">Top</label><input id="eq_range_top" type="number" min="1" max="100" step="1" value="15" inputmode="numeric"><span aria-hidden="true">%</span>
+            <button type="button" class="btn ghost" id="eq_range_top_use">Use top %</button>
+            <button type="button" class="btn ghost" id="eq_range_clear">Clear range</button>
+          </div>
+          <div class="range-matrix" id="eq_range_matrix" role="group" aria-label="Opponent's range by starting hand" aria-describedby="eq_range_hint"></div>
+          <p class="hint" id="eq_range_hint">Tap a hand to add or remove it. With a keyboard, arrow keys move and Enter or Space switches the hand.</p>
+          <details class="learnmore"><summary>How to write a range</summary>
+            <p><b>QQ+</b> queens or better · <b>AKs</b> suited · <b>AKo</b> offsuit · <b>AK</b> both · <b>ATs+</b> ATs up to AKs · <b>A5s-A2s</b> A5s down to A2s · <b>T9s-65s</b> suited connectors · <b>AsKs</b> one exact combo. Separate entries with commas.</p>
+            <p><b>AKs:0.5</b> keeps half of the AKs combos (weights from 0 to 1, or 50%). Later entries override earlier ones, so <b>QQ+, KK:0</b> leaves out KK.</p>
+            <p><b>Top %</b> takes the strongest hands by all-in equity against one random hand (the PokerStove convention), until their combos come closest to that share of all 1,326. Other tools rank hands differently, and real opening ranges are not a top slice of any one order.</p>
+          </details>
+        </div>
         <button type="button" class="btn ghost add-opponent" id="eq_add_opp">+ Add opponent</button>
+        <p class="hint opp-note" id="eq_opp_note" hidden></p>
         <div class="slotgroup">
           <div class="gl"><span>Board (optional, 0–5)</span></div>
           <div class="slots" id="slots_board"></div>
@@ -837,7 +887,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
         </div></details>
         <button class="btn primary" id="eq_run">Compute equity</button>
         <button class="btn ghost" id="eq_clear" style="margin-top:6px">Clear all cards</button>
-        <div class="hint">Known cards are never reused. Unknown opponents receive random legal hands on every trial. One fixed opponent may use exact enumeration; multiway spots use seeded Monte Carlo.</div>
+        <div class="hint">Known cards are never reused. Unknown opponents receive random legal hands on every trial. One fixed opponent, or a range on the flop, turn or river, uses exact enumeration; multiway and preflop range spots use seeded Monte Carlo.</div>
         <div id="eq_err" role="alert" style="color:var(--ruin);font-size:13px;margin-top:8px"></div>
       </div>
       <div id="eq_results" data-result-state="empty">
@@ -851,6 +901,15 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
           <div class="neutral" id="eq_legend"></div>
         </div></div>
         <div class="neutral result-dim" id="eq_note" style="margin-top:8px"></div>
+        <section class="range-breakdown result-dim" id="eq_breakdown" aria-labelledby="eq_breakdown_title" hidden>
+          <h3 id="eq_breakdown_title">Against each hand in the range</h3>
+          <p id="eq_breakdown_summary"></p>
+          <div class="bars range-split" id="eq_breakdown_bar" role="img"></div>
+          <div class="range-table-wrap" tabindex="0" role="region" aria-label="Your equity against each hand in the range, toughest first">
+            <table class="range-table"><thead><tr><th scope="col">Hand</th><th scope="col">Share of range</th><th scope="col">Your equity</th></tr></thead><tbody id="eq_breakdown_rows"></tbody></table>
+          </div>
+          <p class="neutral" id="eq_breakdown_note"></p>
+        </section>
         <button class="btn ghost" id="eq_toev" style="max-width:280px;margin-top:10px">Send equity → Pot Odds &amp; EV →</button>
       </div>
     </div>
@@ -1111,7 +1170,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
   <section class="mod" id="about" role="tabpanel" aria-labelledby="tab-about">
     <h3>What this is</h3>
     <ul class="doc">
-      <li><b>Hand Equity</b> — expected pot share against up to five fixed or random opponent hands and an optional board. Heads-up spots with known cards are enumerated exactly; multiway spots use seeded Monte Carlo.</li>
+      <li><b>Hand Equity</b> — expected pot share against up to five fixed or random opponent hands, or one opponent's weighted range, and an optional board. Heads-up spots with known cards, and ranges from the flop on, are enumerated exactly; multiway and preflop range spots use seeded Monte Carlo.</li>
       <li><b>Pot Odds &amp; EV</b> — uses the latest card-derived equity for a call/fold decision with expected value in big blinds; manual equity is optional.</li>
       <li><b>Bankroll Risk</b> — Monte Carlo risk of ruin with a finite-horizon Brownian cross-check (the full Python engine adds a Markov-chain check and file export).</li>
       <li><b>Preflop</b> — browse, compare, and practise 169-hand strategy matrices, with an optional Kuhn poker learning demo. The current ranges are an illustrative demonstration dataset, not solver-verified output.</li>
@@ -1135,7 +1194,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
     </dl>
     <h3>Honest limitations</h3>
     <ul class="doc">
-      <li>Equity supports up to five fixed or uniformly random opponent hands. It does not yet model weighted opponent ranges or betting-action-based ranges.</li>
+      <li>Equity supports up to five fixed or uniformly random opponent hands, or one weighted range heads-up. A range is what you type: the tool does not infer it from betting, and multiway pots cannot use ranges yet.</li>
       <li>Bankroll assumes i.i.d. Normal results and a stationary win rate; real poker violates both.</li>
       <li>Preflop frequencies are illustrative demo data for evaluating the interface. They should not be treated as Nash-equilibrium or optimal play until licensed solver exports replace them.</li>
       <li>The optional Kuhn demo uses a toy game; its specific strategies do not apply to full Hold'em.</li>
@@ -1153,6 +1212,261 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
 </main>
 
 <script>
+// Hold'em range notation: parse, format and summarise opponent ranges.
+//
+// Shared by the server (which re-parses every request) and the public page
+// (which previews the range while it is typed). It holds no calculation
+// engine. A range is a Float64Array of 1,326 weights, one per two-card combo,
+// each from 0 (not in the range) to 1 (always in the range).
+//
+// Cards use the engine's numbering: card = suit * 13 + rank, rank 0 = 2 ...
+// 12 = A, suits c d h s.
+const PokerRange = (() => {
+  const RANKS = "23456789TJQKA";
+  const SUITS = "cdhs";
+  const COMBO_COUNT = 1326;
+
+  // Every combo as [lower card, higher card], indexed by comboIndex.
+  const comboIndex = (a, b) => { const hi = Math.max(a, b), lo = Math.min(a, b); return hi * (hi - 1) / 2 + lo; };
+  const COMBOS = [];
+  for (let hi = 1; hi < 52; hi++) for (let lo = 0; lo < hi; lo++) COMBOS.push([lo, hi]);
+
+  // The 169 starting hands in matrix order: row and column 0 are aces, pairs
+  // on the diagonal, suited hands above it and offsuit hands below.
+  const rankAt = (index) => 12 - index;
+  function classAt(row, column) {
+    const a = RANKS[rankAt(row)], b = RANKS[rankAt(column)];
+    if (row === column) return a + b;
+    return row < column ? a + b + "s" : b + a + "o";
+  }
+  const CLASSES = [];
+  for (let row = 0; row < 13; row++) for (let column = 0; column < 13; column++) CLASSES.push(classAt(row, column));
+  const CLASS_INDEX = new Map(CLASSES.map((name, index) => [name, index]));
+
+  // Combo indices of one starting hand, e.g. "AKs" -> its 4 combos.
+  function combosOfClass(name) {
+    const high = RANKS.indexOf(name[0]), low = RANKS.indexOf(name[1]), kind = name[2] || "";
+    const out = [];
+    for (let s1 = 0; s1 < 4; s1++) for (let s2 = 0; s2 < 4; s2++) {
+      const a = s1 * 13 + high, b = s2 * 13 + low;
+      if (high === low ? s1 >= s2 : (kind === "s") !== (s1 === s2)) continue;
+      out.push(comboIndex(a, b));
+    }
+    return out;
+  }
+  const CLASS_COMBOS = CLASSES.map(combosOfClass);
+  const COMBO_CLASS = new Int16Array(COMBO_COUNT);
+  CLASS_COMBOS.forEach((combos, classIndex) => combos.forEach((combo) => { COMBO_CLASS[combo] = classIndex; }));
+
+  const cardText = (card) => RANKS[card % 13] + SUITS[(card / 13) | 0];
+  // Higher rank first (suit breaks a tie), e.g. "AhKd", "AsAh".
+  const comboText = (combo) => {
+    const [a, b] = COMBOS[combo];
+    const first = a % 13 > b % 13 || (a % 13 === b % 13 && a > b);
+    return first ? cardText(a) + cardText(b) : cardText(b) + cardText(a);
+  };
+
+  const HELP = "Write hands like QQ+, AKs, AQo+, KJ, A5s-A2s, T9s-65s or AsKs, separated by commas. Add :0.5 for half weight.";
+
+  // Class names covered by one hand pattern (no weight), or an error message
+  // quoting `entry`, the text as typed.
+  function expandPattern(pattern, entry) {
+    const combo = pattern.match(/^([2-9TJQKA])([cdhs])([2-9TJQKA])([cdhs])$/);
+    if (combo) {
+      const a = SUITS.indexOf(combo[2]) * 13 + RANKS.indexOf(combo[1]);
+      const b = SUITS.indexOf(combo[4]) * 13 + RANKS.indexOf(combo[3]);
+      if (a === b) return { error: `“${entry}” uses the same card twice.` };
+      return { combos: [comboIndex(a, b)] };
+    }
+    const hand = (text) => {
+      const m = text.match(/^([2-9TJQKA])([2-9TJQKA])([so]?)$/);
+      if (!m) return null;
+      let high = RANKS.indexOf(m[1]), low = RANKS.indexOf(m[2]);
+      if (low > high) [high, low] = [low, high];
+      return { high, low, kind: m[3], pair: high === low };
+    };
+    const names = (high, low, kind) => {
+      if (high === low) return [RANKS[high] + RANKS[low]];
+      const base = RANKS[high] + RANKS[low];
+      return kind ? [base + kind] : [base + "s", base + "o"];
+    };
+    const bad = (why) => ({ error: `Can't read “${entry}”${why ? ": " + why : ""}. ${HELP}` });
+
+    const dash = pattern.split("-");
+    if (dash.length === 2) {
+      const a = hand(dash[0]), b = hand(dash[1]);
+      if (!a || !b) return bad();
+      if (a.kind !== b.kind) return bad("both ends need the same s/o ending");
+      if (a.pair !== b.pair) return bad("a range runs from a pair to a pair, or between two non-pairs");
+      if (a.pair && a.kind === "s") return bad("pairs cannot be suited");
+      const out = [];
+      if (a.pair) {
+        for (let r = Math.min(a.high, b.high); r <= Math.max(a.high, b.high); r++) out.push(...names(r, r, ""));
+      } else if (a.high === b.high) {
+        // Same first card: every kicker between the two, e.g. A5s-A2s.
+        for (let r = Math.min(a.low, b.low); r <= Math.max(a.low, b.low); r++) out.push(...names(a.high, r, a.kind));
+      } else if (a.high - a.low === b.high - b.low) {
+        // Same gap: both cards move together, e.g. T9s-65s.
+        const step = a.high < b.high ? 1 : -1;
+        for (let h = a.high, l = a.low; ; h += step, l += step) { out.push(...names(h, l, a.kind)); if (h === b.high) break; }
+      } else {
+        return bad("use the same first card (A5s-A2s) or the same gap (T9s-65s)");
+      }
+      return { classes: out };
+    }
+    const plus = pattern.endsWith("+");
+    const h = hand(plus ? pattern.slice(0, -1) : pattern);
+    if (!h) return bad();
+    if (h.pair && h.kind === "s") return bad("pairs cannot be suited");
+    if (!plus) return { classes: names(h.high, h.low, h.kind) };
+    const out = [];
+    // QQ+ adds the higher pairs; ATs+ raises the kicker up to AKs.
+    if (h.pair) for (let r = h.high; r <= 12; r++) out.push(...names(r, r, ""));
+    else for (let r = h.low; r < h.high; r++) out.push(...names(h.high, r, h.kind));
+    return { classes: out };
+  }
+
+  // Parse range text. Entries are separated by commas, semicolons or spaces;
+  // an entry may end in :weight (0-1, or 0-100%). Later entries override
+  // earlier ones for the same combos, so "QQ+, KK:0" removes KK.
+  function parseRange(text) {
+    const source = String(text ?? "");
+    if (source.length > 20000) return { error: "The range text is too long (20,000 characters at most)." };
+    const entries = source.replace(/\s*([:-])\s*/g, "$1").replace(/\s+\+/g, "+").split(/[\s,;]+/).filter(Boolean);
+    const weights = new Float64Array(COMBO_COUNT);
+    for (const entry of entries) {
+      const [rawHands, rawWeight, extra] = entry.split(":");
+      if (extra !== undefined || rawHands === "") return { error: `Can't read “${entry}”. ${HELP}` };
+      let weight = 1;
+      if (rawWeight !== undefined) {
+        const m = rawWeight.match(/^(\d+(?:\.\d+)?|\.\d+)(%?)$/);
+        weight = m ? Number(m[1]) / (m[2] ? 100 : 1) : NaN;
+        if (!(weight >= 0 && weight <= 1)) return { error: `The weight in “${entry}” must be from 0 to 1 (or 0% to 100%).` };
+      }
+      // Ranks upper case, suits and s/o lower case; 10 means T.
+      const pattern = rawHands.replace(/10/g, "T").replace(/[2-9tjqka]/g, (c) => c.toUpperCase()).replace(/[CDHSO]/g, (c) => c.toLowerCase());
+      const expanded = expandPattern(pattern, entry);
+      if (expanded.error) return { error: expanded.error };
+      const combos = expanded.combos || expanded.classes.flatMap((name) => CLASS_COMBOS[CLASS_INDEX.get(name)]);
+      for (const combo of combos) weights[combo] = weight;
+    }
+    return { weights };
+  }
+
+  const formatWeight = (w) => (w === 1 ? "" : ":" + String(Number(w.toFixed(6))));
+
+  // Shortest-form text for a range, e.g. "TT+, AQs+, KQs, AKo". Hands whose
+  // combos do not all share one weight are listed combo by combo.
+  function formatRange(weights) {
+    const classWeight = CLASS_COMBOS.map((combos) => {
+      const w = weights[combos[0]];
+      return combos.every((combo) => weights[combo] === w) ? w : null;
+    });
+    const weightOf = (name) => classWeight[CLASS_INDEX.get(name)];
+    // Runs of consecutive ranks with the same nonzero weight, highest first.
+    const runs = (ranks, nameOf) => {
+      const out = [];
+      for (const r of ranks) {
+        const w = weightOf(nameOf(r));
+        const last = out[out.length - 1];
+        if (w && last && last.weight === w && last.bottom === r + 1) last.bottom = r;
+        else if (w) out.push({ top: r, bottom: r, weight: w });
+      }
+      return out;
+    };
+    const descending = (from) => Array.from({ length: from + 1 }, (_, i) => from - i);
+    const pairs = [], suited = [], offsuit = [];
+    for (const run of runs(descending(12), (r) => RANKS[r] + RANKS[r])) {
+      const top = RANKS[run.top] + RANKS[run.top], bottom = RANKS[run.bottom] + RANKS[run.bottom];
+      pairs.push((run.top === run.bottom ? top : run.top === 12 ? bottom + "+" : `${top}-${bottom}`) + formatWeight(run.weight));
+    }
+    for (let high = 12; high >= 1; high--) {
+      const H = RANKS[high];
+      const text = (run, kind) => {
+        const top = H + RANKS[run.top] + kind, bottom = H + RANKS[run.bottom] + kind;
+        return (run.top === run.bottom ? top : run.top === high - 1 ? bottom + "+" : `${top}-${bottom}`) + formatWeight(run.weight);
+      };
+      const s = runs(descending(high - 1), (r) => H + RANKS[r] + "s");
+      const o = runs(descending(high - 1), (r) => H + RANKS[r] + "o");
+      const same = (a, b) => a.top === b.top && a.bottom === b.bottom && a.weight === b.weight;
+      for (const run of s) suited.push(o.some((x) => same(x, run)) ? text(run, "") : text(run, "s"));
+      for (const run of o) if (!s.some((x) => same(x, run))) offsuit.push(text(run, "o"));
+    }
+    const combos = [];
+    CLASS_COMBOS.forEach((list, index) => {
+      if (classWeight[index] !== null) return;
+      for (const combo of list) if (weights[combo] > 0) combos.push(comboText(combo) + formatWeight(weights[combo]));
+    });
+    return [...pairs, ...suited, ...offsuit, ...combos].join(", ");
+  }
+
+  // Weighted combo counts, overall and after removing known (dead) cards.
+  function summarize(weights, deadCards = []) {
+    const dead = new Set(deadCards);
+    let combos = 0, live = 0, hands = 0;
+    CLASS_COMBOS.forEach((list) => {
+      let any = false;
+      for (const combo of list) {
+        const w = weights[combo];
+        if (!w) continue;
+        any = true;
+        combos += w;
+        const [a, b] = COMBOS[combo];
+        if (!dead.has(a) && !dead.has(b)) live += w;
+      }
+      if (any) hands++;
+    });
+    return { combos, live, hands, share: combos / COMBO_COUNT };
+  }
+
+  // Weight shown for one matrix cell: the mean over its combos, and whether
+  // they differ.
+  function classState(weights, classIndex) {
+    const list = CLASS_COMBOS[classIndex];
+    let sum = 0;
+    for (const combo of list) sum += weights[combo];
+    const mean = sum / list.length;
+    return { weight: mean, mixed: list.some((combo) => weights[combo] !== weights[list[0]]) };
+  }
+
+  // A copy of `weights` with one starting hand switched: a hand fully in the
+  // range is removed, anything else is added at full weight.
+  function toggleClass(weights, classIndex) {
+    const next = Float64Array.from(weights);
+    const full = CLASS_COMBOS[classIndex].every((combo) => weights[combo] === 1);
+    for (const combo of CLASS_COMBOS[classIndex]) next[combo] = full ? 0 : 1;
+    return next;
+  }
+
+  // The 169 hands ranked by all-in equity against one random hand
+  // (scripts/hand_order.js). The page build inlines it; the server reads the
+  // file the first time it is needed.
+  let handOrderData = {"description":"The 169 starting hands ranked by all-in equity against one random hand (the PokerStove convention). Hand Equity uses this order for Top X% ranges.","command":"node scripts/hand_order.js --write","method":"Monte Carlo per hand with the equity engine (one random opponent hand, random board), 10,000,000 trials, seed 20261022 + matrix index.","trials_per_hand":10000000,"seed_base":20261022,"neighbours_within_2_se":32,"hands":[{"hand":"AA","equity":0.85216,"standard_error":0.000112},{"hand":"KK","equity":0.82415,"standard_error":0.00012},{"hand":"QQ","equity":0.79926,"standard_error":0.000127},{"hand":"JJ","equity":0.77453,"standard_error":0.000132},{"hand":"TT","equity":0.75028,"standard_error":0.000137},{"hand":"99","equity":0.72061,"standard_error":0.000142},{"hand":"88","equity":0.69134,"standard_error":0.000146},{"hand":"AKs","equity":0.67036,"standard_error":0.000149},{"hand":"77","equity":0.6622,"standard_error":0.00015},{"hand":"AQs","equity":0.66179,"standard_error":0.00015},{"hand":"AJs","equity":0.65404,"standard_error":0.00015},{"hand":"AKo","equity":0.65327,"standard_error":0.000151},{"hand":"ATs","equity":0.64613,"standard_error":0.000151},{"hand":"AQo","equity":0.64433,"standard_error":0.000151},{"hand":"AJo","equity":0.63567,"standard_error":0.000152},{"hand":"KQs","equity":0.63429,"standard_error":0.000152},{"hand":"66","equity":0.63283,"standard_error":0.000152},{"hand":"A9s","equity":0.62802,"standard_error":0.000153},{"hand":"ATo","equity":0.62694,"standard_error":0.000153},{"hand":"KJs","equity":0.6257,"standard_error":0.000153},{"hand":"A8s","equity":0.61962,"standard_error":0.000154},{"hand":"KTs","equity":0.61786,"standard_error":0.000154},{"hand":"KQo","equity":0.61431,"standard_error":0.000154},{"hand":"A7s","equity":0.60969,"standard_error":0.000154},{"hand":"A9o","equity":0.60783,"standard_error":0.000154},{"hand":"KJo","equity":0.60544,"standard_error":0.000155},{"hand":"55","equity":0.60324,"standard_error":0.000155},{"hand":"QJs","equity":0.60284,"standard_error":0.000155},{"hand":"K9s","equity":0.59985,"standard_error":0.000155},{"hand":"A5s","equity":0.59949,"standard_error":0.000155},{"hand":"A6s","equity":0.59901,"standard_error":0.000155},{"hand":"A8o","equity":0.59864,"standard_error":0.000155},{"hand":"KTo","equity":0.59748,"standard_error":0.000155},{"hand":"QTs","equity":0.59467,"standard_error":0.000155},{"hand":"A4s","equity":0.59036,"standard_error":0.000156},{"hand":"A7o","equity":0.58833,"standard_error":0.000156},{"hand":"K8s","equity":0.58326,"standard_error":0.000156},{"hand":"A3s","equity":0.58222,"standard_error":0.000156},{"hand":"QJo","equity":0.58125,"standard_error":0.000156},{"hand":"K9o","equity":0.57821,"standard_error":0.000156},{"hand":"A6o","equity":0.57695,"standard_error":0.000156},{"hand":"A5o","equity":0.57684,"standard_error":0.000156},{"hand":"Q9s","equity":0.57651,"standard_error":0.000156},{"hand":"K7s","equity":0.57574,"standard_error":0.000156},{"hand":"JTs","equity":0.57527,"standard_error":0.000156},{"hand":"A2s","equity":0.57389,"standard_error":0.000156},{"hand":"QTo","equity":0.57277,"standard_error":0.000156},{"hand":"44","equity":0.57004,"standard_error":0.000157},{"hand":"A4o","equity":0.56764,"standard_error":0.000157},{"hand":"K6s","equity":0.56657,"standard_error":0.000157},{"hand":"K8o","equity":0.56038,"standard_error":0.000157},{"hand":"Q8s","equity":0.56036,"standard_error":0.000157},{"hand":"A3o","equity":0.55849,"standard_error":0.000157},{"hand":"K5s","equity":0.55791,"standard_error":0.000157},{"hand":"J9s","equity":0.55657,"standard_error":0.000157},{"hand":"Q9o","equity":0.5536,"standard_error":0.000157},{"hand":"JTo","equity":0.55255,"standard_error":0.000157},{"hand":"K7o","equity":0.55207,"standard_error":0.000157},{"hand":"A2o","equity":0.54923,"standard_error":0.000157},{"hand":"K4s","equity":0.54901,"standard_error":0.000157},{"hand":"Q7s","equity":0.54306,"standard_error":0.000158},{"hand":"K6o","equity":0.54208,"standard_error":0.000158},{"hand":"K3s","equity":0.54072,"standard_error":0.000158},{"hand":"J8s","equity":0.54033,"standard_error":0.000158},{"hand":"T9s","equity":0.54033,"standard_error":0.000158},{"hand":"33","equity":0.53682,"standard_error":0.000158},{"hand":"Q6s","equity":0.53608,"standard_error":0.000158},{"hand":"Q8o","equity":0.536,"standard_error":0.000158},{"hand":"K5o","equity":0.53279,"standard_error":0.000158},{"hand":"J9o","equity":0.53239,"standard_error":0.000158},{"hand":"K2s","equity":0.53206,"standard_error":0.000158},{"hand":"Q5s","equity":0.52749,"standard_error":0.000158},{"hand":"J7s","equity":0.52346,"standard_error":0.000158},{"hand":"K4o","equity":0.52336,"standard_error":0.000158},{"hand":"T8s","equity":0.52326,"standard_error":0.000158},{"hand":"Q4s","equity":0.51883,"standard_error":0.000158},{"hand":"Q7o","equity":0.51751,"standard_error":0.000158},{"hand":"T9o","equity":0.51558,"standard_error":0.000158},{"hand":"J8o","equity":0.51504,"standard_error":0.000158},{"hand":"K3o","equity":0.51418,"standard_error":0.000158},{"hand":"Q6o","equity":0.51039,"standard_error":0.000158},{"hand":"Q3s","equity":0.51033,"standard_error":0.000158},{"hand":"98s","equity":0.50813,"standard_error":0.000158},{"hand":"T7s","equity":0.50639,"standard_error":0.000158},{"hand":"J6s","equity":0.50626,"standard_error":0.000158},{"hand":"K2o","equity":0.50487,"standard_error":0.000158},{"hand":"22","equity":0.50363,"standard_error":0.000158},{"hand":"Q2s","equity":0.50152,"standard_error":0.000158},{"hand":"Q5o","equity":0.50136,"standard_error":0.000158},{"hand":"J5s","equity":0.49992,"standard_error":0.000158},{"hand":"T8o","equity":0.49751,"standard_error":0.000158},{"hand":"J7o","equity":0.49688,"standard_error":0.000158},{"hand":"Q4o","equity":0.49152,"standard_error":0.000158},{"hand":"97s","equity":0.49133,"standard_error":0.000158},{"hand":"J4s","equity":0.49096,"standard_error":0.000158},{"hand":"T6s","equity":0.48925,"standard_error":0.000158},{"hand":"Q3o","equity":0.4823,"standard_error":0.000158},{"hand":"J3s","equity":0.48224,"standard_error":0.000158},{"hand":"98o","equity":0.48098,"standard_error":0.000158},{"hand":"87s","equity":0.47933,"standard_error":0.000158},{"hand":"T7o","equity":0.47915,"standard_error":0.000158},{"hand":"J6o","equity":0.4787,"standard_error":0.000158},{"hand":"96s","equity":0.47403,"standard_error":0.000158},{"hand":"J2s","equity":0.47382,"standard_error":0.000158},{"hand":"Q2o","equity":0.47305,"standard_error":0.000158},{"hand":"T5s","equity":0.47221,"standard_error":0.000158},{"hand":"J5o","equity":0.472,"standard_error":0.000158},{"hand":"T4s","equity":0.46545,"standard_error":0.000158},{"hand":"97o","equity":0.46317,"standard_error":0.000158},{"hand":"86s","equity":0.46257,"standard_error":0.000158},{"hand":"J4o","equity":0.46192,"standard_error":0.000158},{"hand":"T6o","equity":0.46093,"standard_error":0.000158},{"hand":"95s","equity":0.4572,"standard_error":0.000158},{"hand":"T3s","equity":0.45712,"standard_error":0.000158},{"hand":"76s","equity":0.45379,"standard_error":0.000157},{"hand":"J3o","equity":0.45267,"standard_error":0.000157},{"hand":"87o","equity":0.45048,"standard_error":0.000157},{"hand":"T2s","equity":0.44817,"standard_error":0.000157},{"hand":"85s","equity":0.44551,"standard_error":0.000157},{"hand":"96o","equity":0.44513,"standard_error":0.000157},{"hand":"J2o","equity":0.4436,"standard_error":0.000157},{"hand":"T5o","equity":0.44262,"standard_error":0.000157},{"hand":"94s","equity":0.4384,"standard_error":0.000157},{"hand":"75s","equity":0.43679,"standard_error":0.000157},{"hand":"T4o","equity":0.43517,"standard_error":0.000157},{"hand":"93s","equity":0.43265,"standard_error":0.000157},{"hand":"86o","equity":0.43241,"standard_error":0.000157},{"hand":"65s","equity":0.43161,"standard_error":0.000157},{"hand":"95o","equity":0.42719,"standard_error":0.000156},{"hand":"84s","equity":0.42696,"standard_error":0.000156},{"hand":"T3o","equity":0.42565,"standard_error":0.000156},{"hand":"92s","equity":0.4241,"standard_error":0.000156},{"hand":"76o","equity":0.4232,"standard_error":0.000156},{"hand":"74s","equity":0.41875,"standard_error":0.000156},{"hand":"T2o","equity":0.41689,"standard_error":0.000156},{"hand":"85o","equity":0.41455,"standard_error":0.000156},{"hand":"54s","equity":0.41435,"standard_error":0.000156},{"hand":"64s","equity":0.41341,"standard_error":0.000156},{"hand":"83s","equity":0.40868,"standard_error":0.000155},{"hand":"94o","equity":0.40683,"standard_error":0.000155},{"hand":"75o","equity":0.40531,"standard_error":0.000155},{"hand":"82s","equity":0.40273,"standard_error":0.000155},{"hand":"73s","equity":0.40058,"standard_error":0.000155},{"hand":"93o","equity":0.40032,"standard_error":0.000155},{"hand":"65o","equity":0.39935,"standard_error":0.000155},{"hand":"53s","equity":0.39698,"standard_error":0.000155},{"hand":"63s","equity":0.39541,"standard_error":0.000155},{"hand":"84o","equity":0.39457,"standard_error":0.000155},{"hand":"92o","equity":0.39105,"standard_error":0.000154},{"hand":"43s","equity":0.38661,"standard_error":0.000154},{"hand":"74o","equity":0.38573,"standard_error":0.000154},{"hand":"54o","equity":0.38164,"standard_error":0.000154},{"hand":"72s","equity":0.38149,"standard_error":0.000154},{"hand":"64o","equity":0.38028,"standard_error":0.000154},{"hand":"52s","equity":0.3786,"standard_error":0.000153},{"hand":"62s","equity":0.37674,"standard_error":0.000153},{"hand":"83o","equity":0.37483,"standard_error":0.000153},{"hand":"42s","equity":0.36822,"standard_error":0.000153},{"hand":"82o","equity":0.36811,"standard_error":0.000153},{"hand":"73o","equity":0.36585,"standard_error":0.000152},{"hand":"53o","equity":0.36254,"standard_error":0.000152},{"hand":"63o","equity":0.36078,"standard_error":0.000152},{"hand":"32s","equity":0.35979,"standard_error":0.000152},{"hand":"43o","equity":0.35146,"standard_error":0.000151},{"hand":"72o","equity":0.34562,"standard_error":0.00015},{"hand":"52o","equity":0.34262,"standard_error":0.00015},{"hand":"62o","equity":0.34058,"standard_error":0.00015},{"hand":"42o","equity":0.33204,"standard_error":0.000149},{"hand":"32o","equity":0.32323,"standard_error":0.000148}]};
+  const handOrder = () => handOrderData || (handOrderData = require("./hand-order.json"));
+
+  // The strongest hands by handOrder() whose combos come closest to `percent`
+  // of all 1,326 combos.
+  function topPercent(percent) {
+    const target = Math.min(100, Math.max(0, Number(percent) || 0)) / 100 * COMBO_COUNT;
+    const weights = new Float64Array(COMBO_COUNT);
+    let total = 0;
+    for (const { hand } of handOrder().hands) {
+      const combos = CLASS_COMBOS[CLASS_INDEX.get(hand)];
+      if (Math.abs(total + combos.length - target) > Math.abs(total - target)) break;
+      for (const combo of combos) weights[combo] = 1;
+      total += combos.length;
+    }
+    return weights;
+  }
+
+  return {
+    RANKS, SUITS, COMBO_COUNT, COMBOS, CLASSES, CLASS_INDEX, CLASS_COMBOS, COMBO_CLASS,
+    comboIndex, classAt, comboText, handOrder, parseRange, formatRange, summarize, classState, toggleClass, topPercent,
+  };
+})();
+
+if (typeof module !== "undefined") module.exports = PokerRange;
+
 /* ================= Poker Analytics Suite — public UI logic =================
    Core calculations run on the private same-origin API and are deliberately
    excluded from the browser bundle. */
@@ -1317,7 +1631,9 @@ const cardState={hero0:25,hero1:50,
   board0:null,board1:null,board2:null,board3:null,board4:null,pf0:51,pf1:42};
 for(let i=0;i<5;i++){cardState[`opp${i}a`]=i===0?36:null;cardState[`opp${i}b`]=i===0?10:null;}
 let activeOpponents=[0];
-const randomOpponents=[false,false,false,false,false];
+// How each opponent's hand is given: known 'cards', a 'range' (one opponent
+// only) or a 'random' hand dealt on every trial.
+const opponentModes=['cards','cards','cards','cards','cards'];
 let activeSlot=null;
 let pickerReturnFocus=null;
 const cardRed=idx=>{const s=Math.floor(idx/13);return s===1||s===2;};   // d,h
@@ -1335,13 +1651,87 @@ function slotsHTML(ids,disabled=false){
   }).join('');
 }
 function renderGroup(g){$('slots_'+g).innerHTML=slotsHTML(SLOTS[g]);}
+const OPPONENT_MODES=[['cards','Cards'],['range','Range'],['random','Random']];
 function renderOpponents(){
+  const headsUp=activeOpponents.length===1;
   $('opponents_list').innerHTML=activeOpponents.map((idx,position)=>{
-    const random=randomOpponents[idx];
-    return `<div class="opponent-row" data-opponent="${idx}"><div class="opponent-head"><strong>Opponent ${position+1}</strong><div class="opp-actions"><label><input type="checkbox" data-random-opponent="${idx}"${random?' checked':''}> unknown / random hand</label>${activeOpponents.length>1?`<button type="button" class="opp-remove" data-remove-opponent="${idx}" aria-label="Remove opponent ${position+1}">Remove</button>`:''}</div></div>${random?'<div class="random-hand-placeholder">Two legal cards will be dealt privately on every simulation trial.</div>':`<div class="slots" id="slots_opp_${idx}">${slotsHTML(opponentSlots(idx))}</div>`}</div>`;
+    const mode=opponentModes[idx];
+    const choices=OPPONENT_MODES.map(([value,label])=>{
+      const off=value==='range'&&!headsUp;
+      return `<label class="${off?'is-off':''}"><input type="radio" name="opp_mode_${idx}" value="${value}" data-opponent-mode="${idx}"${mode===value?' checked':''}${off?' disabled':''}><span>${label}</span></label>`;
+    }).join('');
+    const body=mode==='random'?'<div class="random-hand-placeholder">Two legal cards will be dealt privately on every simulation trial.</div>'
+      :mode==='range'?'<div class="random-hand-placeholder">A hand from the range below is dealt on every runout or trial.</div>':`<div class="slots" id="slots_opp_${idx}">${slotsHTML(opponentSlots(idx))}</div>`;
+    return `<div class="opponent-row" data-opponent="${idx}"><div class="opponent-head"><strong>Opponent ${position+1}</strong><div class="opp-actions"><fieldset class="opp-mode"><legend class="sr-only">How opponent ${position+1}'s hand is given</legend>${choices}</fieldset>${activeOpponents.length>1?`<button type="button" class="opp-remove" data-remove-opponent="${idx}" aria-label="Remove opponent ${position+1}">Remove</button>`:''}</div></div>${body}</div>`;
   }).join('');
-  $('eq_opp_count').textContent=activeOpponents.length+' of 5';$('eq_add_opp').disabled=activeOpponents.length>=5;
+  const ranged=rangeOpponentActive();
+  $('eq_opp_count').textContent=activeOpponents.length+' of 5';
+  $('eq_add_opp').disabled=activeOpponents.length>=5||ranged;
+  $('eq_opp_note').hidden=!ranged&&headsUp;
+  $('eq_opp_note').textContent=ranged?'A range is played against one opponent. Switch opponent 1 to Cards or Random to add players.':'Range is available with one opponent.';
+  renderRangeEditor();
 }
+const rangeOpponentActive=()=>activeOpponents.some(idx=>opponentModes[idx]==='range');
+
+/* Opponent range editor. The text is the source of truth; the matrix and
+   the Top % control rewrite it. PokerRange (standalone/shared/range.js) is
+   the same parser the server uses. */
+let eqRangeWeights=PokerRange.parseRange($('eq_range_text').value).weights||new Float64Array(PokerRange.COMBO_COUNT);
+let eqRangeError='';
+let eqRangeFocus=0;
+const comboCount=n=>(Number.isInteger(n)?n:+n.toFixed(2)).toLocaleString('en-US')+(n===1?' combo':' combos');
+function equityKnownCards(){return [...SLOTS.hero,...SLOTS.board].map(s=>cardState[s]).filter(v=>v!=null);}
+function renderRangeEditor(){
+  const editor=$('eq_range_editor'),on=rangeOpponentActive();
+  editor.hidden=!on;if(!on)return;
+  const status=$('eq_range_status');
+  if(eqRangeError){status.textContent=eqRangeError;status.dataset.state='error';}
+  else{
+    const s=PokerRange.summarize(eqRangeWeights,equityKnownCards());
+    status.dataset.state=s.combos?'ok':'error';
+    status.textContent=!s.combos?'The range is empty. Type hands, tap the chart or use Top %.'
+      :`${comboCount(s.combos)} · ${(s.share*100).toFixed(1)}% of starting hands`+(s.live<s.combos-1e-9?` · ${comboCount(s.live)} left after your cards and the board`:'')
+        +(s.live?'':'. Every one uses a known card.');
+  }
+  const matrix=$('eq_range_matrix');
+  const focused=matrix.contains(document.activeElement)?+document.activeElement.dataset.rangeClass:null;
+  matrix.innerHTML=PokerRange.CLASSES.map((name,index)=>{
+    const {weight,mixed}=PokerRange.classState(eqRangeWeights,index),pct=Math.round(weight*100);
+    const state=weight===0?'not in range':weight===1&&!mixed?'in range':mixed?`some combos, ${pct}% on average`:`${pct}% weight`;
+    return `<button type="button" class="range-cell${weight>=.75?' is-on':weight>0?' is-part':''}" data-range-class="${index}" data-row="${Math.floor(index/13)}" data-column="${index%13}" tabindex="${index===eqRangeFocus?0:-1}" aria-pressed="${weight===1&&!mixed?'true':weight>0?'mixed':'false'}" aria-label="${name}: ${state}" style="--w:${pct}%">${name}</button>`;
+  }).join('');
+  if(focused!=null)matrix.querySelector(`[data-range-class="${focused}"]`)?.focus();
+}
+function setRangeFromWeights(weights){
+  eqRangeWeights=weights;eqRangeError='';
+  $('eq_range_text').value=PokerRange.formatRange(weights);
+  renderRangeEditor();markEquityDirty();
+}
+$('eq_range_text').addEventListener('input',()=>{
+  const parsed=PokerRange.parseRange($('eq_range_text').value);
+  if(parsed.error)eqRangeError=parsed.error;else{eqRangeError='';eqRangeWeights=parsed.weights;}
+  renderRangeEditor();markEquityDirty();
+});
+$('eq_range_matrix').addEventListener('click',event=>{
+  const cell=event.target.closest('[data-range-class]');if(!cell)return;
+  eqRangeFocus=+cell.dataset.rangeClass;
+  setRangeFromWeights(PokerRange.toggleClass(eqRangeWeights,eqRangeFocus));
+});
+$('eq_range_matrix').addEventListener('keydown',event=>{
+  const cell=event.target.closest('[data-range-class]');if(!cell)return;
+  const next=pfMatrixMove(Number(cell.dataset.row),Number(cell.dataset.column),event.key);
+  if(!next)return;
+  event.preventDefault();
+  eqRangeFocus=next[0]*13+next[1];
+  cell.tabIndex=-1;
+  const target=$('eq_range_matrix').querySelector(`[data-range-class="${eqRangeFocus}"]`);target.tabIndex=0;target.focus();
+});
+$('eq_range_top_use').addEventListener('click',()=>{
+  const raw=$('eq_range_top').value.trim(),value=Number(raw);
+  const pct=raw&&Number.isFinite(value)?clamp(value,1,100):15;$('eq_range_top').value=pct;
+  setRangeFromWeights(PokerRange.topPercent(pct));
+});
+$('eq_range_clear').addEventListener('click',()=>setRangeFromWeights(new Float64Array(PokerRange.COMBO_COUNT)));
 function renderSlots(){renderGroup('hero');renderGroup('board');renderOpponents();}
 // What the displayed equity numbers were calculated for (empty until a result exists).
 let eqResultBasis='';
@@ -1400,10 +1790,18 @@ function handleSlotClick(e){
 $('slots_hero').addEventListener('click',handleSlotClick);$('slots_board').addEventListener('click',handleSlotClick);
 $('slots_preflop').addEventListener('click',handleSlotClick);
 $('opponents_list').addEventListener('click',e=>{
-  const remove=e.target.closest('[data-remove-opponent]');if(remove){const idx=+remove.dataset.removeOpponent;activeOpponents=activeOpponents.filter(x=>x!==idx);opponentSlots(idx).forEach(s=>cardState[s]=null);randomOpponents[idx]=false;renderSlots();runEquity();return;}
+  const remove=e.target.closest('[data-remove-opponent]');if(remove){const idx=+remove.dataset.removeOpponent;activeOpponents=activeOpponents.filter(x=>x!==idx);opponentSlots(idx).forEach(s=>cardState[s]=null);opponentModes[idx]='cards';renderSlots();runEquity();return;}
   handleSlotClick(e);
 });
-$('opponents_list').addEventListener('change',e=>{const box=e.target.closest('[data-random-opponent]');if(!box)return;const idx=+box.dataset.randomOpponent;randomOpponents[idx]=box.checked;if(box.checked)opponentSlots(idx).forEach(s=>cardState[s]=null);renderOpponents();box.checked?runEquity():markEquityDirty();});
+$('opponents_list').addEventListener('change',e=>{
+  const radio=e.target.closest('[data-opponent-mode]');if(!radio)return;
+  const idx=+radio.dataset.opponentMode;opponentModes[idx]=radio.value;
+  if(radio.value!=='cards')opponentSlots(idx).forEach(s=>cardState[s]=null);
+  renderOpponents();
+  // Keep keyboard focus on the radio group, which was just re-rendered.
+  document.querySelector(`[data-opponent-mode="${idx}"][value="${radio.value}"]`)?.focus();
+  radio.value==='random'?runEquity():markEquityDirty();
+});
 $('eq_add_opp').addEventListener('click',()=>{const idx=[0,1,2,3,4].find(i=>!activeOpponents.includes(i));if(idx==null)return;activeOpponents.push(idx);renderOpponents();markEquityDirty();});
 $('pgrid').addEventListener('click',e=>{const c=e.target.closest('.pcard');
   if(c&&!c.classList.contains('used')) fillSlot(+c.dataset.card);});
@@ -1411,22 +1809,45 @@ $('pickclose').addEventListener('click',closePicker);
 $('picker').addEventListener('click',e=>{if(e.target.id==='picker')closePicker();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('picker').classList.contains('on'))closePicker();});
 function clearEquityCards(){Object.keys(cardState).filter(k=>groupOf(k)!=='preflop').forEach(k=>cardState[k]=null);}
-$('eq_clear').addEventListener('click',()=>{clearEquityCards();activeOpponents=[0];randomOpponents.fill(false);renderSlots();markEquityDirty();});
+$('eq_clear').addEventListener('click',()=>{clearEquityCards();activeOpponents=[0];opponentModes.fill('cards');renderSlots();markEquityDirty();});
 // one-click example matchups (beginner friendly)
 const EXAMPLES={
   aakk:{hero:[51,38],vill:[50,24],random:false},   // A♠A♥ vs K♠K♦
   aks22:{hero:[38,37],vill:[0,13],random:false},   // A♥K♥ vs 2♣2♦
-  random:{hero:[51,50],random:true}                // A♠K♠ vs random
+  random:{hero:[51,50],mode:'random'},             // A♠K♠ vs random
+  range:{hero:[38,37],mode:'range',range:'TT+, AQs+, AKo'}   // A♥K♥ vs a range
 };
 document.querySelectorAll('.exbtn').forEach(b=>b.addEventListener('click',()=>{
   const ex=EXAMPLES[b.dataset.ex]; if(!ex) return;
   clearEquityCards();markEquityDirty();
-  activeOpponents=[0];randomOpponents.fill(false);
+  activeOpponents=[0];opponentModes.fill('cards');
   cardState.hero0=ex.hero[0]; cardState.hero1=ex.hero[1];
   if(ex.vill){cardState.opp0a=ex.vill[0]; cardState.opp0b=ex.vill[1];}
-  randomOpponents[0]=!!ex.random;
+  opponentModes[0]=ex.mode||'cards';
+  if(ex.range){$('eq_range_text').value=ex.range;eqRangeWeights=PokerRange.parseRange(ex.range).weights;eqRangeError='';}
   renderSlots(); runEquity(true);
 }));
+
+// Equity against each hand in the range, toughest first, with the share of the
+// range where hero is ahead, even or behind.
+function renderRangeBreakdown(res){
+  const box=$('eq_breakdown');box.hidden=!res;if(!res)return;
+  const rows=[...res.groups].sort((a,b)=>a.equity-b.equity||b.share-a.share);
+  const bucket={ahead:0,even:0,behind:0};
+  rows.forEach(g=>{bucket[g.equity>0.5+1e-9?'ahead':g.equity<0.5-1e-9?'behind':'even']+=g.share;});
+  const pct=v=>(v*100).toFixed(v>0&&v<.001?2:1)+'%';
+  const parts=[bucket.ahead&&`ahead of ${pct(bucket.ahead)} of this range`,bucket.behind&&`behind ${pct(bucket.behind)}`,bucket.even&&`even with ${pct(bucket.even)}`].filter(Boolean);
+  $('eq_breakdown_summary').textContent=`You're ${parts.length>1?parts.slice(0,-1).join(', ')+' and '+parts.at(-1):parts[0]}.`;
+  $('eq_breakdown_bar').innerHTML=`<span style="width:${bucket.ahead*100}%;background:${C.pos}"></span><span style="width:${bucket.even*100}%;background:${C.muted}"></span><span style="width:${bucket.behind*100}%;background:${C.ruin}"></span>`;
+  $('eq_breakdown_bar').setAttribute('aria-label',`Share of the range: ahead ${pct(bucket.ahead)}, even ${pct(bucket.even)}, behind ${pct(bucket.behind)}`);
+  $('eq_breakdown_rows').innerHTML=rows.map(g=>{
+    const e=g.equity*100,tone=g.equity>0.5+1e-9?'ahead':g.equity<0.5-1e-9?'behind':'even';
+    return `<tr><th scope="row">${escapeHtml(g.group)}</th><td>${pct(g.share)} <span class="dim">${comboCount(g.weight)}</span></td><td><span class="range-eq ${tone}"><span style="width:${e}%"></span></span>${e.toFixed(1)}%</td></tr>`;
+  }).join('');
+  const largestError=Math.max(...rows.map(g=>g.standardError))*100;
+  $('eq_breakdown_note').textContent='Ahead means more than 50% equity against that hand.'+(res.method==='exact'?''
+    :` Each hand's value comes from fewer trials than the total; standard errors reach ${largestError.toFixed(1)} pp for the smallest shares, so hands near 50% can land on either side.`);
+}
 
 let equityRequest=0;
 let equityController=null;
@@ -1444,7 +1865,14 @@ async function runEquity(showResult=false){
   const opponents=[];
   for(let position=0;position<activeOpponents.length;position++){
     const idx=activeOpponents[position];
-    if(randomOpponents[idx]){opponents.push(null);continue;}
+    if(opponentModes[idx]==='random'){opponents.push(null);continue;}
+    if(opponentModes[idx]==='range'){
+      if(eqRangeError){showEquityError(eqRangeError);return;}
+      const s=PokerRange.summarize(eqRangeWeights,[...hero,...SLOTS.board.map(s=>cardState[s]).filter(v=>v!=null)]);
+      if(!s.combos){showEquityError('The range is empty. Type hands, tap the chart or use Top %.');return;}
+      if(!s.live){showEquityError('Every hand in this range uses one of your cards or a board card.');return;}
+      opponents.push({range:$('eq_range_text').value});continue;
+    }
     const hand=opponentSlots(idx).map(s=>cardState[s]).filter(v=>v!=null);
     if(hand.length!==2){showEquityError(`Pick 2 cards for opponent ${position+1}, or mark that hand as unknown / random.`);return;}
     opponents.push(hand);
@@ -1460,12 +1888,14 @@ async function runEquity(showResult=false){
   const request=++equityRequest;
   const controller=new AbortController();equityController=controller;
   try{
-    const {result:res,methodText:methodTxt}=await apiJSON('/api/equity',{hero,opponents,board,trials,seed},60000,controller.signal);
+    const {result:res,methodText:methodTxt,range}=await apiJSON('/api/equity',{hero,opponents,board,trials,seed},60000,controller.signal);
     if(request!==equityRequest)return;
-    const eqp=res.equity*100, w=res.win/res.trials*100, t=res.tie/res.trials*100, l=res.lose/res.trials*100;
+    // Range results report win/tie/lose as weighted shares; the others as counts.
+    const share=range?1:res.trials;
+    const eqp=res.equity*100, w=res.win/share*100, t=res.tie/share*100, l=res.lose/share*100;
     // plain-language verdict for beginners
     let vtxt, tone;
-    const field=` against ${opponents.length} opponent${opponents.length===1?'':'s'}`;
+    const field=range?' against this range':` against ${opponents.length} opponent${opponents.length===1?'':'s'}`;
     if(eqp>=55){vtxt=`You're the favourite${field}: about ${Math.round(eqp)}% of the pot on average.`;tone='positive';}
     else if(eqp>=35){vtxt=`This is a competitive spot${field}: about ${Math.round(eqp)}% of the pot on average.`;tone='caution';}
     else{vtxt=`You're the underdog${field}: about ${Math.round(eqp)}% of the pot on average.`;tone='negative';}
@@ -1478,13 +1908,19 @@ async function runEquity(showResult=false){
     $('eq_bars').innerHTML=`<span style="width:${w}%;background:${C.pos}"></span><span style="width:${t}%;background:${C.muted}"></span><span style="width:${l}%;background:${C.ruin}"></span>`;
     $('eq_bars').setAttribute('aria-label',`Equity result: win ${w.toFixed(1)} percent, tie ${t.toFixed(1)} percent, lose ${l.toFixed(1)} percent`);
     $('eq_legend').innerHTML=`<span style="color:${C.pos}">■ win</span>&nbsp;&nbsp;<span style="color:${C.muted}">■ tie</span>&nbsp;&nbsp;<span style="color:${C.ruin}">■ lose</span>`;
-    $('eq_note').innerHTML=res.method==='exact'
+    $('eq_note').innerHTML=range
+      ?(res.method==='exact'?'Exact result: every combo in the range on every runout, weighted by the range. No simulation noise.'
+        :`Monte Carlo estimate; standard error ≈ ${(res.standardError*100).toFixed(2)} pp. Each hand in the range gets trials in proportion to its share, so the shares themselves are exact.`)
+      :res.method==='exact'
       ?'Exact result — no simulation noise.'
       :'Monte Carlo estimate; conservative approximate standard error ≈ '+(Math.sqrt(res.equity*(1-res.equity)/res.trials)*100).toFixed(2)+' pp (allows for fractional split pots).';
+    renderRangeBreakdown(range?res:null);
     window.__lastEquity=eqp;
     $('eq_toev').disabled=false;
     const cardText=i=>RANKS[i%13]+SUIT_SYM[Math.floor(i/13)];
-    const opponentText=opponents.map((hand,index)=>hand?hand.map(cardText).join(' '):`Opponent ${index+1} random`).join(' · ');
+    const shortRange=text=>text.length>60?text.slice(0,text.lastIndexOf(',',57))+', …':text;
+    const opponentText=range?`range ${shortRange(range.text)} (${comboCount(range.live)})`
+      :opponents.map((hand,index)=>hand?hand.map(cardText).join(' '):`Opponent ${index+1} random`).join(' · ');
     window.__lastEquityContext=hero.map(cardText).join(' ')+' vs '+opponentText+(board.length?' · board '+board.map(cardText).join(' '):'');
     eqResultBasis=window.__lastEquityContext+' · '+(res.method==='exact'?'exact':`${res.trials.toLocaleString()} trials, seed ${seed}`);
     setEquityState('current');

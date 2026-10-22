@@ -241,10 +241,129 @@ function equityExact(hero, villain, board){
 // Number of board runouts C(remaining, need) — used to pick exact vs MC.
 function nRunouts(hero,villain,board){
   const used=new Set([...hero,...villain,...board]).size;
-  const remaining=52-used, need=5-board.length;
-  let n=1; for(let i=0;i<need;i++) n=n*(remaining-i)/(i+1);
-  return Math.round(n);
+  return choose(52-used, 5-board.length);
+}
+
+function choose(n,k){
+  let out=1; for(let i=0;i<k;i++) out=out*(n-i)/(i+1);
+  return Math.round(out);
+}
+
+// ---------------------------------------------------------------------------
+// Equity against a range
+//
+// Hero against one opponent whose hand is drawn from a weighted range.
+// `range` lists {cards:[a,b], weight, group}. Combos that use a known card are
+// dropped (card removal); the rest keep their relative weights. Each group
+// (a hand class such as "AKs") is reported separately.
+//
+// The result is exact when every live combo can be run out on every board in
+// at most `exactLimit` matchups: always on the turn and river, and on the flop
+// for any range. Otherwise it is Monte Carlo stratified by group: each group
+// gets trials in proportion to its share of the range (at least one), and the
+// group results are combined with their exact shares, so the shares carry no
+// sampling noise.
+// ---------------------------------------------------------------------------
+
+const EXACT_RANGE_LIMIT = 2000000;
+
+function equityVsRange(hero, range, board, {trials=30000, seed=42, exactLimit=EXACT_RANGE_LIMIT}={}){
+  const known=new Set([...hero,...board]);
+  if(hero.length!==2||known.size!==hero.length+board.length) throw new Error("hero needs 2 cards and no card can repeat");
+  const offered=range.filter(c=>c.weight>0);
+  const live=offered.filter(c=>c.cards[0]!==c.cards[1]&&!known.has(c.cards[0])&&!known.has(c.cards[1]));
+  if(!live.length) throw new Error("no combo in the range is left after removing known cards");
+  const groups=new Map();
+  for(const combo of live){
+    if(!groups.has(combo.group)) groups.set(combo.group,{group:combo.group,combos:[],weight:0});
+    const g=groups.get(combo.group); g.combos.push(combo); g.weight+=combo.weight;
+  }
+  const deck=remainingDeck(known), need=5-board.length;
+  const perCombo=choose(deck.length-2,need);
+  const exact=live.length*perCombo<=exactLimit;
+  const list=[...groups.values()];
+  const totalWeight=list.reduce((sum,g)=>sum+g.weight,0);
+  const stats=exact?rangeExact(hero,list,board,deck,need,perCombo):rangeMonteCarlo(hero,list,board,deck,need,trials,seed,totalWeight);
+  let equity=0,win=0,tie=0,lose=0,variance=0,count=0;
+  const out=list.map((g,i)=>{
+    const s=stats[i],share=g.weight/totalWeight;
+    equity+=share*s.equity; win+=share*s.win; tie+=share*s.tie; lose+=share*s.lose;
+    variance+=share*share*s.variance; count+=s.trials;
+    return {group:g.group,combos:g.combos.length,weight:g.weight,share,equity:s.equity,win:s.win,tie:s.tie,lose:s.lose,trials:s.trials,standardError:Math.sqrt(s.variance)};
+  });
+  return {
+    equity,win,tie,lose,trials:count,method:exact?"exact":"monte-carlo",
+    combos:live.length,weight:totalWeight,removed:offered.length-live.length,
+    runoutsPerCombo:exact?perCombo:null,standardError:Math.sqrt(variance),groups:out,
+  };
+}
+
+// Every live combo against every runout. Hero is scored once per runout.
+function rangeExact(hero, groups, board, deck, need, perCombo){
+  const combos=groups.flatMap((g,i)=>g.combos.map(c=>({a:c.cards[0],b:c.cards[1],weight:c.weight,group:i})));
+  const a=Uint8Array.from(combos,c=>c.a), b=Uint8Array.from(combos,c=>c.b);
+  const win=new Uint32Array(combos.length), tie=new Uint32Array(combos.length);
+  const h=handBuffer(hero,board), v=handBuffer([0,0],board), first=2+board.length;
+  const inRunout=new Uint8Array(52);
+  function visit(){
+    const hs=scoreHand(h,7);
+    for(let i=0;i<combos.length;i++){
+      if(inRunout[a[i]]||inRunout[b[i]]) continue;
+      v[0]=a[i]; v[1]=b[i];
+      const vs=scoreHand(v,7);
+      if(hs>vs) win[i]++; else if(hs===vs) tie[i]++;
+    }
+  }
+  function rec(start, depth){
+    if(depth===need){ visit(); return; }
+    for(let i=start;i<deck.length;i++){
+      const c=deck[i];
+      h[first+depth]=v[first+depth]=c; inRunout[c]=1;
+      rec(i+1,depth+1);
+      inRunout[c]=0;
+    }
+  }
+  rec(0,0);
+  return groups.map((g,gi)=>{
+    let w=0,t=0;
+    combos.forEach((c,i)=>{ if(c.group===gi){ w+=c.weight*win[i]; t+=c.weight*tie[i]; } });
+    const scale=g.weight*perCombo;
+    const winShare=w/scale, tieShare=t/scale;
+    return {equity:winShare+tieShare/2,win:winShare,tie:tieShare,lose:1-winShare-tieShare,trials:g.combos.length*perCombo,variance:0};
+  });
+}
+
+// Stratified Monte Carlo: trials per group in proportion to its weight.
+function rangeMonteCarlo(hero, groups, board, deck, need, trials, seed, totalWeight){
+  const rnd=mulberry32(seed>>>0);
+  const work=new Uint8Array(deck.length), draw=need+2;
+  const h=handBuffer(hero,board), v=handBuffer([0,0],board), first=2+board.length;
+  return groups.map(g=>{
+    const n=Math.max(1,Math.round(trials*g.weight/totalWeight));
+    let win=0,tie=0;
+    for(let t=0;t<n;t++){
+      let u=rnd()*g.weight, pick=g.combos[g.combos.length-1];
+      for(const c of g.combos){ u-=c.weight; if(u<0){ pick=c; break; } }
+      const [ca,cb]=pick.cards;
+      v[0]=ca; v[1]=cb;
+      if(need>0){
+        // A uniform ordering of the deck, read past the opponent's two cards,
+        // deals a uniform board from the cards that are left.
+        shuffleInto(work,deck,draw,rnd);
+        for(let k=0,j=0;k<need;j++){
+          const card=work[j];
+          if(card===ca||card===cb) continue;
+          h[first+k]=v[first+k]=card; k++;
+        }
+      }
+      const hs=scoreHand(h,7), vs=scoreHand(v,7);
+      if(hs>vs) win++; else if(hs===vs) tie++;
+    }
+    const mean=(win+tie/2)/n, square=(win+tie/4)/n;
+    const sampleVariance=n>1?Math.max(0,square-mean*mean)*n/(n-1):0.25;
+    return {equity:mean,win:win/n,tie:tie/n,lose:(n-win-tie)/n,trials:n,variance:sampleVariance/n};
+  });
 }
 
 if (typeof module!=="undefined") module.exports =
-  { cardToStr, strToCard, rank5, best7, scoreHand, equityMC, equityMultiwayMC, equityExact, nRunouts, RANKS, SUITS };
+  { cardToStr, strToCard, rank5, best7, scoreHand, equityMC, equityMultiwayMC, equityExact, equityVsRange, nRunouts, choose, EXACT_RANGE_LIMIT, RANKS, SUITS };

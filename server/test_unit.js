@@ -141,6 +141,14 @@ assert.equal(
   5,
   "exact heads-up preflop enumerates 1,712,304 runouts (two evaluations each)",
 );
+// Ranges: exact on the flop (hero once per runout plus every live combo per
+// runout), stratified Monte Carlo preflop, exact preflop for a single combo.
+const everyHand = "22+, A2+, K2+, Q2+, J2+, T2+, 92+, 82+, 72+, 62+, 52+, 42+, 32";
+const flopCards = [10, 18, 0]; // Qc 7d 2c
+assert.equal(estimateCost("equity", { hero: aceKing, opponents: [{ range: everyHand }], board: flopCards }), 3, "1,081 combos × 990 runouts + 1,081 hero scores");
+assert.equal(estimateCost("equity", { hero: aceKing, opponents: [{ range: "QQ+, AK" }], board: [], trials: 30000 }), 2);
+assert.equal(estimateCost("equity", { hero: aceKing, opponents: [{ range: "QsQd" }], board: [] }), 5, "one combo preflop is enumerated exactly");
+assert.equal(estimateCost("equity", { hero: aceKing, opponents: [{ range: "AKx" }], board: [] }), 1, "an unreadable range costs the minimum");
 assert.equal(estimateCost("equity", { hero: [1, 1], opponents: [null] }), 1, "invalid input costs the minimum");
 assert.equal(estimateCost("equity", null), 1);
 assert.equal(estimateCost("bankroll", { wr: 3, sd: 90, bank: 3000, hands: 100000, paths: 6000 }), 7);
@@ -174,11 +182,31 @@ assert.equal(fiveWay.value.result.trials, 150000);
 assert.match(fiveWay.value.methodText, /150,000 trials\.$/);
 assert.ok(fiveWay.ms < 5000, `five-way 150k-trial run took ${Math.round(fiveWay.ms)} ms`);
 
+const fullRange = timed(() => computeEquity({ hero: aceKing, opponents: [{ range: everyHand }], board: flopCards }));
+assert.equal(fullRange.value.result.method, "exact");
+assert.equal(fullRange.value.result.combos, 1081);
+assert.equal(fullRange.value.range.text, everyHand, "the response carries the canonical range text");
+assert.match(fullRange.value.methodText, /^Exact: 1,081 combos × 990 runouts each/);
+assert.ok(fullRange.ms < 2000, `exact flop against every hand took ${Math.round(fullRange.ms)} ms`);
+const preflopRange = timed(() => computeEquity({ hero: aceKing, opponents: [{ range: everyHand }], board: [], trials: 150000, seed: 3 }));
+assert.equal(preflopRange.value.result.method, "monte-carlo");
+assert.equal(preflopRange.value.result.groups.length, 169);
+assert.match(preflopRange.value.methodText, /across the 169 hands in the range/);
+assert.ok(preflopRange.ms < 5000, `preflop range run took ${Math.round(preflopRange.ms)} ms`);
+const oneCombo = computeEquity({ hero: aceKing, opponents: [{ range: "QsQd" }], board: [] });
+assert.match(oneCombo.methodText, /^Exact: 1 combo × 1,712,304 runouts each/);
+
 // --- Error types ---------------------------------------------------------------
 for (const [type, input] of [
   ["ev", { pot: -1, call: 5, equityPct: 40 }],
   ["ev", []],
   ["equity", { hero: [51, 51], opponents: [null] }],
+  ["equity", { hero: aceKing, opponents: [{ range: "QQ+" }, null] }],
+  ["equity", { hero: aceKing, opponents: [{ range: "AKx" }] }],
+  ["equity", { hero: aceKing, opponents: [{ range: " , " }] }],
+  ["equity", { hero: aceKing, opponents: [{ range: ["QQ"] }] }],
+  ["equity", { hero: [12, 11], opponents: [{ range: "Ac2c" }], board: [] }],
+  ["equity", { hero: aceKing, opponents: [{ range: "QQ" }], board: [12] }],
   ["bankroll", { wr: 3, sd: 90, bank: 100, thr: 200, hands: 1000, paths: 100 }],
   ["preflop", { scenarioId: "does-not-exist" }],
   ["unknown", {}],

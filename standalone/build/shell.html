@@ -100,6 +100,37 @@
   .opponent-head label{cursor:pointer}.opp-remove{background:transparent;border:0;color:var(--ruin);font:inherit;font-size:12px;cursor:pointer;padding:4px}
   .add-opponent{width:auto;margin:0 0 12px}.opponent-count{color:var(--dim);font-size:12px;margin-left:6px}
   .random-hand-placeholder{border:1px dashed var(--grid);border-radius:8px;padding:12px;color:var(--dim);font-size:12px;line-height:1.45}
+  .opp-mode{display:inline-flex;border:1px solid var(--grid);border-radius:8px;padding:2px;margin:0;gap:2px}
+  .opp-mode label{position:relative;display:flex}
+  .opp-mode input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+  .opp-mode span{padding:5px 9px;border-radius:6px;font-size:12px;color:var(--muted)}
+  .opp-mode input:checked+span{background:var(--surface3);color:var(--text);box-shadow:inset 0 0 0 1px rgba(56,189,248,.45)}
+  .opp-mode input:focus-visible+span{outline:2px solid var(--accent);outline-offset:1px}
+  .opp-mode label.is-off span{color:var(--dim);opacity:.55}.opp-mode label.is-off input{cursor:not-allowed}
+  .opp-note{margin:-6px 0 12px}
+  .range-editor{background:var(--surface2);border:1px solid var(--grid);border-radius:10px;padding:4px 11px 11px;margin:0 0 10px}
+  .range-label{display:block;color:var(--muted);font-size:13px;margin:6px 0 5px}
+  .range-editor textarea{width:100%;box-sizing:border-box;resize:vertical;min-height:52px;background:var(--surface);color:var(--text);border:1px solid var(--grid);border-radius:8px;padding:8px 10px;font:500 14px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace}
+  .range-editor textarea:focus{outline:none;border-color:var(--accent)}
+  .range-status{margin:5px 0 8px;font-size:12px;color:var(--muted);line-height:1.45}.range-status[data-state=error]{color:var(--ruin)}
+  .range-tools{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:9px;font-size:13px;color:var(--muted)}
+  .range-tools input{width:62px;background:var(--surface);color:var(--text);border:1px solid var(--grid);border-radius:7px;padding:6px 7px;font:inherit}
+  .range-tools .btn{width:auto;margin:0;padding:6px 10px;font-size:12px}
+  .range-matrix{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:1px;background:rgba(4,12,24,.78);border-radius:8px;overflow:hidden}
+  .range-cell{--w:0%;aspect-ratio:1/1;min-width:0;border:0;padding:0;font:600 clamp(8px,2.4vw,11px) ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:-.04em;color:var(--muted);cursor:pointer;background:linear-gradient(to top,rgba(56,189,248,.82) var(--w),var(--surface3) var(--w))}
+  .range-cell.is-on{color:#04121d}.range-cell.is-part{color:var(--text);text-shadow:0 1px 2px rgba(0,0,0,.8)}
+  .range-cell:hover{filter:brightness(1.2)}
+  .range-cell:focus-visible{outline:2px solid #fff;outline-offset:-2px;position:relative;z-index:1}
+  .range-breakdown{margin-top:14px}.range-breakdown h3{font-size:15px;margin:0 0 4px}.range-breakdown p{margin:4px 0}
+  .range-split{margin:6px 0 10px}
+  .range-table-wrap{max-height:330px;overflow:auto;border:1px solid var(--grid);border-radius:10px}
+  .range-table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+  .range-table th,.range-table td{padding:6px 10px;text-align:left;border-bottom:1px solid rgba(111,128,151,.18);white-space:nowrap}
+  .range-table thead th{position:sticky;top:0;background:var(--surface2);color:var(--muted);font-weight:600;font-size:12px}
+  .range-table tbody th{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .range-table .dim{color:var(--dim);font-size:12px;margin-left:4px}
+  .range-eq{display:inline-block;width:64px;height:7px;border-radius:4px;background:var(--surface3);margin-right:8px;vertical-align:middle;overflow:hidden}
+  .range-eq span{display:block;height:100%}.range-eq.ahead span{background:var(--pos)}.range-eq.behind span{background:var(--ruin)}.range-eq.even span{background:var(--muted)}
   .cardslot{width:46px;height:64px;border-radius:8px;border:1px dashed var(--grid);background:var(--surface2);
     display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;
     transition:transform .15s,border-color .15s,box-shadow .15s;user-select:none;color:var(--muted);font-weight:700}
@@ -807,8 +838,8 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
 
   <!-- ===================== EQUITY ===================== -->
   <section class="mod" id="equity" role="tabpanel" aria-labelledby="tab-equity">
-    <div class="explainer"><b>Compare your hand against as many as five opponents.</b> Enter known cards, mark unknown opponents as random, and add any community cards already dealt. The result is your expected share of the pot.
-      <details class="learnmore"><summary>How the estimate works</summary><p>The calculator deals every unknown opponent hand and remaining board card without duplicates, then compares all players at showdown. A tied pot is split by the number of winning players.</p></details>
+    <div class="explainer"><b>Compare your hand against as many as five opponents.</b> Enter known cards, give one opponent a range of hands such as QQ+, AKs, or mark opponents as random, and add any community cards already dealt. The result is your expected share of the pot.
+      <details class="learnmore"><summary>How the estimate works</summary><p>The calculator deals every unknown opponent hand and remaining board card without duplicates, then compares all players at showdown. A tied pot is split by the number of winning players.</p><p>Against a range, combos that use your cards or the board are removed first (card removal) and the rest keep their weights. On the flop, turn and river every combo is played out on every runout, so the result is exact. Before the flop it is Monte Carlo: each hand in the range gets trials in proportion to its share.</p></details>
     </div>
     <div class="grid2">
       <div class="panel">
@@ -819,6 +850,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
             <button class="btn ghost exbtn" data-ex="aakk">AA vs KK</button>
             <button class="btn ghost exbtn" data-ex="aks22">AK suited vs 22</button>
             <button class="btn ghost exbtn" data-ex="random">AK suited vs random</button>
+            <button class="btn ghost exbtn" data-ex="range">AK suited vs a range</button>
           </div>
         </div>
         <div class="slotgroup">
@@ -826,7 +858,25 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
           <div class="slots" id="slots_hero"></div>
         </div>
         <div class="slotgroup"><div class="gl"><span>Opponents</span><span class="opponent-count" id="eq_opp_count">1 of 5</span></div><div class="opponents-list" id="opponents_list"></div></div>
+        <div class="range-editor" id="eq_range_editor" hidden>
+          <label class="range-label" for="eq_range_text">Opponent's range</label>
+          <textarea id="eq_range_text" rows="2" spellcheck="false" autocomplete="off" autocapitalize="off" aria-describedby="eq_range_status" placeholder="QQ+, AKs, AQo+">TT+, AQs+, AKo</textarea>
+          <p class="range-status" id="eq_range_status" aria-live="polite"></p>
+          <div class="range-tools">
+            <label for="eq_range_top">Top</label><input id="eq_range_top" type="number" min="1" max="100" step="1" value="15" inputmode="numeric"><span aria-hidden="true">%</span>
+            <button type="button" class="btn ghost" id="eq_range_top_use">Use top %</button>
+            <button type="button" class="btn ghost" id="eq_range_clear">Clear range</button>
+          </div>
+          <div class="range-matrix" id="eq_range_matrix" role="group" aria-label="Opponent's range by starting hand" aria-describedby="eq_range_hint"></div>
+          <p class="hint" id="eq_range_hint">Tap a hand to add or remove it. With a keyboard, arrow keys move and Enter or Space switches the hand.</p>
+          <details class="learnmore"><summary>How to write a range</summary>
+            <p><b>QQ+</b> queens or better · <b>AKs</b> suited · <b>AKo</b> offsuit · <b>AK</b> both · <b>ATs+</b> ATs up to AKs · <b>A5s-A2s</b> A5s down to A2s · <b>T9s-65s</b> suited connectors · <b>AsKs</b> one exact combo. Separate entries with commas.</p>
+            <p><b>AKs:0.5</b> keeps half of the AKs combos (weights from 0 to 1, or 50%). Later entries override earlier ones, so <b>QQ+, KK:0</b> leaves out KK.</p>
+            <p><b>Top %</b> takes the strongest hands by all-in equity against one random hand (the PokerStove convention), until their combos come closest to that share of all 1,326. Other tools rank hands differently, and real opening ranges are not a top slice of any one order.</p>
+          </details>
+        </div>
         <button type="button" class="btn ghost add-opponent" id="eq_add_opp">+ Add opponent</button>
+        <p class="hint opp-note" id="eq_opp_note" hidden></p>
         <div class="slotgroup">
           <div class="gl"><span>Board (optional, 0–5)</span></div>
           <div class="slots" id="slots_board"></div>
@@ -837,7 +887,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
         </div></details>
         <button class="btn primary" id="eq_run">Compute equity</button>
         <button class="btn ghost" id="eq_clear" style="margin-top:6px">Clear all cards</button>
-        <div class="hint">Known cards are never reused. Unknown opponents receive random legal hands on every trial. One fixed opponent may use exact enumeration; multiway spots use seeded Monte Carlo.</div>
+        <div class="hint">Known cards are never reused. Unknown opponents receive random legal hands on every trial. One fixed opponent, or a range on the flop, turn or river, uses exact enumeration; multiway and preflop range spots use seeded Monte Carlo.</div>
         <div id="eq_err" role="alert" style="color:var(--ruin);font-size:13px;margin-top:8px"></div>
       </div>
       <div id="eq_results" data-result-state="empty">
@@ -851,6 +901,15 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
           <div class="neutral" id="eq_legend"></div>
         </div></div>
         <div class="neutral result-dim" id="eq_note" style="margin-top:8px"></div>
+        <section class="range-breakdown result-dim" id="eq_breakdown" aria-labelledby="eq_breakdown_title" hidden>
+          <h3 id="eq_breakdown_title">Against each hand in the range</h3>
+          <p id="eq_breakdown_summary"></p>
+          <div class="bars range-split" id="eq_breakdown_bar" role="img"></div>
+          <div class="range-table-wrap" tabindex="0" role="region" aria-label="Your equity against each hand in the range, toughest first">
+            <table class="range-table"><thead><tr><th scope="col">Hand</th><th scope="col">Share of range</th><th scope="col">Your equity</th></tr></thead><tbody id="eq_breakdown_rows"></tbody></table>
+          </div>
+          <p class="neutral" id="eq_breakdown_note"></p>
+        </section>
         <button class="btn ghost" id="eq_toev" style="max-width:280px;margin-top:10px">Send equity → Pot Odds &amp; EV →</button>
       </div>
     </div>
@@ -1111,7 +1170,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
   <section class="mod" id="about" role="tabpanel" aria-labelledby="tab-about">
     <h3>What this is</h3>
     <ul class="doc">
-      <li><b>Hand Equity</b> — expected pot share against up to five fixed or random opponent hands and an optional board. Heads-up spots with known cards are enumerated exactly; multiway spots use seeded Monte Carlo.</li>
+      <li><b>Hand Equity</b> — expected pot share against up to five fixed or random opponent hands, or one opponent's weighted range, and an optional board. Heads-up spots with known cards, and ranges from the flop on, are enumerated exactly; multiway and preflop range spots use seeded Monte Carlo.</li>
       <li><b>Pot Odds &amp; EV</b> — uses the latest card-derived equity for a call/fold decision with expected value in big blinds; manual equity is optional.</li>
       <li><b>Bankroll Risk</b> — Monte Carlo risk of ruin with a finite-horizon Brownian cross-check (the full Python engine adds a Markov-chain check and file export).</li>
       <li><b>Preflop</b> — browse, compare, and practise 169-hand strategy matrices, with an optional Kuhn poker learning demo. The current ranges are an illustrative demonstration dataset, not solver-verified output.</li>
@@ -1135,7 +1194,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
     </dl>
     <h3>Honest limitations</h3>
     <ul class="doc">
-      <li>Equity supports up to five fixed or uniformly random opponent hands. It does not yet model weighted opponent ranges or betting-action-based ranges.</li>
+      <li>Equity supports up to five fixed or uniformly random opponent hands, or one weighted range heads-up. A range is what you type: the tool does not infer it from betting, and multiway pots cannot use ranges yet.</li>
       <li>Bankroll assumes i.i.d. Normal results and a stationary win rate; real poker violates both.</li>
       <li>Preflop frequencies are illustrative demo data for evaluating the interface. They should not be treated as Nash-equilibrium or optimal play until licensed solver exports replace them.</li>
       <li>The optional Kuhn demo uses a toy game; its specific strategies do not apply to full Hold'em.</li>

@@ -57,6 +57,41 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-10-22 — opponent ranges in Hand Equity
+
+- **Give one opponent a range** instead of two cards: type it (`TT+, AQs+,
+  AKo`, `A5s-A2s`, `T9s-65s`, `AsKs`, weights such as `AKs:0.5`), tap hands
+  in a 13×13 chart, or take the top X% of hands. The editor shows how many
+  combos the range holds and how many are left after your cards and the
+  board (card removal). Ranges are heads-up only.
+- **Results per hand in the range.** Equity against each hand, toughest first,
+  with its share of the range, and the share of the range you are ahead of
+  (above 50% equity), even with or behind.
+- **Exact where it is cheap.** On the flop, turn and river every live combo is
+  run out on every board (at most 1,081 combos × 990 runouts on the flop).
+  Before the flop it is Monte Carlo, stratified by hand: each hand gets trials
+  in proportion to its share, so the shares carry no sampling noise and the
+  reported standard error is the stratified one.
+- **One parser for page and server** (`standalone/shared/range.js`). The page
+  previews the range as it is typed; the server parses the text again and
+  never trusts the preview.
+- **Top %** ranks the 169 hands by all-in equity against one random hand (the
+  PokerStove convention), simulated with 10 million trials per hand
+  (`scripts/hand_order.js`, saved in `standalone/shared/hand-order.json`). AA
+  85.2% and 32o 32.3% match the published values; 32 of 168 neighbouring
+  pairs are within two standard errors of each other and may swap. Other
+  tools order hands differently.
+- **Checked against PokerKit** (`checks/range-equity-pokerkit/`): the same
+  combos from all 20 range texts; equal exact equity (largest difference
+  3 × 10⁻¹⁶) on 5 flop, turn and river spots, including all 1,081 hands left on
+  a flop; and preflop exact values within 0.57 and 0.91 standard errors of
+  320,000 independent deals ranked by PokerKit. PokerKit has no weights and
+  rejects kicker ranges like `A5s-A2s`, so the script applies weights and
+  spells those out.
+- Tests: `standalone/shared/test_range.js` (notation, errors, a 300-range
+  format round trip, card removal, Top %), engine checks against the weighted
+  mean of exact heads-up results, and API checks for limits, costs and errors.
+
 ## 2026-10-22 — case study and validation pages
 
 - **Case study** (`case-study/index.html`, also served at `/case-study/`): one

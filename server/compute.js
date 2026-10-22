@@ -3,8 +3,12 @@
 const {
   equityMultiwayMC,
   equityExact,
+  equityVsRange,
   nRunouts,
+  choose,
+  EXACT_RANGE_LIMIT,
 } = require("../standalone/engines/equity.js");
+const PokerRange = require("../standalone/shared/range.js");
 const { trainKuhnTracked, averageGameValue } = require("../standalone/engines/cfr.js");
 const { getPreflopDataset } = require("./preflop.js");
 const { ValidationError } = require("./errors.js");
@@ -65,12 +69,14 @@ function planEquity(input) {
   if (!Array.isArray(input.opponents) || input.opponents.length < 1 || input.opponents.length > 5) {
     throw new ValidationError("Choose between one and five opponents.");
   }
+  const trials = integer(input.trials ?? 30000, "Trials", 1000, 150000);
+  const seed = integer(input.seed ?? 42, "Seed", -2147483648, 2147483647);
+  const rangeInput = input.opponents.find(isObject);
+  if (rangeInput) return planRangeEquity(hero, board, input.opponents, rangeInput, trials, seed);
   const opponents = input.opponents.map((hand, index) =>
     hand === null ? null : cards(hand, `Opponent ${index + 1}`, 2, 2)
   );
   validateKnownCards(hero, opponents, board);
-  const trials = integer(input.trials ?? 30000, "Trials", 1000, 150000);
-  const seed = integer(input.seed ?? 42, "Seed", -2147483648, 2147483647);
   const players = opponents.length + 1;
 
   // Every fixed heads-up spot is enumerated exactly, preflop included.
@@ -85,11 +91,49 @@ function planEquity(input) {
   return { mode: "multiway", hero, board, opponents, seed, trials, evaluations: trials * players };
 }
 
+// One opponent holding a weighted range. The range text is parsed here with
+// the same parser the page uses for its preview; card removal happens in the
+// engine, but an empty range after removal is rejected up front.
+function planRangeEquity(hero, board, opponents, rangeInput, trials, seed) {
+  if (opponents.length !== 1) throw new ValidationError("A range can be used against one opponent only.");
+  if (typeof rangeInput.range !== "string") throw new ValidationError("The opponent's range must be text, for example QQ+, AKs.");
+  validateKnownCards(hero, [], board);
+  const parsed = PokerRange.parseRange(rangeInput.range);
+  if (parsed.error) throw new ValidationError(parsed.error);
+  const range = [];
+  parsed.weights.forEach((weight, combo) => {
+    if (weight > 0) range.push({ cards: PokerRange.COMBOS[combo], weight, group: PokerRange.CLASSES[PokerRange.COMBO_CLASS[combo]] });
+  });
+  if (!range.length) throw new ValidationError("The opponent's range is empty.");
+  const known = new Set([...hero, ...board]);
+  const live = range.filter(({ cards: [a, b] }) => !known.has(a) && !known.has(b)).length;
+  if (!live) throw new ValidationError("Every hand in this range uses one of your cards or a board card.");
+  const perCombo = choose(48 - board.length, 5 - board.length);
+  const exact = live * perCombo <= EXACT_RANGE_LIMIT;
+  return {
+    mode: "range", hero, board, range, weights: parsed.weights, seed, trials, exact, live, perCombo,
+    // Exact scores hero once per runout and each live combo once per runout it fits.
+    evaluations: exact ? choose(50 - board.length, 5 - board.length) + live * perCombo : (trials + PokerRange.CLASSES.length) * 2,
+  };
+}
+
 function computeEquity(input) {
   const plan = planEquity(input);
   const { hero, board, opponents, seed, trials } = plan;
   const trialText = trials.toLocaleString("en-US");
   switch (plan.mode) {
+    case "range": {
+      const result = equityVsRange(hero, plan.range, board, { trials, seed });
+      const summary = PokerRange.summarize(plan.weights);
+      const methodText = result.method === "exact"
+        ? `Exact: ${result.combos.toLocaleString("en-US")} combo${result.combos === 1 ? "" : "s"} × ${plan.perCombo.toLocaleString("en-US")} runout${plan.perCombo === 1 ? "" : "s"} each, weighted by the range.`
+        : `Monte Carlo: ${result.trials.toLocaleString("en-US")} trials split across the ${result.groups.length} hands in the range by their share of it (seed ${seed}).`;
+      return {
+        result: { ...result, players: 2 },
+        range: { text: PokerRange.formatRange(plan.weights), combos: summary.combos, hands: summary.hands, live: result.weight },
+        methodText,
+      };
+    }
     case "exact":
       return {
         result: equityExact(hero, opponents[0], board),

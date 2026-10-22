@@ -19,9 +19,17 @@ const marker = "/*__UNCERTAINTY_REFERENCE__*/ null";
 const app = fs.readFileSync(path.join(standalone, "build", "app.js"), "utf8");
 if (!app.includes(marker)) throw new Error("Missing saved-reference binding in app.js");
 const reviewedApp = app.replace(marker, JSON.stringify(reference).replaceAll("<", "\\u003c"));
+// The range parser is shared with the server; the page gets the hand order inline.
+const handOrderMarker = "/*__HAND_ORDER__*/ null";
+const rangeSource = fs.readFileSync(path.join(standalone, "shared", "range.js"), "utf8");
+if (!rangeSource.includes(handOrderMarker)) throw new Error("Missing hand-order binding in range.js");
+const handOrder = fs.readFileSync(path.join(standalone, "shared", "hand-order.json"), "utf8");
+const rangeScript = rangeSource.replace(handOrderMarker, JSON.stringify(JSON.parse(handOrder)).replaceAll("<", "\\u003c"));
 const page = [
   fs.readFileSync(path.join(standalone, "build", "shell.html"), "utf8"),
   "\n<script>\n",
+  rangeScript,
+  "\n",
   reviewedApp,
   "\n</script></body></html>\n",
 ].join("");

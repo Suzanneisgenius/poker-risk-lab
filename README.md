@@ -17,7 +17,7 @@ the first.
 | | |
 |---|---|
 | **Case study** | [`case-study/index.html`](case-study/index.html): three questions, one at a time, plus how a misleading result was checked. Static page: open the file directly, or `/case-study/` on the running app. |
-| **Validation** | [`case-study/validation.html`](case-study/validation.html): PokerKit cross-check, exact-value checks, interval coverage, engine agreement and benchmark conditions. |
+| **Validation** | [`case-study/validation.html`](case-study/validation.html): PokerKit cross-checks (hands, equity, ranges), exact-value checks, interval coverage, engine agreement and benchmark conditions. |
 | **Demo** | `npm start`, then <http://localhost:4174>. No public deployment URL yet. |
 | **Reproduce** | `pip install -r requirements-research.txt`, `python -m src.experiments.case_study --case all`, then `npm run build`. Every check in [`checks/`](checks/README.md) has its own command and saved output. |
 | **Limits** | Conditional model estimates, not advice. The alternative models are stress tests, not descriptions of real games. The Preflop ranges are demonstration data. |
@@ -179,8 +179,10 @@ deployment flow.
 The suite provides five tools behind one dark UI:
 
 - **Hand Equity** — expected pot share against up to five fixed or random
-  opponent hands and an optional board. Heads-up spots use exact enumeration
-  when the runout is small; multiway spots use seeded Monte Carlo.
+  opponent hands, or one opponent's weighted range (`TT+, AQs+, AKo`, chart
+  or top X%), and an optional board. Fixed heads-up spots and ranges from the
+  flop on use exact enumeration; multiway and preflop range spots use seeded
+  Monte Carlo. Range results show equity against each hand in the range.
 - **Pot Odds & EV** — turns the latest card-derived equity into a call/fold
   decision with EV in big blinds; manual equity remains an advanced option.
 - **Bankroll Risk** — the Monte Carlo risk-of-ruin engine with a finite-horizon

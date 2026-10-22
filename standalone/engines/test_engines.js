@@ -125,6 +125,58 @@ check("AA vs KK vs QQ",mw.equity*100,68.0,1.5);
 const split=E.equityMultiwayMC([C("Ah"),C("Kd")],[[C("As"),C("Kc")],[C("Ad"),C("Kh")]],[["2c","3d","4h","5s","6c"].map(C)][0],1,1);
 check("three-way board split",split.equity,1/3,0.0001);
 
+console.log("== Equity against a range ==");
+const R = require("../shared/range.js");
+const rangeOf = (text) => {
+  const out = [];
+  R.parseRange(text).weights.forEach((weight, combo) => {
+    if (weight > 0) out.push({ cards: R.COMBOS[combo], weight, group: R.CLASSES[R.COMBO_CLASS[combo]] });
+  });
+  return out;
+};
+// Weighted mean of exact heads-up equities over the live combos: the definition.
+const byCombo = (hero, range, board) => {
+  let sum = 0, weight = 0;
+  for (const c of range) {
+    if ([...hero, ...board].some((k) => c.cards.includes(k))) continue;
+    sum += c.weight * E.equityExact(hero, c.cards, board).equity; weight += c.weight;
+  }
+  return sum / weight;
+};
+const ak = ["Ah","Kh"].map(C), flop = ["Qh","7h","2c"].map(C);
+const one = E.equityVsRange(ak, rangeOf("QsQd"), flop);
+check("one-combo range = exact heads-up", one.equity, E.equityExact(ak, ["Qs","Qd"].map(C), flop).equity, 1e-12);
+expectTrue("one-combo range is exact with 990 runouts", one.method === "exact" && one.runoutsPerCombo === 990 && one.trials === 990);
+const weighted = rangeOf("QQ+, AKs:0.5, AQo:0.25, JTs");
+const flopRange = E.equityVsRange(ak, weighted, flop);
+check("weighted flop range = weighted mean of exact combos", flopRange.equity, byCombo(ak, weighted, flop), 1e-12);
+expectTrue("card removal drops combos with known cards",
+  flopRange.removed === weighted.length - flopRange.combos && flopRange.groups.find((g) => g.group === "QQ").combos === 3);
+check("shares sum to 1", flopRange.groups.reduce((s, g) => s + g.share, 0), 1, 1e-12);
+check("win + tie + lose = 1", flopRange.win + flopRange.tie + flopRange.lose, 1, 1e-12);
+check("equity = share-weighted group equities", flopRange.equity, flopRange.groups.reduce((s, g) => s + g.share * g.equity, 0), 1e-12);
+const turn = ["Qh","7h","2c","9s"].map(C), river = [...turn, C("3d")];
+check("turn range = weighted mean of exact combos", E.equityVsRange(ak, weighted, turn).equity, byCombo(ak, weighted, turn), 1e-12);
+check("river range = weighted mean of exact combos", E.equityVsRange(ak, weighted, river).equity, byCombo(ak, weighted, river), 1e-12);
+// A 100% range is a random hand: exact range against the multiway Monte Carlo.
+const everyHand = rangeOf("22+, A2+, K2+, Q2+, J2+, T2+, 92+, 82+, 72+, 62+, 52+, 42+, 32");
+const full = E.equityVsRange(ak, everyHand, flop);
+const randomHand = E.equityMultiwayMC(ak, [null], flop, 150000, 5);
+expectTrue(`full range on the flop is exact over 1,081 combos (${full.method}, ${full.combos})`, full.method === "exact" && full.combos === 1081);
+check("100% range ≈ random opponent (4 SE)", full.equity, randomHand.equity, 4 * Math.sqrt(0.25 / 150000));
+// Preflop: stratified Monte Carlo against the exact weighted mean.
+const small = rangeOf("KK, AKs:0.5, 72o");
+const preMC = E.equityVsRange(ak, small, [], { trials: 150000, seed: 11 });
+const preExact = byCombo(ak, small, []);
+expectTrue("preflop range of several combos uses Monte Carlo", preMC.method === "monte-carlo" && preMC.standardError > 0);
+check("preflop stratified MC ≈ exact (4 SE)", preMC.equity, preExact, 4 * preMC.standardError);
+check("forced exact preflop = weighted mean of exact combos", E.equityVsRange(ak, small, [], { exactLimit: Infinity }).equity, preExact, 1e-12);
+expectTrue("same seed, same result", E.equityVsRange(ak, small, [], { trials: 5000, seed: 3 }).equity === E.equityVsRange(ak, small, [], { trials: 5000, seed: 3 }).equity);
+expectTrue("every hand in the range gets at least one trial",
+  E.equityVsRange(ak, rangeOf("AA, 72o:0.01"), [], { trials: 1000, seed: 1 }).groups.every((g) => g.trials >= 1));
+let threw = false; try { E.equityVsRange(ak, rangeOf("AhKh"), []); } catch { threw = true; }
+expectTrue("a range with no live combo is rejected", threw);
+
 console.log("== CFR Kuhn poker ==");
 const r = trainKuhnTracked(300000, 10);
 check("game value", averageGameValue(r.nodes), -1/18, 0.01);

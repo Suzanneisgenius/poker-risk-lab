@@ -90,6 +90,19 @@ async function main() {
     assert.equal(equityResult.result.method, "exact");
     assert.equal(equityResult.result.trials, 1);
 
+    // A range opponent on the flop: exact, with one row per hand in the range.
+    const rangeEquity = await post("/api/equity", {
+      hero: [38, 37], opponents: [{ range: "TT+, AQs+, AKo" }], board: [36, 31, 0], trials: 1000, seed: 42,
+    });
+    assert.equal(rangeEquity.status, 200);
+    const rangeResult = await rangeEquity.json();
+    assert.equal(rangeResult.result.method, "exact");
+    assert.equal(rangeResult.range.text, "TT+, AQs+, AKo");
+    assert.equal(rangeResult.result.groups.length, 8);
+    const multiwayRange = await post("/api/equity", { hero: [38, 37], opponents: [{ range: "QQ+" }, null], board: [] });
+    assert.equal(multiwayRange.status, 400);
+    assert.equal((await multiwayRange.json()).error, "A range can be used against one opponent only.");
+
     const duplicateCard = await post("/api/equity", {
       hero: [51, 51], opponents: [null], board: [], trials: 1000, seed: 42,
     });

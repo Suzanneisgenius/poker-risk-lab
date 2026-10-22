@@ -1,0 +1,855 @@
+{
+  "description": "The 169 starting hands ranked by all-in equity against one random hand (the PokerStove convention). Hand Equity uses this order for Top X% ranges.",
+  "command": "node scripts/hand_order.js --write",
+  "method": "Monte Carlo per hand with the equity engine (one random opponent hand, random board), 10,000,000 trials, seed 20261022 + matrix index.",
+  "trials_per_hand": 10000000,
+  "seed_base": 20261022,
+  "neighbours_within_2_se": 32,
+  "hands": [
+    {
+      "hand": "AA",
+      "equity": 0.85216,
+      "standard_error": 0.000112
+    },
+    {
+      "hand": "KK",
+      "equity": 0.82415,
+      "standard_error": 0.00012
+    },
+    {
+      "hand": "QQ",
+      "equity": 0.79926,
+      "standard_error": 0.000127
+    },
+    {
+      "hand": "JJ",
+      "equity": 0.77453,
+      "standard_error": 0.000132
+    },
+    {
+      "hand": "TT",
+      "equity": 0.75028,
+      "standard_error": 0.000137
+    },
+    {
+      "hand": "99",
+      "equity": 0.72061,
+      "standard_error": 0.000142
+    },
+    {
+      "hand": "88",
+      "equity": 0.69134,
+      "standard_error": 0.000146
+    },
+    {
+      "hand": "AKs",
+      "equity": 0.67036,
+      "standard_error": 0.000149
+    },
+    {
+      "hand": "77",
+      "equity": 0.6622,
+      "standard_error": 0.00015
+    },
+    {
+      "hand": "AQs",
+      "equity": 0.66179,
+      "standard_error": 0.00015
+    },
+    {
+      "hand": "AJs",
+      "equity": 0.65404,
+      "standard_error": 0.00015
+    },
+    {
+      "hand": "AKo",
+      "equity": 0.65327,
+      "standard_error": 0.000151
+    },
+    {
+      "hand": "ATs",
+      "equity": 0.64613,
+      "standard_error": 0.000151
+    },
+    {
+      "hand": "AQo",
+      "equity": 0.64433,
+      "standard_error": 0.000151
+    },
+    {
+      "hand": "AJo",
+      "equity": 0.63567,
+      "standard_error": 0.000152
+    },
+    {
+      "hand": "KQs",
+      "equity": 0.63429,
+      "standard_error": 0.000152
+    },
+    {
+      "hand": "66",
+      "equity": 0.63283,
+      "standard_error": 0.000152
+    },
+    {
+      "hand": "A9s",
+      "equity": 0.62802,
+      "standard_error": 0.000153
+    },
+    {
+      "hand": "ATo",
+      "equity": 0.62694,
+      "standard_error": 0.000153
+    },
+    {
+      "hand": "KJs",
+      "equity": 0.6257,
+      "standard_error": 0.000153
+    },
+    {
+      "hand": "A8s",
+      "equity": 0.61962,
+      "standard_error": 0.000154
+    },
+    {
+      "hand": "KTs",
+      "equity": 0.61786,
+      "standard_error": 0.000154
+    },
+    {
+      "hand": "KQo",
+      "equity": 0.61431,
+      "standard_error": 0.000154
+    },
+    {
+      "hand": "A7s",
+      "equity": 0.60969,
+      "standard_error": 0.000154
+    },
+    {
+      "hand": "A9o",
+      "equity": 0.60783,
+      "standard_error": 0.000154
+    },
+    {
+      "hand": "KJo",
+      "equity": 0.60544,
+      "standard_error": 0.000155
+    },
+    {
+      "hand": "55",
+      "equity": 0.60324,
+      "standard_error": 0.000155
+    },
+    {
+      "hand": "QJs",
+      "equity": 0.60284,
+      "standard_error": 0.000155
+    },
+    {
+      "hand": "K9s",
+      "equity": 0.59985,
+      "standard_error": 0.000155
+    },
+    {
+      "hand": "A5s",
+      "equity": 0.59949,
+      "standard_error": 0.000155
+    },
+    {
+      "hand": "A6s",
+      "equity": 0.59901,
+      "standard_error": 0.000155
+    },
+    {
+      "hand": "A8o",
+      "equity": 0.59864,
+      "standard_error": 0.000155
+    },
+    {
+      "hand": "KTo",
+      "equity": 0.59748,
+      "standard_error": 0.000155
+    },
+    {
+      "hand": "QTs",
+      "equity": 0.59467,
+      "standard_error": 0.000155
+    },
+    {
+      "hand": "A4s",
+      "equity": 0.59036,
+      "standard_error": 0.000156
+    },
+    {
+      "hand": "A7o",
+      "equity": 0.58833,
+      "standard_error": 0.000156
+    },
+    {
+      "hand": "K8s",
+      "equity": 0.58326,
+      "standard_error": 0.000156
+    },
+    {
+      "hand": "A3s",
+      "equity": 0.58222,
+      "standard_error": 0.000156
+    },
+    {
+      "hand": "QJo",
+      "equity": 0.58125,
+      "standard_error": 0.000156
+    },
+    {
+      "hand": "K9o",
+      "equity": 0.57821,
+      "standard_error": 0.000156
+    },
+    {
+      "hand": "A6o",
+      "equity": 0.57695,
+      "standard_error": 0.000156
+    },
+    {
+      "hand": "A5o",
+      "equity": 0.57684,
+      "standard_error": 0.000156
+    },
+    {
+      "hand": "Q9s",
+      "equity": 0.57651,
+      "standard_error": 0.000156
+    },
+    {
+      "hand": "K7s",
+      "equity": 0.57574,
+      "standard_error": 0.000156
+    },
+    {
+      "hand": "JTs",
+      "equity": 0.57527,
+      "standard_error": 0.000156
+    },
+    {
+      "hand": "A2s",
+      "equity": 0.57389,
+      "standard_error": 0.000156
+    },
+    {
+      "hand": "QTo",
+      "equity": 0.57277,
+      "standard_error": 0.000156
+    },
+    {
+      "hand": "44",
+      "equity": 0.57004,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "A4o",
+      "equity": 0.56764,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "K6s",
+      "equity": 0.56657,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "K8o",
+      "equity": 0.56038,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "Q8s",
+      "equity": 0.56036,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "A3o",
+      "equity": 0.55849,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "K5s",
+      "equity": 0.55791,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "J9s",
+      "equity": 0.55657,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "Q9o",
+      "equity": 0.5536,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "JTo",
+      "equity": 0.55255,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "K7o",
+      "equity": 0.55207,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "A2o",
+      "equity": 0.54923,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "K4s",
+      "equity": 0.54901,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "Q7s",
+      "equity": 0.54306,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "K6o",
+      "equity": 0.54208,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "K3s",
+      "equity": 0.54072,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "J8s",
+      "equity": 0.54033,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "T9s",
+      "equity": 0.54033,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "33",
+      "equity": 0.53682,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "Q6s",
+      "equity": 0.53608,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "Q8o",
+      "equity": 0.536,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "K5o",
+      "equity": 0.53279,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "J9o",
+      "equity": 0.53239,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "K2s",
+      "equity": 0.53206,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "Q5s",
+      "equity": 0.52749,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "J7s",
+      "equity": 0.52346,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "K4o",
+      "equity": 0.52336,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "T8s",
+      "equity": 0.52326,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "Q4s",
+      "equity": 0.51883,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "Q7o",
+      "equity": 0.51751,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "T9o",
+      "equity": 0.51558,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "J8o",
+      "equity": 0.51504,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "K3o",
+      "equity": 0.51418,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "Q6o",
+      "equity": 0.51039,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "Q3s",
+      "equity": 0.51033,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "98s",
+      "equity": 0.50813,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "T7s",
+      "equity": 0.50639,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "J6s",
+      "equity": 0.50626,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "K2o",
+      "equity": 0.50487,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "22",
+      "equity": 0.50363,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "Q2s",
+      "equity": 0.50152,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "Q5o",
+      "equity": 0.50136,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "J5s",
+      "equity": 0.49992,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "T8o",
+      "equity": 0.49751,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "J7o",
+      "equity": 0.49688,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "Q4o",
+      "equity": 0.49152,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "97s",
+      "equity": 0.49133,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "J4s",
+      "equity": 0.49096,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "T6s",
+      "equity": 0.48925,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "Q3o",
+      "equity": 0.4823,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "J3s",
+      "equity": 0.48224,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "98o",
+      "equity": 0.48098,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "87s",
+      "equity": 0.47933,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "T7o",
+      "equity": 0.47915,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "J6o",
+      "equity": 0.4787,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "96s",
+      "equity": 0.47403,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "J2s",
+      "equity": 0.47382,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "Q2o",
+      "equity": 0.47305,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "T5s",
+      "equity": 0.47221,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "J5o",
+      "equity": 0.472,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "T4s",
+      "equity": 0.46545,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "97o",
+      "equity": 0.46317,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "86s",
+      "equity": 0.46257,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "J4o",
+      "equity": 0.46192,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "T6o",
+      "equity": 0.46093,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "95s",
+      "equity": 0.4572,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "T3s",
+      "equity": 0.45712,
+      "standard_error": 0.000158
+    },
+    {
+      "hand": "76s",
+      "equity": 0.45379,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "J3o",
+      "equity": 0.45267,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "87o",
+      "equity": 0.45048,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "T2s",
+      "equity": 0.44817,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "85s",
+      "equity": 0.44551,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "96o",
+      "equity": 0.44513,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "J2o",
+      "equity": 0.4436,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "T5o",
+      "equity": 0.44262,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "94s",
+      "equity": 0.4384,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "75s",
+      "equity": 0.43679,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "T4o",
+      "equity": 0.43517,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "93s",
+      "equity": 0.43265,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "86o",
+      "equity": 0.43241,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "65s",
+      "equity": 0.43161,
+      "standard_error": 0.000157
+    },
+    {
+      "hand": "95o",
+      "equity": 0.42719,
+      "standard_error": 0.000156
+    },
+    {
+      "hand": "84s",
+      "equity": 0.42696,
+      "standard_error": 0.000156
+    },
+    {
+      "hand": "T3o",
+      "equity": 0.42565,
+      "standard_error": 0.000156
+    },
+    {
+      "hand": "92s",
+      "equity": 0.4241,
+      "standard_error": 0.000156
+    },
+    {
+      "hand": "76o",
+      "equity": 0.4232,
+      "standard_error": 0.000156
+    },
+    {
+      "hand": "74s",
+      "equity": 0.41875,
+      "standard_error": 0.000156
+    },
+    {
+      "hand": "T2o",
+      "equity": 0.41689,
+      "standard_error": 0.000156
+    },
+    {
+      "hand": "85o",
+      "equity": 0.41455,
+      "standard_error": 0.000156
+    },
+    {
+      "hand": "54s",
+      "equity": 0.41435,
+      "standard_error": 0.000156
+    },
+    {
+      "hand": "64s",
+      "equity": 0.41341,
+      "standard_error": 0.000156
+    },
+    {
+      "hand": "83s",
+      "equity": 0.40868,
+      "standard_error": 0.000155
+    },
+    {
+      "hand": "94o",
+      "equity": 0.40683,
+      "standard_error": 0.000155
+    },
+    {
+      "hand": "75o",
+      "equity": 0.40531,
+      "standard_error": 0.000155
+    },
+    {
+      "hand": "82s",
+      "equity": 0.40273,
+      "standard_error": 0.000155
+    },
+    {
+      "hand": "73s",
+      "equity": 0.40058,
+      "standard_error": 0.000155
+    },
+    {
+      "hand": "93o",
+      "equity": 0.40032,
+      "standard_error": 0.000155
+    },
+    {
+      "hand": "65o",
+      "equity": 0.39935,
+      "standard_error": 0.000155
+    },
+    {
+      "hand": "53s",
+      "equity": 0.39698,
+      "standard_error": 0.000155
+    },
+    {
+      "hand": "63s",
+      "equity": 0.39541,
+      "standard_error": 0.000155
+    },
+    {
+      "hand": "84o",
+      "equity": 0.39457,
+      "standard_error": 0.000155
+    },
+    {
+      "hand": "92o",
+      "equity": 0.39105,
+      "standard_error": 0.000154
+    },
+    {
+      "hand": "43s",
+      "equity": 0.38661,
+      "standard_error": 0.000154
+    },
+    {
+      "hand": "74o",
+      "equity": 0.38573,
+      "standard_error": 0.000154
+    },
+    {
+      "hand": "54o",
+      "equity": 0.38164,
+      "standard_error": 0.000154
+    },
+    {
+      "hand": "72s",
+      "equity": 0.38149,
+      "standard_error": 0.000154
+    },
+    {
+      "hand": "64o",
+      "equity": 0.38028,
+      "standard_error": 0.000154
+    },
+    {
+      "hand": "52s",
+      "equity": 0.3786,
+      "standard_error": 0.000153
+    },
+    {
+      "hand": "62s",
+      "equity": 0.37674,
+      "standard_error": 0.000153
+    },
+    {
+      "hand": "83o",
+      "equity": 0.37483,
+      "standard_error": 0.000153
+    },
+    {
+      "hand": "42s",
+      "equity": 0.36822,
+      "standard_error": 0.000153
+    },
+    {
+      "hand": "82o",
+      "equity": 0.36811,
+      "standard_error": 0.000153
+    },
+    {
+      "hand": "73o",
+      "equity": 0.36585,
+      "standard_error": 0.000152
+    },
+    {
+      "hand": "53o",
+      "equity": 0.36254,
+      "standard_error": 0.000152
+    },
+    {
+      "hand": "63o",
+      "equity": 0.36078,
+      "standard_error": 0.000152
+    },
+    {
+      "hand": "32s",
+      "equity": 0.35979,
+      "standard_error": 0.000152
+    },
+    {
+      "hand": "43o",
+      "equity": 0.35146,
+      "standard_error": 0.000151
+    },
+    {
+      "hand": "72o",
+      "equity": 0.34562,
+      "standard_error": 0.00015
+    },
+    {
+      "hand": "52o",
+      "equity": 0.34262,
+      "standard_error": 0.00015
+    },
+    {
+      "hand": "62o",
+      "equity": 0.34058,
+      "standard_error": 0.00015
+    },
+    {
+      "hand": "42o",
+      "equity": 0.33204,
+      "standard_error": 0.000149
+    },
+    {
+      "hand": "32o",
+      "equity": 0.32323,
+      "standard_error": 0.000148
+    }
+  ]
+}

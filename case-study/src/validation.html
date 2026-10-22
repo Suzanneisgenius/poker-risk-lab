@@ -54,6 +54,22 @@
     <p class="limits"><strong>Limits.</strong> A sample of hands, not all 133,784,560 seven-card combinations. Command: <code>python -I checks/external-pokerkit/run.py --check</code> (about 80 seconds on 16 cores).</p>
   </article>
 
+  <article aria-labelledby="ranges">
+    <h3 id="ranges">Ranges against PokerKit (independent)</h3>
+    <p>Hand Equity can give one opponent a range such as <code>TT+, AQs+, AKo</code>. The same PokerKit version checks how ranges are read and the equity against them.</p>
+    <ul>
+      <li><strong>Notation.</strong> {{r_notation}} range texts, from <code>QQ+</code> to <code>T9s-65s</code> and two Top % ranges: this parser and PokerKit's <code>parse_range</code> read <span class="pass">the same combos for {{r_notation_match}} of {{r_notation}}</span>. PokerKit rejects kicker ranges such as <code>A5s-A2s</code>, so for those it reads the hands spelled out.</li>
+      <li><strong>Flop, turn and river.</strong> {{r_exact}} spots, weighted and unweighted, including every one of the {{r_every_combos}} hands left on a flop. Every live combo on every runout, ranked by PokerKit: <span class="pass">equal to within {{r_max_diff}}</span>.</li>
+      <li><strong>Before the flop.</strong> The exact value (every combo on all {{r_pre_runouts}} boards) against {{r_pre_samples}} independent deals ranked by PokerKit: <span class="pass">{{r_pre_se}} standard errors</span> apart. The app's own Monte Carlo ({{r_pre_trials}} trials) is {{r_pre_ours_se}} standard errors from the exact value.</li>
+    </ul>
+    <div class="table-wrap"><table>
+      <caption>Range spots, exact enumeration</caption>
+      <thead><tr><th>Spot</th><th class="num">Live combos</th><th class="num">This engine</th><th class="num">PokerKit</th></tr></thead>
+      <tbody id="table-ranges"></tbody>
+    </table></div>
+    <p class="limits"><strong>Limits.</strong> PokerKit ranges have no weights, so the check script applies them; the preflop deals are sampled by the script, with PokerKit reading the ranges and ranking the hands. Top % uses this project's own order of the 169 hands by equity against a random hand ({{o_trials}} trials each; AA {{o_top}}, 32o {{o_bottom}}); {{o_close}} neighbouring pairs are within two standard errors and may swap. Commands: <code>python -I checks/range-equity-pokerkit/run.py --check</code> (about 25 seconds on 16 cores) and <code>node scripts/hand_order.js --check</code> (about 30 seconds).</p>
+  </article>
+
   <article aria-labelledby="acc">
     <h3 id="acc">Exact or simulated? Error against time</h3>
     <p>The app enumerates every heads-up spot with known cards exactly and simulates multiway spots. The table shows why, on spots whose exact value PokerKit confirmed: the error of the app's Monte Carlo over {{acc_seeds}} seeds at each size, and the time it takes.</p>
@@ -117,6 +133,7 @@
     <li>That the bankroll model describes real games — see question 3 of the <a href="./">case study</a>.</li>
     <li>That the Preflop ranges are good strategy: they are illustrative demonstration data, not solver output.</li>
     <li>Correctness on every possible hand: the evaluator checks are large samples, not proofs.</li>
+    <li>That a range describes what a real opponent holds: the equity is only as good as the range typed in.</li>
   </ul>
 </section>
 </main>
@@ -132,6 +149,8 @@
     `<tr><td>${r.check}</td><td>${r.benchmark}</td><td>${r.compared}</td><td>${r.result}</td></tr>`).join("");
   document.getElementById("table-pk").innerHTML = DATA.pokerkit.map((s) =>
     `<tr><td>${s.hero} vs ${s.villain}${s.board ? " on " + s.board : " preflop"}</td><td class="num">${num(s.runouts)}</td><td class="num">${pct(s.ours.equity, 4)}</td><td class="num">${pct(s.pokerkit.equity, 4)}</td><td>${s.match ? '<span class="pass">identical</span>' : "differ"}</td></tr>`).join("");
+  document.getElementById("table-ranges").innerHTML = DATA.ranges.map((s) =>
+    `<tr><td>${s.hero} vs <code>${s.range.length > 40 ? s.range.slice(0, s.range.lastIndexOf(",", 38)) + ", …" : s.range}</code> on ${s.board}</td><td class="num">${num(s.combos)}</td><td class="num">${pct(s.ours, 4)}</td><td class="num">${pct(s.pokerkit, 4)}</td></tr>`).join("");
   document.getElementById("table-engines").innerHTML = DATA.engines.map((r) =>
     `<tr><td>${r.scenario.winrate_bb100 > 0 ? "+" : ""}${r.scenario.winrate_bb100} bb/100</td><td>${r.bridge ? "continuous" : "every 100 hands"}</td><td class="num">${pct(r.web_engine, 2)}</td><td class="num">${pct(r.research_engine, 2)}</td><td class="num">${Math.abs(r.difference_in_se).toFixed(2)} SE</td><td class="num">${r.analytical == null ? "—" : pct(r.analytical, 2)}</td></tr>`).join("");
   // Error against time: one table per spot, with RMSE bars on a shared scale.

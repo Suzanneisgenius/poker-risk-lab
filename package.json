@@ -14,6 +14,7 @@
     "test:ui": "node standalone/test_ui_logic.js",
     "test:unit": "node server/test_unit.js",
     "check:calc-change": "node checks/calculation-change-2026-10-21/run.js --check",
-    "test": "node standalone/engines/test_engines.js && node server/test_unit.js && node server/test_api.js && npm run test:ui"
+    "test:range": "node standalone/shared/test_range.js",
+    "test": "node standalone/engines/test_engines.js && node standalone/shared/test_range.js && node server/test_unit.js && node server/test_api.js && npm run test:ui"
   }
 }

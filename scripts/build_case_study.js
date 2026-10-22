@@ -19,6 +19,8 @@ const assumptions = read("reports/case-study/assumptions.json");
 const overview = read("reports/case-study/overview.json");
 const calc = read("checks/calculation-change-2026-10-21/results.json");
 const pokerkit = read("checks/external-pokerkit/results.json");
+const ranges = read("checks/range-equity-pokerkit/results.json");
+const handOrder = read("standalone/shared/hand-order.json");
 const accuracy = read("checks/equity-accuracy/results.json");
 const benchmark = read("checks/evaluator-benchmark/results.json");
 const engines = read("checks/engine-agreement/results.json");
@@ -97,6 +99,22 @@ const facts = {
   b_mismatch: String(benchmark.agreement.score_mismatches),
   b_cpu: benchmark.conditions.cpu,
   b_node: benchmark.conditions.node.replace(/^v/, ""),
+  r_notation: String(ranges.notation.length),
+  r_notation_match: String(ranges.notation.filter((c) => c.match).length),
+  r_exact: String(ranges.exact.length),
+  r_every_combos: int(ranges.exact.find((s) => s.id === "flop-every-hand").combos),
+  r_max_diff: ranges.exact.reduce((m, s) => Math.max(m, Math.abs(s.difference)), 0).toExponential(0)
+    .replace(/e-(\d+)/, (_, power) => " × 10⁻" + [...power].map((d) => "⁰¹²³⁴⁵⁶⁷⁸⁹"[d]).join("")),
+  r_pre: String(ranges.preflop.length),
+  r_pre_samples: int(ranges.preflop[0].independent_monte_carlo.samples),
+  r_pre_runouts: int(ranges.preflop[0].runouts_per_combo),
+  r_pre_se: ranges.preflop.map((s) => Math.abs(s.independent_monte_carlo.difference_in_se).toFixed(2)).join(" and "),
+  r_pre_ours_se: ranges.preflop.map((s) => Math.abs(s.ours_monte_carlo.difference_in_se).toFixed(2)).join(" and "),
+  r_pre_trials: int(ranges.preflop[0].ours_monte_carlo.trials),
+  o_trials: int(handOrder.trials_per_hand),
+  o_close: String(handOrder.neighbours_within_2_se),
+  o_top: pct(handOrder.hands[0].equity, 1),
+  o_bottom: pct(handOrder.hands.at(-1).equity, 1),
   e_paths: int(engines.paths_per_run),
   e_seed: String(engines.seed),
 };
@@ -122,6 +140,9 @@ const summary = [
   { check: "Hand order", benchmark: `PokerKit ${pokerkit.environment.pokerkit} (independent)`, compared: `${int(pokerkit.hand_order.hands)} random 7-card hands`, result: `${pokerkit.hand_order.disagreement_count} disagreements` },
   { check: "Heads-up equity", benchmark: "PokerKit, exact enumeration", compared: `${pokerkit.heads_up_exact.length} spots, win/tie/lose counts`, result: pokerkit.heads_up_exact.every((s) => s.match) ? "identical" : "differences" },
   { check: "Three-way equity", benchmark: "PokerKit, exact enumeration", compared: `Monte Carlo, ${int(pokerkit.three_way.trials)} trials`, result: `${Math.abs(pokerkit.three_way.difference_in_se).toFixed(2)} SE apart` },
+  { check: "Range notation", benchmark: "PokerKit parse_range", compared: `${ranges.notation.length} range texts`, result: `same combos in ${ranges.notation.filter((c) => c.match).length}` },
+  { check: "Range equity, flop to river", benchmark: "PokerKit hand ranking, exact enumeration", compared: `${ranges.exact.length} spots, up to ${int(Math.max(...ranges.exact.map((s) => s.combos)))} combos`, result: ranges.exact.every((s) => s.match) ? "equal" : "differences" },
+  { check: "Range equity, preflop", benchmark: "Monte Carlo with PokerKit ranking", compared: `${ranges.preflop.length} spots against the exact value`, result: ranges.preflop.map((s) => Math.abs(s.independent_monte_carlo.difference_in_se).toFixed(2)).join(", ") + " SE apart" },
   { check: "Evaluator rewrite", benchmark: "Earlier evaluator, same machine", compared: `${int(benchmark.conditions.hands)} hands: scores and speed`, result: `${benchmark.agreement.score_mismatches} differences; ×${benchmark.median_speedup} faster` },
   { check: "Bankroll risk", benchmark: "Finite-horizon Brownian formula (exact for the model)", compared: "40 seeds, bridge on and off", result: `${pct(multiPlus3.mean_risk_bridge, 2)} vs ${pct(noise.exact_risk, 2)}` },
   { check: "Interval coverage", benchmark: "Exact value", compared: "40 runs at each of 3 sizes", result: noise.rows.map((r) => r.wilson_intervals_covering_exact).join(", ") + " of 40" },
@@ -140,6 +161,7 @@ const pageData = {
   validation: {
     summary,
     pokerkit: pokerkit.heads_up_exact,
+    ranges: ranges.exact.map(({ id, hero, board, range, combos, ours, pokerkit: theirs, match }) => ({ id, hero, board, range, combos, ours, pokerkit: theirs, match })),
     accuracy: { spots: accuracy.spots },
     engines: engines.rows,
   },
