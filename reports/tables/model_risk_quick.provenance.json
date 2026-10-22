@@ -1,0 +1,71 @@
+{
+  "timestamp_utc": "2026-07-14T01:32:12+00:00",
+  "git_commit": null,
+  "platform": "Linux-6.8.0-124-generic-aarch64-with-glibc2.35",
+  "packages": {
+    "python": "3.10.12",
+    "numpy": "2.2.6",
+    "scipy": "1.15.3",
+    "pandas": "2.3.3",
+    "matplotlib": "3.10.9"
+  },
+  "parameters": {
+    "experiment": "model_risk",
+    "config": {
+      "scenario": {
+        "winrate_bb100": 2.0,
+        "std_bb100": 90.0,
+        "bankroll_bb": 1500.0,
+        "ruin_threshold_bb": 0.0,
+        "n_hands": 100000,
+        "step_hands": 100
+      },
+      "models": [
+        "gaussian",
+        "student_t",
+        "shock_mixture",
+        "ar1",
+        "regime_switching"
+      ],
+      "params": {
+        "student_t": {
+          "df": 3.0
+        },
+        "shock_mixture": {
+          "p": 0.03,
+          "shock_mean": -4.0,
+          "shock_scale": 2.5
+        },
+        "ar1": {
+          "phi": 0.3
+        },
+        "regime_switching": {
+          "p_stay_normal": 0.98,
+          "p_stay_adverse": 0.9,
+          "mu_adverse": -5.0,
+          "vol_mult": 1.6
+        }
+      },
+      "n_paths": 12000,
+      "seed": 20240601
+    },
+    "info": {
+      "gaussian": {},
+      "student_t": {
+        "df": 3.0
+      },
+      "shock_mixture": {
+        "p": 0.03,
+        "shock_share": 0.03006758333333333
+      },
+      "ar1": {
+        "phi": 0.3
+      },
+      "regime_switching": {
+        "pi_adverse_theoretical": 0.16666666666666682,
+        "adverse_occupancy": 0.1668695,
+        "mu_normal": 3.4000000000000017
+      }
+    }
+  }
+}

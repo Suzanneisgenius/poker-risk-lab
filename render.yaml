@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: poker-analytics-suite
+    runtime: node
+    plan: free
+    buildCommand: npm run build && npm test
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: CALC_WORKERS
+        value: 2

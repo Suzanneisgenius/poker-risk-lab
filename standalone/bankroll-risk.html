@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Poker Bankroll Risk Simulator</title>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<style>
+  :root{
+    --bg:#0B1220; --surface:#131C2E; --surface2:#182338; --grid:#243247;
+    --accent:#38BDF8; --ruin:#F87171; --pos:#4ADE80; --median:#FBBF24;
+    --text:#E6EDF3; --muted:#94A3B8; --dim:#6B7A8D;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:14px}
+  .app{display:grid;grid-template-columns:300px 1fr;min-height:100vh}
+  /* Sidebar */
+  .side{background:var(--surface);border-right:1px solid var(--grid);padding:18px 16px;position:sticky;top:0;height:100vh;overflow-y:auto}
+  .side h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:18px 0 8px}
+  .side h2:first-child{margin-top:0}
+  .fld{margin-bottom:10px}
+  .fld label{display:block;font-size:12px;color:var(--muted);margin-bottom:3px}
+  .fld input,.fld select{width:100%;background:var(--surface2);border:1px solid var(--grid);
+       color:var(--text);border-radius:7px;padding:7px 9px;font-size:13px}
+  .fld input:focus,.fld select:focus{outline:none;border-color:var(--accent)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .btn{width:100%;border:none;border-radius:8px;padding:10px;font-size:14px;font-weight:600;cursor:pointer;margin-top:6px}
+  .btn.primary{background:var(--accent);color:#04121d}
+  .btn.ghost{background:transparent;border:1px solid var(--grid);color:var(--muted)}
+  .btn:active{transform:translateY(1px)}
+  .hint{font-size:11px;color:var(--dim);margin-top:6px;line-height:1.4}
+  /* Main */
+  .main{padding:24px 30px;max-width:1160px}
+  h1{font-size:25px;margin:0 0 3px}
+  .sub{color:var(--muted);margin:0 0 3px}
+  .disc{color:var(--dim);font-size:12px;margin:0 0 16px}
+  .tabbar{display:flex;gap:4px;border-bottom:1px solid var(--grid);margin-bottom:18px;flex-wrap:wrap}
+  .tab{padding:8px 15px;font-size:13px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent}
+  .tab.on{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+  .panel{display:none} .panel.on{display:block}
+  .summary{background:var(--surface);border:1px solid var(--grid);border-radius:10px;padding:14px 18px;margin-bottom:16px;font-size:15px}
+  .summary b{color:var(--accent)}
+  .stale{background:#3a2a12;border:1px solid #7a5a1e;color:#f6c667;border-radius:8px;padding:8px 14px;margin-bottom:14px;font-size:13px;display:none}
+  .kgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+  .kpi{background:var(--surface);border:1px solid var(--grid);border-radius:10px;padding:13px 15px}
+  .kl{color:var(--muted);font-size:12px} .kv{font-size:23px;font-weight:700;margin:4px 0}
+  .ks{color:var(--dim);font-size:11px}
+  .card{background:var(--surface);border:1px solid var(--grid);border-radius:10px;padding:6px;margin-bottom:6px}
+  .cap{color:var(--muted);font-size:12px;margin:2px 4px 18px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  h3{font-size:16px;margin:18px 0 8px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--grid)}
+  th{color:var(--muted);font-weight:600}
+  .badge{color:var(--median);font-weight:600}
+  ul.interp{background:var(--surface);border:1px solid var(--grid);border-radius:10px;padding:12px 22px;line-height:1.55}
+  ul.interp li{margin:7px 0}
+  .spin{display:none;color:var(--accent);font-size:13px;margin:8px 0}
+  .neutral{color:var(--muted);font-size:13px;margin:6px 0 0}
+  @media(max-width:820px){.app{grid-template-columns:1fr}.side{position:static;height:auto}.kgrid{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="side">
+    <h2>Scenario</h2>
+    <div class="fld">
+      <label>Preset</label>
+      <select id="preset">
+        <option value="conservative">Conservative regular</option>
+        <option value="breakeven">Break-even player</option>
+        <option value="smalledge">Small-edge player</option>
+        <option value="highvar">High-variance aggressive</option>
+        <option value="underrolled">Under-rolled player</option>
+        <option value="custom">Custom</option>
+      </select>
+    </div>
+    <div class="fld">
+      <label>Display units</label>
+      <select id="units"><option value="buyins">Buy-ins</option><option value="bb">Big blinds</option></select>
+    </div>
+    <div class="fld"><label>Big-blind size ($, 0 = hide money)</label><input id="bbsize" type="number" step="0.25" value="1"></div>
+
+    <h2>Player assumptions</h2>
+    <div class="fld"><label>Win rate (bb/100)</label><input id="wr" type="number" step="0.5" value="3"></div>
+    <div class="fld"><label>Std dev (bb/100)</label><input id="sd" type="number" step="5" value="90"></div>
+
+    <h2>Bankroll policy</h2>
+    <div class="fld"><label>Starting bankroll (buy-ins)</label><input id="bank" type="number" step="1" value="50"></div>
+    <div class="fld"><label>Ruin threshold (buy-ins)</label><input id="thr" type="number" step="1" value="0"></div>
+    <div class="fld"><label>Target max ruin probability (%)</label><input id="target" type="number" step="0.5" value="5"></div>
+
+    <h2>Simulation</h2>
+    <div class="row2">
+      <div class="fld"><label>Hands</label><input id="hands" type="number" step="10000" value="100000"></div>
+      <div class="fld"><label>Paths</label><input id="paths" type="number" step="1000" value="6000"></div>
+    </div>
+    <div class="row2">
+      <div class="fld"><label>Step (hands)</label><input id="step" type="number" step="10" value="100"></div>
+      <div class="fld"><label>Seed</label><input id="seed" type="number" step="1" value="42"></div>
+    </div>
+    <button class="btn primary" id="run">Run simulation</button>
+    <button class="btn ghost" id="reroll">Reroll seed</button>
+    <div class="hint" id="memhint"></div>
+  </aside>
+
+  <!-- ===================== MAIN ===================== -->
+  <main class="main">
+    <h1>Poker Bankroll Risk Simulator</h1>
+    <p class="sub">Monte Carlo risk analysis for cash-game bankroll decisions.</p>
+    <p class="disc">Research and educational tool. Results depend on simplified model assumptions and are not financial or gambling advice.</p>
+
+    <div class="tabbar">
+      <div class="tab on" data-tab="overview">Overview</div>
+      <div class="tab" data-tab="sensitivity">Sensitivity</div>
+      <div class="tab" data-tab="validation">Validation</div>
+      <div class="tab" data-tab="method">Methodology</div>
+    </div>
+
+    <div class="stale" id="stale">Parameters changed. Click <b>Run simulation</b> to refresh results.</div>
+    <div class="spin" id="spin">Simulating…</div>
+
+    <!-- Overview -->
+    <section class="panel on" id="overview">
+      <div class="summary" id="summary">Set your scenario and click <b>Run simulation</b>.</div>
+      <div class="kgrid" id="kpis"></div>
+      <div class="card"><div id="fan" style="height:360px"></div></div>
+      <p class="cap">Lines are a sampled subset of paths, not all simulated paths. Shaded band = P5–P95 across the sample. Cyan = surviving, red = ruined.</p>
+      <div class="two">
+        <div class="card"><div id="ddist" style="height:320px"></div></div>
+        <div class="card"><div id="tdist" style="height:320px"></div></div>
+      </div>
+      <p class="cap">Mean and median are shown together because the terminal distribution is typically skewed.</p>
+      <h3>Interpretation</h3>
+      <p id="risklabel" class="neutral"></p>
+      <ul class="interp" id="interp"></ul>
+    </section>
+
+    <!-- Sensitivity -->
+    <section class="panel" id="sensitivity">
+      <h3>Risk-of-ruin curve</h3>
+      <div class="fld" style="max-width:260px">
+        <label>Sweep parameter</label>
+        <select id="sweepx"><option value="bank">Bankroll</option><option value="wr">Win rate</option><option value="sd">Std dev</option></select>
+      </div>
+      <button class="btn primary" id="sweepbtn" style="max-width:260px">Compute curve</button>
+      <div class="spin" id="spin2">Sweeping…</div>
+      <div class="card" style="margin-top:10px"><div id="curve" style="height:360px"></div></div>
+      <p class="cap">Monte Carlo estimate (cyan) with an analytical reference (dashed). The vertical marker is your current scenario; the dotted line is your target risk.</p>
+      <h3>Win-rate uncertainty</h3>
+      <p class="neutral">Your observed win rate is itself an estimate. This sweeps a plausible band around it to show how much ruin risk depends on that assumption.</p>
+      <div class="card"><div id="wrband" style="height:320px"></div></div>
+    </section>
+
+    <!-- Validation -->
+    <section class="panel" id="validation">
+      <h3>Cross-checking the Monte Carlo estimate</h3>
+      <p class="neutral">Three methods answer slightly different questions and are not expected to be identical. The infinite-horizon figure assumes unlimited time and is an upper bound.</p>
+      <table id="valtable"><thead><tr><th>Method</th><th>Risk of ruin</th></tr></thead><tbody></tbody></table>
+      <p class="neutral" id="valverdict"></p>
+    </section>
+
+    <!-- Methodology -->
+    <section class="panel" id="method">
+      <h3>Methodology</h3>
+      <ul class="interp">
+        <li>Bankroll in big blinds, updated in steps of <code>step</code> hands.</li>
+        <li>Each step: <code>increment ~ Normal(winrate·step/100, std·√(step/100))</code>.</li>
+        <li>Ruin is absorbing: once bankroll ≤ threshold, the path is clipped there and cannot recover.</li>
+        <li>Risk of ruin = fraction of ruined paths; the confidence interval is the Wilson score interval.</li>
+        <li>Finite-horizon Brownian first-passage is the most comparable analytical benchmark; infinite-horizon gambler's ruin <code>exp(-2μb/σ²)</code> is an upper bound.</li>
+      </ul>
+      <h3>Assumptions and limitations</h3>
+      <ul class="interp">
+        <li>i.i.d. results ignore session dependence, tilt, fatigue, and game selection.</li>
+        <li>Normal increments may understate heavy tails; win-rate estimates carry sampling uncertainty.</li>
+        <li>Deposits, withdrawals, and stake changes are excluded. Cash-game variance only — not tournament ICM.</li>
+        <li>Outputs are conditional model estimates, not guarantees.</li>
+      </ul>
+      <p class="neutral">This standalone page uses its own seeded RNG, so results are reproducible here but will not byte-match the Python engine (same model, different random stream).</p>
+    </section>
+  </main>
+</div>
+
+<script>
+"use strict";
+const BUYIN=100;
+// ---------- RNG (mulberry32) + Box-Muller ----------
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function gaussFactory(seed){
+  const r=mulberry32(seed>>>0); let spare=null;
+  return function(){
+    if(spare!==null){const s=spare;spare=null;return s;}
+    let u=0,v=0; while(u<=1e-12)u=r(); v=r();
+    const mag=Math.sqrt(-2*Math.log(u)); spare=mag*Math.sin(2*Math.PI*v);
+    return mag*Math.cos(2*Math.PI*v);
+  };
+}
+// ---------- Normal CDF (erf approx) ----------
+function erf(x){const s=x<0?-1:1;x=Math.abs(x);
+  const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+  const t=1/(1+p*x); const y=1-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-x*x);
+  return s*y;}
+function Phi(x){return 0.5*(1+erf(x/Math.SQRT2));}
+
+// ---------- Core Monte Carlo ----------
+function simulate(p, nPaths, storeN){
+  const nSteps=Math.ceil(p.hands/p.step);
+  const lastSize=p.hands-(nSteps-1)*p.step;
+  const gauss=gaussFactory(p.seed);
+  const thr=p.thr, start=p.bank;
+  let nRuined=0, sumTerm=0, nProfit=0, nDouble=0;
+  const terminals=new Float64Array(nPaths);
+  const maxdds=new Float64Array(nPaths);
+  const ruinHands=new Float64Array(nPaths);
+  const plotStep=Math.max(1,Math.floor(nSteps/120));
+  const sampleX=[0]; for(let s=1;s<=nSteps;s++){ if(s%plotStep===0||s===nSteps) sampleX.push(Math.min(s*p.step,p.hands)); }
+  const samplePaths=[], sampleRuin=[];
+  for(let i=0;i<nPaths;i++){
+    let bank=start, peak=start, maxdd=0, ruined=false, ruinHand=-1;
+    const keep=i<storeN; let line=keep?[start]:null;
+    for(let s=1;s<=nSteps;s++){
+      const size=(s===nSteps)?lastSize:p.step;
+      const mean=p.wr*size/100, sd=p.sd*Math.sqrt(size/100);
+      if(!ruined){
+        bank+=mean+sd*gauss();
+        if(bank<=thr){bank=thr;ruined=true;ruinHand=s*p.step;}
+        if(bank>peak)peak=bank;
+        const dd=peak-bank; if(dd>maxdd)maxdd=dd;
+      }
+      if(keep && (s%plotStep===0||s===nSteps)) line.push(bank);
+    }
+    terminals[i]=bank; maxdds[i]=maxdd; ruinHands[i]=ruined?ruinHand:-1;
+    if(ruined)nRuined++; sumTerm+=bank;
+    if(bank>start)nProfit++; if(bank>=2*start)nDouble++;
+    if(keep){samplePaths.push(line);sampleRuin.push(ruined);}
+  }
+  return {nPaths,nRuined,terminals,maxdds,ruinHands,sumTerm,nProfit,nDouble,
+          sampleX,samplePaths,sampleRuin,start,thr};
+}
+function pct(arr,q){const a=Float64Array.from(arr).sort();const idx=(a.length-1)*q;const lo=Math.floor(idx),hi=Math.ceil(idx);
+  return a[lo]+(a[hi]-a[lo])*(idx-lo);}
+function median(arr){return pct(arr,0.5);}
+function wilson(k,n,z=1.96){const p=k/n,d=1+z*z/n;const c=(p+z*z/(2*n))/d;
+  const h=z*Math.sqrt(p*(1-p)/n+z*z/(4*n*n))/d;return [Math.max(0,c-h),Math.min(1,c+h)];}
+
+// ---------- Analytical validation ----------
+function brownianFinite(p){const b=p.bank-p.thr; if(b<=0)return 1;
+  const mu=p.wr/100, sig2=p.sd*p.sd/100, s=Math.sqrt(sig2), T=p.hands;
+  if(sig2<=0)return (b+mu*T)<=0?1:0;
+  const den=s*Math.sqrt(T); const a1=(-b-mu*T)/den, a2=(-b+mu*T)/den;
+  let term2=Math.exp(-2*mu*b/sig2)*Phi(a2);
+  let prob=Phi(a1)+term2; if(!isFinite(prob))prob=(mu<0?1:1);
+  return Math.min(1,Math.max(0,prob));}
+function brownianInfinite(p){const b=p.bank-p.thr; if(b<=0)return 1;
+  if(p.sd<=0)return p.wr<0?1:0; if(p.wr<=0)return 1;
+  return Math.exp(-2*p.wr*b/(p.sd*p.sd));}
+
+// ---------- Units / formatting ----------
+function readParams(){
+  const g=id=>parseFloat(document.getElementById(id).value);
+  return {wr:g('wr'),sd:Math.max(0,g('sd')),bank:g('bank')*BUYIN,thr:g('thr')*BUYIN,
+          hands:Math.max(1,Math.round(g('hands'))),paths:Math.max(1,Math.round(g('paths'))),
+          step:Math.max(1,Math.round(g('step'))),seed:Math.round(g('seed')),
+          target:g('target')/100, bbsize:g('bbsize'),
+          units:document.getElementById('units').value};
+}
+function udiv(p){return p.units==='buyins'?BUYIN:1;}
+function ulabel(p){return p.units==='buyins'?'buy-ins':'bb';}
+function fmtAmt(bb,p){const v=bb/udiv(p);const core=p.units==='buyins'?v.toFixed(1)+' BI':Math.round(v).toLocaleString()+' bb';
+  if(p.bbsize>0){const m=bb*p.bbsize;return core+' ('+(m<0?'-$':'$')+Math.abs(Math.round(m)).toLocaleString()+')';}return core;}
+function fmtPct(x){return (x*100).toFixed(1)+'%';}
+
+// ---------- Plotly theme ----------
+const C={bg:'#0B1220',grid:'#243247',accent:'#38BDF8',ruin:'#F87171',pos:'#4ADE80',median:'#FBBF24',text:'#E6EDF3',muted:'#94A3B8',band:'rgba(56,189,248,0.16)'};
+function layout(title,xt,yt,extra){return Object.assign({title:{text:title,font:{color:C.text,size:15}},
+  paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:C.muted,size:11},
+  margin:{l:56,r:16,t:44,b:44},xaxis:{title:xt,gridcolor:C.grid,zerolinecolor:C.grid},
+  yaxis:{title:yt,gridcolor:C.grid,zerolinecolor:C.grid},legend:{font:{color:C.muted}},showlegend:true},extra||{});}
+const CFG={displayModeBar:false,responsive:true};
+
+// ---------- Render ----------
+let lastKey=null;
+function keyOf(p){return [p.wr,p.sd,p.bank,p.thr,p.hands,p.paths,p.step,p.seed].join('|');}
+
+function render(p,r){
+  const div=udiv(p), ul=ulabel(p);
+  const ror=r.nRuined/r.nPaths; const [lo,hi]=wilson(r.nRuined,r.nPaths);
+  const medTerm=median(r.terminals), meanTerm=r.sumTerm/r.nPaths;
+  const p95dd=pct(r.maxdds,0.95);
+  const rh=Array.from(r.ruinHands).filter(x=>x>=0); const medRuin=rh.length?median(rh):NaN;
+  const probProfit=r.nProfit/r.nPaths;
+
+  document.getElementById('summary').innerHTML=
+    `Under the selected assumptions (${p.wr} bb/100, std ${p.sd}, ${(p.bank/BUYIN)} buy-ins, ${p.hands.toLocaleString()} hands), `+
+    `the estimated probability of reaching the ruin threshold is <b>${fmtPct(ror)}</b> [95% CI ${fmtPct(lo)}–${fmtPct(hi)}].`;
+
+  const kpis=[['Risk of ruin',fmtPct(ror),`95% CI ${fmtPct(lo)}–${fmtPct(hi)}`],
+    ['P95 max drawdown',fmtAmt(p95dd,p),'95th-pct peak-to-trough'],
+    ['Median terminal',fmtAmt(medTerm,p),'ending bankroll'],
+    ['Probability of profit',fmtPct(probProfit),'paths above start'],
+    ['Median time to ruin',isNaN(medRuin)?'n/a':medRuin.toLocaleString()+' hands','ruined paths only'],
+    ['Paths simulated',r.nPaths.toLocaleString(),'seed '+p.seed]];
+  document.getElementById('kpis').innerHTML=kpis.map(k=>
+    `<div class="kpi"><div class="kl">${k[0]}</div><div class="kv">${k[1]}</div><div class="ks">${k[2]}</div></div>`).join('');
+
+  // Fan chart
+  const traces=[];
+  const xs=r.sampleX.map(h=>h);
+  // band
+  if(r.samplePaths.length>=20){
+    const L=r.sampleX.length, p5=[],p95=[];
+    for(let j=0;j<L;j++){const col=r.samplePaths.map(pp=>pp[j]/div);p5.push(pct(col,0.05));p95.push(pct(col,0.95));}
+    traces.push({x:xs.concat(xs.slice().reverse()),y:p95.concat(p5.slice().reverse()),fill:'toself',
+      fillcolor:C.band,line:{color:'rgba(0,0,0,0)'},hoverinfo:'skip',name:'P5–P95 band'});
+  }
+  r.samplePaths.forEach((pp,i)=>{traces.push({x:xs,y:pp.map(v=>v/div),mode:'lines',
+    line:{color:r.sampleRuin[i]?C.ruin:C.accent,width:0.7},opacity:0.5,hoverinfo:'skip',showlegend:false});});
+  // median path
+  const L=r.sampleX.length,medLine=[];for(let j=0;j<L;j++){medLine.push(median(r.samplePaths.map(pp=>pp[j]/div)));}
+  traces.push({x:xs,y:medLine,mode:'lines',line:{color:C.median,width:2.2},name:'Median path'});
+  const lay=layout(`Bankroll paths (showing ${r.samplePaths.length} of ${r.nPaths} sampled)`,'Hands',`Bankroll (${ul})`);
+  lay.shapes=[{type:'line',x0:0,x1:p.hands,y0:p.bank/div,y1:p.bank/div,line:{color:C.muted,dash:'dot',width:1}},
+              {type:'line',x0:0,x1:p.hands,y0:p.thr/div,y1:p.thr/div,line:{color:C.ruin,dash:'dash',width:1}}];
+  Plotly.react('fan',traces,lay,CFG);
+
+  // Drawdown histogram
+  Plotly.react('ddist',[{x:Array.from(r.maxdds).map(v=>v/div),type:'histogram',nbinsx:45,marker:{color:C.accent},opacity:0.85,name:'Max drawdown'}],
+    (function(){const l=layout('Maximum drawdown (from prior peak)',`Max drawdown (${ul})`,'Count');
+     l.shapes=[mk(median(r.maxdds)/div,C.median),mk(pct(r.maxdds,0.9)/div,C.muted),mk(p95dd/div,C.ruin)];return l;})(),CFG);
+
+  // Terminal histogram
+  Plotly.react('tdist',[{x:Array.from(r.terminals).map(v=>v/div),type:'histogram',nbinsx:55,marker:{color:C.accent},opacity:0.85,name:'Terminal'}],
+    (function(){const l=layout('Terminal bankroll distribution',`Terminal bankroll (${ul})`,'Count');
+     l.shapes=[mk(p.bank/div,C.muted),mk(medTerm/div,C.median),mk(meanTerm/div,C.pos)];return l;})(),CFG);
+
+  // Interpretation
+  const label=classify(ror);
+  document.getElementById('risklabel').innerHTML=`Risk classification: <span class="badge">${label}</span> <span style="color:#6B7A8D">(interface label, not a universal bankroll standard)</span>`;
+  const lines=[`At the selected assumptions, about ${fmtPct(ror)} of simulated paths reached the ruin threshold within ${p.hands.toLocaleString()} hands (95% CI ${fmtPct(lo)}–${fmtPct(hi)}).`,
+    `Median ending bankroll is ${fmtAmt(medTerm,p)} versus a mean of ${fmtAmt(meanTerm,p)} — the gap reflects right-skew in outcomes.`,
+    `Remember your win rate is itself an estimate; if it is lower than assumed, real ruin risk is higher than shown.`];
+  document.getElementById('interp').innerHTML=lines.map(x=>`<li>${x}</li>`).join('');
+
+  // Validation table (analytical, instant)
+  const bf=brownianFinite(p), bi=brownianInfinite(p);
+  const consistent = (lo<=bf&&bf<=hi)?'consistent within simulation uncertainty':
+      (Math.abs(ror-bf)<=Math.max(0.02,0.25*bf)?'directionally consistent':'difference likely reflects finite-horizon or discretization assumptions');
+  document.querySelector('#valtable tbody').innerHTML=
+    `<tr><td>Monte Carlo, finite horizon</td><td>${fmtPct(ror)}</td></tr>`+
+    `<tr><td style="color:${C.muted}">&nbsp;&nbsp;95% confidence interval</td><td style="color:${C.muted}">[${fmtPct(lo)}, ${fmtPct(hi)}]</td></tr>`+
+    `<tr><td>Brownian approx, finite horizon</td><td>${fmtPct(bf)}</td></tr>`+
+    `<tr><td>Brownian approx, infinite horizon</td><td>${fmtPct(bi)}</td></tr>`;
+  document.getElementById('valverdict').innerHTML=
+    `The Monte Carlo estimate (${fmtPct(ror)}) is <b>${consistent}</b> with the finite-horizon Brownian approximation (${fmtPct(bf)}). The infinite-horizon figure (${fmtPct(bi)}) assumes unlimited time and sits higher by design.`;
+}
+function mk(x,c){return {type:'line',x0:x,x1:x,yref:'paper',y0:0,y1:1,line:{color:c,dash:'dash',width:1.4}};}
+function classify(r){return r<0.01?'Very low modeled ruin risk':r<0.05?'Low modeled ruin risk':r<0.15?'Material modeled ruin risk':r<0.30?'High modeled ruin risk':'Very high modeled ruin risk';}
+
+// ---------- Sensitivity sweeps ----------
+function computeCurve(){
+  const p=readParams(); const field=document.getElementById('sweepx').value;
+  document.getElementById('spin2').style.display='block';
+  setTimeout(()=>{
+    let vals=[], cur;
+    if(field==='bank'){const lo=Math.max(p.thr+BUYIN,p.bank*0.3);for(let i=0;i<11;i++)vals.push(lo+(p.bank*2-lo)*i/10);cur=p.bank;}
+    else if(field==='wr'){const lo=Math.max(-5,p.wr-4);for(let i=0;i<11;i++)vals.push(lo+((p.wr+4)-lo)*i/10);cur=p.wr;}
+    else{const lo=Math.max(20,p.sd-40);for(let i=0;i<11;i++)vals.push(lo+((p.sd+40)-lo)*i/10);cur=p.sd;}
+    const xs=[],mc=[],an=[],div=udiv(p);
+    vals.forEach(v=>{const q=Object.assign({},p,{paths:1800}); q[field]=v;
+      if(q.bank<=q.thr)return;
+      const rr=simulate(q,q.paths,0); const ror=rr.nRuined/rr.nPaths;
+      xs.push(field==='bank'?v/div:v); mc.push(ror); an.push(brownianFinite(q));});
+    const ul=ulabel(p), xt=field==='bank'?`Bankroll (${ul})`:field==='wr'?'Win rate (bb/100)':'Std dev (bb/100)';
+    const lay=layout('Risk of ruin',xt,'Risk of ruin',{yaxis:{tickformat:'.0%',gridcolor:C.grid}});
+    lay.shapes=[{type:'line',x0:field==='bank'?cur/div:cur,x1:field==='bank'?cur/div:cur,yref:'paper',y0:0,y1:1,line:{color:C.median,dash:'dot',width:1.4}},
+                {type:'line',x0:Math.min(...xs),x1:Math.max(...xs),y0:p.target,y1:p.target,line:{color:C.pos,dash:'dot',width:1.4}}];
+    Plotly.react('curve',[
+      {x:xs,y:mc,mode:'lines+markers',line:{color:C.accent,width:2.4},name:'Monte Carlo'},
+      {x:xs,y:an,mode:'lines',line:{color:C.muted,width:1.6,dash:'dash'},name:'Analytical (finite)'}],lay,CFG);
+    document.getElementById('spin2').style.display='none';
+  },30);
+}
+function computeWrBand(p){
+  const unc=2.0; const xs=[],mc=[],an=[];
+  for(let i=0;i<9;i++){const wr=p.wr-unc+2*unc*i/8; const q=Object.assign({},p,{wr,paths:1800});
+    const rr=simulate(q,q.paths,0); xs.push(wr); mc.push(rr.nRuined/rr.nPaths); an.push(brownianFinite(q));}
+  const lay=layout('Win-rate uncertainty','Win rate (bb/100)','Risk of ruin',{yaxis:{tickformat:'.0%',gridcolor:C.grid}});
+  lay.shapes=[{type:'line',x0:p.wr,x1:p.wr,yref:'paper',y0:0,y1:1,line:{color:C.median,dash:'dot',width:1.4}},
+              {type:'line',x0:Math.min(...xs),x1:Math.max(...xs),y0:p.target,y1:p.target,line:{color:C.pos,dash:'dot',width:1.4}}];
+  Plotly.react('wrband',[{x:xs,y:mc,mode:'lines+markers',line:{color:C.accent,width:2.4},name:'Monte Carlo'},
+    {x:xs,y:an,mode:'lines',line:{color:C.muted,dash:'dash',width:1.6},name:'Analytical (finite)'}],lay,CFG);
+}
+
+// ---------- Presets ----------
+const PRESETS={conservative:{wr:3,sd:90,bank:50,thr:0,hands:100000},
+  breakeven:{wr:0,sd:100,bank:30,thr:0,hands:100000},
+  smalledge:{wr:1.5,sd:100,bank:30,thr:0,hands:100000},
+  highvar:{wr:5,sd:150,bank:40,thr:0,hands:100000},
+  underrolled:{wr:3,sd:100,bank:15,thr:0,hands:100000}};
+document.getElementById('preset').addEventListener('change',e=>{
+  const v=e.target.value; if(v==='custom')return; const P=PRESETS[v];
+  document.getElementById('wr').value=P.wr;document.getElementById('sd').value=P.sd;
+  document.getElementById('bank').value=P.bank;document.getElementById('thr').value=P.thr;
+  document.getElementById('hands').value=P.hands; markStale();});
+
+// ---------- Events ----------
+function memHint(){const p=readParams();const nSteps=Math.ceil(p.hands/p.step);
+  const est=p.paths*Math.min(nSteps,120)*8/1e6;
+  document.getElementById('memhint').textContent=`${p.paths.toLocaleString()} paths × ${nSteps.toLocaleString()} steps · seed ${p.seed}`;}
+function markStale(){document.getElementById('stale').style.display= lastKey?'block':'none';memHint();}
+function runSim(){
+  const p=readParams();
+  document.getElementById('spin').style.display='block';
+  document.getElementById('stale').style.display='none';
+  setTimeout(()=>{
+    const storeN=Math.min(120,p.paths);
+    const r=simulate(p,p.paths,storeN);
+    render(p,r); computeWrBand(p);
+    lastKey=keyOf(p);
+    document.getElementById('spin').style.display='none';
+    memHint();
+  },30);
+}
+document.getElementById('run').addEventListener('click',runSim);
+document.getElementById('sweepbtn').addEventListener('click',computeCurve);
+document.getElementById('reroll').addEventListener('click',()=>{
+  document.getElementById('seed').value=Math.floor(Math.random()*1e6);runSim();});
+['wr','sd','bank','thr','hands','paths','step','seed','target'].forEach(id=>
+  document.getElementById(id).addEventListener('input',markStale));
+document.getElementById('units').addEventListener('change',()=>{if(lastKey)runSim();});
+document.getElementById('bbsize').addEventListener('input',()=>{if(lastKey)runSim();});
+// tabs
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on');document.getElementById(t.dataset.tab).classList.add('on');
+  window.dispatchEvent(new Event('resize'));}));
+// initial run
+memHint(); runSim();
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+# Barrier-resolution convergence experiment.
+# High-precision config for local runs. Reduce n_paths for a quick check.
+scenario:
+  winrate_bb100: 1.0        # small edge -> non-trivial ruin risk
+  std_bb100: 90.0
+  bankroll_bb: 800.0        # ~8 buy-ins: thin enough for a meaningful ruin rate
+  ruin_threshold_bb: 0.0
+  n_hands: 50000
+resolutions: [1, 5, 10, 25, 50, 100, 250, 500]
+n_paths: 100000             # high precision; use --n-paths 20000 for a fast pass
+seed: 42
+chunk_paths: 1000

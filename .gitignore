@@ -1,0 +1,14 @@
+.DS_Store
+__pycache__/
+.pytest_cache/
+.venv/
+work/
+outputs/
+node_modules/
+.env
+.env.*
+*.log
+coverage/
+preflop-design-comparison.png
+preflop-implementation-*.png
+preflop-change-hand.png
