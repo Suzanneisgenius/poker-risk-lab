@@ -1,7 +1,6 @@
 "use strict";
 
 const {
-  equityMC,
   equityMultiwayMC,
   equityExact,
   nRunouts,
@@ -13,9 +12,12 @@ const { ValidationError } = require("./errors.js");
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
 // Work ceilings sized so the largest accepted request finishes well inside the
-// route timeouts on a small shared CPU. One "evaluation" ranks one 7-card hand;
-// one "path-step" advances one bankroll path by one 100-hand increment.
-const MAX_EQUITY_EVALUATIONS = 300000;
+// route timeouts on a small shared CPU. One "path-step" advances one bankroll
+// path by one 100-hand increment.
+//
+// Equity needs no separate ceiling: the evaluator ranks ~10M hands/s, and the
+// largest accepted request (exact heads-up preflop, 1,712,304 runouts, i.e.
+// ~3.4M evaluations) takes well under a second.
 const MAX_PATH_STEPS = 100000000;
 const CURVE_POINTS = 9;
 
@@ -56,24 +58,20 @@ function planEquity(input) {
     hand === null ? null : cards(hand, `Opponent ${index + 1}`, 2, 2)
   );
   validateKnownCards(hero, opponents, board);
-  const requestedTrials = integer(input.trials ?? 30000, "Trials", 1000, 150000);
+  const trials = integer(input.trials ?? 30000, "Trials", 1000, 150000);
   const seed = integer(input.seed ?? 42, "Seed", -2147483648, 2147483647);
   const players = opponents.length + 1;
 
+  // Every fixed heads-up spot is enumerated exactly, preflop included.
   if (opponents.length === 1 && opponents[0]) {
     const runs = nRunouts(hero, opponents[0], board);
-    if (runs <= 200000) {
-      return { mode: "exact", hero, board, opponents, seed, runs, trials: runs, requestedTrials, evaluations: runs * 2 };
-    }
-    return { mode: "headsUp", hero, board, opponents, seed, trials: requestedTrials, requestedTrials, evaluations: requestedTrials * 2 };
+    return { mode: "exact", hero, board, opponents, seed, trials: runs, evaluations: runs * 2 };
   }
   if (board.length === 5 && opponents.every(Boolean)) {
-    return { mode: "showdown", hero, board, opponents, seed, trials: 1, requestedTrials, evaluations: players };
+    return { mode: "showdown", hero, board, opponents, seed, trials: 1, evaluations: players };
   }
-  // Every multiway trial ranks one hand per player, so the trial budget shrinks
-  // as players are added.
-  const trials = Math.min(requestedTrials, Math.floor(MAX_EQUITY_EVALUATIONS / players));
-  return { mode: "multiway", hero, board, opponents, seed, trials, requestedTrials, evaluations: trials * players };
+  // Every multiway trial ranks one hand per player.
+  return { mode: "multiway", hero, board, opponents, seed, trials, evaluations: trials * players };
 }
 
 function computeEquity(input) {
@@ -86,25 +84,16 @@ function computeEquity(input) {
         result: equityExact(hero, opponents[0], board),
         methodText: `Exact enumeration over ${trialText} runouts.`,
       };
-    case "headsUp":
-      return {
-        result: equityMC(hero, opponents[0], board, trials, seed),
-        methodText: `Monte Carlo over ${trialText} trials (too many runouts to enumerate).`,
-      };
     case "showdown":
       return {
         result: { ...equityMultiwayMC(hero, opponents, board, 1, seed), method: "exact" },
         methodText: `Exact showdown against ${opponents.length} opponents.`,
       };
-    default: {
-      const capped = trials < plan.requestedTrials
-        ? ` (capped from ${plan.requestedTrials.toLocaleString("en-US")} to keep ${opponents.length + 1}-player runs fast)`
-        : "";
+    default:
       return {
         result: equityMultiwayMC(hero, opponents, board, trials, seed),
-        methodText: `Multiway Monte Carlo against ${opponents.length} opponent${opponents.length === 1 ? "" : "s"}, ${trialText} trials${capped}.`,
+        methodText: `Multiway Monte Carlo against ${opponents.length} opponent${opponents.length === 1 ? "" : "s"}, ${trialText} trials.`,
       };
-    }
   }
 }
 
@@ -402,14 +391,14 @@ function computePreflop(input) {
 const isObject = (input) => Boolean(input) && typeof input === "object" && !Array.isArray(input);
 
 // Rate-limit points for one request, proportional to the work compute() will
-// do for it. Roughly one point per 50k hand evaluations, 2.5M bankroll
+// do for it. Roughly one point per 1M hand evaluations, 2.5M bankroll
 // path-steps, or 50k CFR iterations. Invalid input costs the minimum because
 // compute() rejects it before doing any work.
 function estimateCost(type, input) {
   if (!isObject(input)) return 1;
   try {
     switch (type) {
-      case "equity": return 1 + Math.ceil(planEquity(input).evaluations / 50000);
+      case "equity": return 1 + Math.ceil(planEquity(input).evaluations / 1000000);
       case "bankroll": return 2 + Math.ceil(simulationPathSteps(normalizeBankroll(input, 20000, true), true) / 2500000);
       case "risk-lab": return 2 + Math.ceil(simulationPathSteps(normalizeRiskLab(input), input.includeCurve !== false) / 2500000);
       case "gto": return 2 + Math.ceil(gtoIterations(input) / 50000);
@@ -446,6 +435,5 @@ module.exports = {
   simulationPathSteps,
   brownFinite,
   logPhi,
-  MAX_EQUITY_EVALUATIONS,
   MAX_PATH_STEPS,
 };

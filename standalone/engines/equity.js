@@ -2,8 +2,8 @@
 // Card = 0..51.  rank = card % 13  (0=2 ... 8=T,9=J,10=Q,11=K,12=A)
 // suit = Math.floor(card / 13)  (0..3)
 //
-// The same functions are inlined into the suite HTML; this module keeps them
-// testable in isolation (see engines/test_engines.js).
+// Server-side only: server/compute.js calls these from a worker thread and the
+// public page never receives them. engines/test_engines.js checks them.
 
 const RANKS = "23456789TJQKA";
 const SUITS = "cdhs";
@@ -16,81 +16,157 @@ function strToCard(s){
   return su*13 + r;
 }
 
-// Rank the best 5-card poker hand from exactly 5 cards -> comparable integer.
-function rank5(cs){
-  const rs = cs.map(c=>c%13).sort((a,b)=>b-a);
-  const ss = cs.map(c=>(c/13)|0);
-  const flush = ss.every(s=>s===ss[0]);
-  const cnt = {};
-  rs.forEach(r=>cnt[r]=(cnt[r]||0)+1);
-  const groups = Object.keys(cnt).map(Number).sort((a,b)=> (cnt[b]-cnt[a]) || (b-a));
-  const counts = groups.map(g=>cnt[g]);
-  const uniq = [...new Set(rs)].sort((a,b)=>b-a);
-  let isStraight=false, sHigh=-1;
-  if (uniq.length===5){
-    if (uniq[0]-uniq[4]===4){ isStraight=true; sHigh=uniq[0]; }
-    else if (uniq[0]===12 && uniq[1]===3 && uniq[4]===0){ isStraight=true; sHigh=3; } // wheel A-5
+// ---------------------------------------------------------------------------
+// Evaluator
+//
+// Scores a 5-, 6- or 7-card hand directly from rank/suit bitmasks instead of
+// ranking all 21 five-card subsets. The score encoding is unchanged:
+//   category * 15^5 + five tiebreak slots (rank + 1, or 0 when unused)
+// so a higher score is a better hand and equal scores split the pot.
+// Categories: 8 straight flush, 7 quads, 6 full house, 5 flush, 4 straight,
+// 3 trips, 2 two pair, 1 pair, 0 high card.
+// ---------------------------------------------------------------------------
+
+const RANK_OF = new Uint8Array(52);
+const SUIT_OF = new Uint8Array(52);
+for (let c = 0; c < 52; c++) { RANK_OF[c] = c % 13; SUIT_OF[c] = (c / 13) | 0; }
+
+// STRAIGHT_HIGH[mask] = top rank of the best straight in a 13-bit rank mask,
+// 3 for the A-2-3-4-5 wheel, or -1 when there is none.
+const STRAIGHT_HIGH = new Int8Array(8192);
+for (let mask = 0; mask < 8192; mask++) {
+  let high = -1;
+  for (let top = 12; top >= 4; top--) {
+    if (((mask >> (top - 4)) & 31) === 31) { high = top; break; }
   }
-  let cat, tie;
-  if (isStraight && flush){ cat=8; tie=[sHigh]; }
-  else if (counts[0]===4){ cat=7; tie=groups; }
-  else if (counts[0]===3 && counts[1]===2){ cat=6; tie=groups; }
-  else if (flush){ cat=5; tie=rs; }
-  else if (isStraight){ cat=4; tie=[sHigh]; }
-  else if (counts[0]===3){ cat=3; tie=groups; }
-  else if (counts[0]===2 && counts[1]===2){ cat=2; tie=groups; }
-  else if (counts[0]===2){ cat=1; tie=groups; }
-  else { cat=0; tie=rs; }
-  // Fixed-width encoding: category is always the dominant term, followed by
-  // exactly 5 tiebreak slots (rank+1, zero-padded). Variable-length packing
-  // would let, e.g., a pair outrank a straight.
+  if (high < 0 && (mask & 0x100f) === 0x100f) high = 3;
+  STRAIGHT_HIGH[mask] = high;
+}
+
+const rankCounts = new Uint8Array(13);
+const topRank = (mask) => 31 - Math.clz32(mask);
+const encode = (cat, a, b, c, d, e) => ((((cat * 15 + a) * 15 + b) * 15 + c) * 15 + d) * 15 + e;
+
+// Score of the best five-card hand among cards[0..n-1] (5 <= n <= 7).
+function scoreHand(cards, n){
+  let rankMask = 0, s0 = 0, s1 = 0, s2 = 0, s3 = 0;
+  for (let i = 0; i < n; i++) {
+    const c = cards[i], r = RANK_OF[c], bit = 1 << r;
+    rankMask |= bit;
+    rankCounts[r]++;
+    switch (SUIT_OF[c]) { case 0: s0 |= bit; break; case 1: s1 |= bit; break; case 2: s2 |= bit; break; default: s3 |= bit; }
+  }
+
+  let quad = -1, t1 = -1, t2 = -1, p1 = -1, p2 = -1;
+  for (let r = 12; r >= 0; r--) {
+    const count = rankCounts[r];
+    if (count === 0) continue;
+    rankCounts[r] = 0;
+    if (count === 4) quad = r;
+    else if (count === 3) { if (t1 < 0) t1 = r; else if (t2 < 0) t2 = r; }
+    else if (count === 2) { if (p1 < 0) p1 = r; else if (p2 < 0) p2 = r; }
+  }
+
+  // With at most 7 cards a flush cannot coexist with quads or a full house,
+  // so it can be resolved first.
+  const flush = popcount(s0) >= 5 ? s0 : popcount(s1) >= 5 ? s1 : popcount(s2) >= 5 ? s2 : popcount(s3) >= 5 ? s3 : 0;
+  if (flush) {
+    const straightFlush = STRAIGHT_HIGH[flush];
+    if (straightFlush >= 0) return encode(8, straightFlush + 1, 0, 0, 0, 0);
+    return topFive(5, flush);
+  }
+  if (quad >= 0) return encode(7, quad + 1, topRank(rankMask & ~(1 << quad)) + 1, 0, 0, 0);
+  if (t1 >= 0 && (t2 >= 0 || p1 >= 0)) return encode(6, t1 + 1, Math.max(t2, p1) + 1, 0, 0, 0);
+  const straight = STRAIGHT_HIGH[rankMask];
+  if (straight >= 0) return encode(4, straight + 1, 0, 0, 0, 0);
+  if (t1 >= 0) {
+    let rest = rankMask & ~(1 << t1);
+    const k1 = topRank(rest); rest &= ~(1 << k1);
+    return encode(3, t1 + 1, k1 + 1, topRank(rest) + 1, 0, 0);
+  }
+  if (p2 >= 0) return encode(2, p1 + 1, p2 + 1, topRank(rankMask & ~(1 << p1) & ~(1 << p2)) + 1, 0, 0);
+  if (p1 >= 0) {
+    let rest = rankMask & ~(1 << p1);
+    const k1 = topRank(rest); rest &= ~(1 << k1);
+    const k2 = topRank(rest); rest &= ~(1 << k2);
+    return encode(1, p1 + 1, k1 + 1, k2 + 1, topRank(rest) + 1, 0);
+  }
+  return topFive(0, rankMask);
+}
+
+function popcount(mask){
+  mask -= (mask >>> 1) & 0x5555;
+  mask = (mask & 0x3333) + ((mask >>> 2) & 0x3333);
+  mask = (mask + (mask >>> 4)) & 0x0f0f;
+  return (mask + (mask >>> 8)) & 0x1f;
+}
+
+function topFive(cat, mask){
   let score = cat;
-  for (let i = 0; i < 5; i++) score = score*15 + (i < tie.length ? tie[i]+1 : 0);
+  for (let i = 0; i < 5; i++) {
+    const r = topRank(mask);
+    mask &= ~(1 << r);
+    score = score * 15 + r + 1;
+  }
   return score;
 }
 
-// 21 combinations of choosing 5 from 7.
-const C7 = (function(){
-  const out=[];
-  for(let a=0;a<7;a++)for(let b=a+1;b<7;b++)for(let c=b+1;c<7;c++)
-    for(let d=c+1;d<7;d++)for(let e=d+1;e<7;e++) out.push([a,b,c,d,e]);
-  return out;
-})();
+// Rank exactly 5 cards -> comparable integer.
+function rank5(cs){ return scoreHand(cs, 5); }
 
-function best7(cards7){
-  let best=-1;
-  for(const cb of C7){
-    const s = rank5([cards7[cb[0]],cards7[cb[1]],cards7[cb[2]],cards7[cb[3]],cards7[cb[4]]]);
-    if(s>best) best=s;
-  }
-  return best;
-}
+// Best 5-card hand from exactly 7 cards -> comparable integer.
+function best7(cards7){ return scoreHand(cards7, 7); }
+
+// ---------------------------------------------------------------------------
+// Equity
+//
+// The loops below reuse typed buffers instead of allocating per trial. They
+// draw random cards exactly as before (a partial Fisher-Yates shuffle of a
+// fresh copy of the remaining deck), so a given seed reproduces the same
+// results as earlier versions.
+// ---------------------------------------------------------------------------
 
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 
-// Fisher-Yates partial shuffle to draw `k` cards from `deck` (mutates a copy).
-function draw(deck, k, rnd){
-  const d = deck.slice();
-  for(let i=0;i<k;i++){
-    const j = i + Math.floor(rnd()*(d.length-i));
-    const t=d[i]; d[i]=d[j]; d[j]=t;
+function remainingDeck(used){
+  const deck = [];
+  for (let c = 0; c < 52; c++) if (!used.has(c)) deck.push(c);
+  return Uint8Array.from(deck);
+}
+
+// Partial Fisher-Yates: shuffle the first `k` cards of `work` (refilled from
+// `deck`), consuming exactly k random numbers.
+function shuffleInto(work, deck, k, rnd){
+  work.set(deck);
+  for (let i = 0; i < k; i++) {
+    const j = i + Math.floor(rnd() * (work.length - i));
+    const t = work[i]; work[i] = work[j]; work[j] = t;
   }
-  return d.slice(0,k);
+}
+
+// A 7-card buffer holding `hole` in slots 0-1 and `board` from slot 2.
+function handBuffer(hole, board){
+  const buffer = new Uint8Array(7);
+  buffer[0] = hole[0]; buffer[1] = hole[1];
+  for (let i = 0; i < board.length; i++) buffer[2 + i] = board[i];
+  return buffer;
 }
 
 // Monte Carlo equity of hero(2) vs villain(2) given board(0..5), seed.
 function equityMC(hero, villain, board, trials, seed){
-  const used = new Set([...hero, ...villain, ...board]);
-  const deck=[]; for(let c=0;c<52;c++) if(!used.has(c)) deck.push(c);
-  const need = 5 - board.length;
+  const deck = remainingDeck(new Set([...hero, ...villain, ...board]));
+  const work = new Uint8Array(deck.length);
+  const need = 5 - board.length, first = 2 + board.length;
+  const h = handBuffer(hero, board), v = handBuffer(villain, board);
   const rnd = mulberry32(seed>>>0);
   let win=0, tie=0, lose=0;
-  for(let t=0;t<trials;t++){
-    const extra = need>0 ? draw(deck, need, rnd) : [];
-    const full = board.concat(extra);
-    const hs = best7(hero.concat(full));
-    const vs = best7(villain.concat(full));
-    if(hs>vs)win++; else if(hs<vs)lose++; else tie++;
+  for (let t = 0; t < trials; t++) {
+    if (need > 0) {
+      shuffleInto(work, deck, need, rnd);
+      for (let k = 0; k < need; k++) h[first + k] = v[first + k] = work[k];
+    }
+    const hs = scoreHand(h, 7), vs = scoreHand(v, 7);
+    if (hs > vs) win++; else if (hs < vs) lose++; else tie++;
   }
   return {win,tie,lose,trials,equity:(win+tie/2)/trials,method:"monte-carlo"};
 }
@@ -104,19 +180,39 @@ function equityMultiwayMC(hero, opponents, board, trials, seed){
   if(fixed.some(hand=>!Array.isArray(hand)||hand.length!==2)) throw new Error("each fixed opponent needs 2 cards");
   const used=new Set([...hero,...board,...fixed.flat()]);
   if(used.size!==hero.length+board.length+fixed.length*2) throw new Error("duplicate known card");
-  const deckBase=[];for(let c=0;c<52;c++)if(!used.has(c))deckBase.push(c);
+  const deck=remainingDeck(used);
   const randomCount=opponents.length-fixed.length,needBoard=5-board.length,drawCount=randomCount*2+needBoard;
-  if(drawCount>deckBase.length) throw new Error("not enough cards remaining");
+  if(drawCount>deck.length) throw new Error("not enough cards remaining");
+  const work=new Uint8Array(deck.length);
+  const first=2+board.length;
+  const h=handBuffer(hero,board);
+  const opp=opponents.map(hand=>handBuffer(hand||[0,0],board));
   const rnd=mulberry32(seed>>>0);
   let win=0,tie=0,lose=0,equitySum=0;
   for(let t=0;t<trials;t++){
-    const dealt=draw(deckBase,drawCount,rnd);let cursor=0;
-    const trialOpp=opponents.map(hand=>hand||[dealt[cursor++],dealt[cursor++]]);
-    const full=board.concat(dealt.slice(cursor,cursor+needBoard));
-    const hs=best7(hero.concat(full)),scores=trialOpp.map(hand=>best7(hand.concat(full)));
-    const best=Math.max(hs,...scores);
+    let cursor=0;
+    if(drawCount>0){
+      shuffleInto(work,deck,drawCount,rnd);
+      // Random opponents take the first dealt cards in seat order, then the board.
+      for(let o=0;o<opponents.length;o++){
+        if(opponents[o])continue;
+        opp[o][0]=work[cursor++];opp[o][1]=work[cursor++];
+      }
+      for(let k=0;k<needBoard;k++){
+        const card=work[cursor++];
+        h[first+k]=card;
+        for(let o=0;o<opp.length;o++)opp[o][first+k]=card;
+      }
+    }
+    const hs=scoreHand(h,7);
+    let best=hs,sharing=0;
+    for(let o=0;o<opp.length;o++){
+      const score=scoreHand(opp[o],7);
+      if(score>best)best=score;
+      if(score===hs)sharing++;
+    }
     if(hs<best){lose++;continue;}
-    const winners=1+scores.filter(score=>score===hs).length;
+    const winners=1+sharing;
     if(winners===1){win++;equitySum+=1;}else{tie++;equitySum+=1/winners;}
   }
   return {win,tie,lose,trials,equity:equitySum/trials,method:"multiway-monte-carlo",players:opponents.length+1};
@@ -124,19 +220,21 @@ function equityMultiwayMC(hero, opponents, board, trials, seed){
 
 // Exact enumeration when the number of remaining board runouts is small.
 function equityExact(hero, villain, board){
-  const used = new Set([...hero, ...villain, ...board]);
-  const deck=[]; for(let c=0;c<52;c++) if(!used.has(c)) deck.push(c);
-  const need = 5 - board.length;
+  const deck = remainingDeck(new Set([...hero, ...villain, ...board]));
+  const need = 5 - board.length, first = 2 + board.length;
+  const h = handBuffer(hero, board), v = handBuffer(villain, board);
   let win=0,tie=0,lose=0,total=0;
-  function rec(start, chosen){
-    if(chosen.length===need){
-      const full=board.concat(chosen);
-      const hs=best7(hero.concat(full)), vs=best7(villain.concat(full));
+  function rec(start, depth){
+    if (depth === need) {
+      const hs = scoreHand(h, 7), vs = scoreHand(v, 7);
       if(hs>vs)win++; else if(hs<vs)lose++; else tie++; total++; return;
     }
-    for(let i=start;i<deck.length;i++){ chosen.push(deck[i]); rec(i+1,chosen); chosen.pop(); }
+    for (let i = start; i < deck.length; i++) {
+      h[first + depth] = v[first + depth] = deck[i];
+      rec(i + 1, depth + 1);
+    }
   }
-  rec(0,[]);
+  rec(0, 0);
   return {win,tie,lose,trials:total,equity:(win+tie/2)/total,method:"exact"};
 }
 
@@ -149,4 +247,4 @@ function nRunouts(hero,villain,board){
 }
 
 if (typeof module!=="undefined") module.exports =
-  { cardToStr, strToCard, rank5, best7, equityMC, equityMultiwayMC, equityExact, nRunouts, RANKS, SUITS };
+  { cardToStr, strToCard, rank5, best7, scoreHand, equityMC, equityMultiwayMC, equityExact, nRunouts, RANKS, SUITS };

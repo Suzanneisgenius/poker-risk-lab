@@ -15,7 +15,6 @@ const {
   simulationPathSteps,
   brownFinite,
   logPhi,
-  MAX_EQUITY_EVALUATIONS,
   MAX_PATH_STEPS,
 } = require("./compute.js");
 const { clientIp } = require("./client_ip.js");
@@ -85,11 +84,16 @@ assert.equal(clientIp(fakeRequest(""), 1), "10.0.0.5");
 const aceKing = [12, 11];
 assert.equal(estimateCost("ev", { pot: 10, call: 5, equityPct: 40 }), 1);
 assert.equal(estimateCost("preflop", {}), 1);
-assert.equal(estimateCost("equity", { hero: aceKing, opponents: [null], board: [], trials: 30000 }), 3);
+assert.equal(estimateCost("equity", { hero: aceKing, opponents: [null], board: [], trials: 30000 }), 2);
 assert.equal(
   estimateCost("equity", { hero: aceKing, opponents: [null, null, null, null, null], board: [], trials: 150000 }),
-  1 + Math.ceil(MAX_EQUITY_EVALUATIONS / 50000),
-  "five-way requests are charged for their capped trial count",
+  2,
+  "the largest multiway request is 900k evaluations",
+);
+assert.equal(
+  estimateCost("equity", { hero: aceKing, opponents: [[51, 38]], board: [] }),
+  5,
+  "exact heads-up preflop enumerates 1,712,304 runouts (two evaluations each)",
 );
 assert.equal(estimateCost("equity", { hero: [1, 1], opponents: [null] }), 1, "invalid input costs the minimum");
 assert.equal(estimateCost("equity", null), 1);
@@ -111,9 +115,18 @@ assert.throws(
   () => computeBankroll({ wr: 3, sd: 90, bank: 3000, hands: 1000000, paths: 20000 }),
   (error) => error instanceof ValidationError && /Paths × hands/.test(error.message),
 );
-const capped = computeEquity({ hero: aceKing, opponents: [null, null, null, null, null], board: [0, 14, 28, 42], trials: 150000, seed: 3 });
-assert.equal(capped.result.trials, MAX_EQUITY_EVALUATIONS / 6);
-assert.match(capped.methodText, /capped from 150,000/);
+// The fast evaluator makes the largest equity requests cheap, so they run in
+// full: exact heads-up preflop and an uncapped five-way Monte Carlo.
+const timed = (run) => { const start = performance.now(); const value = run(); return { value, ms: performance.now() - start }; };
+const preflop = timed(() => computeEquity({ hero: [12, 25], opponents: [[11, 24]], board: [] }));
+assert.equal(preflop.value.result.method, "exact");
+assert.equal(preflop.value.result.trials, 1712304);
+closeRelative(preflop.value.result.equity, 0.82637, 1e-4, "AA vs KK exact preflop equity");
+assert.ok(preflop.ms < 5000, `exact preflop enumeration took ${Math.round(preflop.ms)} ms`);
+const fiveWay = timed(() => computeEquity({ hero: aceKing, opponents: [null, null, null, null, null], board: [], trials: 150000, seed: 3 }));
+assert.equal(fiveWay.value.result.trials, 150000);
+assert.match(fiveWay.value.methodText, /150,000 trials\.$/);
+assert.ok(fiveWay.ms < 5000, `five-way 150k-trial run took ${Math.round(fiveWay.ms)} ms`);
 
 // --- Error types ---------------------------------------------------------------
 for (const [type, input] of [
