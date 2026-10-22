@@ -1,0 +1,149 @@
+{
+  "purpose": "Error against time: exact enumeration versus Monte Carlo, on spots with a PokerKit-confirmed exact value.",
+  "command": "node checks/equity-accuracy/run.js --write",
+  "conditions": {
+    "cpu": "Apple M4 Max",
+    "node": "v24.21.0",
+    "seeds": "1–30",
+    "seeds_per_size": 30
+  },
+  "monte_carlo_function": "equityMultiwayMC (the app's Monte Carlo; fixed opponents)",
+  "spots": [
+    {
+      "id": "preflop-AKs-vs-QQ",
+      "label": "Preflop, AsKs vs QhQd (heads-up)",
+      "exact_equity": 0.46214457245909607,
+      "runouts": 1712304,
+      "exact_seconds": 0.149887417,
+      "monte_carlo": [
+        {
+          "trials": 1000,
+          "rmse_pp": 1.3355472146481207,
+          "max_abs_error_pp": 2.4855427540903916,
+          "mean_seconds": 0.0002761306
+        },
+        {
+          "trials": 3000,
+          "rmse_pp": 0.9340543169764154,
+          "max_abs_error_pp": 2.0188760874237266,
+          "mean_seconds": 0.0006648819000000001
+        },
+        {
+          "trials": 10000,
+          "rmse_pp": 0.3895205713714283,
+          "max_abs_error_pp": 0.7355427540903903,
+          "mean_seconds": 0.0018552417
+        },
+        {
+          "trials": 30000,
+          "rmse_pp": 0.24347131344747722,
+          "max_abs_error_pp": 0.5111239125762723,
+          "mean_seconds": 0.005605087566666667
+        },
+        {
+          "trials": 100000,
+          "rmse_pp": 0.13029416964147736,
+          "max_abs_error_pp": 0.3129572459096064,
+          "mean_seconds": 0.0186108208
+        },
+        {
+          "trials": 150000,
+          "rmse_pp": 0.12035442522735548,
+          "max_abs_error_pp": 0.2602094207570571,
+          "mean_seconds": 0.027849168100000002
+        }
+      ]
+    },
+    {
+      "id": "flop-flush-draw",
+      "label": "Flop, AhKh vs 9s9d on Qh7h2c (heads-up)",
+      "exact_equity": 0.5505050505050505,
+      "runouts": 990,
+      "exact_seconds": 0.000074208,
+      "monte_carlo": [
+        {
+          "trials": 1000,
+          "rmse_pp": 1.465807342104315,
+          "max_abs_error_pp": 4.65050505050505,
+          "mean_seconds": 0.0001271945
+        },
+        {
+          "trials": 3000,
+          "rmse_pp": 0.7112308353071641,
+          "max_abs_error_pp": 2.083838383838388,
+          "mean_seconds": 0.0003041305
+        },
+        {
+          "trials": 10000,
+          "rmse_pp": 0.5057922603515883,
+          "max_abs_error_pp": 1.2405050505050474,
+          "mean_seconds": 0.0009539804333333335
+        },
+        {
+          "trials": 30000,
+          "rmse_pp": 0.2920605176758807,
+          "max_abs_error_pp": 0.6294949494949464,
+          "mean_seconds": 0.002915433333333334
+        },
+        {
+          "trials": 100000,
+          "rmse_pp": 0.13167997193450687,
+          "max_abs_error_pp": 0.42650505050505494,
+          "mean_seconds": 0.009627356966666665
+        },
+        {
+          "trials": 150000,
+          "rmse_pp": 0.10029613208297139,
+          "max_abs_error_pp": 0.24250505050504856,
+          "mean_seconds": 0.014357709700000002
+        }
+      ]
+    },
+    {
+      "id": "flop-three-way",
+      "label": "Flop, AsKd vs QhQc vs 8s7s on Js9s2d (three-way)",
+      "exact_equity": 0.17940199335548174,
+      "runouts": 903,
+      "exact_seconds": null,
+      "monte_carlo": [
+        {
+          "trials": 1000,
+          "rmse_pp": 1.12053086013078,
+          "max_abs_error_pp": 2.3598006644518277,
+          "mean_seconds": 0.0001367778666666667
+        },
+        {
+          "trials": 3000,
+          "rmse_pp": 0.5599323117922805,
+          "max_abs_error_pp": 1.4598006644518269,
+          "mean_seconds": 0.0003901916333333334
+        },
+        {
+          "trials": 10000,
+          "rmse_pp": 0.37810559131580307,
+          "max_abs_error_pp": 0.8198006644518252,
+          "mean_seconds": 0.0013394264333333337
+        },
+        {
+          "trials": 30000,
+          "rmse_pp": 0.2228456195757356,
+          "max_abs_error_pp": 0.42686600221484017,
+          "mean_seconds": 0.0038867375666666675
+        },
+        {
+          "trials": 100000,
+          "rmse_pp": 0.11133959395994646,
+          "max_abs_error_pp": 0.2901993355481747,
+          "mean_seconds": 0.012855147099999999
+        },
+        {
+          "trials": 150000,
+          "rmse_pp": 0.08315846734237652,
+          "max_abs_error_pp": 0.16446733111849243,
+          "mean_seconds": 0.01942762633333333
+        }
+      ]
+    }
+  ],
+  "limits": "Times are single-threaded medians on one machine. The three-way exact value comes from PokerKit, because this engine has no exact multiway mode."
+}

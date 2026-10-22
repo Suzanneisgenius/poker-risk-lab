@@ -27,7 +27,7 @@ jobs:
       # The committed pages are what the server serves; fail if someone edited
       # standalone/build/ without rebuilding.
       - name: Check built pages are up to date
-        run: git diff --exit-code -- index.html site/index.html standalone/poker-analytics-suite.html
+        run: git diff --exit-code -- index.html site/index.html standalone/poker-analytics-suite.html case-study/index.html case-study/validation.html
       - name: Test engines, server units, and API
         run: npm test
       # The figures quoted in CHANGELOG.md must still come out of the engine.

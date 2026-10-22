@@ -1111,13 +1111,14 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
   <section class="mod" id="about" role="tabpanel" aria-labelledby="tab-about">
     <h3>What this is</h3>
     <ul class="doc">
-      <li><b>Hand Equity</b> — expected pot share against up to five fixed or random opponent hands and an optional board. Heads-up spots can use exact enumeration; multiway spots use seeded Monte Carlo.</li>
+      <li><b>Hand Equity</b> — expected pot share against up to five fixed or random opponent hands and an optional board. Heads-up spots with known cards are enumerated exactly; multiway spots use seeded Monte Carlo.</li>
       <li><b>Pot Odds &amp; EV</b> — uses the latest card-derived equity for a call/fold decision with expected value in big blinds; manual equity is optional.</li>
       <li><b>Bankroll Risk</b> — Monte Carlo risk of ruin with a finite-horizon Brownian cross-check (the full Python engine adds a Markov-chain check and file export).</li>
       <li><b>Preflop</b> — browse, compare, and practise 169-hand strategy matrices, with an optional Kuhn poker learning demo. The current ranges are an illustrative demonstration dataset, not solver-verified output.</li>
     </ul>
     <h3>The through-line: reproducibility and validation</h3>
     <ul class="doc">
+      <li>The <a href="case-study/">case study</a> asks how much a simulated risk estimate can be trusted, one source of uncertainty at a time; the <a href="case-study/validation.html">validation page</a> lists each check with its benchmark, conditions and limits.</li>
       <li>Every engine is seeded and reproducible; each is checked against an independent method (exact enumeration, analytical Brownian, known game value).</li>
       <li>The public page contains only interface and chart-rendering code. Equity, EV, bankroll Monte Carlo, and CFR calculations run on a private same-origin API; the application does not persist calculation inputs.</li>
     </ul>

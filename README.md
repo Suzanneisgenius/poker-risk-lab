@@ -1,5 +1,44 @@
-# Bankroll Risk Lab
-### Uncertainty-Aware Simulation and Validation of Stochastic Ruin Models
+# Poker Risk Lab: Understanding Uncertainty in Simulation
+
+**How much should we trust a simulated risk estimate?** An interactive study of
+how numerical error, uncertain inputs and modelling assumptions affect a
+bankroll-risk estimate. Poker is the setting; the methods apply to any
+simulated risk with an absorbing boundary.
+
+![One risk estimate, three sources of uncertainty: simulation noise, an uncertain win rate and model assumptions, on one risk axis](reports/case-study/overview.png)
+
+**Main finding.** For one scenario (30 buy-ins, +3 bb/100, 90 bb/100 swings,
+100,000 hands; exact model risk 7.17%), a single simulation at the default
+2,000 paths lands within about ±1.13 points of the exact value. Not knowing the
+win rate after 50,000 hands leaves anything from 0.1% to 83.3% plausible, and
+five models of how results arrive give 6.4% to 20.3%. More computing only fixes
+the first.
+
+| | |
+|---|---|
+| **Case study** | [`case-study/index.html`](case-study/index.html): three questions, one at a time, plus how a misleading result was checked. Static page: open the file directly, or `/case-study/` on the running app. |
+| **Validation** | [`case-study/validation.html`](case-study/validation.html): PokerKit cross-check, exact-value checks, interval coverage, engine agreement and benchmark conditions. |
+| **Demo** | `npm start`, then <http://localhost:4174>. No public deployment URL yet. |
+| **Reproduce** | `pip install -r requirements-research.txt`, `python -m src.experiments.case_study --case all`, then `npm run build`. Every check in [`checks/`](checks/README.md) has its own command and saved output. |
+| **Limits** | Conditional model estimates, not advice. The alternative models are stress tests, not descriptions of real games. The Preflop ranges are demonstration data. |
+
+## Authorship and AI assistance
+
+> **Draft — the author should complete and confirm this section before publishing.**
+
+- **Author's contribution:** _[the research question, which comparisons to run,
+  how to read the results, what was reviewed and changed — in the author's own
+  words]_
+- **AI coding assistance:** commits from 2026-10-21 onward were made with
+  Claude Code (an AI coding assistant) from the author's instructions and
+  reviews; their commit messages end with a `Co-Authored-By` line. _[Describe
+  how earlier versions were written.]_
+- **Third-party code:** [PokerKit](https://github.com/uoftcprg/pokerkit) 0.7.7
+  is used only to validate the equity engine and is not part of the app.
+  The app loads Plotly from a CDN for charts; the Python engine uses NumPy,
+  SciPy and pandas, and the figures use Matplotlib.
+
+## Research framing
 
 **Research question:** *How reliable are finite-horizon ruin-risk estimates when
 the stochastic model, the estimated edge, the barrier-monitoring frequency, and
@@ -18,6 +57,9 @@ estimation for stochastic systems with absorbing boundaries*, demonstrated
 through four strands: (1) mathematical modeling, (2) statistical inference under
 parameter uncertainty, (3) numerical/computational validation, and
 (4) reproducible scientific software. See [`docs/methodology.md`](docs/methodology.md).
+The quick-run figures in `reports/figures/` predate the bridge correction and
+show no intervals; the case study uses the regenerated results in
+`reports/case-study/`.
 
 > Research and educational tool. Results depend on simplified model assumptions
 > and are **not** financial or gambling advice.

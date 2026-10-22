@@ -1,0 +1,14 @@
+# Case 1 — Why does the same setting give a different number on every run?
+# The Risk Lab default scenario, re-run with 40 different seeds at three path
+# budgets. Ruin is monitored continuously (Brownian-bridge correction), so the
+# finite-horizon Brownian formula is the exact value the runs are estimating.
+scenario:
+  winrate_bb100: 3.0
+  std_bb100: 90.0
+  bankroll_bb: 3000.0        # 30 buy-ins
+  ruin_threshold_bb: 0.0
+  n_hands: 100000
+  step_hands: 100
+budgets: [500, 2000, 20000]  # 2,000 is the Risk Lab default
+seeds: {first: 0, count: 40}
+bridge: true

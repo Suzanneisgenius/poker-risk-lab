@@ -7,7 +7,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "node scripts/build_static_site.js",
+    "build": "node scripts/build_static_site.js && node scripts/build_case_study.js",
     "start": "node server/app.js",
     "test:engines": "node standalone/engines/test_engines.js",
     "test:api": "node server/test_api.js",

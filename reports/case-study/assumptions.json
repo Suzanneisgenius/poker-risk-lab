@@ -1,0 +1,158 @@
+{
+  "question": "If results are not independent or not Normal, is the estimate still reliable?",
+  "monitoring": "Ruin checked at 100-hand step ends for every model.",
+  "n_paths": 40000,
+  "rows": [
+    {
+      "model": "gaussian",
+      "label": "Independent, Normal (baseline)",
+      "risk": 0.070475,
+      "ruined": 2819,
+      "wilson95": [
+        0.06800780424153567,
+        0.07302468796620175
+      ],
+      "p95_max_drawdown_bi": 40.1857559587053,
+      "per_step_sd_bb": 89.95934249944055,
+      "total_sd_ratio": 1.0011705961710495,
+      "realized_winrate_bb100": 2.959837113522324,
+      "info": {},
+      "risk_vs_baseline": 1.0
+    },
+    {
+      "model": "student_t",
+      "label": "Heavy tails (Student-t, df 3)",
+      "risk": 0.064425,
+      "ruined": 2577,
+      "wilson95": [
+        0.06206064001341449,
+        0.06687301412402857
+      ],
+      "p95_max_drawdown_bi": 39.24740781803876,
+      "per_step_sd_bb": 90.38048987295429,
+      "total_sd_ratio": 0.9983071829504844,
+      "realized_winrate_bb100": 3.0142765061593684,
+      "info": {
+        "df": 3.0
+      },
+      "risk_vs_baseline": 0.914153955303299
+    },
+    {
+      "model": "shock_mixture",
+      "label": "Rare large losses (3% shocks)",
+      "risk": 0.073475,
+      "ruined": 2939,
+      "wilson95": [
+        0.07095883673575998,
+        0.07607307930848706
+      ],
+      "p95_max_drawdown_bi": 40.912868935850845,
+      "per_step_sd_bb": 90.14147084113857,
+      "total_sd_ratio": 0.985259295829789,
+      "realized_winrate_bb100": 2.962943667139183,
+      "info": {
+        "p": 0.03,
+        "shock_share": 0.030014274999999997
+      },
+      "risk_vs_baseline": 1.0425682866264634
+    },
+    {
+      "model": "ar1",
+      "label": "Swings carry over (AR(1), \u03c6 0.3)",
+      "risk": 0.202525,
+      "ruined": 8101,
+      "wilson95": [
+        0.19861528628558534,
+        0.2064918451258499
+      ],
+      "p95_max_drawdown_bi": 52.632727705287245,
+      "per_step_sd_bb": 89.98353271159529,
+      "total_sd_ratio": 1.3703012861153392,
+      "realized_winrate_bb100": 2.987399211983925,
+      "info": {
+        "phi": 0.3
+      },
+      "risk_vs_baseline": 2.873714083008159
+    },
+    {
+      "model": "regime_switching",
+      "label": "Bad stretches cluster (regimes)",
+      "risk": 0.11655,
+      "ruined": 4662,
+      "wilson95": [
+        0.1134421584144205,
+        0.11973148488237693
+      ],
+      "p95_max_drawdown_bi": 45.75218309420492,
+      "per_step_sd_bb": 101.06834044452577,
+      "total_sd_ratio": 1.1396747757347334,
+      "realized_winrate_bb100": 3.070715596625128,
+      "info": {
+        "pi_adverse_theoretical": 0.16666666666666682,
+        "adverse_occupancy": 0.16661560000000003,
+        "mu_normal": 4.6000000000000005
+      },
+      "risk_vs_baseline": 1.6537779354380988
+    }
+  ],
+  "provenance": {
+    "timestamp_utc": "2026-10-22T14:49:46+00:00",
+    "git_commit": "0241bdb",
+    "code_changed_since_commit": true,
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "packages": {
+      "python": "3.12.14",
+      "numpy": "2.5.4",
+      "scipy": "1.18.1",
+      "pandas": "3.0.6",
+      "matplotlib": "3.11.2"
+    },
+    "parameters": {
+      "experiment": "case_study.assumptions",
+      "config": {
+        "scenario": {
+          "winrate_bb100": 3.0,
+          "std_bb100": 90.0,
+          "bankroll_bb": 3000.0,
+          "ruin_threshold_bb": 0.0,
+          "n_hands": 100000,
+          "step_hands": 100
+        },
+        "models": [
+          "gaussian",
+          "student_t",
+          "shock_mixture",
+          "ar1",
+          "regime_switching"
+        ],
+        "params": {
+          "student_t": {
+            "df": 3.0
+          },
+          "shock_mixture": {
+            "p": 0.03,
+            "shock_mean": -4.0,
+            "shock_scale": 2.5
+          },
+          "ar1": {
+            "phi": 0.3
+          },
+          "regime_switching": {
+            "p_stay_normal": 0.98,
+            "p_stay_adverse": 0.9,
+            "mu_adverse": -5.0,
+            "vol_mult": 1.6
+          }
+        },
+        "n_paths": 40000,
+        "seed": 20240601,
+        "spread_paths": 4000
+      },
+      "engine": {
+        "module": "src/models.py run_model",
+        "bridge": false,
+        "random_numbers": "numpy default_rng(20240601) per model (PCG64)"
+      }
+    }
+  }
+}

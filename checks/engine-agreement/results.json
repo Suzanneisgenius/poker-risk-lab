@@ -1,0 +1,68 @@
+{
+  "purpose": "Web engine (server/compute.js) against research engine (src/simulation.py), and both against the analytical value.",
+  "command": "python -I checks/engine-agreement/run.py --write",
+  "paths_per_run": 200000,
+  "seed": 1,
+  "note": "Different random-number generators (sfc32 per path in the web engine, numpy PCG64 in the research engine), so agreement is statistical, not exact. Without the bridge correction there is no closed-form value; the two engines are compared with each other only.",
+  "rows": [
+    {
+      "scenario": {
+        "winrate_bb100": 3.0,
+        "std_bb100": 90.0,
+        "bankroll_bb": 3000.0,
+        "n_hands": 100000
+      },
+      "bridge": true,
+      "web_engine": 0.071325,
+      "research_engine": 0.070755,
+      "difference_pp": 0.057000000000000106,
+      "difference_in_se": 0.7016574478859292,
+      "analytical": 0.0716915021207792,
+      "web_vs_analytical_se": -0.6353477361712295,
+      "research_vs_analytical_se": -1.6234681018806043
+    },
+    {
+      "scenario": {
+        "winrate_bb100": 3.0,
+        "std_bb100": 90.0,
+        "bankroll_bb": 3000.0,
+        "n_hands": 100000
+      },
+      "bridge": false,
+      "web_engine": 0.06782,
+      "research_engine": 0.0671,
+      "difference_pp": 0.07199999999999984,
+      "difference_in_se": 0.9077704485896736
+    },
+    {
+      "scenario": {
+        "winrate_bb100": 0.0,
+        "std_bb100": 90.0,
+        "bankroll_bb": 3000.0,
+        "n_hands": 100000
+      },
+      "bridge": true,
+      "web_engine": 0.29153,
+      "research_engine": 0.29066,
+      "difference_pp": 0.08700000000000374,
+      "difference_in_se": 0.6056309471322978,
+      "analytical": 0.2918405451437887,
+      "web_vs_analytical_se": -0.30549309413865305,
+      "research_vs_analytical_se": -1.1613396504817823
+    },
+    {
+      "scenario": {
+        "winrate_bb100": 0.0,
+        "std_bb100": 90.0,
+        "bankroll_bb": 3000.0,
+        "n_hands": 100000
+      },
+      "bridge": false,
+      "web_engine": 0.28325,
+      "research_engine": 0.28253,
+      "difference_pp": 0.07199999999999984,
+      "difference_in_se": 0.5055113929793665
+    }
+  ],
+  "all_within_3_se": true
+}

@@ -11,6 +11,14 @@ const { ValidationError } = require("./errors.js");
 
 const ROOT = path.resolve(__dirname, "..");
 const INDEX = path.join(ROOT, "index.html");
+// Static pages served as they are. The case study pages contain no engine code.
+const PAGES = new Map([
+  ["/", INDEX],
+  ["/index.html", INDEX],
+  ["/case-study/", path.join(ROOT, "case-study", "index.html")],
+  ["/case-study/index.html", path.join(ROOT, "case-study", "index.html")],
+  ["/case-study/validation.html", path.join(ROOT, "case-study", "validation.html")],
+]);
 const PORT = Number(process.env.PORT) || 4174;
 const HOST = process.env.HOST || "0.0.0.0";
 const pool = new CalculationPool(Math.max(1, Math.min(4, Number(process.env.CALC_WORKERS) || 2)), 16);
@@ -177,9 +185,16 @@ async function handler(request, response) {
   if (apiRoute) return handleApi(request, response, apiRoute);
   if (url.pathname.startsWith("/api/")) return json(response, 404, { error: "API endpoint not found." });
 
-  if ((request.method === "GET" || request.method === "HEAD") && (url.pathname === "/" || url.pathname === "/index.html")) {
+  const isRead = request.method === "GET" || request.method === "HEAD";
+  if (isRead && url.pathname === "/case-study") {
+    response.writeHead(301, { ...securityHeaders("text/plain; charset=utf-8"), Location: "/case-study/" });
+    response.end();
+    return;
+  }
+  const file = isRead ? PAGES.get(url.pathname) : null;
+  if (file) {
     try {
-      const page = await fs.readFile(INDEX);
+      const page = await fs.readFile(file);
       response.writeHead(200, securityHeaders("text/html; charset=utf-8"));
       if (request.method === "HEAD") response.end();
       else response.end(page);

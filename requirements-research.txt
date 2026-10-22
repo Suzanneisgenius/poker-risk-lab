@@ -1,0 +1,4 @@
+# Extra packages for the research experiments and figures (src/experiments).
+-r requirements.txt
+matplotlib>=3.8
+pyyaml>=6.0

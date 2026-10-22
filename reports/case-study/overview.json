@@ -1,0 +1,67 @@
+{
+  "question": "Where does the uncertainty in one risk number come from?",
+  "rows": [
+    {
+      "source": "Simulation noise, 2,000 paths (Risk Lab default)",
+      "kind": "noise",
+      "interval": [
+        0.06038539499094785,
+        0.08299760925061055
+      ]
+    },
+    {
+      "source": "Simulation noise, 20,000 paths",
+      "kind": "noise",
+      "interval": [
+        0.06811619712076558,
+        0.07526680712079281
+      ]
+    },
+    {
+      "source": "Win rate known from 50,000 hands",
+      "kind": "parameter",
+      "interval": [
+        0.0006670408847830324,
+        0.8325276863869561
+      ]
+    },
+    {
+      "source": "Win rate known from 1,000,000 hands",
+      "kind": "parameter",
+      "interval": [
+        0.025297833338553382,
+        0.17540146969400333
+      ]
+    },
+    {
+      "source": "Five models of how results arrive",
+      "kind": "model",
+      "interval": [
+        0.064425,
+        0.202525
+      ]
+    }
+  ],
+  "reference_risk": 0.0716915021207792,
+  "provenance": {
+    "timestamp_utc": "2026-10-22T14:49:46+00:00",
+    "git_commit": "0241bdb",
+    "code_changed_since_commit": true,
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "packages": {
+      "python": "3.12.14",
+      "numpy": "2.5.4",
+      "scipy": "1.18.1",
+      "pandas": "3.0.6",
+      "matplotlib": "3.11.2"
+    },
+    "parameters": {
+      "experiment": "case_study.overview",
+      "inputs": [
+        "noise.json",
+        "uncertainty.json",
+        "assumptions.json"
+      ]
+    }
+  }
+}

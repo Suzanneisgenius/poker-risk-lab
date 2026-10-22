@@ -38,9 +38,12 @@ async function post(endpoint, body, headers = {}) {
 }
 
 async function main() {
-  const publicPage = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
-  for (const secretMarker of ["function equityMC", "function equityExact", "function simulateBankroll", "function trainKuhnTracked", "function rfiStrategy", "averageGameValue("]) {
-    assert.equal(publicPage.includes(secretMarker), false, `public HTML leaked ${secretMarker}`);
+  const SECRET_MARKERS = ["function equityMC", "function equityExact", "function simulateBankroll", "function trainKuhnTracked", "function rfiStrategy", "averageGameValue(", "function scoreHand"];
+  for (const file of ["index.html", "case-study/index.html", "case-study/validation.html"]) {
+    const publicPage = fs.readFileSync(path.join(ROOT, file), "utf8");
+    for (const secretMarker of SECRET_MARKERS) {
+      assert.equal(publicPage.includes(secretMarker), false, `${file} leaked ${secretMarker}`);
+    }
   }
 
   const server = await startServer();
@@ -52,6 +55,16 @@ async function main() {
     const page = await fetch(`${base}/`);
     assert.equal(page.status, 200);
     assert.match(page.headers.get("content-security-policy"), /frame-ancestors 'none'/);
+    for (const pagePath of ["/case-study/", "/case-study/index.html", "/case-study/validation.html"]) {
+      const caseStudy = await fetch(`${base}${pagePath}`);
+      assert.equal(caseStudy.status, 200, pagePath);
+      assert.match(caseStudy.headers.get("content-type"), /text\/html/);
+      assert.match(caseStudy.headers.get("content-security-policy"), /frame-ancestors 'none'/);
+    }
+    const bare = await fetch(`${base}/case-study`, { redirect: "manual" });
+    assert.equal(bare.status, 301);
+    assert.equal(bare.headers.get("location"), "/case-study/");
+    assert.equal((await fetch(`${base}/case-study/src/index.html`)).status, 404, "page sources are not served");
     assert.equal((await fetch(`${base}/standalone/engines/equity.js`)).status, 404);
     assert.equal((await fetch(`${base}/server/preflop.js`)).status, 404);
 
@@ -167,7 +180,7 @@ async function main() {
     }
     assert.ok(cheapAllowed < 80, `a detailed Risk Lab run should use a large share of the budget (then ${cheapAllowed} EV calls fit)`);
 
-    process.stdout.write("API, cache, work-weighted rate limit, forged X-Forwarded-For, error status, security-header, validation, and public-bundle tests passed.\n");
+    process.stdout.write("API, cache, work-weighted rate limit, forged X-Forwarded-For, error status, security-header, validation, public-bundle and case-study page tests passed.\n");
   } finally {
     server.kill("SIGTERM");
   }

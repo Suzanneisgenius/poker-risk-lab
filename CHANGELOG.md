@@ -57,6 +57,40 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-10-22 — case study and validation pages
+
+- **Case study** (`case-study/index.html`, also served at `/case-study/`): one
+  question — how much should we trust a simulated risk estimate? — answered
+  one source of uncertainty at a time for the Risk Lab default scenario:
+  simulation noise (40 seeds at 500 / 2,000 / 20,000 paths), an uncertain win
+  rate (risk intervals after 10k–1M hands of history), and five models of how
+  results arrive (Wilson intervals). Each has one control, one chart, one
+  explanation and its limits, plus a short account of how the misleading
+  7.85% → 6.35% difference was checked.
+- **Validation** (`case-study/validation.html`): each check with its
+  benchmark, conditions, quantity and limits. New checks in `checks/`:
+  - PokerKit 0.7.7 cross-check (independent): 0 disagreements in hand order
+    over 20,000 random hands; identical win/tie/lose counts on 7 exactly
+    enumerated spots, including two preflop spots; three-way Monte Carlo
+    0.77 SE from PokerKit's exact value.
+  - Equity error against time, exact versus Monte Carlo.
+  - Evaluator benchmark with its conditions: earlier and current evaluator,
+    same hands and machine, identical scores, ×134 median speed-up on one
+    Apple M4 Max with Node 24.
+  - Web and research bankroll engines agree within 0.91 SE at 200,000 paths;
+    both match the exact value with the bridge correction.
+- **Reproducibility.** `configs/case_study/*.yaml` and
+  `python -m src.experiments.case_study --case all` regenerate every figure;
+  outputs record the commit, whether code had changed since it, seeds, path
+  counts and package versions. `npm run build` builds both pages from the
+  saved outputs and fails if the README's main finding no longer matches them.
+  Research figures need `requirements-research.txt` (adds Matplotlib and
+  PyYAML).
+- README opens with the question, main finding, links and limits, and a
+  draft authorship and AI-assistance section for the author to complete.
+- `docs/user-testing-plan.md` adds a task on reading a risk interval and a log
+  template.
+
 ## 2026-10-22 — interface
 
 - **Result states.** Hand Equity, Pot Odds & EV and Bankroll Risk share one set

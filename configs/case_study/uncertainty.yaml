@@ -1,0 +1,17 @@
+# Case 2 — If the win rate itself is uncertain, how much do more paths help?
+# Same scenario as case 1. Suppose the player's results so far average exactly
+# +3 bb/100. How wide is the plausible ruin risk after H hands of history,
+# compared with the Monte Carlo error of a simulation at the same win rate?
+scenario:
+  winrate_bb100: 3.0
+  std_bb100: 90.0            # held fixed (treated as known)
+  bankroll_bb: 3000.0
+  ruin_threshold_bb: 0.0
+  n_hands: 100000
+observed_winrate_bb100: 3.0
+history_hands: [10000, 50000, 200000, 1000000]
+prior: {kind: weakly-informative, std: 10.0}
+n_draws: 20000
+seed: 0
+mc_paths: [2000, 20000, 200000]
+level: 0.95

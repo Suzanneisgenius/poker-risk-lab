@@ -12,7 +12,7 @@ first-time users before more features are added.
   comparisons carry over.
 - **Moderator:** read each task aloud as written. Do not name buttons or explain
   terms. Ask people to think aloud. Note every hint you had to give and where.
-- **Time:** about 30 minutes per person.
+- **Time:** about 40 minutes per person.
 
 ## Task 1 — practice and feedback (Preflop → Trainer)
 
@@ -74,11 +74,37 @@ attribute an engine-version difference to the calculator, not to their inputs.
 For the hand-edited file they say the numbers do not match and something needs
 checking, rather than blaming themselves.
 
+## Task 4 — read a risk interval (Risk Lab, then the case study)
+
+Open the Risk Lab with its default inputs.
+
+1. Ask: "What does the 95% interval next to the risk mean?"
+   (Expected: the range the simulation itself could be off by, given these
+   inputs; it says nothing about whether the inputs are right.)
+2. Ask: "If we ran 20,000 paths instead of 2,000, would you be more sure what
+   your real risk is?" (Expected: more sure of the model's number, not of the
+   real risk, because the win rate is still uncertain.)
+3. Then show question 2 of the [case study](../case-study/index.html#q2) and
+   ask the second question again.
+
+**Pass:** before the case study, note how many give the expected answer; after
+it, at least four of five separate simulation error from win-rate uncertainty
+in their own words.
+
 ## What to record
 
-For every task: completed with or without a hint, where the hint was needed,
-the exact words they used to explain the result, and any wording they misread.
-Change wording only where at least two people stumble in the same place.
+One row per person and task. Change wording only where at least two people
+stumble in the same place; then test the change with new people rather than
+the same five.
+
+| Person | Device | Task | Done without a hint? | Where a hint was needed | Their explanation, in their words | Wording misread |
+|---|---|---|---|---|---|---|
+| P1 | phone / laptop | 1–4 | yes / no | | | |
+
+When writing it up, give the number of people, the tasks, what blocked them,
+and what changed as a result. Call it a small usability observation: five
+people can show where wording fails, not that the tool improves learning in
+general.
 
 ## Not covered here
 
