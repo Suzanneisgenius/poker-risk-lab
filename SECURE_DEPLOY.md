@@ -61,6 +61,34 @@ npm start
 Then open `http://127.0.0.1:4174/`. The application deliberately does not work
 as a standalone `file://` page because calculations require the private API.
 
+## Rate limiting and client IPs
+
+Each client gets 100 points per minute. A request costs points in proportion
+to the work it does (hand evaluations, bankroll path-steps, CFR iterations), so
+a large Monte Carlo run uses up the budget faster than a quick EV check.
+
+Clients are identified by `X-Forwarded-For`, but only the rightmost
+`TRUST_PROXY_HOPS` entries are trusted, because everything to their left is
+whatever the visitor sent. `render.yaml` sets `TRUST_PROXY_HOPS=1`. Confirm it
+once after the first deploy:
+
+1. In Render, add the environment variable `LOG_CLIENT_IP=1` and redeploy.
+2. Send a request with a forged header:
+
+   ```bash
+   curl -s -X POST https://<your-app>.onrender.com/api/ev \
+     -H 'Content-Type: application/json' -H 'X-Forwarded-For: 198.51.100.7' \
+     -d '{"pot":10,"call":5,"equityPct":40}'
+   ```
+
+3. In the Render logs, the `rate-limit key=` line must show your real public
+   IP, not `198.51.100.7` and not a Render-internal address. If it shows an
+   internal address, set `TRUST_PROXY_HOPS=2`; if it shows the forged value,
+   the proxy is not appending and the setting must be reviewed.
+4. Remove `LOG_CLIENT_IP`.
+
+Locally, leave `TRUST_PROXY_HOPS` unset so the header is ignored.
+
 ## Protection boundary
 
 This design prevents visitors from downloading the server implementation from

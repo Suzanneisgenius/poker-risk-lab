@@ -12,3 +12,7 @@ services:
         value: 22
       - key: CALC_WORKERS
         value: 2
+      # Render's proxy appends the client address to X-Forwarded-For. Confirm
+      # after deploying with LOG_CLIENT_IP=1 (see SECURE_DEPLOY.md).
+      - key: TRUST_PROXY_HOPS
+        value: 1

@@ -242,7 +242,7 @@ async function runEquity(showResult=false){
     opponents.push(hand);
   }
 
-  const trials=clamp(parseInt($('eq_trials').value)||30000,1000,200000);
+  const trials=clamp(parseInt($('eq_trials').value)||30000,1000,150000);
   $('eq_trials').value=trials;
   const seed=parseInt($('eq_seed').value)||42;
   equityController?.abort();
@@ -348,11 +348,20 @@ let _evT=null;
 /* ================= 3. BANKROLL RISK ================= */
 let bankrollRequest=0;
 let bankrollController=null;
+// Mirrors the server's work ceiling (MAX_PATH_STEPS in server/compute.js): the main fan plus nine curve runs of clamp(10% of paths, 200, 500) paths, each over ceil(hands/100) steps.
+const BK_MAX_PATH_STEPS=100000000;
+function bankrollPathSteps(hands,paths){return Math.ceil(hands/100)*(paths+9*clamp(Math.round(paths*0.1),200,500));}
+function maxBankrollPaths(hands){let paths=20000;while(paths>100&&bankrollPathSteps(hands,paths)>BK_MAX_PATH_STEPS)paths-=100;return paths;}
 async function runBankroll(){
   const BI=100;
   const p={wr:+$('bk_wr').value,sd:Math.max(0,+$('bk_sd').value),bank:+$('bk_bank').value*BI,thr:+$('bk_thr').value*BI,
     hands:clamp(Math.round(+$('bk_hands').value)||100000,100,1000000),paths:clamp(Math.round(+$('bk_paths').value)||6000,100,20000),
     seed:Math.round(+$('bk_seed').value)};
+  const maxPaths=maxBankrollPaths(p.hands),pathsReduced=p.paths>maxPaths;
+  if(pathsReduced)p.paths=maxPaths;
+  $('bk_paths').max=maxPaths;
+  $('bk_budget_note').hidden=!pathsReduced;
+  $('bk_budget_note').textContent=pathsReduced?`Simulation paths lowered to ${maxPaths.toLocaleString()} so ${p.hands.toLocaleString()} hands fit in one calculation.`:'';
   $('bk_hands').value=p.hands;$('bk_paths').value=p.paths;
   if(p.bank<=p.thr){$('bk_kpis').innerHTML=kpiCard('Error','—','bankroll must exceed threshold');return;}
   const request=++bankrollRequest;

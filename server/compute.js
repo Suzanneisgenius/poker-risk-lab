@@ -8,13 +8,21 @@ const {
 } = require("../standalone/engines/equity.js");
 const { trainKuhnTracked, averageGameValue } = require("../standalone/engines/cfr.js");
 const { getPreflopDataset } = require("./preflop.js");
+const { ValidationError } = require("./errors.js");
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+// Work ceilings sized so the largest accepted request finishes well inside the
+// route timeouts on a small shared CPU. One "evaluation" ranks one 7-card hand;
+// one "path-step" advances one bankroll path by one 100-hand increment.
+const MAX_EQUITY_EVALUATIONS = 300000;
+const MAX_PATH_STEPS = 100000000;
+const CURVE_POINTS = 9;
 
 function number(value, label, min, max) {
   const parsed = Number(value);
   if (!Number.isFinite(parsed) || parsed < min || parsed > max) {
-    throw new Error(`${label} must be between ${min} and ${max}.`);
+    throw new ValidationError(`${label} must be between ${min} and ${max}.`);
   }
   return parsed;
 }
@@ -25,50 +33,79 @@ function integer(value, label, min, max) {
 
 function cards(value, label, minLength, maxLength) {
   if (!Array.isArray(value) || value.length < minLength || value.length > maxLength) {
-    throw new Error(`${label} has an invalid number of cards.`);
+    throw new ValidationError(`${label} has an invalid number of cards.`);
   }
   return value.map((card) => integer(card, `${label} card`, 0, 51));
 }
 
 function validateKnownCards(hero, opponents, board) {
   const known = [...hero, ...board, ...opponents.filter(Boolean).flat()];
-  if (new Set(known).size !== known.length) throw new Error("The same card cannot be used twice.");
+  if (new Set(known).size !== known.length) throw new ValidationError("The same card cannot be used twice.");
 }
 
-function computeEquity(input) {
+// Validate an equity request and decide how it will be computed, without
+// running it. Shared by computeEquity and estimateCost so the rate-limit charge
+// always matches the work actually done.
+function planEquity(input) {
   const hero = cards(input.hero, "Your hand", 2, 2);
   const board = cards(input.board || [], "Board", 0, 5);
   if (!Array.isArray(input.opponents) || input.opponents.length < 1 || input.opponents.length > 5) {
-    throw new Error("Choose between one and five opponents.");
+    throw new ValidationError("Choose between one and five opponents.");
   }
   const opponents = input.opponents.map((hand, index) =>
     hand === null ? null : cards(hand, `Opponent ${index + 1}`, 2, 2)
   );
   validateKnownCards(hero, opponents, board);
-  const trials = integer(input.trials ?? 30000, "Trials", 1000, 150000);
+  const requestedTrials = integer(input.trials ?? 30000, "Trials", 1000, 150000);
   const seed = integer(input.seed ?? 42, "Seed", -2147483648, 2147483647);
+  const players = opponents.length + 1;
 
-  let result;
-  let methodText;
-  const fixedHeadsUp = opponents.length === 1 && opponents[0];
-  if (fixedHeadsUp) {
+  if (opponents.length === 1 && opponents[0]) {
     const runs = nRunouts(hero, opponents[0], board);
     if (runs <= 200000) {
-      result = equityExact(hero, opponents[0], board);
-      methodText = `Exact enumeration over ${runs.toLocaleString("en-US")} runouts.`;
-    } else {
-      result = equityMC(hero, opponents[0], board, trials, seed);
-      methodText = `Monte Carlo over ${trials.toLocaleString("en-US")} trials (too many runouts to enumerate).`;
+      return { mode: "exact", hero, board, opponents, seed, runs, trials: runs, requestedTrials, evaluations: runs * 2 };
     }
-  } else {
-    const deterministic = board.length === 5 && opponents.every(Boolean);
-    const actualTrials = deterministic ? 1 : trials;
-    result = equityMultiwayMC(hero, opponents, board, actualTrials, seed);
-    methodText = deterministic
-      ? `Exact showdown against ${opponents.length} opponents.`
-      : `Multiway Monte Carlo against ${opponents.length} opponent${opponents.length === 1 ? "" : "s"}, ${actualTrials.toLocaleString("en-US")} trials.`;
+    return { mode: "headsUp", hero, board, opponents, seed, trials: requestedTrials, requestedTrials, evaluations: requestedTrials * 2 };
   }
-  return { result, methodText };
+  if (board.length === 5 && opponents.every(Boolean)) {
+    return { mode: "showdown", hero, board, opponents, seed, trials: 1, requestedTrials, evaluations: players };
+  }
+  // Every multiway trial ranks one hand per player, so the trial budget shrinks
+  // as players are added.
+  const trials = Math.min(requestedTrials, Math.floor(MAX_EQUITY_EVALUATIONS / players));
+  return { mode: "multiway", hero, board, opponents, seed, trials, requestedTrials, evaluations: trials * players };
+}
+
+function computeEquity(input) {
+  const plan = planEquity(input);
+  const { hero, board, opponents, seed, trials } = plan;
+  const trialText = trials.toLocaleString("en-US");
+  switch (plan.mode) {
+    case "exact":
+      return {
+        result: equityExact(hero, opponents[0], board),
+        methodText: `Exact enumeration over ${trialText} runouts.`,
+      };
+    case "headsUp":
+      return {
+        result: equityMC(hero, opponents[0], board, trials, seed),
+        methodText: `Monte Carlo over ${trialText} trials (too many runouts to enumerate).`,
+      };
+    case "showdown":
+      return {
+        result: equityMultiwayMC(hero, opponents, board, 1, seed),
+        methodText: `Exact showdown against ${opponents.length} opponents.`,
+      };
+    default: {
+      const capped = trials < plan.requestedTrials
+        ? ` (capped from ${plan.requestedTrials.toLocaleString("en-US")} to keep ${opponents.length + 1}-player runs fast)`
+        : "";
+      return {
+        result: equityMultiwayMC(hero, opponents, board, trials, seed),
+        methodText: `Multiway Monte Carlo against ${opponents.length} opponent${opponents.length === 1 ? "" : "s"}, ${trialText} trials${capped}.`,
+      };
+    }
+  }
 }
 
 function computeEv(input) {
@@ -109,21 +146,27 @@ function gaussFactory(seed) {
   };
 }
 
-function erf(value) {
-  const sign = value < 0 ? -1 : 1;
-  const x = Math.abs(value);
-  const a1 = 0.254829592;
-  const a2 = -0.284496736;
-  const a3 = 1.421413741;
-  const a4 = -1.453152027;
-  const a5 = 1.061405429;
-  const p = 0.3275911;
-  const t = 1 / (1 + p * x);
-  return sign * (1 - (((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t * Math.exp(-x * x)));
+// log(erfc(z)) for z >= 0. Chebyshev fit from Numerical Recipes (erfcc), with
+// fractional error below 1.2e-7 everywhere. Staying in log space means it never
+// underflows, however far into the tail z is.
+function logErfc(z) {
+  const t = 1 / (1 + 0.5 * z);
+  return Math.log(t) - z * z - 1.26551223 + t * (1.00002368 + t * (0.37409196 + t * (0.09678418
+    + t * (-0.18628806 + t * (0.27886807 + t * (-1.13520398 + t * (1.48851587
+    + t * (-0.82215223 + t * 0.17087277))))))));
 }
 
-const phi = (value) => 0.5 * (1 + erf(value / Math.SQRT2));
+// log of the standard normal CDF, accurate in both tails.
+function logPhi(x) {
+  const z = -x / Math.SQRT2;
+  if (z >= 0) return Math.log(0.5) + logErfc(z);
+  return Math.log1p(-0.5 * Math.exp(logErfc(-z)));
+}
 
+// Finite-horizon first-passage probability for Brownian motion with drift.
+// The reflection term exp(-2 mu b / sigma^2) overflows for negative drift and
+// large bankrolls while its partner Phi(...) underflows, so both are combined
+// in log space (as src/validation.py does with scipy's log_ndtr).
 function brownFinite(winRate, standardDeviation, bankroll, threshold, hands) {
   const distance = bankroll - threshold;
   if (distance <= 0) return 1;
@@ -133,8 +176,8 @@ function brownFinite(winRate, standardDeviation, bankroll, threshold, hands) {
   const denominator = Math.sqrt(variance * hands);
   const first = (-distance - drift * hands) / denominator;
   const second = (-distance + drift * hands) / denominator;
-  let probability = phi(first) + Math.exp((-2 * drift * distance) / variance) * phi(second);
-  if (!Number.isFinite(probability)) probability = 1;
+  const logReflection = (-2 * drift * distance) / variance + logPhi(second);
+  const probability = Math.exp(logPhi(first)) + Math.exp(logReflection);
   return clamp(probability, 0, 1);
 }
 
@@ -216,7 +259,18 @@ function bands(paths, divisor) {
   return output;
 }
 
-function normalizeBankroll(input, maxPaths) {
+function curvePathsPerPoint(params) {
+  return clamp(Math.round(params.paths * 0.1), 200, 500);
+}
+
+// Total path-steps a bankroll request simulates: the main fan plus, when
+// requested, the nine smaller runs behind the risk-versus-bankroll curve.
+function simulationPathSteps(params, includeCurve) {
+  const steps = Math.ceil(params.hands / params.step);
+  return steps * (params.paths + (includeCurve ? CURVE_POINTS * curvePathsPerPoint(params) : 0));
+}
+
+function normalizeBankroll(input, maxPaths, includeCurve) {
   const params = {
     wr: number(input.wr, "Win rate", -100, 100),
     sd: number(input.sd, "Standard deviation", 0, 500),
@@ -227,7 +281,10 @@ function normalizeBankroll(input, maxPaths) {
     step: 100,
     seed: integer(input.seed ?? 42, "Seed", -2147483648, 2147483647),
   };
-  if (params.bank <= params.thr) throw new Error("Bankroll must be above the ruin threshold.");
+  if (params.bank <= params.thr) throw new ValidationError("Bankroll must be above the ruin threshold.");
+  if (simulationPathSteps(params, includeCurve) > MAX_PATH_STEPS) {
+    throw new ValidationError("Paths × hands is too large for one request. Choose fewer simulation paths or fewer hands.");
+  }
   return params;
 }
 
@@ -236,12 +293,12 @@ function riskCurve(params, divisor) {
   // The fan chart uses the full requested budget. The secondary comparison
   // curve only needs enough samples to show direction alongside its smooth
   // analytical benchmark; capping it prevents nine hidden full simulations.
-  const pathsPerPoint = clamp(Math.round(params.paths * 0.1), 200, 500);
+  const pathsPerPoint = curvePathsPerPoint(params);
   const xs = [];
   const monteCarlo = [];
   const analytical = [];
-  for (let index = 0; index < 9; index += 1) {
-    const bank = low + ((params.bank * 2 - low) * index) / 8;
+  for (let index = 0; index < CURVE_POINTS; index += 1) {
+    const bank = low + ((params.bank * 2 - low) * index) / (CURVE_POINTS - 1);
     const scenario = { ...params, bank, seed: params.seed + index * 7919 };
     const simulation = simulateBankroll(scenario, pathsPerPoint, 0);
     xs.push(bank / divisor);
@@ -252,7 +309,7 @@ function riskCurve(params, divisor) {
 }
 
 function computeBankroll(input) {
-  const params = normalizeBankroll(input, 20000);
+  const params = normalizeBankroll(input, 20000, true);
   const divisor = 100;
   const simulation = simulateBankroll(params, params.paths, Math.min(100, params.paths));
   const risk = simulation.ruinedCount / simulation.pathCount;
@@ -284,8 +341,12 @@ function wilsonInterval(successes, total) {
   return [Math.max(0, center - half), Math.min(1, center + half)];
 }
 
+function normalizeRiskLab(input) {
+  return normalizeBankroll({ ...input, thr: 0 }, 40000, input.includeCurve !== false);
+}
+
 function computeRiskLab(input) {
-  const params = normalizeBankroll({ ...input, thr: 0 }, 40000);
+  const params = normalizeRiskLab(input);
   const divisor = 100;
   const simulation = simulateBankroll(params, params.paths, Math.min(80, params.paths));
   const risk = simulation.ruinedCount / simulation.pathCount;
@@ -307,8 +368,12 @@ function computeRiskLab(input) {
   };
 }
 
+function gtoIterations(input) {
+  return integer(input.iterations ?? 300000, "Iterations", 10000, 500000);
+}
+
 function computeGto(input) {
-  const iterations = integer(input.iterations ?? 300000, "Iterations", 10000, 500000);
+  const iterations = gtoIterations(input);
   const seed = integer(input.seed ?? 42, "Seed", -2147483648, 2147483647);
   const trained = trainKuhnTracked(iterations, 50, seed);
   const value = averageGameValue(trained.nodes);
@@ -334,8 +399,30 @@ function computePreflop(input) {
   return getPreflopDataset(scenarioId);
 }
 
+const isObject = (input) => Boolean(input) && typeof input === "object" && !Array.isArray(input);
+
+// Rate-limit points for one request, proportional to the work compute() will
+// do for it. Roughly one point per 50k hand evaluations, 2.5M bankroll
+// path-steps, or 50k CFR iterations. Invalid input costs the minimum because
+// compute() rejects it before doing any work.
+function estimateCost(type, input) {
+  if (!isObject(input)) return 1;
+  try {
+    switch (type) {
+      case "equity": return 1 + Math.ceil(planEquity(input).evaluations / 50000);
+      case "bankroll": return 2 + Math.ceil(simulationPathSteps(normalizeBankroll(input, 20000, true), true) / 2500000);
+      case "risk-lab": return 2 + Math.ceil(simulationPathSteps(normalizeRiskLab(input), input.includeCurve !== false) / 2500000);
+      case "gto": return 2 + Math.ceil(gtoIterations(input) / 50000);
+      default: return 1;
+    }
+  } catch (error) {
+    if (error instanceof ValidationError) return 1;
+    throw error;
+  }
+}
+
 function compute(type, input) {
-  if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("Request body must be a JSON object.");
+  if (!isObject(input)) throw new ValidationError("Request body must be a JSON object.");
   switch (type) {
     case "equity": return computeEquity(input);
     case "ev": return computeEv(input);
@@ -343,8 +430,22 @@ function compute(type, input) {
     case "risk-lab": return computeRiskLab(input);
     case "preflop": return computePreflop(input);
     case "gto": return computeGto(input);
-    default: throw new Error("Unknown calculation type.");
+    default: throw new ValidationError("Unknown calculation type.");
   }
 }
 
-module.exports = { compute, computeEquity, computeEv, computeBankroll, computeRiskLab, computePreflop, computeGto };
+module.exports = {
+  compute,
+  computeEquity,
+  computeEv,
+  computeBankroll,
+  computeRiskLab,
+  computePreflop,
+  computeGto,
+  estimateCost,
+  simulationPathSteps,
+  brownFinite,
+  logPhi,
+  MAX_EQUITY_EVALUATIONS,
+  MAX_PATH_STEPS,
+};

@@ -491,7 +491,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
           <div class="slots" id="slots_board"></div>
         </div>
         <details class="advanced"><summary>Advanced simulation settings</summary><div class="row2">
-          <div class="fld"><label>MC trials</label><input id="eq_trials" type="number" min="1000" max="200000" step="10000" value="30000"></div>
+          <div class="fld"><label>MC trials</label><input id="eq_trials" type="number" min="1000" max="150000" step="10000" value="30000"></div>
           <div class="fld"><label>Seed</label><input id="eq_seed" type="number" value="42"></div>
         </div></details>
         <button class="btn primary" id="eq_run">Compute equity</button>
@@ -589,6 +589,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
           <div class="fld"><label>Random seed</label><input id="bk_seed" type="number" value="42"></div>
         </div></details>
         <button class="btn primary" id="bk_run">Run simulation</button>
+        <p class="hint" id="bk_budget_note" role="status" aria-live="polite" hidden></p>
         <div class="hint">The simulation runs on the private calculation service. Paths and seed affect numerical precision and reproducibility, not your poker assumptions.</div>
       </div>
       <div>
@@ -706,7 +707,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
         <h2>GTO trainer — Kuhn poker (CFR)</h2>
         <p class="neutral">Kuhn poker: a 3-card deck (J&lt;Q&lt;K), one card each, one betting round. Counterfactual Regret Minimization converges to a Nash equilibrium. The known game value to player 1 is <code>-1/18 ≈ -0.0556</code>.</p>
         <div class="row2">
-          <div class="fld"><label>Training iterations</label><input id="gto_iters" type="number" min="10000" max="1000000" step="50000" value="300000"></div>
+          <div class="fld"><label>Training iterations</label><input id="gto_iters" type="number" min="10000" max="500000" step="50000" value="300000"></div>
           <div class="fld"><label>Seed</label><input id="gto_seed" type="number" value="42"></div>
         </div>
         <button class="btn primary" id="gto_run">Train CFR</button>

@@ -491,7 +491,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
           <div class="slots" id="slots_board"></div>
         </div>
         <details class="advanced"><summary>Advanced simulation settings</summary><div class="row2">
-          <div class="fld"><label>MC trials</label><input id="eq_trials" type="number" min="1000" max="200000" step="10000" value="30000"></div>
+          <div class="fld"><label>MC trials</label><input id="eq_trials" type="number" min="1000" max="150000" step="10000" value="30000"></div>
           <div class="fld"><label>Seed</label><input id="eq_seed" type="number" value="42"></div>
         </div></details>
         <button class="btn primary" id="eq_run">Compute equity</button>
@@ -589,6 +589,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
           <div class="fld"><label>Random seed</label><input id="bk_seed" type="number" value="42"></div>
         </div></details>
         <button class="btn primary" id="bk_run">Run simulation</button>
+        <p class="hint" id="bk_budget_note" role="status" aria-live="polite" hidden></p>
         <div class="hint">The simulation runs on the private calculation service. Paths and seed affect numerical precision and reproducibility, not your poker assumptions.</div>
       </div>
       <div>
@@ -706,7 +707,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
         <h2>GTO trainer — Kuhn poker (CFR)</h2>
         <p class="neutral">Kuhn poker: a 3-card deck (J&lt;Q&lt;K), one card each, one betting round. Counterfactual Regret Minimization converges to a Nash equilibrium. The known game value to player 1 is <code>-1/18 ≈ -0.0556</code>.</p>
         <div class="row2">
-          <div class="fld"><label>Training iterations</label><input id="gto_iters" type="number" min="10000" max="1000000" step="50000" value="300000"></div>
+          <div class="fld"><label>Training iterations</label><input id="gto_iters" type="number" min="10000" max="500000" step="50000" value="300000"></div>
           <div class="fld"><label>Seed</label><input id="gto_seed" type="number" value="42"></div>
         </div>
         <button class="btn primary" id="gto_run">Train CFR</button>
@@ -1014,7 +1015,7 @@ async function runEquity(showResult=false){
     opponents.push(hand);
   }
 
-  const trials=clamp(parseInt($('eq_trials').value)||30000,1000,200000);
+  const trials=clamp(parseInt($('eq_trials').value)||30000,1000,150000);
   $('eq_trials').value=trials;
   const seed=parseInt($('eq_seed').value)||42;
   equityController?.abort();
@@ -1120,11 +1121,20 @@ let _evT=null;
 /* ================= 3. BANKROLL RISK ================= */
 let bankrollRequest=0;
 let bankrollController=null;
+// Mirrors the server's work ceiling (MAX_PATH_STEPS in server/compute.js): the main fan plus nine curve runs of clamp(10% of paths, 200, 500) paths, each over ceil(hands/100) steps.
+const BK_MAX_PATH_STEPS=100000000;
+function bankrollPathSteps(hands,paths){return Math.ceil(hands/100)*(paths+9*clamp(Math.round(paths*0.1),200,500));}
+function maxBankrollPaths(hands){let paths=20000;while(paths>100&&bankrollPathSteps(hands,paths)>BK_MAX_PATH_STEPS)paths-=100;return paths;}
 async function runBankroll(){
   const BI=100;
   const p={wr:+$('bk_wr').value,sd:Math.max(0,+$('bk_sd').value),bank:+$('bk_bank').value*BI,thr:+$('bk_thr').value*BI,
     hands:clamp(Math.round(+$('bk_hands').value)||100000,100,1000000),paths:clamp(Math.round(+$('bk_paths').value)||6000,100,20000),
     seed:Math.round(+$('bk_seed').value)};
+  const maxPaths=maxBankrollPaths(p.hands),pathsReduced=p.paths>maxPaths;
+  if(pathsReduced)p.paths=maxPaths;
+  $('bk_paths').max=maxPaths;
+  $('bk_budget_note').hidden=!pathsReduced;
+  $('bk_budget_note').textContent=pathsReduced?`Simulation paths lowered to ${maxPaths.toLocaleString()} so ${p.hands.toLocaleString()} hands fit in one calculation.`:'';
   $('bk_hands').value=p.hands;$('bk_paths').value=p.paths;
   if(p.bank<=p.thr){$('bk_kpis').innerHTML=kpiCard('Error','—','bankroll must exceed threshold');return;}
   const request=++bankrollRequest;

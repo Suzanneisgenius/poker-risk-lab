@@ -5,6 +5,9 @@ const crypto = require("node:crypto");
 const fs = require("node:fs/promises");
 const path = require("node:path");
 const { CalculationPool } = require("./pool.js");
+const { estimateCost } = require("./compute.js");
+const { clientIp } = require("./client_ip.js");
+const { ValidationError } = require("./errors.js");
 
 const ROOT = path.resolve(__dirname, "..");
 const INDEX = path.join(ROOT, "index.html");
@@ -16,14 +19,20 @@ const calculationCache = new Map();
 const CACHE_TTL_MS = 10 * 60 * 1000;
 const CACHE_MAX_ENTRIES = 40;
 const RATE_LIMIT_POINTS = 100;
+// Number of reverse proxies in front of this server that append to
+// X-Forwarded-For. 0 (the default) ignores the header entirely.
+const TRUST_PROXY_HOPS = Math.max(0, Math.min(5, Number.parseInt(process.env.TRUST_PROXY_HOPS || "0", 10) || 0));
+// Set LOG_CLIENT_IP=1 temporarily to confirm TRUST_PROXY_HOPS against the real
+// header chain your host sends.
+const LOG_CLIENT_IP = process.env.LOG_CLIENT_IP === "1";
 
 const routes = new Map([
-  ["/api/equity", { type: "equity", weight: 3, timeout: 30000 }],
-  ["/api/ev", { type: "ev", weight: 1, timeout: 10000 }],
-  ["/api/bankroll", { type: "bankroll", weight: 8, timeout: 45000 }],
-  ["/api/risk-lab", { type: "risk-lab", weight: 12, timeout: 55000 }],
-  ["/api/preflop", { type: "preflop", weight: 1, timeout: 10000 }],
-  ["/api/gto", { type: "gto", weight: 10, timeout: 45000 }],
+  ["/api/equity", { type: "equity", timeout: 30000 }],
+  ["/api/ev", { type: "ev", timeout: 10000 }],
+  ["/api/bankroll", { type: "bankroll", timeout: 45000 }],
+  ["/api/risk-lab", { type: "risk-lab", timeout: 55000 }],
+  ["/api/preflop", { type: "preflop", timeout: 10000 }],
+  ["/api/gto", { type: "gto", timeout: 45000 }],
 ]);
 
 function securityHeaders(contentType, api = false) {
@@ -69,14 +78,12 @@ function rememberResult(key, result) {
   calculationCache.set(key, { result, expiresAt: Date.now() + CACHE_TTL_MS });
 }
 
-function clientIp(request) {
-  const forwarded = String(request.headers["x-forwarded-for"] || "").split(",")[0].trim();
-  return forwarded || request.socket.remoteAddress || "unknown";
-}
-
 function chargeRateLimit(request, weight) {
   const now = Date.now();
-  const key = clientIp(request);
+  const key = clientIp(request, TRUST_PROXY_HOPS);
+  if (LOG_CLIENT_IP) {
+    process.stdout.write(`rate-limit key=${key} x-forwarded-for=${JSON.stringify(request.headers["x-forwarded-for"] || "")} socket=${request.socket.remoteAddress}\n`);
+  }
   let bucket = rateBuckets.get(key);
   if (!bucket || now - bucket.startedAt >= 60000) bucket = { startedAt: now, used: 0 };
   bucket.used += weight;
@@ -89,14 +96,6 @@ setInterval(() => {
   for (const [key, bucket] of rateBuckets) if (bucket.startedAt < cutoff) rateBuckets.delete(key);
 }, 60000).unref();
 
-function requestWeight(route, input) {
-  let weight = route.weight;
-  if ((route.type === "risk-lab" || route.type === "bankroll") && Number(input?.paths) > 10000) weight += 18;
-  if (route.type === "gto" && Number(input?.iterations) > 300000) weight += 10;
-  if (route.type === "equity" && Number(input?.trials) > 75000) weight += 5;
-  return weight;
-}
-
 function sameOrigin(request) {
   const origin = request.headers.origin;
   if (!origin) return true;
@@ -108,19 +107,19 @@ function sameOrigin(request) {
 
 async function readJson(request) {
   const contentType = String(request.headers["content-type"] || "").toLowerCase();
-  if (!contentType.startsWith("application/json")) throw new Error("Send the request as application/json.");
+  if (!contentType.startsWith("application/json")) throw new ValidationError("Send the request as application/json.", 415);
   const chunks = [];
   let size = 0;
   for await (const chunk of request) {
     size += chunk.length;
-    if (size > 32768) throw new Error("Request body is too large.");
+    if (size > 32768) throw new ValidationError("Request body is too large.", 413);
     chunks.push(chunk);
   }
-  if (!chunks.length) throw new Error("Request body is required.");
+  if (!chunks.length) throw new ValidationError("Request body is required.");
   try {
     return JSON.parse(Buffer.concat(chunks).toString("utf8"));
   } catch {
-    throw new Error("Request body must contain valid JSON.");
+    throw new ValidationError("Request body must contain valid JSON.");
   }
 }
 
@@ -141,7 +140,7 @@ async function handleApi(request, response, route) {
       json(response, 200, cached, { "X-Calculation-Cache": "HIT" });
       return;
     }
-    const rate = chargeRateLimit(request, requestWeight(route, input));
+    const rate = chargeRateLimit(request, estimateCost(route.type, input));
     if (!rate.allowed) {
       json(response, 429, { error: "Too many calculations. Please wait a moment and try again." }, { "Retry-After": String(rate.retryAfter) });
       return;
@@ -164,8 +163,7 @@ async function handleApi(request, response, route) {
   } catch (error) {
     if (response.destroyed || response.writableEnded || error?.name === "AbortError") return;
     const message = error instanceof Error ? error.message : "Calculation failed.";
-    const isInputError = /must|invalid|Choose|same card|above|JSON|Request body|Send the request/.test(message);
-    json(response, isInputError ? 400 : 503, { error: message });
+    json(response, error instanceof ValidationError ? error.status : 503, { error: message });
   }
 }
 

@@ -2,6 +2,7 @@
 
 const path = require("node:path");
 const { Worker } = require("node:worker_threads");
+const { ValidationError } = require("./errors.js");
 
 function cancelledError() {
   const error = new Error("Calculation cancelled.");
@@ -62,7 +63,10 @@ class CalculationPool {
     const abortActive = () => finish(() => task.reject(cancelledError()));
     task.signal?.addEventListener("abort", abortActive, { once: true });
     timer = setTimeout(() => finish(() => task.reject(new Error("Calculation timed out. Try a lower precision setting."))), task.timeoutMs);
-    worker.once("message", (message) => finish(() => message.ok ? task.resolve(message.result) : task.reject(new Error(message.error))));
+    worker.once("message", (message) => finish(() => {
+      if (message.ok) task.resolve(message.result);
+      else task.reject(message.invalid ? new ValidationError(message.error, message.status) : new Error(message.error));
+    }));
     worker.once("error", () => finish(() => task.reject(new Error("Calculation worker failed. Please try again."))));
     if (task.signal?.aborted) {
       abortActive();
