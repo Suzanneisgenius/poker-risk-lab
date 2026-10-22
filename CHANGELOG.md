@@ -86,8 +86,8 @@ How each change splits up at the same seed:
   saved outputs and fails if the README's main finding no longer matches them.
   Research figures need `requirements-research.txt` (adds Matplotlib and
   PyYAML).
-- README opens with the question, main finding, links and limits, and a
-  draft authorship and AI-assistance section for the author to complete.
+- README opens with the question, main finding, links and limits, followed by
+  an empty authorship section for the author to fill in.
 - `docs/user-testing-plan.md` adds a task on reading a risk interval and a log
   template.
 

@@ -24,19 +24,7 @@ the first.
 
 ## Authorship and AI assistance
 
-> **Draft — the author should complete and confirm this section before publishing.**
 
-- **Author's contribution:** _[the research question, which comparisons to run,
-  how to read the results, what was reviewed and changed — in the author's own
-  words]_
-- **AI coding assistance:** commits from 2026-10-21 onward were made with
-  Claude Code (an AI coding assistant) from the author's instructions and
-  reviews; their commit messages end with a `Co-Authored-By` line. _[Describe
-  how earlier versions were written.]_
-- **Third-party code:** [PokerKit](https://github.com/uoftcprg/pokerkit) 0.7.7
-  is used only to validate the equity engine and is not part of the app.
-  The app loads Plotly from a CDN for charts; the Python engine uses NumPy,
-  SciPy and pandas, and the figures use Matplotlib.
 
 ## Research framing
 
