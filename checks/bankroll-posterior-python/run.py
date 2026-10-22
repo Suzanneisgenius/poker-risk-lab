@@ -80,7 +80,7 @@ def bankroll_for(risk_at, target: float, thr: float, scale: float) -> float:
 
 
 def evaluate(p: dict, sd: float, prior: str, hands: int) -> dict:
-    se = sd / math.sqrt(hands / 100)
+    se = p["seMultiplier"] * sd / math.sqrt(hands / 100)
     post = normal_normal_posterior(p["winRate"], se, PRIORS[prior])
     low, high = post.credible_interval(LEVEL)
     credible = post.mean - float(norm.ppf(p["credibility"])) * post.std
@@ -103,8 +103,8 @@ def evaluate(p: dict, sd: float, prior: str, hands: int) -> dict:
     }
 
 
-def sample_hands(sd: float, margin: float, level: float) -> float:
-    return 100 * (float(norm.ppf(0.5 + level / 2)) * sd / margin) ** 2
+def sample_hands(sd: float, margin: float, level: float, multiplier: float = 1.0) -> float:
+    return 100 * (float(norm.ppf(0.5 + level / 2)) * sd * multiplier / margin) ** 2
 
 
 class Diff:
@@ -156,10 +156,10 @@ def compare_case(case: dict, mc: bool = True, seed: int = MC_SEED) -> dict:
           bankroll_for(lambda x: risk(inp["winRate"], inp["sd"], x, thr, horizon), target, thr, scale))
 
     s = web["sampleSize"]
-    total = sample_hands(inp["sd"], inp["margin"], inp["sampleLevel"])
+    total = sample_hands(inp["sd"], inp["margin"], inp["sampleLevel"], inp["seMultiplier"])
     d.add("hands", "hands for the interval", s["totalHands"], total)
     d.add("win_rate", "current half-width", s["currentHalfWidth"],
-          float(norm.ppf(0.5 + inp["sampleLevel"] / 2)) * inp["sd"] / math.sqrt(inp["hands"] / 100))
+          float(norm.ppf(0.5 + inp["sampleLevel"] / 2)) * inp["sd"] * inp["seMultiplier"] / math.sqrt(inp["hands"] / 100))
 
     # Every row of the three "how the answer changes" tables.
     rows = {"volatility": [], "prior": [], "sample": []}
@@ -177,7 +177,11 @@ def compare_case(case: dict, mc: bool = True, seed: int = MC_SEED) -> dict:
             d.add("probability", f"{name} upper risk", row["upperRisk"], py["upper"])
             d.add("bankroll_relative", f"{name} bankroll", row["requiredBuyIns"] * inp["bbPerBuyIn"], py["bankroll_credible"])
             if kind == "volatility":
-                d.add("hands", f"{name} hands for the interval", row["handsForMargin"], sample_hands(row["sd"], inp["margin"], inp["sampleLevel"]))
+                d.add("hands", f"{name} hands for the interval", row["handsForMargin"],
+                      sample_hands(row["sd"], inp["margin"], inp["sampleLevel"], inp["seMultiplier"]))
+                # Rows for the ends of an estimated volatility's interval are not assumptions.
+                if row.get("bound") and row["sd"] not in (70, 90, 120, 150):
+                    continue
             rows[kind].append(py)
 
     # Which input moves the risk most, recomputed from the Python rows.

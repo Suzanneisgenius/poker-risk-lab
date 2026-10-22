@@ -42,12 +42,22 @@ const assumptionsSummary = `<p>Same ${scenario.winrate_bb100 > 0 ? "+" : ""}${sc
 const shellMarker = "<!--__ASSUMPTIONS_SUMMARY__-->";
 const shell = fs.readFileSync(path.join(standalone, "build", "shell.html"), "utf8");
 if (!shell.includes(shellMarker)) throw new Error("Missing assumptions-summary marker in shell.html");
+// Session import: the shared reader and statistics, and the example file.
+const statsScript = fs.readFileSync(path.join(standalone, "shared", "stats.js"), "utf8");
+const sessionsScript = fs.readFileSync(path.join(standalone, "shared", "sessions.js"), "utf8");
+const exampleMarker = "/*__SESSION_EXAMPLE__*/ null";
+if (!reviewedApp.includes(exampleMarker)) throw new Error("Missing session-example binding in app.js");
+const example = JSON.stringify(fs.readFileSync(path.join(standalone, "shared", "sessions-example.csv"), "utf8")).replaceAll("<", "\\u003c");
 const page = [
   shell.replace(shellMarker, () => assumptionsSummary),
   "\n<script>\n",
+  statsScript,
+  "\n",
+  sessionsScript,
+  "\n",
   rangeScript,
   "\n",
-  reviewedApp,
+  reviewedApp.replace(exampleMarker, () => example),
   "\n</script></body></html>\n",
 ].join("");
 

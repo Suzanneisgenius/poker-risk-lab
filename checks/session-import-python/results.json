@@ -1,0 +1,73 @@
+{
+  "purpose": "Internal check: the page's session import and estimates against pandas, src/inference.py and scipy.",
+  "command": "python -I checks/session-import-python/run.py --check",
+  "tolerance": {
+    "relative": 1e-09,
+    "probability": 1e-06
+  },
+  "environment": {
+    "python": "3.12.14",
+    "pandas": "3.0.6",
+    "scipy": "1.18.1",
+    "numpy": "2.5.4"
+  },
+  "files": [
+    {
+      "file": "drifting.csv",
+      "sessions": 240,
+      "comparisons": 1249,
+      "largest_difference": {
+        "relative": 7.1e-15,
+        "probability": 8.1e-09
+      },
+      "failures": [],
+      "passed": true
+    },
+    {
+      "file": "equal-blocks.csv",
+      "sessions": 60,
+      "comparisons": 320,
+      "largest_difference": {
+        "relative": 9.1e-15,
+        "probability": 4.7e-16
+      },
+      "failures": [],
+      "passed": true
+    },
+    {
+      "file": "european.csv",
+      "sessions": 80,
+      "comparisons": 428,
+      "largest_difference": {
+        "relative": 6.6e-15,
+        "probability": 3.5e-08
+      },
+      "failures": [],
+      "passed": true
+    },
+    {
+      "file": "sessions-mixed.csv",
+      "sessions": 360,
+      "comparisons": 2075,
+      "largest_difference": {
+        "relative": 2e-14,
+        "probability": 2e-08
+      },
+      "failures": [],
+      "passed": true
+    },
+    {
+      "file": "short-and-long.csv",
+      "sessions": 300,
+      "comparisons": 1528,
+      "largest_difference": {
+        "relative": 9.8e-15,
+        "probability": 1.6e-11
+      },
+      "failures": [],
+      "passed": true
+    }
+  ],
+  "comparisons": 5600,
+  "all_passed": true
+}

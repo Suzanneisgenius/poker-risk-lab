@@ -171,6 +171,42 @@
   .bp-sources-text{margin:0 0 4px;font-weight:600}
   .bp-model p{font-size:13px;color:var(--muted)}
   #bankroll a{color:var(--accent2)}
+  .bp-input-mode{margin:0 0 12px}
+  .bp-csv-help{margin:0 0 10px}
+  .bp-csv-help code{font-size:11.5px;color:var(--text)}
+  .bp-file-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 8px}
+  .bp-file-row .btn{width:auto;min-height:38px;padding:7px 12px;font-size:13px;margin:0}
+  .bp-file{position:relative;overflow:hidden;cursor:pointer}
+  .bp-file input{position:absolute;inset:0;opacity:0;cursor:pointer}
+  .bp-file:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+  .bp-file-status{font-size:13px;margin:0 0 8px;color:var(--muted)}
+  .bp-file-status[data-state="error"]{color:var(--ruin)}
+  .bp-problems{font-size:12.5px;color:var(--muted);margin:0 0 10px}
+  .bp-problems summary{cursor:pointer;color:var(--median)}
+  .bp-problems ul{margin:6px 0 0;padding-left:18px}
+  .bp-chips{border:0;padding:0;margin:0 0 10px;min-width:0}
+  .bp-chips legend{font-size:13px;color:var(--muted);padding:0;margin-bottom:5px}
+  .bp-chips>div{display:flex;flex-wrap:wrap;gap:6px}
+  .bp-chip{display:flex;align-items:center;gap:5px;border:1px solid var(--grid);border-radius:999px;padding:4px 10px;font-size:12.5px;color:var(--muted);cursor:pointer}
+  .bp-chip:has(input:checked){border-color:var(--accent);color:var(--text);background:rgba(56,189,248,.08)}
+  .bp-chip input{accent-color:var(--accent);margin:0}
+  .bp-chip small{color:var(--dim)}
+  .bp-selection{font-size:13px;line-height:1.5;margin:4px 0 12px;padding:9px 11px;border-radius:9px;background:rgba(56,189,248,.06);border:1px solid rgba(56,189,248,.18)}
+  .bp-selection strong{color:var(--text)}
+  .bp-fit,.bp-groups{margin:0 0 12px}
+  .bp-fit h3,.bp-groups h3{font-size:14px;margin:0 0 6px}
+  .bp-checks{list-style:none;margin:0 0 8px;padding:0;display:grid;gap:7px}
+  .bp-checks li{font-size:13px;line-height:1.45;padding-left:22px;position:relative;color:var(--text)}
+  .bp-checks li::before{position:absolute;left:0;top:0;font-weight:700}
+  .bp-checks li.ok::before{content:"✓";color:var(--pos)}
+  .bp-checks li.flag::before{content:"!";color:var(--median)}
+  .bp-checks li.na::before{content:"–";color:var(--dim)}
+  .bp-checks li small{display:block;color:var(--muted)}
+  .bp-widen{display:flex;gap:8px;align-items:flex-start;font-size:13px;margin:0 0 8px;cursor:pointer}
+  .bp-widen input{margin-top:3px;accent-color:var(--accent)}
+  .bp-groups-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+  .bp-groups-head h3{margin:0}
+  .bp-groups-head select{background:var(--surface2);border:1px solid var(--grid);color:var(--text);border-radius:8px;padding:5px 8px;font:inherit;font-size:13px}
   @media(max-width:600px){.bp-source{grid-template-columns:1fr auto}.bp-source-track{grid-column:1/-1;grid-row:2}.bp-need strong{font-size:32px}.bk-mode{display:flex}.bk-mode label{flex:1}.bk-mode span{width:100%;text-align:center}}
   .range-eq{display:inline-block;width:64px;height:7px;border-radius:4px;background:var(--surface3);margin-right:8px;vertical-align:middle;overflow:hidden}
   .range-eq span{display:block;height:100%}.range-eq.ahead span{background:var(--pos)}.range-eq.behind span{background:var(--ruin)}.range-eq.even span,.range-eq.close span{background:var(--muted)}.range-eq.mixed span{background:var(--median)}
@@ -994,7 +1030,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
 
   <!-- ===================== BANKROLL ===================== -->
   <section class="mod" id="bankroll" role="tabpanel" aria-labelledby="tab-bankroll">
-    <div class="explainer"><b>How much bankroll do your results call for, and how sure can you be?</b> Start from your own results: the win rate they show is estimated with its uncertainty, and the bankroll is the one that keeps model risk under your limit. Without results, simulate a win rate you assume instead.
+    <div class="explainer"><b>How much bankroll do your results call for, and how sure can you be?</b> Start from your own results, as totals or a CSV of sessions: the win rate they show is estimated with its uncertainty, and the bankroll is the one that keeps model risk under your limit. Without results, simulate a win rate you assume instead.
       <details class="learnmore"><summary>Units and limitations</summary><p>Both modes assume independent Normal results and a win rate that stays the same over the hands you plan to play, so treat the output as a conditional estimate rather than a guarantee. Heavy tails and swings that carry over are tested separately in the <a href="case-study/#q3">case study</a>.</p></details>
     </div>
     <fieldset class="opp-mode bk-mode"><legend class="sr-only">Where the win rate comes from</legend>
@@ -1006,27 +1042,68 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
       <div class="panel">
         <h2>Bankroll from your results</h2>
         <p class="quicklabel">1 · Your results so far</p>
-        <div class="row2">
-          <div class="fld"><label for="bp_hands">Hands played</label><input id="bp_hands" type="number" min="100" max="100000000" step="1000" value="40000"></div>
-          <div class="fld"><label for="bp_wr">Net win rate (bb/100)</label><input id="bp_wr" type="number" min="-200" max="200" step="0.1" value="4"></div>
-        </div>
-        <p class="hint bp-example">Example values: replace them with your own. Use winnings after rake, not all-in EV.</p>
-        <fieldset class="bp-sd"><legend>Volatility: the standard deviation of your results (bb/100)</legend>
-          <div class="opp-mode bp-sd-source">
-            <label><input type="radio" name="bp_sd_source" value="assumed" checked><span>I don’t know it: assume one</span></label>
-            <label><input type="radio" name="bp_sd_source" value="tracker"><span>From my tracker</span></label>
-          </div>
-          <div id="bp_sd_assumed">
-            <div class="presetgroup swing-cards" role="group" aria-label="Volatility assumption" aria-describedby="bp_sd_note">
-              <button type="button" class="preset bpsdpreset" data-sd="70" aria-pressed="false"><strong>Mostly steady</strong><small>Smaller pots; all-ins are uncommon</small><span class="swing-value">Assumption · 70 bb/100</span></button>
-              <button type="button" class="preset bpsdpreset" data-sd="90" aria-pressed="true"><strong>Normal ups and downs</strong><small>Regular and occasional big pots</small><span class="swing-value">Assumption · 90 bb/100</span></button>
-              <button type="button" class="preset bpsdpreset" data-sd="120" aria-pressed="false"><strong>Action-heavy</strong><small>Large pots and all-ins often</small><span class="swing-value">Assumption · 120 bb/100</span></button>
-              <button type="button" class="preset bpsdpreset" data-sd="150" aria-pressed="false"><strong>Extremely wild</strong><small>Huge or multiway all-ins common</small><span class="swing-value">Assumption · 150 bb/100</span></button>
-            </div>
-            <p class="hint" id="bp_sd_note">A net win rate and a hand count cannot tell how much your results swing, so this is an assumption, not an estimate from your results. The volatility table on the right shows the answer under each one.</p>
-          </div>
-          <div class="fld" id="bp_sd_tracker" hidden><label for="bp_sd">Standard deviation from your tracker (bb/100)</label><input id="bp_sd" type="number" min="10" max="500" step="1" value="90"><div class="hint">Most trackers report it per 100 hands. Use the figure for the same games as your win rate.</div></div>
+        <fieldset class="opp-mode bp-input-mode"><legend class="sr-only">How to give your results</legend>
+          <label><input type="radio" name="bp_input" value="totals" checked><span>Enter totals</span></label>
+          <label><input type="radio" name="bp_input" value="sessions"><span>Import sessions (CSV)</span></label>
         </fieldset>
+        <div id="bp_totals">
+          <div class="row2">
+            <div class="fld"><label for="bp_hands">Hands played</label><input id="bp_hands" type="number" min="100" max="100000000" step="1000" value="40000"></div>
+            <div class="fld"><label for="bp_wr">Net win rate (bb/100)</label><input id="bp_wr" type="number" min="-200" max="200" step="0.1" value="4"></div>
+          </div>
+          <p class="hint bp-example">Example values: replace them with your own. Use winnings after rake, not all-in EV.</p>
+          <fieldset class="bp-sd"><legend>Volatility: the standard deviation of your results (bb/100)</legend>
+            <div class="opp-mode bp-sd-source">
+              <label><input type="radio" name="bp_sd_source" value="assumed" checked><span>I don’t know it: assume one</span></label>
+              <label><input type="radio" name="bp_sd_source" value="tracker"><span>From my tracker</span></label>
+            </div>
+            <div id="bp_sd_assumed">
+              <div class="presetgroup swing-cards" role="group" aria-label="Volatility assumption" aria-describedby="bp_sd_note">
+                <button type="button" class="preset bpsdpreset" data-sd="70" aria-pressed="false"><strong>Mostly steady</strong><small>Smaller pots; all-ins are uncommon</small><span class="swing-value">Assumption · 70 bb/100</span></button>
+                <button type="button" class="preset bpsdpreset" data-sd="90" aria-pressed="true"><strong>Normal ups and downs</strong><small>Regular and occasional big pots</small><span class="swing-value">Assumption · 90 bb/100</span></button>
+                <button type="button" class="preset bpsdpreset" data-sd="120" aria-pressed="false"><strong>Action-heavy</strong><small>Large pots and all-ins often</small><span class="swing-value">Assumption · 120 bb/100</span></button>
+                <button type="button" class="preset bpsdpreset" data-sd="150" aria-pressed="false"><strong>Extremely wild</strong><small>Huge or multiway all-ins common</small><span class="swing-value">Assumption · 150 bb/100</span></button>
+              </div>
+              <p class="hint" id="bp_sd_note">A net win rate and a hand count cannot tell how much your results swing, so this is an assumption, not an estimate from your results. The volatility table on the right shows the answer under each one.</p>
+            </div>
+            <div class="fld" id="bp_sd_tracker" hidden><label for="bp_sd">Standard deviation from your tracker (bb/100)</label><input id="bp_sd" type="number" min="10" max="500" step="1" value="90"><div class="hint">Most trackers report it per 100 hands. Use the figure for the same games as your win rate.</div></div>
+          </fieldset>
+        </div>
+        <div id="bp_sessions" hidden>
+          <p class="hint bp-csv-help">One row per session with <code>hands</code> and <code>profit_bb</code> (profit in big blinds, after rake). <code>stake</code>, <code>game</code> and <code>date</code> (YYYY-MM-DD) are optional and let you filter and compare. The file is read in your browser; only the totals are sent to the calculator.</p>
+          <div class="bp-file-row">
+            <label class="btn ghost bp-file">Choose a CSV file<input type="file" id="bp_file" accept=".csv,text/csv,text/plain"></label>
+            <button type="button" class="btn ghost" id="bp_example">Try example data</button>
+            <button type="button" class="btn ghost" id="bp_template">Download template</button>
+          </div>
+          <p class="bp-file-status" id="bp_file_status" role="status" aria-live="polite">No file yet.</p>
+          <details class="bp-problems" id="bp_problems" hidden><summary id="bp_problems_summary"></summary><ul id="bp_problems_list"></ul></details>
+          <div id="bp_filters" hidden>
+            <fieldset class="bp-chips" id="bp_stakes_box"><legend>Stakes</legend><div id="bp_stakes"></div></fieldset>
+            <fieldset class="bp-chips" id="bp_games_box"><legend>Games</legend><div id="bp_games"></div></fieldset>
+            <div class="row2" id="bp_period_box">
+              <div class="fld"><label for="bp_from">From month</label><select id="bp_from"></select></div>
+              <div class="fld"><label for="bp_to">To month</label><select id="bp_to"></select></div>
+            </div>
+            <div class="bp-selection" id="bp_selection" role="status" aria-live="polite"></div>
+            <section class="bp-fit" aria-labelledby="bp_fit_title">
+              <h3 id="bp_fit_title">Do the sessions fit the model?</h3>
+              <p class="hint" id="bp_lengths"></p>
+              <ul class="bp-checks" id="bp_checks"></ul>
+              <label class="bp-widen" id="bp_widen_box" hidden><input type="checkbox" id="bp_widen"> <span id="bp_widen_text"></span></label>
+              <p class="hint">Checked by simulation with sessions of 30 to 4,000 hands: weighting by hands keeps the 95% interval at its level, while a win rate that drifts is only partly caught and repaired. See the <a href="case-study/validation.html#sessions">Validation page</a>.</p>
+            </section>
+            <section class="bp-groups" aria-labelledby="bp_groups_title">
+              <div class="bp-groups-head"><h3 id="bp_groups_title">Compare groups</h3>
+                <label class="sr-only" for="bp_group_by">Group the selected sessions by</label>
+                <select id="bp_group_by"><option value="stake">by stake</option><option value="game">by game</option><option value="month">by month</option><option value="quarter">by quarter</option><option value="year">by year</option></select></div>
+              <div class="range-table-wrap"><table class="range-table bp-table"><caption class="sr-only">Win rate and volatility of each group</caption>
+                <thead><tr><th scope="col">Group</th><th scope="col" class="num">Sessions</th><th scope="col" class="num">Hands</th><th scope="col" class="num">Win rate</th><th scope="col" class="num">Volatility</th></tr></thead>
+                <tbody id="bp_groups"></tbody></table></div>
+              <p class="hint" id="bp_groups_test"></p>
+            </section>
+          </div>
+        </div>
         <p class="quicklabel">2 · Your plan</p>
         <div class="row2">
           <div class="fld"><label for="bp_bank">Bankroll now (buy-ins)</label><input id="bp_bank" type="number" min="0.1" max="100000" step="1" value="30"></div>
@@ -1318,7 +1395,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
     <ul class="doc">
       <li><b>Hand Equity</b> — expected pot share against up to five fixed or random opponent hands, or one opponent's weighted range, and an optional board. Heads-up spots with known cards, and ranges from the flop on, are enumerated exactly; multiway and preflop range spots use seeded Monte Carlo.</li>
       <li><b>Pot Odds &amp; EV</b> — uses the latest card-derived equity for a call/fold decision with expected value in big blinds; manual equity is optional.</li>
-      <li><b>Bankroll Risk</b> — from your own results: the win rate's posterior interval, average risk of ruin and its posterior interval, and the bankroll for “risk below X% with Y% posterior probability”, with how the answer changes under other volatilities, priors and sample sizes. Or Monte Carlo risk of ruin for an assumed win rate, with a finite-horizon Brownian cross-check (the full Python engine adds a Markov-chain check and file export).</li>
+      <li><b>Bankroll Risk</b> — from your own results (totals, or a CSV of sessions weighted by hands and checked against the model): the win rate's posterior interval, average risk of ruin and its posterior interval, and the bankroll for “risk below X% with Y% posterior probability”, with how the answer changes under other volatilities, priors and sample sizes. Or Monte Carlo risk of ruin for an assumed win rate, with a finite-horizon Brownian cross-check (the full Python engine adds a Markov-chain check and file export).</li>
       <li><b>Preflop</b> — browse, compare, and practise 169-hand strategy matrices, with an optional Kuhn poker learning demo. The current ranges are an illustrative demonstration dataset, not solver-verified output.</li>
     </ul>
     <h3>The through-line: reproducibility and validation</h3>

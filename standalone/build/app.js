@@ -696,29 +696,45 @@ function scheduleBp(){
 async function runBp(){
   clearTimeout(bpTimer);
   ++bpRequest;bpController?.abort();bpController=null;
-  const fields=BP_FIELDS.filter(id=>id!=='bp_sd'||bpSdSource()==='tracker');
+  const sessionsMode=bpSessionsActive();
+  const fields=BP_FIELDS.filter(id=>sessionsMode?!['bp_hands','bp_wr','bp_sd'].includes(id):id!=='bp_sd'||bpSdSource()==='tracker');
   if(fields.some(id=>$(id).value.trim()===''||!Number.isFinite(Number($(id).value)))){
     setBpState(bpHasResult?'stale':'empty','Fill in every number to calculate.');return;
   }
-  const sdSource=bpSdSource();
+  if(sessionsMode&&!bpSelection){
+    setBpState(bpHasResult?'stale':'empty',bpSessionData?'Select at least two sessions.':'Choose a CSV file of your sessions, or try the example data.');return;
+  }
+  const sdSource=sessionsMode?'sessions':bpSdSource();
   const input={hands:+$('bp_hands').value,winRate:+$('bp_wr').value,sd:sdSource==='tracker'?+$('bp_sd').value:bpAssumedSd(),sdSource,prior:bpPrior(),
     bank:+$('bp_bank').value,thr:+$('bp_thr').value,bbPerBuyIn:+$('bp_bb').value,horizon:+$('bp_horizon').value,
     target:+$('bp_target').value,credibility:+$('bp_cred').value,margin:+$('bp_margin').value,sampleLevel:+$('bp_level').value};
+  let context=null;
+  if(sessionsMode){
+    const sel=bpSelection;
+    if(!(sel.sd>=10&&sel.sd<=500)){setBpState(bpHasResult?'stale':'empty',`The selected sessions' volatility (${sel.sd.toFixed(1)} bb/100) is outside 10 to 500. Check that profit_bb is in big blinds.`);return;}
+    const clampSd=v=>Math.min(500,Math.max(10,v));
+    Object.assign(input,{hands:sel.hands,winRate:sel.winRate,sd:sel.sd,sdRange:[clampSd(sel.sdInterval[0]),clampSd(sel.sdInterval[1])],
+      seMultiplier:bpWidenActive()?sel.stability.multiplier:1});
+    context={sessions:sel.n,description:bpSelectionDescription()};
+  }
   const request=++bpRequest;
   const controller=new AbortController();bpController=controller;
   setBpState('pending',bpHasResult?'The previous result stays visible until this one finishes.':'');
   try{
     const result=await apiJSON('/api/bankroll-posterior',input,15000,controller.signal);
     if(request!==bpRequest)return;
-    renderBp(result);
+    renderBp(result,context);
   }catch(error){if(request===bpRequest)setBpState(bpHasResult?'error':'empty',errorMessage(error));}
   finally{if(request===bpRequest)bpController=null;}
 }
-function renderBp(r){
+function renderBp(r,context=null){
   const i=r.inputs,w=r.winRate,risk=r.risk,b=r.bankroll;
+  const sd1=v=>String(Math.round(v*10)/10),widened=i.seMultiplier>1?` · win-rate interval widened ×${i.seMultiplier.toFixed(2)} for changes over time`:'';
   const q=bpLevel(i.credibility),tgt=bpLevel(i.target),thr=i.thr>0?`${bpBI(i.thr)} buy-ins`:'zero',horizon=`${i.horizon.toLocaleString()} hands`;
-  const sdText=`${i.sd} bb/100 (${i.sdSource==='tracker'?'from your tracker':'assumed'})`;
-  bpBasis=`${i.hands.toLocaleString()} hands at ${bpSigned(i.winRate)} bb/100 · volatility ${sdText} · ${BP_PRIOR_SHORT[i.prior]} · ${bpBI(i.bank)} buy-ins of ${i.bbPerBuyIn} bb · ${horizon} · threshold ${thr} · risk below ${tgt} with ${q} posterior probability`;
+  const sdText=i.sdSource==='sessions'?`${sd1(i.sd)} bb/100 (estimated from the sessions; 95% interval ${sd1(i.sdRange[0])} to ${sd1(i.sdRange[1])})`
+    :`${i.sd} bb/100 (${i.sdSource==='tracker'?'from your tracker':'assumed'})`;
+  bpBasis=(context?`${context.sessions.toLocaleString()} sessions (${context.description}) · `:'')
+    +`${i.hands.toLocaleString()} hands at ${bpSigned(i.winRate)} bb/100 · volatility ${sdText}${widened} · ${BP_PRIOR_SHORT[i.prior]} · ${bpBI(i.bank)} buy-ins of ${i.bbPerBuyIn} bb · ${horizon} · threshold ${thr} · risk below ${tgt} with ${q} posterior probability`;
   bpHasResult=true;setBpState('current');
 
   const need=b.credible;
@@ -759,7 +775,7 @@ function renderBp(r){
   $('bp_sources_text').textContent=r.sources.widest==='winRate'
     ?`In your numbers the uncertain win rate moves the risk most (${span}), as it did in the case study’s tested scenarios. More hands would narrow it; more simulation would not.`
     :r.sources.widest==='volatility'
-      ?`In your numbers the volatility assumption moves the average risk more (${span}) than the win rate’s own uncertainty.${i.sdSource==='assumed'?' A standard deviation from your tracker would remove most of it.':` The answer uses your tracker’s ${i.sd}; the range shows what 70 to 150 would give.`}`
+      ?`In your numbers the volatility assumption moves the average risk more (${span}) than the win rate’s own uncertainty.${i.sdSource==='assumed'?' A standard deviation from your tracker or your sessions would remove most of it.':` The answer uses ${i.sdSource==='sessions'?'the volatility estimated from your sessions':'your tracker’s'} (${sd1(i.sd)}); the range shows what 70 to 150 would give.`}`
       :`In your numbers the choice of prior moves the average risk most (${span}): with this few hands the prior still carries real weight.`;
 
   const head=cols=>`<tr>${cols.map((c,k)=>`<th scope="col"${k?' class="num"':''}>${c}</th>`).join('')}</tr>`;
@@ -767,14 +783,15 @@ function renderBp(r){
   const interval=row=>`${bpSigned(row.interval[0])} to ${bpSigned(row.interval[1])}`;
   const margin=`± ${i.margin} at ${bpLevel(i.sampleLevel)}`;
   $('bp_sens_sd_head').innerHTML=head(['Volatility (bb/100)','Win rate, 95% interval','Average risk',`Risk, ${q} bound`,'Bankroll needed',`Hands for ${margin}`]);
-  $('bp_sens_sd').innerHTML=r.sensitivity.volatility.map(row=>`<tr${row.current?' class="is-current"':''}><th scope="row">${row.sd}${mark(row)}</th><td class="num">${interval(row)}</td><td class="num">${bpPct(row.averageRisk)}</td><td class="num">${bpPct(row.upperRisk)}</td><td class="num">${bpBI(row.requiredBuyIns)} BI</td><td class="num">${bpHands(row.handsForMargin)}</td></tr>`).join('');
+  const boundText={low:'low end of your estimate',high:'high end of your estimate'};
+  $('bp_sens_sd').innerHTML=r.sensitivity.volatility.map(row=>`<tr${row.current?' class="is-current"':''}><th scope="row">${sd1(row.sd)}${mark(row)}${row.bound?` <span class="dim">${boundText[row.bound]}</span>`:''}</th><td class="num">${interval(row)}</td><td class="num">${bpPct(row.averageRisk)}</td><td class="num">${bpPct(row.upperRisk)}</td><td class="num">${bpBI(row.requiredBuyIns)} BI</td><td class="num">${bpHands(row.handsForMargin)}</td></tr>`).join('');
   $('bp_sens_prior_head').innerHTML=head(['Prior','Weight of your results','Win rate, 95% interval','Above 0','Average risk','Bankroll needed']);
   $('bp_sens_prior').innerHTML=r.sensitivity.prior.map(row=>`<tr${row.current?' class="is-current"':''}><th scope="row">${escapeHtml(row.label)}${mark(row)}</th><td class="num">${Math.round(row.dataWeight*100)}%</td><td class="num">${interval(row)}</td><td class="num">${bpPct(row.probPositive)}</td><td class="num">${bpPct(row.averageRisk)}</td><td class="num">${bpBI(row.requiredBuyIns)} BI</td></tr>`).join('');
   $('bp_sens_n_head').innerHTML=head(['Hands played','Win rate, 95% interval','Above 0','Average risk',`Risk, ${q} bound`,'Bankroll needed']);
   $('bp_sens_n').innerHTML=r.sensitivity.sample.map(row=>`<tr${row.current?' class="is-current"':''}><th scope="row">${bpHands(row.hands)}${mark(row)}</th><td class="num">${interval(row)}</td><td class="num">${bpPct(row.probPositive)}</td><td class="num">${bpPct(row.averageRisk)}</td><td class="num">${bpPct(row.upperRisk)}</td><td class="num">${bpBI(row.requiredBuyIns)} BI</td></tr>`).join('');
 
   const s=r.sampleSize;
-  $('bp_sample_text').textContent=`With your ${i.hands.toLocaleString()} hands, a ${bpLevel(s.level)} interval for the win rate from the results alone is ± ${s.currentHalfWidth.toFixed(1)} bb/100. Narrowing it to ± ${s.margin} bb/100 takes about ${bpHands(s.totalHands)} hands in total${s.moreHands>0?`, ${bpHands(s.moreHands)} more than you have`:', which you already have'} (volatility ${sdText}).`;
+  $('bp_sample_text').textContent=`With your ${i.hands.toLocaleString()} hands, a ${bpLevel(s.level)} interval for the win rate from the results alone is ± ${s.currentHalfWidth.toFixed(1)} bb/100. Narrowing it to ± ${s.margin} bb/100 takes about ${bpHands(s.totalHands)} hands in total${s.moreHands>0?`, ${bpHands(s.moreHands)} more than you have`:', which you already have'}. Volatility used: ${sdText}${i.seMultiplier>1?`; interval widened ×${i.seMultiplier.toFixed(2)} for changes over time`:''}.`;
   $('bp_model_text').textContent=`${r.model.name}, version ${r.model.version}. Likelihood: ${r.model.likelihood}. Posterior: ${r.model.posterior}. Risk: ${r.model.risk}. Every number here is recomputed by the Python research code (src/bayes.py, src/validation.py) with scipy in checks/bankroll-posterior-python/.`;
   $('bp_posterior_cap').textContent=`What the results and the ${BP_PRIOR_SHORT[i.prior]} say about your true win rate. Shaded: 95% interval. The answer uses the ${bpLevel(1-i.credibility)} point (${bpSigned(w.credible)} bb/100): risk at that win rate is the ${q} upper bound.`;
   renderBpCharts(r);
@@ -830,6 +847,136 @@ document.querySelectorAll('.bpsdpreset').forEach(button=>button.addEventListener
 document.querySelectorAll('input[name="bp_prior"]').forEach(radio=>radio.addEventListener('change',scheduleBp));
 BP_FIELDS.forEach(id=>$(id).addEventListener('input',scheduleBp));
 $('bp_run').addEventListener('click',runBp);
+
+/* Imported sessions. The file is read in the browser with PokerSessions
+   (standalone/shared/sessions.js); only the totals of the selection go to the
+   server. Everything taken from the file is inserted as text, never as HTML. */
+const SESSION_EXAMPLE=/*__SESSION_EXAMPLE__*/ null;
+let bpSessionData=null;  // what parseCsv read, plus the file name
+let bpSelection=null;    // summarize() of the selected sessions, with the sessions
+let bpWidenChoice=null;  // null: follow the stability check
+const bpInputMode=()=>document.querySelector('input[name="bp_input"]:checked').value;
+const bpSessionsActive=()=>bpInputMode()==='sessions';
+const bpWidenActive=()=>Boolean(bpSelection?.stability&&bpSelection.stability.multiplier>1&&(bpWidenChoice??bpSelection.stability.flag));
+const bpP=p=>p<0.001?'p < 0.001':`p = ${p.toFixed(p<0.01?3:2)}`;
+const bpKeyLabel=key=>key===''?'(none)':key;
+function bpChips(boxId,listId,groups,name){
+  const box=$(boxId),list=$(listId);
+  box.hidden=groups.length<2&&(groups[0]?.key??'')==='';
+  list.replaceChildren(...groups.map(g=>{
+    const label=document.createElement('label'),input=document.createElement('input'),small=document.createElement('small');
+    label.className='bp-chip';input.type='checkbox';input.checked=true;input.value=g.key;input.name=name;
+    small.textContent=g.sessions.length.toLocaleString();
+    label.append(input,document.createTextNode(bpKeyLabel(g.key)+' '),small);
+    input.addEventListener('change',bpRenderSelection);
+    return label;
+  }));
+}
+function bpLoadSessions(name,text,example=false){
+  const read=PokerSessions.parseCsv(text),status=$('bp_file_status');
+  bpWidenChoice=null;
+  if(read.error){
+    bpSessionData=null;bpSelection=null;status.dataset.state='error';status.textContent=`${name}: ${read.error}`;
+    $('bp_filters').hidden=true;$('bp_problems').hidden=true;scheduleBp();return;
+  }
+  bpSessionData={name,example,...read};
+  status.dataset.state=read.sessions.length?'ok':'error';
+  status.textContent=(example?'Example data: simulated sessions, not real results. ':`${name}: `)
+    +`${read.sessions.length.toLocaleString()} sessions read`+(read.problems.length?`, ${read.problems.length.toLocaleString()} left out`:'')+'.';
+  const problems=read.problems;
+  $('bp_problems').hidden=!problems.length;
+  $('bp_problems_summary').textContent=`${problems.length.toLocaleString()} row${problems.length===1?'':'s'} could not be read`;
+  $('bp_problems_list').replaceChildren(...problems.slice(0,20).map(p=>Object.assign(document.createElement('li'),{textContent:`Line ${p.line}: ${p.message}.`})),
+    ...(problems.length>20?[Object.assign(document.createElement('li'),{textContent:`…and ${(problems.length-20).toLocaleString()} more.`})]:[]));
+  const stakes=PokerSessions.groupSessions(read.sessions,'stake'),games=PokerSessions.groupSessions(read.sessions,'game');
+  bpChips('bp_stakes_box','bp_stakes',stakes,'bp_stake');bpChips('bp_games_box','bp_games',games,'bp_game');
+  const months=[...new Set(read.sessions.map(s=>s.date?.slice(0,7)).filter(Boolean))].sort();
+  $('bp_period_box').hidden=!months.length;
+  for(const [id,selected] of [['bp_from',months[0]],['bp_to',months.at(-1)]]){
+    $(id).replaceChildren(...months.map(m=>Object.assign(document.createElement('option'),{value:m,textContent:m,selected:m===selected})));
+  }
+  const groupBy=$('bp_group_by');
+  groupBy.querySelector('[value="stake"]').disabled=stakes.length<2;groupBy.querySelector('[value="game"]').disabled=games.length<2;
+  ['month','quarter','year'].forEach(v=>groupBy.querySelector(`[value="${v}"]`).disabled=!months.length);
+  groupBy.value=stakes.length>1?'stake':games.length>1?'game':months.length?'quarter':'stake';
+  $('bp_filters').hidden=!read.sessions.length;
+  if(read.sessions.length)bpRenderSelection();
+  else{bpSelection=null;scheduleBp();}
+}
+function bpSelectedSessions(){
+  const checked=name=>{const boxes=[...document.querySelectorAll(`input[name="${name}"]`)];return boxes.length?new Set(boxes.filter(b=>b.checked).map(b=>b.value)):null;};
+  const dated=!$('bp_period_box').hidden;
+  return PokerSessions.filterSessions(bpSessionData.sessions,{stakes:checked('bp_stake'),games:checked('bp_game'),
+    from:dated?$('bp_from').value:null,to:dated?$('bp_to').value:null});
+}
+function bpSelectionDescription(){
+  const part=(name,word)=>{const boxes=[...document.querySelectorAll(`input[name="${name}"]`)],on=boxes.filter(b=>b.checked);
+    return !boxes.length||on.length===boxes.length?`all ${word}`:on.map(b=>bpKeyLabel(b.value)).join(', ');};
+  return [part('bp_stake','stakes'),part('bp_game','games'),$('bp_period_box').hidden?'':`${$('bp_from').value} to ${$('bp_to').value}`].filter(Boolean).join(' · ');
+}
+function bpRenderSelection(){
+  const chosen=bpSelectedSessions(),total=bpSessionData.sessions.length;
+  bpWidenChoice=null;
+  if(chosen.length<2){
+    bpSelection=null;$('bp_selection').textContent=`${chosen.length} of ${total.toLocaleString()} sessions selected: select at least two.`;
+    $('bp_lengths').textContent='';$('bp_checks').replaceChildren();$('bp_widen_box').hidden=true;$('bp_groups').replaceChildren();$('bp_groups_test').textContent='';
+    scheduleBp();return;
+  }
+  const s=PokerSessions.summarize(chosen);
+  bpSelection={...s,sessions:chosen};
+  const strong=document.createElement('strong');strong.textContent=`${s.n.toLocaleString()} of ${total.toLocaleString()} sessions`;
+  $('bp_selection').replaceChildren(strong,document.createTextNode(` · ${s.hands.toLocaleString()} hands · ${bpSigned(s.winRate)} bb/100 weighted by hands (standard error ${s.standardError.toFixed(1)}) · volatility ${s.sd.toFixed(1)} bb/100 (95% interval ${s.sdInterval[0].toFixed(1)} to ${s.sdInterval[1].toFixed(1)})`));
+  const L=s.lengths;
+  $('bp_lengths').textContent=L.min===L.max?`Every session has ${L.min.toLocaleString()} hands, so weighting by hands changes nothing.`
+    :`Sessions of ${L.min.toLocaleString()} to ${L.max.toLocaleString()} hands (median ${Math.round(L.median).toLocaleString()}). Each counts in proportion to its hands: one ${L.max.toLocaleString()}-hand session weighs as much as ${Math.round(L.max/L.min).toLocaleString()} of ${L.min.toLocaleString()} hands.`;
+  const item=(state,text,detail)=>{const li=document.createElement('li');li.className=state;li.textContent=text;if(detail){const small=document.createElement('small');small.textContent=detail;li.append(small);}return li;};
+  const checks=[];
+  const sc=s.scaling;
+  if(!sc)checks.push(item('na','Spread against length: not checked.',L.min===L.max?'All sessions are the same length.':'It needs at least 20 sessions.'));
+  else if(!sc.flag)checks.push(item('ok',`Short and long sessions swing alike per 100 hands: ${sc.short.sd.toFixed(0)} and ${sc.long.sd.toFixed(0)} bb/100.`,`Shorter half up to ${sc.short.maxHands.toLocaleString()} hands, longer half from ${sc.long.minHands.toLocaleString()}; ${bpP(sc.p)}.`));
+  else checks.push(item('flag',`${sc.ratio>1?'Short':'Long'} sessions swing more per 100 hands: ${sc.short.sd.toFixed(0)} against ${sc.long.sd.toFixed(0)} bb/100 (${bpP(sc.p)}).`,
+    `The model expects the same. The volatility used (${s.sd.toFixed(1)}) mixes the two, so check the volatility rows in the results against the kind of sessions you will play.`));
+  const st=s.stability;
+  if(!st)checks.push(item('na','Stability over time: not checked.','It needs at least 20 sessions.'));
+  else if(!st.flag)checks.push(item('ok',`The win rate looks steady: ${st.groups} blocks of sessions in ${st.ordered} order differ no more than chance allows.`,`${bpP(st.p)}.`));
+  else checks.push(item('flag',`The win rate changes over time more than chance allows: ${st.groups} blocks of sessions in ${st.ordered} order (${bpP(st.p)}).`,
+    'An interval that assumes a steady win rate is too narrow. Widening it (below) helps but does not fully fix it; selecting recent months may describe your current game better.'));
+  $('bp_checks').replaceChildren(...checks);
+  const canWiden=Boolean(st&&st.multiplier>1.0001);
+  $('bp_widen_box').hidden=!canWiden;
+  if(canWiden){$('bp_widen').checked=bpWidenActive();$('bp_widen_text').textContent=`Widen the win-rate interval ×${st.multiplier.toFixed(2)}, from the spread between the blocks${st.flag?' (suggested)':''}.`;}
+  bpRenderGroups();
+  scheduleBp();
+}
+function bpRenderGroups(){
+  if(!bpSelection)return;
+  const by=$('bp_group_by').value,compared=PokerSessions.compareGroups(bpSelection.sessions,by);
+  $('bp_groups').replaceChildren(...compared.groups.map(g=>{
+    const tr=document.createElement('tr'),th=document.createElement('th');th.scope='row';th.textContent=bpKeyLabel(g.key);tr.append(th);
+    for(const text of [g.n.toLocaleString(),g.hands.toLocaleString(),g.sd==null?bpSigned(g.winRate):`${bpSigned(g.winRate)} ± ${g.standardError.toFixed(1)}`,g.sd==null?'—':g.sd.toFixed(0)]){
+      const td=document.createElement('td');td.className='num';td.textContent=text;tr.append(td);
+    }
+    return tr;
+  }));
+  const t=compared.test;
+  $('bp_groups_test').textContent=!t?'Only one group in the selection.'
+    :`Win rate ± standard error, in bb/100. Do the groups differ? ${bpP(t.p)}: ${t.p<0.05?(by==='stake'||by==='game'?'more than chance allows, so their combined win rate may describe none of them well; consider selecting one.':'more than chance allows: the win rate has changed over time, and recent months may describe your current game better.'):'no clear difference beyond chance.'}`;
+}
+document.querySelectorAll('input[name="bp_input"]').forEach(radio=>radio.addEventListener('change',()=>{
+  const sessions=bpSessionsActive();$('bp_totals').hidden=sessions;$('bp_sessions').hidden=!sessions;scheduleBp();
+}));
+$('bp_file').addEventListener('change',async()=>{
+  const file=$('bp_file').files[0];if(!file)return;
+  $('bp_file').value='';
+  if(file.size>10*1024*1024){$('bp_file_status').dataset.state='error';$('bp_file_status').textContent=`${file.name}: the file is too large (10 MB at most).`;return;}
+  try{bpLoadSessions(file.name,await file.text());}
+  catch{$('bp_file_status').dataset.state='error';$('bp_file_status').textContent=`${file.name}: the file could not be read.`;}
+});
+$('bp_example').addEventListener('click',()=>bpLoadSessions('sessions-example.csv',SESSION_EXAMPLE,true));
+$('bp_template').addEventListener('click',()=>downloadText('sessions-template.csv',PokerSessions.TEMPLATE,'text/csv'));
+['bp_from','bp_to'].forEach(id=>$(id).addEventListener('change',bpRenderSelection));
+$('bp_group_by').addEventListener('change',bpRenderGroups);
+$('bp_widen').addEventListener('change',()=>{bpWidenChoice=$('bp_widen').checked;scheduleBp();});
 
 /* ================= 4. GTO TRAINER ================= */
 const KUHN_LABELS={J:'J (bet/check first)',Q:'Q (bet/check first)',K:'K (bet/check first)',

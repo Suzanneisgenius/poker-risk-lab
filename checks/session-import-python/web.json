@@ -1,0 +1,9229 @@
+{
+ "files": [
+  {
+   "file": "drifting.csv",
+   "delimiter": ",",
+   "columns": {
+    "hands": "hands",
+    "profit": "profit_bb",
+    "date": "date"
+   },
+   "rows": 240,
+   "sessions": [
+    {
+     "line": 2,
+     "hands": 673,
+     "profit": 172.49,
+     "stake": "",
+     "game": "",
+     "date": "2025-01-01"
+    },
+    {
+     "line": 3,
+     "hands": 687,
+     "profit": 353.08,
+     "stake": "",
+     "game": "",
+     "date": "2025-01-02"
+    },
+    {
+     "line": 4,
+     "hands": 946,
+     "profit": 129.32,
+     "stake": "",
+     "game": "",
+     "date": "2025-01-04"
+    },
+    {
+     "line": 5,
+     "hands": 969,
+     "profit": 767.4,
+     "stake": "",
+     "game": "",
+     "date": "2025-01-05"
+    },
+    {
+     "line": 6,
+     "hands": 945,
+     "profit": 155.92,
+     "stake": "",
+     "game": "",
+     "date": "2025-01-07"
+    },
+    {
+     "line": 7,
+     "hands": 517,
+     "profit": 127.98,
+     "stake": "",
+     "game": "",
+     "date": "2025-01-08"
+    },
+    {
+     "line": 8,
+     "hands": 413,
+     "profit": 41.72,
+     "stake": "",
+     "game": "",
+     "date": "2025-01-10"
+    },
+    {
+     "line": 9,
+     "hands": 1172,
+     "profit": 230.93,
+     "stake": "",
+     "game": "",
+     "date": "2025-01-11"
+    },
+    {
+     "line": 10,
+     "hands": 1198,
+     "profit": -167.77,
+     "stake": "",
+     "game": "",
+     "date": "2025-01-13"
+    },
+    {
+     "line": 11,
+     "hands": 761,
+     "profit": -203.31,
+     "stake": "",
+     "game": "",
+     "date": "2025-01-14"
+    },
+    {
+     "line": 12,
+     "hands": 576,
+     "profit": 74.55,
+     "stake": "",
+     "game": "",
+     "date": "2025-01-16"
+    },
+    {
+     "line": 13,
+     "hands": 736,
+     "profit": 591.13,
+     "stake": "",
+     "game": "",
+     "date": "2025-01-17"
+    },
+    {
+     "line": 14,
+     "hands": 877,
+     "profit": 56.25,
+     "stake": "",
+     "game": "",
+     "date": "2025-01-19"
+    },
+    {
+     "line": 15,
+     "hands": 1042,
+     "profit": -60.61,
+     "stake": "",
+     "game": "",
+     "date": "2025-01-20"
+    },
+    {
+     "line": 16,
+     "hands": 919,
+     "profit": -64.74,
+     "stake": "",
+     "game": "",
+     "date": "2025-01-22"
+    },
+    {
+     "line": 17,
+     "hands": 856,
+     "profit": 400.84,
+     "stake": "",
+     "game": "",
+     "date": "2025-01-23"
+    },
+    {
+     "line": 18,
+     "hands": 589,
+     "profit": -152.16,
+     "stake": "",
+     "game": "",
+     "date": "2025-01-25"
+    },
+    {
+     "line": 19,
+     "hands": 417,
+     "profit": -32.02,
+     "stake": "",
+     "game": "",
+     "date": "2025-01-26"
+    },
+    {
+     "line": 20,
+     "hands": 924,
+     "profit": -135.7,
+     "stake": "",
+     "game": "",
+     "date": "2025-01-28"
+    },
+    {
+     "line": 21,
+     "hands": 540,
+     "profit": 137.2,
+     "stake": "",
+     "game": "",
+     "date": "2025-01-29"
+    },
+    {
+     "line": 22,
+     "hands": 688,
+     "profit": 781.81,
+     "stake": "",
+     "game": "",
+     "date": "2025-01-31"
+    },
+    {
+     "line": 23,
+     "hands": 913,
+     "profit": 146.31,
+     "stake": "",
+     "game": "",
+     "date": "2025-02-01"
+    },
+    {
+     "line": 24,
+     "hands": 578,
+     "profit": -203.21,
+     "stake": "",
+     "game": "",
+     "date": "2025-02-03"
+    },
+    {
+     "line": 25,
+     "hands": 391,
+     "profit": 167.34,
+     "stake": "",
+     "game": "",
+     "date": "2025-02-04"
+    },
+    {
+     "line": 26,
+     "hands": 1027,
+     "profit": -322.61,
+     "stake": "",
+     "game": "",
+     "date": "2025-02-06"
+    },
+    {
+     "line": 27,
+     "hands": 942,
+     "profit": -69.71,
+     "stake": "",
+     "game": "",
+     "date": "2025-02-07"
+    },
+    {
+     "line": 28,
+     "hands": 432,
+     "profit": 100.68,
+     "stake": "",
+     "game": "",
+     "date": "2025-02-09"
+    },
+    {
+     "line": 29,
+     "hands": 918,
+     "profit": 151.84,
+     "stake": "",
+     "game": "",
+     "date": "2025-02-10"
+    },
+    {
+     "line": 30,
+     "hands": 664,
+     "profit": -215.59,
+     "stake": "",
+     "game": "",
+     "date": "2025-02-12"
+    },
+    {
+     "line": 31,
+     "hands": 435,
+     "profit": 24.41,
+     "stake": "",
+     "game": "",
+     "date": "2025-02-13"
+    },
+    {
+     "line": 32,
+     "hands": 472,
+     "profit": -160.74,
+     "stake": "",
+     "game": "",
+     "date": "2025-02-15"
+    },
+    {
+     "line": 33,
+     "hands": 411,
+     "profit": 45.91,
+     "stake": "",
+     "game": "",
+     "date": "2025-02-16"
+    },
+    {
+     "line": 34,
+     "hands": 757,
+     "profit": 582.88,
+     "stake": "",
+     "game": "",
+     "date": "2025-02-18"
+    },
+    {
+     "line": 35,
+     "hands": 639,
+     "profit": -98.79,
+     "stake": "",
+     "game": "",
+     "date": "2025-02-19"
+    },
+    {
+     "line": 36,
+     "hands": 617,
+     "profit": 260.58,
+     "stake": "",
+     "game": "",
+     "date": "2025-02-21"
+    },
+    {
+     "line": 37,
+     "hands": 1180,
+     "profit": 91.81,
+     "stake": "",
+     "game": "",
+     "date": "2025-02-22"
+    },
+    {
+     "line": 38,
+     "hands": 675,
+     "profit": -112.28,
+     "stake": "",
+     "game": "",
+     "date": "2025-02-24"
+    },
+    {
+     "line": 39,
+     "hands": 311,
+     "profit": 112.21,
+     "stake": "",
+     "game": "",
+     "date": "2025-02-25"
+    },
+    {
+     "line": 40,
+     "hands": 617,
+     "profit": 46.08,
+     "stake": "",
+     "game": "",
+     "date": "2025-02-27"
+    },
+    {
+     "line": 41,
+     "hands": 975,
+     "profit": 648.81,
+     "stake": "",
+     "game": "",
+     "date": "2025-02-28"
+    },
+    {
+     "line": 42,
+     "hands": 700,
+     "profit": 48.4,
+     "stake": "",
+     "game": "",
+     "date": "2025-03-02"
+    },
+    {
+     "line": 43,
+     "hands": 417,
+     "profit": -121.86,
+     "stake": "",
+     "game": "",
+     "date": "2025-03-03"
+    },
+    {
+     "line": 44,
+     "hands": 917,
+     "profit": -477.51,
+     "stake": "",
+     "game": "",
+     "date": "2025-03-05"
+    },
+    {
+     "line": 45,
+     "hands": 1005,
+     "profit": -108.08,
+     "stake": "",
+     "game": "",
+     "date": "2025-03-06"
+    },
+    {
+     "line": 46,
+     "hands": 370,
+     "profit": 156.12,
+     "stake": "",
+     "game": "",
+     "date": "2025-03-08"
+    },
+    {
+     "line": 47,
+     "hands": 577,
+     "profit": 220.46,
+     "stake": "",
+     "game": "",
+     "date": "2025-03-09"
+    },
+    {
+     "line": 48,
+     "hands": 889,
+     "profit": 628.07,
+     "stake": "",
+     "game": "",
+     "date": "2025-03-11"
+    },
+    {
+     "line": 49,
+     "hands": 700,
+     "profit": -142.6,
+     "stake": "",
+     "game": "",
+     "date": "2025-03-12"
+    },
+    {
+     "line": 50,
+     "hands": 407,
+     "profit": 202.31,
+     "stake": "",
+     "game": "",
+     "date": "2025-03-14"
+    },
+    {
+     "line": 51,
+     "hands": 352,
+     "profit": 52.25,
+     "stake": "",
+     "game": "",
+     "date": "2025-03-15"
+    },
+    {
+     "line": 52,
+     "hands": 314,
+     "profit": 22.11,
+     "stake": "",
+     "game": "",
+     "date": "2025-03-17"
+    },
+    {
+     "line": 53,
+     "hands": 940,
+     "profit": -256.3,
+     "stake": "",
+     "game": "",
+     "date": "2025-03-18"
+    },
+    {
+     "line": 54,
+     "hands": 732,
+     "profit": 106.7,
+     "stake": "",
+     "game": "",
+     "date": "2025-03-20"
+    },
+    {
+     "line": 55,
+     "hands": 908,
+     "profit": 275.29,
+     "stake": "",
+     "game": "",
+     "date": "2025-03-21"
+    },
+    {
+     "line": 56,
+     "hands": 571,
+     "profit": 67.57,
+     "stake": "",
+     "game": "",
+     "date": "2025-03-23"
+    },
+    {
+     "line": 57,
+     "hands": 887,
+     "profit": -243.42,
+     "stake": "",
+     "game": "",
+     "date": "2025-03-24"
+    },
+    {
+     "line": 58,
+     "hands": 416,
+     "profit": 86.36,
+     "stake": "",
+     "game": "",
+     "date": "2025-03-26"
+    },
+    {
+     "line": 59,
+     "hands": 688,
+     "profit": 2.19,
+     "stake": "",
+     "game": "",
+     "date": "2025-03-27"
+    },
+    {
+     "line": 60,
+     "hands": 597,
+     "profit": 240.59,
+     "stake": "",
+     "game": "",
+     "date": "2025-03-29"
+    },
+    {
+     "line": 61,
+     "hands": 976,
+     "profit": 293.7,
+     "stake": "",
+     "game": "",
+     "date": "2025-03-30"
+    },
+    {
+     "line": 62,
+     "hands": 305,
+     "profit": -53.1,
+     "stake": "",
+     "game": "",
+     "date": "2025-04-01"
+    },
+    {
+     "line": 63,
+     "hands": 1191,
+     "profit": 126.78,
+     "stake": "",
+     "game": "",
+     "date": "2025-04-02"
+    },
+    {
+     "line": 64,
+     "hands": 573,
+     "profit": -320.94,
+     "stake": "",
+     "game": "",
+     "date": "2025-04-04"
+    },
+    {
+     "line": 65,
+     "hands": 653,
+     "profit": 85.4,
+     "stake": "",
+     "game": "",
+     "date": "2025-04-05"
+    },
+    {
+     "line": 66,
+     "hands": 1026,
+     "profit": 205.71,
+     "stake": "",
+     "game": "",
+     "date": "2025-04-07"
+    },
+    {
+     "line": 67,
+     "hands": 696,
+     "profit": 339.64,
+     "stake": "",
+     "game": "",
+     "date": "2025-04-08"
+    },
+    {
+     "line": 68,
+     "hands": 801,
+     "profit": 88.24,
+     "stake": "",
+     "game": "",
+     "date": "2025-04-10"
+    },
+    {
+     "line": 69,
+     "hands": 596,
+     "profit": 139.38,
+     "stake": "",
+     "game": "",
+     "date": "2025-04-11"
+    },
+    {
+     "line": 70,
+     "hands": 971,
+     "profit": -65.06,
+     "stake": "",
+     "game": "",
+     "date": "2025-04-13"
+    },
+    {
+     "line": 71,
+     "hands": 1052,
+     "profit": 302.31,
+     "stake": "",
+     "game": "",
+     "date": "2025-04-14"
+    },
+    {
+     "line": 72,
+     "hands": 1122,
+     "profit": 508.65,
+     "stake": "",
+     "game": "",
+     "date": "2025-04-16"
+    },
+    {
+     "line": 73,
+     "hands": 611,
+     "profit": 432.83,
+     "stake": "",
+     "game": "",
+     "date": "2025-04-17"
+    },
+    {
+     "line": 74,
+     "hands": 682,
+     "profit": 52.68,
+     "stake": "",
+     "game": "",
+     "date": "2025-04-19"
+    },
+    {
+     "line": 75,
+     "hands": 397,
+     "profit": 201.3,
+     "stake": "",
+     "game": "",
+     "date": "2025-04-20"
+    },
+    {
+     "line": 76,
+     "hands": 781,
+     "profit": 466.51,
+     "stake": "",
+     "game": "",
+     "date": "2025-04-22"
+    },
+    {
+     "line": 77,
+     "hands": 503,
+     "profit": -220.11,
+     "stake": "",
+     "game": "",
+     "date": "2025-04-23"
+    },
+    {
+     "line": 78,
+     "hands": 745,
+     "profit": 264.32,
+     "stake": "",
+     "game": "",
+     "date": "2025-04-25"
+    },
+    {
+     "line": 79,
+     "hands": 735,
+     "profit": -231.13,
+     "stake": "",
+     "game": "",
+     "date": "2025-04-26"
+    },
+    {
+     "line": 80,
+     "hands": 785,
+     "profit": 132.62,
+     "stake": "",
+     "game": "",
+     "date": "2025-04-28"
+    },
+    {
+     "line": 81,
+     "hands": 1134,
+     "profit": 88.49,
+     "stake": "",
+     "game": "",
+     "date": "2025-04-29"
+    },
+    {
+     "line": 82,
+     "hands": 1176,
+     "profit": -54.6,
+     "stake": "",
+     "game": "",
+     "date": "2025-05-01"
+    },
+    {
+     "line": 83,
+     "hands": 951,
+     "profit": 464.53,
+     "stake": "",
+     "game": "",
+     "date": "2025-05-02"
+    },
+    {
+     "line": 84,
+     "hands": 931,
+     "profit": -5.05,
+     "stake": "",
+     "game": "",
+     "date": "2025-05-04"
+    },
+    {
+     "line": 85,
+     "hands": 650,
+     "profit": -167.54,
+     "stake": "",
+     "game": "",
+     "date": "2025-05-05"
+    },
+    {
+     "line": 86,
+     "hands": 707,
+     "profit": -100.02,
+     "stake": "",
+     "game": "",
+     "date": "2025-05-07"
+    },
+    {
+     "line": 87,
+     "hands": 1125,
+     "profit": 775.65,
+     "stake": "",
+     "game": "",
+     "date": "2025-05-08"
+    },
+    {
+     "line": 88,
+     "hands": 409,
+     "profit": -364.87,
+     "stake": "",
+     "game": "",
+     "date": "2025-05-10"
+    },
+    {
+     "line": 89,
+     "hands": 526,
+     "profit": 379.12,
+     "stake": "",
+     "game": "",
+     "date": "2025-05-11"
+    },
+    {
+     "line": 90,
+     "hands": 1159,
+     "profit": 205.26,
+     "stake": "",
+     "game": "",
+     "date": "2025-05-13"
+    },
+    {
+     "line": 91,
+     "hands": 664,
+     "profit": 380.72,
+     "stake": "",
+     "game": "",
+     "date": "2025-05-14"
+    },
+    {
+     "line": 92,
+     "hands": 725,
+     "profit": -321.7,
+     "stake": "",
+     "game": "",
+     "date": "2025-05-16"
+    },
+    {
+     "line": 93,
+     "hands": 815,
+     "profit": -97.21,
+     "stake": "",
+     "game": "",
+     "date": "2025-05-17"
+    },
+    {
+     "line": 94,
+     "hands": 1162,
+     "profit": 285.6,
+     "stake": "",
+     "game": "",
+     "date": "2025-05-19"
+    },
+    {
+     "line": 95,
+     "hands": 567,
+     "profit": 30.77,
+     "stake": "",
+     "game": "",
+     "date": "2025-05-20"
+    },
+    {
+     "line": 96,
+     "hands": 819,
+     "profit": 218.07,
+     "stake": "",
+     "game": "",
+     "date": "2025-05-22"
+    },
+    {
+     "line": 97,
+     "hands": 581,
+     "profit": 69.16,
+     "stake": "",
+     "game": "",
+     "date": "2025-05-23"
+    },
+    {
+     "line": 98,
+     "hands": 301,
+     "profit": 156.92,
+     "stake": "",
+     "game": "",
+     "date": "2025-05-25"
+    },
+    {
+     "line": 99,
+     "hands": 583,
+     "profit": -137.72,
+     "stake": "",
+     "game": "",
+     "date": "2025-05-26"
+    },
+    {
+     "line": 100,
+     "hands": 993,
+     "profit": -46,
+     "stake": "",
+     "game": "",
+     "date": "2025-05-28"
+    },
+    {
+     "line": 101,
+     "hands": 667,
+     "profit": -78.31,
+     "stake": "",
+     "game": "",
+     "date": "2025-05-29"
+    },
+    {
+     "line": 102,
+     "hands": 694,
+     "profit": 249.18,
+     "stake": "",
+     "game": "",
+     "date": "2025-05-31"
+    },
+    {
+     "line": 103,
+     "hands": 355,
+     "profit": -72.59,
+     "stake": "",
+     "game": "",
+     "date": "2025-06-01"
+    },
+    {
+     "line": 104,
+     "hands": 1131,
+     "profit": 146.58,
+     "stake": "",
+     "game": "",
+     "date": "2025-06-03"
+    },
+    {
+     "line": 105,
+     "hands": 793,
+     "profit": -42.52,
+     "stake": "",
+     "game": "",
+     "date": "2025-06-04"
+    },
+    {
+     "line": 106,
+     "hands": 932,
+     "profit": -84.66,
+     "stake": "",
+     "game": "",
+     "date": "2025-06-06"
+    },
+    {
+     "line": 107,
+     "hands": 956,
+     "profit": -44.99,
+     "stake": "",
+     "game": "",
+     "date": "2025-06-07"
+    },
+    {
+     "line": 108,
+     "hands": 642,
+     "profit": 62.84,
+     "stake": "",
+     "game": "",
+     "date": "2025-06-09"
+    },
+    {
+     "line": 109,
+     "hands": 1064,
+     "profit": 493.34,
+     "stake": "",
+     "game": "",
+     "date": "2025-06-10"
+    },
+    {
+     "line": 110,
+     "hands": 315,
+     "profit": 344.11,
+     "stake": "",
+     "game": "",
+     "date": "2025-06-12"
+    },
+    {
+     "line": 111,
+     "hands": 428,
+     "profit": 264.19,
+     "stake": "",
+     "game": "",
+     "date": "2025-06-13"
+    },
+    {
+     "line": 112,
+     "hands": 621,
+     "profit": -43.23,
+     "stake": "",
+     "game": "",
+     "date": "2025-06-15"
+    },
+    {
+     "line": 113,
+     "hands": 420,
+     "profit": 117.18,
+     "stake": "",
+     "game": "",
+     "date": "2025-06-16"
+    },
+    {
+     "line": 114,
+     "hands": 667,
+     "profit": 160.11,
+     "stake": "",
+     "game": "",
+     "date": "2025-06-18"
+    },
+    {
+     "line": 115,
+     "hands": 979,
+     "profit": 54.33,
+     "stake": "",
+     "game": "",
+     "date": "2025-06-19"
+    },
+    {
+     "line": 116,
+     "hands": 813,
+     "profit": 341.49,
+     "stake": "",
+     "game": "",
+     "date": "2025-06-21"
+    },
+    {
+     "line": 117,
+     "hands": 485,
+     "profit": -126.1,
+     "stake": "",
+     "game": "",
+     "date": "2025-06-22"
+    },
+    {
+     "line": 118,
+     "hands": 746,
+     "profit": -41.12,
+     "stake": "",
+     "game": "",
+     "date": "2025-06-24"
+    },
+    {
+     "line": 119,
+     "hands": 387,
+     "profit": -132.37,
+     "stake": "",
+     "game": "",
+     "date": "2025-06-25"
+    },
+    {
+     "line": 120,
+     "hands": 516,
+     "profit": 343.4,
+     "stake": "",
+     "game": "",
+     "date": "2025-06-27"
+    },
+    {
+     "line": 121,
+     "hands": 646,
+     "profit": 364.78,
+     "stake": "",
+     "game": "",
+     "date": "2025-06-28"
+    },
+    {
+     "line": 122,
+     "hands": 606,
+     "profit": 301.72,
+     "stake": "",
+     "game": "",
+     "date": "2025-06-30"
+    },
+    {
+     "line": 123,
+     "hands": 393,
+     "profit": -17.44,
+     "stake": "",
+     "game": "",
+     "date": "2025-07-01"
+    },
+    {
+     "line": 124,
+     "hands": 500,
+     "profit": -16.48,
+     "stake": "",
+     "game": "",
+     "date": "2025-07-03"
+    },
+    {
+     "line": 125,
+     "hands": 602,
+     "profit": 60.13,
+     "stake": "",
+     "game": "",
+     "date": "2025-07-04"
+    },
+    {
+     "line": 126,
+     "hands": 1037,
+     "profit": 309.73,
+     "stake": "",
+     "game": "",
+     "date": "2025-07-06"
+    },
+    {
+     "line": 127,
+     "hands": 630,
+     "profit": 111.36,
+     "stake": "",
+     "game": "",
+     "date": "2025-07-07"
+    },
+    {
+     "line": 128,
+     "hands": 670,
+     "profit": -239.33,
+     "stake": "",
+     "game": "",
+     "date": "2025-07-09"
+    },
+    {
+     "line": 129,
+     "hands": 1032,
+     "profit": 393.58,
+     "stake": "",
+     "game": "",
+     "date": "2025-07-10"
+    },
+    {
+     "line": 130,
+     "hands": 672,
+     "profit": -176.94,
+     "stake": "",
+     "game": "",
+     "date": "2025-07-12"
+    },
+    {
+     "line": 131,
+     "hands": 580,
+     "profit": -292.77,
+     "stake": "",
+     "game": "",
+     "date": "2025-07-13"
+    },
+    {
+     "line": 132,
+     "hands": 406,
+     "profit": -94.71,
+     "stake": "",
+     "game": "",
+     "date": "2025-07-15"
+    },
+    {
+     "line": 133,
+     "hands": 908,
+     "profit": -355.43,
+     "stake": "",
+     "game": "",
+     "date": "2025-07-16"
+    },
+    {
+     "line": 134,
+     "hands": 552,
+     "profit": 219.78,
+     "stake": "",
+     "game": "",
+     "date": "2025-07-18"
+    },
+    {
+     "line": 135,
+     "hands": 1133,
+     "profit": 334.48,
+     "stake": "",
+     "game": "",
+     "date": "2025-07-19"
+    },
+    {
+     "line": 136,
+     "hands": 471,
+     "profit": 78.31,
+     "stake": "",
+     "game": "",
+     "date": "2025-07-21"
+    },
+    {
+     "line": 137,
+     "hands": 706,
+     "profit": -188.34,
+     "stake": "",
+     "game": "",
+     "date": "2025-07-22"
+    },
+    {
+     "line": 138,
+     "hands": 463,
+     "profit": 114.35,
+     "stake": "",
+     "game": "",
+     "date": "2025-07-24"
+    },
+    {
+     "line": 139,
+     "hands": 676,
+     "profit": 299.1,
+     "stake": "",
+     "game": "",
+     "date": "2025-07-25"
+    },
+    {
+     "line": 140,
+     "hands": 1109,
+     "profit": 233.42,
+     "stake": "",
+     "game": "",
+     "date": "2025-07-27"
+    },
+    {
+     "line": 141,
+     "hands": 840,
+     "profit": 40.36,
+     "stake": "",
+     "game": "",
+     "date": "2025-07-28"
+    },
+    {
+     "line": 142,
+     "hands": 512,
+     "profit": 309.82,
+     "stake": "",
+     "game": "",
+     "date": "2025-07-30"
+    },
+    {
+     "line": 143,
+     "hands": 568,
+     "profit": -79.44,
+     "stake": "",
+     "game": "",
+     "date": "2025-07-31"
+    },
+    {
+     "line": 144,
+     "hands": 573,
+     "profit": 89.37,
+     "stake": "",
+     "game": "",
+     "date": "2025-08-02"
+    },
+    {
+     "line": 145,
+     "hands": 389,
+     "profit": -93.5,
+     "stake": "",
+     "game": "",
+     "date": "2025-08-03"
+    },
+    {
+     "line": 146,
+     "hands": 833,
+     "profit": -382.56,
+     "stake": "",
+     "game": "",
+     "date": "2025-08-05"
+    },
+    {
+     "line": 147,
+     "hands": 382,
+     "profit": -39.45,
+     "stake": "",
+     "game": "",
+     "date": "2025-08-06"
+    },
+    {
+     "line": 148,
+     "hands": 891,
+     "profit": 193.75,
+     "stake": "",
+     "game": "",
+     "date": "2025-08-08"
+    },
+    {
+     "line": 149,
+     "hands": 307,
+     "profit": -147.68,
+     "stake": "",
+     "game": "",
+     "date": "2025-08-09"
+    },
+    {
+     "line": 150,
+     "hands": 853,
+     "profit": -61.08,
+     "stake": "",
+     "game": "",
+     "date": "2025-08-11"
+    },
+    {
+     "line": 151,
+     "hands": 831,
+     "profit": -68.65,
+     "stake": "",
+     "game": "",
+     "date": "2025-08-12"
+    },
+    {
+     "line": 152,
+     "hands": 520,
+     "profit": -519.51,
+     "stake": "",
+     "game": "",
+     "date": "2025-08-14"
+    },
+    {
+     "line": 153,
+     "hands": 759,
+     "profit": 30.04,
+     "stake": "",
+     "game": "",
+     "date": "2025-08-15"
+    },
+    {
+     "line": 154,
+     "hands": 834,
+     "profit": 173.18,
+     "stake": "",
+     "game": "",
+     "date": "2025-08-17"
+    },
+    {
+     "line": 155,
+     "hands": 989,
+     "profit": -348.44,
+     "stake": "",
+     "game": "",
+     "date": "2025-08-18"
+    },
+    {
+     "line": 156,
+     "hands": 546,
+     "profit": -7.94,
+     "stake": "",
+     "game": "",
+     "date": "2025-08-20"
+    },
+    {
+     "line": 157,
+     "hands": 373,
+     "profit": 75.64,
+     "stake": "",
+     "game": "",
+     "date": "2025-08-21"
+    },
+    {
+     "line": 158,
+     "hands": 465,
+     "profit": 142.28,
+     "stake": "",
+     "game": "",
+     "date": "2025-08-23"
+    },
+    {
+     "line": 159,
+     "hands": 456,
+     "profit": -32.55,
+     "stake": "",
+     "game": "",
+     "date": "2025-08-24"
+    },
+    {
+     "line": 160,
+     "hands": 937,
+     "profit": 219.33,
+     "stake": "",
+     "game": "",
+     "date": "2025-08-26"
+    },
+    {
+     "line": 161,
+     "hands": 931,
+     "profit": 297.8,
+     "stake": "",
+     "game": "",
+     "date": "2025-08-27"
+    },
+    {
+     "line": 162,
+     "hands": 614,
+     "profit": 176.94,
+     "stake": "",
+     "game": "",
+     "date": "2025-08-29"
+    },
+    {
+     "line": 163,
+     "hands": 1028,
+     "profit": -160.18,
+     "stake": "",
+     "game": "",
+     "date": "2025-08-30"
+    },
+    {
+     "line": 164,
+     "hands": 963,
+     "profit": 0.54,
+     "stake": "",
+     "game": "",
+     "date": "2025-09-01"
+    },
+    {
+     "line": 165,
+     "hands": 645,
+     "profit": -237.17,
+     "stake": "",
+     "game": "",
+     "date": "2025-09-02"
+    },
+    {
+     "line": 166,
+     "hands": 532,
+     "profit": 17.75,
+     "stake": "",
+     "game": "",
+     "date": "2025-09-04"
+    },
+    {
+     "line": 167,
+     "hands": 989,
+     "profit": 75.53,
+     "stake": "",
+     "game": "",
+     "date": "2025-09-05"
+    },
+    {
+     "line": 168,
+     "hands": 437,
+     "profit": -174.23,
+     "stake": "",
+     "game": "",
+     "date": "2025-09-07"
+    },
+    {
+     "line": 169,
+     "hands": 545,
+     "profit": 114.39,
+     "stake": "",
+     "game": "",
+     "date": "2025-09-08"
+    },
+    {
+     "line": 170,
+     "hands": 831,
+     "profit": 205.61,
+     "stake": "",
+     "game": "",
+     "date": "2025-09-10"
+    },
+    {
+     "line": 171,
+     "hands": 709,
+     "profit": -229.08,
+     "stake": "",
+     "game": "",
+     "date": "2025-09-11"
+    },
+    {
+     "line": 172,
+     "hands": 515,
+     "profit": -171.32,
+     "stake": "",
+     "game": "",
+     "date": "2025-09-13"
+    },
+    {
+     "line": 173,
+     "hands": 971,
+     "profit": -236.54,
+     "stake": "",
+     "game": "",
+     "date": "2025-09-14"
+    },
+    {
+     "line": 174,
+     "hands": 935,
+     "profit": 287.68,
+     "stake": "",
+     "game": "",
+     "date": "2025-09-16"
+    },
+    {
+     "line": 175,
+     "hands": 845,
+     "profit": 61.82,
+     "stake": "",
+     "game": "",
+     "date": "2025-09-17"
+    },
+    {
+     "line": 176,
+     "hands": 799,
+     "profit": 439.1,
+     "stake": "",
+     "game": "",
+     "date": "2025-09-19"
+    },
+    {
+     "line": 177,
+     "hands": 387,
+     "profit": -17.67,
+     "stake": "",
+     "game": "",
+     "date": "2025-09-20"
+    },
+    {
+     "line": 178,
+     "hands": 376,
+     "profit": -168.41,
+     "stake": "",
+     "game": "",
+     "date": "2025-09-22"
+    },
+    {
+     "line": 179,
+     "hands": 782,
+     "profit": 40.57,
+     "stake": "",
+     "game": "",
+     "date": "2025-09-23"
+    },
+    {
+     "line": 180,
+     "hands": 589,
+     "profit": 188.16,
+     "stake": "",
+     "game": "",
+     "date": "2025-09-25"
+    },
+    {
+     "line": 181,
+     "hands": 969,
+     "profit": -595.27,
+     "stake": "",
+     "game": "",
+     "date": "2025-09-26"
+    },
+    {
+     "line": 182,
+     "hands": 455,
+     "profit": 128.9,
+     "stake": "",
+     "game": "",
+     "date": "2025-09-28"
+    },
+    {
+     "line": 183,
+     "hands": 1134,
+     "profit": -124.8,
+     "stake": "",
+     "game": "",
+     "date": "2025-09-29"
+    },
+    {
+     "line": 184,
+     "hands": 751,
+     "profit": -111.21,
+     "stake": "",
+     "game": "",
+     "date": "2025-10-01"
+    },
+    {
+     "line": 185,
+     "hands": 705,
+     "profit": 52.19,
+     "stake": "",
+     "game": "",
+     "date": "2025-10-02"
+    },
+    {
+     "line": 186,
+     "hands": 701,
+     "profit": 505.32,
+     "stake": "",
+     "game": "",
+     "date": "2025-10-04"
+    },
+    {
+     "line": 187,
+     "hands": 456,
+     "profit": -7.69,
+     "stake": "",
+     "game": "",
+     "date": "2025-10-05"
+    },
+    {
+     "line": 188,
+     "hands": 1070,
+     "profit": -185.75,
+     "stake": "",
+     "game": "",
+     "date": "2025-10-07"
+    },
+    {
+     "line": 189,
+     "hands": 964,
+     "profit": -112.4,
+     "stake": "",
+     "game": "",
+     "date": "2025-10-08"
+    },
+    {
+     "line": 190,
+     "hands": 459,
+     "profit": 114.94,
+     "stake": "",
+     "game": "",
+     "date": "2025-10-10"
+    },
+    {
+     "line": 191,
+     "hands": 999,
+     "profit": -181.29,
+     "stake": "",
+     "game": "",
+     "date": "2025-10-11"
+    },
+    {
+     "line": 192,
+     "hands": 919,
+     "profit": -305.68,
+     "stake": "",
+     "game": "",
+     "date": "2025-10-13"
+    },
+    {
+     "line": 193,
+     "hands": 423,
+     "profit": 119.41,
+     "stake": "",
+     "game": "",
+     "date": "2025-10-14"
+    },
+    {
+     "line": 194,
+     "hands": 508,
+     "profit": -355.3,
+     "stake": "",
+     "game": "",
+     "date": "2025-10-16"
+    },
+    {
+     "line": 195,
+     "hands": 863,
+     "profit": 205.18,
+     "stake": "",
+     "game": "",
+     "date": "2025-10-17"
+    },
+    {
+     "line": 196,
+     "hands": 337,
+     "profit": -274.13,
+     "stake": "",
+     "game": "",
+     "date": "2025-10-19"
+    },
+    {
+     "line": 197,
+     "hands": 938,
+     "profit": -46.15,
+     "stake": "",
+     "game": "",
+     "date": "2025-10-20"
+    },
+    {
+     "line": 198,
+     "hands": 993,
+     "profit": -153.82,
+     "stake": "",
+     "game": "",
+     "date": "2025-10-22"
+    },
+    {
+     "line": 199,
+     "hands": 573,
+     "profit": 61.44,
+     "stake": "",
+     "game": "",
+     "date": "2025-10-23"
+    },
+    {
+     "line": 200,
+     "hands": 1167,
+     "profit": -430.56,
+     "stake": "",
+     "game": "",
+     "date": "2025-10-25"
+    },
+    {
+     "line": 201,
+     "hands": 871,
+     "profit": -83.29,
+     "stake": "",
+     "game": "",
+     "date": "2025-10-26"
+    },
+    {
+     "line": 202,
+     "hands": 987,
+     "profit": -480.52,
+     "stake": "",
+     "game": "",
+     "date": "2025-10-28"
+    },
+    {
+     "line": 203,
+     "hands": 764,
+     "profit": 215.3,
+     "stake": "",
+     "game": "",
+     "date": "2025-10-29"
+    },
+    {
+     "line": 204,
+     "hands": 751,
+     "profit": 19.37,
+     "stake": "",
+     "game": "",
+     "date": "2025-10-31"
+    },
+    {
+     "line": 205,
+     "hands": 979,
+     "profit": -89.11,
+     "stake": "",
+     "game": "",
+     "date": "2025-11-01"
+    },
+    {
+     "line": 206,
+     "hands": 652,
+     "profit": -90.71,
+     "stake": "",
+     "game": "",
+     "date": "2025-11-03"
+    },
+    {
+     "line": 207,
+     "hands": 1084,
+     "profit": 44.82,
+     "stake": "",
+     "game": "",
+     "date": "2025-11-04"
+    },
+    {
+     "line": 208,
+     "hands": 708,
+     "profit": -331.92,
+     "stake": "",
+     "game": "",
+     "date": "2025-11-06"
+    },
+    {
+     "line": 209,
+     "hands": 1133,
+     "profit": -290.29,
+     "stake": "",
+     "game": "",
+     "date": "2025-11-07"
+    },
+    {
+     "line": 210,
+     "hands": 1024,
+     "profit": -144.45,
+     "stake": "",
+     "game": "",
+     "date": "2025-11-09"
+    },
+    {
+     "line": 211,
+     "hands": 578,
+     "profit": -88.44,
+     "stake": "",
+     "game": "",
+     "date": "2025-11-10"
+    },
+    {
+     "line": 212,
+     "hands": 1100,
+     "profit": -965.84,
+     "stake": "",
+     "game": "",
+     "date": "2025-11-12"
+    },
+    {
+     "line": 213,
+     "hands": 769,
+     "profit": -359.43,
+     "stake": "",
+     "game": "",
+     "date": "2025-11-13"
+    },
+    {
+     "line": 214,
+     "hands": 787,
+     "profit": -599.56,
+     "stake": "",
+     "game": "",
+     "date": "2025-11-15"
+    },
+    {
+     "line": 215,
+     "hands": 468,
+     "profit": 421.33,
+     "stake": "",
+     "game": "",
+     "date": "2025-11-16"
+    },
+    {
+     "line": 216,
+     "hands": 800,
+     "profit": 136.85,
+     "stake": "",
+     "game": "",
+     "date": "2025-11-18"
+    },
+    {
+     "line": 217,
+     "hands": 1162,
+     "profit": -510.97,
+     "stake": "",
+     "game": "",
+     "date": "2025-11-19"
+    },
+    {
+     "line": 218,
+     "hands": 615,
+     "profit": -297.42,
+     "stake": "",
+     "game": "",
+     "date": "2025-11-21"
+    },
+    {
+     "line": 219,
+     "hands": 680,
+     "profit": 86.56,
+     "stake": "",
+     "game": "",
+     "date": "2025-11-22"
+    },
+    {
+     "line": 220,
+     "hands": 834,
+     "profit": 443.54,
+     "stake": "",
+     "game": "",
+     "date": "2025-11-24"
+    },
+    {
+     "line": 221,
+     "hands": 534,
+     "profit": 99.32,
+     "stake": "",
+     "game": "",
+     "date": "2025-11-25"
+    },
+    {
+     "line": 222,
+     "hands": 421,
+     "profit": -143.71,
+     "stake": "",
+     "game": "",
+     "date": "2025-11-27"
+    },
+    {
+     "line": 223,
+     "hands": 1027,
+     "profit": -117.33,
+     "stake": "",
+     "game": "",
+     "date": "2025-11-28"
+    },
+    {
+     "line": 224,
+     "hands": 551,
+     "profit": -49.27,
+     "stake": "",
+     "game": "",
+     "date": "2025-11-30"
+    },
+    {
+     "line": 225,
+     "hands": 1107,
+     "profit": -196.23,
+     "stake": "",
+     "game": "",
+     "date": "2025-12-01"
+    },
+    {
+     "line": 226,
+     "hands": 1164,
+     "profit": 151.79,
+     "stake": "",
+     "game": "",
+     "date": "2025-12-03"
+    },
+    {
+     "line": 227,
+     "hands": 861,
+     "profit": -123.21,
+     "stake": "",
+     "game": "",
+     "date": "2025-12-04"
+    },
+    {
+     "line": 228,
+     "hands": 374,
+     "profit": -176.95,
+     "stake": "",
+     "game": "",
+     "date": "2025-12-06"
+    },
+    {
+     "line": 229,
+     "hands": 718,
+     "profit": 291.47,
+     "stake": "",
+     "game": "",
+     "date": "2025-12-07"
+    },
+    {
+     "line": 230,
+     "hands": 963,
+     "profit": 129.92,
+     "stake": "",
+     "game": "",
+     "date": "2025-12-09"
+    },
+    {
+     "line": 231,
+     "hands": 861,
+     "profit": -398.82,
+     "stake": "",
+     "game": "",
+     "date": "2025-12-10"
+    },
+    {
+     "line": 232,
+     "hands": 580,
+     "profit": 51.32,
+     "stake": "",
+     "game": "",
+     "date": "2025-12-12"
+    },
+    {
+     "line": 233,
+     "hands": 696,
+     "profit": 24.91,
+     "stake": "",
+     "game": "",
+     "date": "2025-12-13"
+    },
+    {
+     "line": 234,
+     "hands": 512,
+     "profit": -89.2,
+     "stake": "",
+     "game": "",
+     "date": "2025-12-15"
+    },
+    {
+     "line": 235,
+     "hands": 614,
+     "profit": -188.2,
+     "stake": "",
+     "game": "",
+     "date": "2025-12-16"
+    },
+    {
+     "line": 236,
+     "hands": 1151,
+     "profit": -577.23,
+     "stake": "",
+     "game": "",
+     "date": "2025-12-18"
+    },
+    {
+     "line": 237,
+     "hands": 1020,
+     "profit": 55.9,
+     "stake": "",
+     "game": "",
+     "date": "2025-12-19"
+    },
+    {
+     "line": 238,
+     "hands": 1061,
+     "profit": -29.77,
+     "stake": "",
+     "game": "",
+     "date": "2025-12-21"
+    },
+    {
+     "line": 239,
+     "hands": 301,
+     "profit": -159.55,
+     "stake": "",
+     "game": "",
+     "date": "2025-12-22"
+    },
+    {
+     "line": 240,
+     "hands": 731,
+     "profit": 328.99,
+     "stake": "",
+     "game": "",
+     "date": "2025-12-24"
+    },
+    {
+     "line": 241,
+     "hands": 986,
+     "profit": -449.92,
+     "stake": "",
+     "game": "",
+     "date": "2025-12-25"
+    }
+   ],
+   "problems": [],
+   "selections": [
+    {
+     "id": "all",
+     "filter": {
+      "stakes": null,
+      "games": null,
+      "from": null,
+      "to": null
+     },
+     "summary": {
+      "n": 240,
+      "hands": 176012,
+      "profit": 6796,
+      "winRate": 3.86110037951958,
+      "variance": 8738.67714589296,
+      "sd": 93.480891875789,
+      "standardError": 2.22818737068358,
+      "sdInterval": [
+       85.7990119064824,
+       102.685387985003
+      ],
+      "lengths": {
+       "min": 301,
+       "max": 1198,
+       "mean": 733.383333333333,
+       "median": 706.5,
+       "cv": 0.328277246119566
+      },
+      "scaling": {
+       "short": {
+        "n": 120,
+        "maxHands": 706,
+        "sd": 86.8570445796928
+       },
+       "long": {
+        "n": 120,
+        "minHands": 707,
+        "sd": 99.7538092611862
+       },
+       "ratio": 0.873040190266289,
+       "z": -1.35619544077385,
+       "p": 0.17503700040089,
+       "flag": false
+      },
+      "stability": {
+       "groups": 10,
+       "q": 29.6464782993385,
+       "p": 0.000503789665294407,
+       "standardError": 4.18007551038216,
+       "ordered": "date",
+       "flag": true,
+       "multiplier": 1.87599820615614
+      }
+     }
+    }
+   ],
+   "groupings": [
+    {
+     "by": "quarter",
+     "groups": [
+      {
+       "key": "2025-Q1",
+       "n": 60,
+       "hands": 42762,
+       "winRate": 12.7510172583134,
+       "sd": 92.213563288829,
+       "standardError": 4.45929085213558
+      },
+      {
+       "key": "2025-Q2",
+       "n": 61,
+       "hands": 45066,
+       "winRate": 15.0733812630364,
+       "sd": 87.8678791411949,
+       "standardError": 4.13909732005508
+      },
+      {
+       "key": "2025-Q3",
+       "n": 61,
+       "hands": 42379,
+       "winRate": 0.438637060808419,
+       "sd": 81.5179677758024,
+       "standardError": 3.95984322444119
+      },
+      {
+       "key": "2025-Q4",
+       "n": 58,
+       "hands": 45805,
+       "winRate": -12.3031328457592,
+       "sd": 94.5715938382261,
+       "standardError": 4.41879917884426
+      }
+     ],
+     "test": {
+      "groups": 4,
+      "q": 24.6140556951024,
+      "p": 0.0000185923274009792,
+      "standardError": 6.45809214430067
+     }
+    }
+   ]
+  },
+  {
+   "file": "equal-blocks.csv",
+   "delimiter": ",",
+   "columns": {
+    "hands": "hands",
+    "profit": "profit_bb"
+   },
+   "rows": 60,
+   "sessions": [
+    {
+     "line": 2,
+     "hands": 1000,
+     "profit": 376.9,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 3,
+     "hands": 1000,
+     "profit": 598.04,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 4,
+     "hands": 1000,
+     "profit": -34.55,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 5,
+     "hands": 1000,
+     "profit": 604.95,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 6,
+     "hands": 1000,
+     "profit": 57.33,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 7,
+     "hands": 1000,
+     "profit": -439.11,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 8,
+     "hands": 1000,
+     "profit": 466.55,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 9,
+     "hands": 1000,
+     "profit": -99.07,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 10,
+     "hands": 1000,
+     "profit": -679.47,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 11,
+     "hands": 1000,
+     "profit": -87.24,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 12,
+     "hands": 1000,
+     "profit": -82.51,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 13,
+     "hands": 1000,
+     "profit": -173.25,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 14,
+     "hands": 1000,
+     "profit": 230.08,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 15,
+     "hands": 1000,
+     "profit": -266.95,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 16,
+     "hands": 1000,
+     "profit": 56.39,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 17,
+     "hands": 1000,
+     "profit": -146.11,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 18,
+     "hands": 1000,
+     "profit": -36.6,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 19,
+     "hands": 1000,
+     "profit": -486.1,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 20,
+     "hands": 1000,
+     "profit": 172.09,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 21,
+     "hands": 1000,
+     "profit": 135.3,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 22,
+     "hands": 1000,
+     "profit": -68.47,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 23,
+     "hands": 1000,
+     "profit": 322.57,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 24,
+     "hands": 1000,
+     "profit": -79.86,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 25,
+     "hands": 1000,
+     "profit": 23.03,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 26,
+     "hands": 1000,
+     "profit": 62.18,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 27,
+     "hands": 1000,
+     "profit": -325.43,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 28,
+     "hands": 1000,
+     "profit": 40.78,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 29,
+     "hands": 1000,
+     "profit": -249.62,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 30,
+     "hands": 1000,
+     "profit": 116.41,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 31,
+     "hands": 1000,
+     "profit": -169.81,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 32,
+     "hands": 1000,
+     "profit": 473.81,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 33,
+     "hands": 1000,
+     "profit": -508.24,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 34,
+     "hands": 1000,
+     "profit": 176.68,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 35,
+     "hands": 1000,
+     "profit": -289.17,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 36,
+     "hands": 1000,
+     "profit": 266.71,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 37,
+     "hands": 1000,
+     "profit": 92.67,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 38,
+     "hands": 1000,
+     "profit": -436.44,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 39,
+     "hands": 1000,
+     "profit": 372.72,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 40,
+     "hands": 1000,
+     "profit": 394.63,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 41,
+     "hands": 1000,
+     "profit": -386.4,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 42,
+     "hands": 1000,
+     "profit": 136.02,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 43,
+     "hands": 1000,
+     "profit": 78.1,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 44,
+     "hands": 1000,
+     "profit": 463.24,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 45,
+     "hands": 1000,
+     "profit": -94.28,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 46,
+     "hands": 1000,
+     "profit": 637.64,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 47,
+     "hands": 1000,
+     "profit": 29.76,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 48,
+     "hands": 1000,
+     "profit": 402.05,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 49,
+     "hands": 1000,
+     "profit": 393.75,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 50,
+     "hands": 1000,
+     "profit": 205.6,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 51,
+     "hands": 1000,
+     "profit": -249.42,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 52,
+     "hands": 1000,
+     "profit": 386.26,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 53,
+     "hands": 1000,
+     "profit": 82.11,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 54,
+     "hands": 1000,
+     "profit": 36.02,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 55,
+     "hands": 1000,
+     "profit": 17.14,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 56,
+     "hands": 1000,
+     "profit": -79.05,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 57,
+     "hands": 1000,
+     "profit": -78.22,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 58,
+     "hands": 1000,
+     "profit": 185.12,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 59,
+     "hands": 1000,
+     "profit": -73.69,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 60,
+     "hands": 1000,
+     "profit": -369.99,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 61,
+     "hands": 1000,
+     "profit": -416.28,
+     "stake": "",
+     "game": "",
+     "date": null
+    }
+   ],
+   "problems": [],
+   "selections": [
+    {
+     "id": "all",
+     "filter": {
+      "stakes": null,
+      "games": null,
+      "from": null,
+      "to": null
+     },
+     "summary": {
+      "n": 60,
+      "hands": 60000,
+      "profit": 1687.3,
+      "winRate": 2.81216666666667,
+      "variance": 9192.32030717514,
+      "sd": 95.8765889421142,
+      "standardError": 3.91414535311246,
+      "sdInterval": [
+       81.2682615147873,
+       116.937026215638
+      ],
+      "lengths": {
+       "min": 1000,
+       "max": 1000,
+       "mean": 1000,
+       "median": 1000,
+       "cv": 0
+      },
+      "scaling": null,
+      "stability": {
+       "groups": 10,
+       "q": 12.3260708715251,
+       "p": 0.195544877497282,
+       "standardError": 4.58065965611779,
+       "ordered": "file",
+       "flag": false,
+       "multiplier": 1.17028348282348
+      }
+     }
+    }
+   ],
+   "groupings": []
+  },
+  {
+   "file": "european.csv",
+   "delimiter": ";",
+   "columns": {
+    "hands": "Hands",
+    "profit": "Profit (bb)",
+    "stake": "Stake",
+    "date": "Date"
+   },
+   "rows": 83,
+   "sessions": [
+    {
+     "line": 2,
+     "hands": 680,
+     "profit": -180.61,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-01"
+    },
+    {
+     "line": 3,
+     "hands": 452,
+     "profit": 62.5,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-02"
+    },
+    {
+     "line": 4,
+     "hands": 328,
+     "profit": 271.27,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-03"
+    },
+    {
+     "line": 5,
+     "hands": 364,
+     "profit": -15.61,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-04"
+    },
+    {
+     "line": 6,
+     "hands": 1353,
+     "profit": 353.47,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-05"
+    },
+    {
+     "line": 7,
+     "hands": 665,
+     "profit": 16.03,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-06"
+    },
+    {
+     "line": 8,
+     "hands": 984,
+     "profit": 22.39,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-07"
+    },
+    {
+     "line": 9,
+     "hands": 465,
+     "profit": 100.32,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-08"
+    },
+    {
+     "line": 10,
+     "hands": 988,
+     "profit": -307.21,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-09"
+    },
+    {
+     "line": 11,
+     "hands": 1274,
+     "profit": 167.97,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-10"
+    },
+    {
+     "line": 13,
+     "hands": 1189,
+     "profit": 198.35,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-11"
+    },
+    {
+     "line": 14,
+     "hands": 329,
+     "profit": 83.77,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-12"
+    },
+    {
+     "line": 15,
+     "hands": 795,
+     "profit": 218.33,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-13"
+    },
+    {
+     "line": 16,
+     "hands": 924,
+     "profit": 102.35,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-14"
+    },
+    {
+     "line": 17,
+     "hands": 265,
+     "profit": 55.02,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-15"
+    },
+    {
+     "line": 18,
+     "hands": 776,
+     "profit": -62.84,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-16"
+    },
+    {
+     "line": 19,
+     "hands": 281,
+     "profit": -41.8,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-17"
+    },
+    {
+     "line": 20,
+     "hands": 1499,
+     "profit": -163.15,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-18"
+    },
+    {
+     "line": 21,
+     "hands": 239,
+     "profit": 106.77,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-19"
+    },
+    {
+     "line": 23,
+     "hands": 1242,
+     "profit": -405.51,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-20"
+    },
+    {
+     "line": 24,
+     "hands": 1419,
+     "profit": -168.27,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-21"
+    },
+    {
+     "line": 25,
+     "hands": 1226,
+     "profit": -5.27,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-22"
+    },
+    {
+     "line": 26,
+     "hands": 1337,
+     "profit": 94.88,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-23"
+    },
+    {
+     "line": 27,
+     "hands": 1021,
+     "profit": 495.18,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-24"
+    },
+    {
+     "line": 28,
+     "hands": 240,
+     "profit": 122.89,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-25"
+    },
+    {
+     "line": 29,
+     "hands": 836,
+     "profit": 53.03,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-26"
+    },
+    {
+     "line": 30,
+     "hands": 1179,
+     "profit": 376.39,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-27"
+    },
+    {
+     "line": 31,
+     "hands": 299,
+     "profit": -47.89,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-28"
+    },
+    {
+     "line": 32,
+     "hands": 864,
+     "profit": -395.95,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-29"
+    },
+    {
+     "line": 33,
+     "hands": 600,
+     "profit": -221.13,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-30"
+    },
+    {
+     "line": 34,
+     "hands": 1086,
+     "profit": 439.2,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-01-31"
+    },
+    {
+     "line": 35,
+     "hands": 1131,
+     "profit": 70.51,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-01"
+    },
+    {
+     "line": 36,
+     "hands": 278,
+     "profit": -33.26,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-02"
+    },
+    {
+     "line": 37,
+     "hands": 509,
+     "profit": 229.89,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-03"
+    },
+    {
+     "line": 38,
+     "hands": 351,
+     "profit": 223.77,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-04"
+    },
+    {
+     "line": 39,
+     "hands": 241,
+     "profit": 228.69,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-05"
+    },
+    {
+     "line": 40,
+     "hands": 1243,
+     "profit": 104.4,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-06"
+    },
+    {
+     "line": 41,
+     "hands": 1493,
+     "profit": 410.26,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-07"
+    },
+    {
+     "line": 43,
+     "hands": 958,
+     "profit": -669.43,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-08"
+    },
+    {
+     "line": 44,
+     "hands": 886,
+     "profit": -217.21,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-09"
+    },
+    {
+     "line": 45,
+     "hands": 829,
+     "profit": -232.88,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-10"
+    },
+    {
+     "line": 46,
+     "hands": 1117,
+     "profit": -39.43,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-11"
+    },
+    {
+     "line": 47,
+     "hands": 1027,
+     "profit": -244.64,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-12"
+    },
+    {
+     "line": 48,
+     "hands": 259,
+     "profit": 91.09,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-13"
+    },
+    {
+     "line": 49,
+     "hands": 1060,
+     "profit": -362.72,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-14"
+    },
+    {
+     "line": 50,
+     "hands": 206,
+     "profit": -87.56,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-15"
+    },
+    {
+     "line": 51,
+     "hands": 901,
+     "profit": 42.44,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-16"
+    },
+    {
+     "line": 52,
+     "hands": 956,
+     "profit": -135.85,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-17"
+    },
+    {
+     "line": 53,
+     "hands": 1303,
+     "profit": -431.19,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-18"
+    },
+    {
+     "line": 54,
+     "hands": 539,
+     "profit": 11.77,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-19"
+    },
+    {
+     "line": 55,
+     "hands": 516,
+     "profit": 144.4,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-20"
+    },
+    {
+     "line": 56,
+     "hands": 653,
+     "profit": -62.84,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-21"
+    },
+    {
+     "line": 57,
+     "hands": 971,
+     "profit": -106.71,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-22"
+    },
+    {
+     "line": 58,
+     "hands": 457,
+     "profit": 339.44,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-23"
+    },
+    {
+     "line": 59,
+     "hands": 1452,
+     "profit": -10.41,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-24"
+    },
+    {
+     "line": 60,
+     "hands": 1189,
+     "profit": -111.33,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-25"
+    },
+    {
+     "line": 61,
+     "hands": 368,
+     "profit": 171.94,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-26"
+    },
+    {
+     "line": 63,
+     "hands": 959,
+     "profit": 201.76,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-27"
+    },
+    {
+     "line": 64,
+     "hands": 1290,
+     "profit": 295.9,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-02-28"
+    },
+    {
+     "line": 65,
+     "hands": 1003,
+     "profit": 78.08,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-03-01"
+    },
+    {
+     "line": 66,
+     "hands": 422,
+     "profit": -237.12,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-03-02"
+    },
+    {
+     "line": 67,
+     "hands": 1091,
+     "profit": -372.89,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-03-03"
+    },
+    {
+     "line": 68,
+     "hands": 425,
+     "profit": 114.51,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-03-04"
+    },
+    {
+     "line": 69,
+     "hands": 423,
+     "profit": 238.47,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-03-05"
+    },
+    {
+     "line": 70,
+     "hands": 411,
+     "profit": -224.36,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-03-06"
+    },
+    {
+     "line": 71,
+     "hands": 263,
+     "profit": -376.66,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-03-07"
+    },
+    {
+     "line": 72,
+     "hands": 846,
+     "profit": -163.53,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-03-08"
+    },
+    {
+     "line": 73,
+     "hands": 354,
+     "profit": 219.13,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-03-09"
+    },
+    {
+     "line": 74,
+     "hands": 1436,
+     "profit": 199.61,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-03-10"
+    },
+    {
+     "line": 75,
+     "hands": 1128,
+     "profit": 72.41,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-03-11"
+    },
+    {
+     "line": 76,
+     "hands": 453,
+     "profit": -204.62,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-03-12"
+    },
+    {
+     "line": 77,
+     "hands": 766,
+     "profit": 125.34,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-03-13"
+    },
+    {
+     "line": 78,
+     "hands": 1433,
+     "profit": 224.39,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-03-14"
+    },
+    {
+     "line": 79,
+     "hands": 688,
+     "profit": 279.59,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-03-15"
+    },
+    {
+     "line": 80,
+     "hands": 341,
+     "profit": 92.35,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-03-16"
+    },
+    {
+     "line": 81,
+     "hands": 1151,
+     "profit": -365.38,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-03-17"
+    },
+    {
+     "line": 82,
+     "hands": 588,
+     "profit": 256.6,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-03-18"
+    },
+    {
+     "line": 83,
+     "hands": 1163,
+     "profit": -9.77,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-03-19"
+    },
+    {
+     "line": 84,
+     "hands": 971,
+     "profit": 66.1,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-03-20"
+    },
+    {
+     "line": 85,
+     "hands": 1345,
+     "profit": 231.32,
+     "stake": "NL10",
+     "game": "",
+     "date": "2026-03-21"
+    }
+   ],
+   "problems": [
+    22,
+    42,
+    62
+   ],
+   "selections": [
+    {
+     "id": "all",
+     "filter": {
+      "stakes": null,
+      "games": null,
+      "from": null,
+      "to": null
+     },
+     "summary": {
+      "n": 80,
+      "hands": 65042,
+      "profit": 1389.24,
+      "winRate": 2.13591217982227,
+      "variance": 7207.10315762771,
+      "sd": 84.8946591819987,
+      "standardError": 3.32876721632958,
+      "sdInterval": [
+       73.4723244685007,
+       100.555396346935
+      ],
+      "lengths": {
+       "min": 206,
+       "max": 1499,
+       "mean": 813.025,
+       "median": 855,
+       "cv": 0.480527392413441
+      },
+      "scaling": {
+       "short": {
+        "n": 40,
+        "maxHands": 846,
+        "sd": 86.7664803071357
+       },
+       "long": {
+        "n": 40,
+        "minHands": 864,
+        "sd": 82.2480265398164
+       },
+       "ratio": 1.11634069491928,
+       "z": 0.677750182655301,
+       "p": 0.497930066938334,
+       "flag": false
+      },
+      "stability": {
+       "groups": 10,
+       "q": 5.71389561930382,
+       "p": 0.768176065774234,
+       "standardError": 2.62450906166305,
+       "ordered": "date",
+       "flag": false,
+       "multiplier": 1
+      }
+     }
+    }
+   ],
+   "groupings": []
+  },
+  {
+   "file": "sessions-mixed.csv",
+   "delimiter": ",",
+   "columns": {
+    "hands": "hands",
+    "profit": "profit_bb",
+    "stake": "stake",
+    "game": "game",
+    "date": "date"
+   },
+   "rows": 360,
+   "sessions": [
+    {
+     "line": 2,
+     "hands": 466,
+     "profit": -392.21,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-07-01"
+    },
+    {
+     "line": 3,
+     "hands": 329,
+     "profit": 125.89,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-07-02"
+    },
+    {
+     "line": 4,
+     "hands": 90,
+     "profit": 82.12,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-07-03"
+    },
+    {
+     "line": 5,
+     "hands": 835,
+     "profit": -95.68,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-07-04"
+    },
+    {
+     "line": 6,
+     "hands": 524,
+     "profit": -200.05,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-07-05"
+    },
+    {
+     "line": 7,
+     "hands": 78,
+     "profit": 67.47,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-07-06"
+    },
+    {
+     "line": 8,
+     "hands": 750,
+     "profit": -301.68,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-07-07"
+    },
+    {
+     "line": 9,
+     "hands": 197,
+     "profit": 66.57,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-07-08"
+    },
+    {
+     "line": 10,
+     "hands": 830,
+     "profit": 147.38,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-07-09"
+    },
+    {
+     "line": 11,
+     "hands": 446,
+     "profit": 308.66,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-07-10"
+    },
+    {
+     "line": 12,
+     "hands": 125,
+     "profit": -82.26,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-07-11"
+    },
+    {
+     "line": 13,
+     "hands": 1296,
+     "profit": 180.29,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-07-12"
+    },
+    {
+     "line": 14,
+     "hands": 940,
+     "profit": -93.35,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2025-07-13"
+    },
+    {
+     "line": 15,
+     "hands": 1091,
+     "profit": -351.08,
+     "stake": "NL25",
+     "game": "PLO",
+     "date": "2025-07-14"
+    },
+    {
+     "line": 16,
+     "hands": 173,
+     "profit": -0.45,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-07-15"
+    },
+    {
+     "line": 17,
+     "hands": 778,
+     "profit": 216.96,
+     "stake": "NL25",
+     "game": "PLO",
+     "date": "2025-07-16"
+    },
+    {
+     "line": 18,
+     "hands": 1818,
+     "profit": 443.49,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2025-07-17"
+    },
+    {
+     "line": 19,
+     "hands": 817,
+     "profit": -287.15,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-07-18"
+    },
+    {
+     "line": 20,
+     "hands": 1041,
+     "profit": 481.31,
+     "stake": "NL25",
+     "game": "PLO",
+     "date": "2025-07-19"
+    },
+    {
+     "line": 21,
+     "hands": 397,
+     "profit": 74.55,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-07-20"
+    },
+    {
+     "line": 22,
+     "hands": 165,
+     "profit": 17,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-07-21"
+    },
+    {
+     "line": 23,
+     "hands": 846,
+     "profit": -158.92,
+     "stake": "NL100",
+     "game": "PLO",
+     "date": "2025-07-22"
+    },
+    {
+     "line": 24,
+     "hands": 1363,
+     "profit": 0.83,
+     "stake": "NL25",
+     "game": "PLO",
+     "date": "2025-07-23"
+    },
+    {
+     "line": 25,
+     "hands": 168,
+     "profit": 60.12,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-07-24"
+    },
+    {
+     "line": 26,
+     "hands": 704,
+     "profit": 11.97,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-07-25"
+    },
+    {
+     "line": 27,
+     "hands": 867,
+     "profit": 214.7,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-07-26"
+    },
+    {
+     "line": 28,
+     "hands": 118,
+     "profit": -145.93,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-07-27"
+    },
+    {
+     "line": 29,
+     "hands": 121,
+     "profit": -29.9,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-07-28"
+    },
+    {
+     "line": 30,
+     "hands": 632,
+     "profit": 203.17,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2025-07-29"
+    },
+    {
+     "line": 31,
+     "hands": 536,
+     "profit": -106.08,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-07-30"
+    },
+    {
+     "line": 32,
+     "hands": 496,
+     "profit": 183.15,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-07-31"
+    },
+    {
+     "line": 33,
+     "hands": 1943,
+     "profit": -734.73,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-08-01"
+    },
+    {
+     "line": 34,
+     "hands": 309,
+     "profit": 59.4,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-08-02"
+    },
+    {
+     "line": 35,
+     "hands": 1001,
+     "profit": 522.01,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-08-03"
+    },
+    {
+     "line": 36,
+     "hands": 125,
+     "profit": -256.32,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2025-08-04"
+    },
+    {
+     "line": 37,
+     "hands": 321,
+     "profit": -98.64,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-08-05"
+    },
+    {
+     "line": 38,
+     "hands": 520,
+     "profit": -210.25,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-08-06"
+    },
+    {
+     "line": 39,
+     "hands": 641,
+     "profit": -501.22,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-08-07"
+    },
+    {
+     "line": 40,
+     "hands": 771,
+     "profit": 197.06,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-08-08"
+    },
+    {
+     "line": 41,
+     "hands": 722,
+     "profit": -125.37,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-08-09"
+    },
+    {
+     "line": 42,
+     "hands": 271,
+     "profit": -118.9,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2025-08-10"
+    },
+    {
+     "line": 43,
+     "hands": 357,
+     "profit": -79.34,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2025-08-11"
+    },
+    {
+     "line": 44,
+     "hands": 701,
+     "profit": 199.84,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-08-12"
+    },
+    {
+     "line": 45,
+     "hands": 547,
+     "profit": -178.46,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-08-13"
+    },
+    {
+     "line": 46,
+     "hands": 790,
+     "profit": 65.96,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-08-14"
+    },
+    {
+     "line": 47,
+     "hands": 153,
+     "profit": -73.38,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2025-08-15"
+    },
+    {
+     "line": 48,
+     "hands": 793,
+     "profit": -103.8,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-08-16"
+    },
+    {
+     "line": 49,
+     "hands": 423,
+     "profit": 0.95,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-08-17"
+    },
+    {
+     "line": 50,
+     "hands": 1654,
+     "profit": 387.51,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-08-18"
+    },
+    {
+     "line": 51,
+     "hands": 707,
+     "profit": -108.96,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-08-19"
+    },
+    {
+     "line": 52,
+     "hands": 364,
+     "profit": -135.11,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-08-20"
+    },
+    {
+     "line": 53,
+     "hands": 606,
+     "profit": 47.13,
+     "stake": "NL25",
+     "game": "PLO",
+     "date": "2025-08-21"
+    },
+    {
+     "line": 54,
+     "hands": 214,
+     "profit": 283.26,
+     "stake": "NL100",
+     "game": "PLO",
+     "date": "2025-08-22"
+    },
+    {
+     "line": 55,
+     "hands": 256,
+     "profit": -28.03,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-08-23"
+    },
+    {
+     "line": 56,
+     "hands": 600,
+     "profit": -25.74,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-08-24"
+    },
+    {
+     "line": 57,
+     "hands": 708,
+     "profit": 165.53,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-08-25"
+    },
+    {
+     "line": 58,
+     "hands": 421,
+     "profit": -470.74,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2025-08-26"
+    },
+    {
+     "line": 59,
+     "hands": 276,
+     "profit": -156.87,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-08-27"
+    },
+    {
+     "line": 60,
+     "hands": 749,
+     "profit": -289.21,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-08-28"
+    },
+    {
+     "line": 61,
+     "hands": 458,
+     "profit": -17.92,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-08-29"
+    },
+    {
+     "line": 62,
+     "hands": 304,
+     "profit": 331.57,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-08-30"
+    },
+    {
+     "line": 63,
+     "hands": 1183,
+     "profit": 478.37,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-08-31"
+    },
+    {
+     "line": 64,
+     "hands": 1136,
+     "profit": 113.24,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-09-01"
+    },
+    {
+     "line": 65,
+     "hands": 899,
+     "profit": 294.39,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-09-02"
+    },
+    {
+     "line": 66,
+     "hands": 277,
+     "profit": -137.19,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-09-03"
+    },
+    {
+     "line": 67,
+     "hands": 91,
+     "profit": 62.52,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-09-04"
+    },
+    {
+     "line": 68,
+     "hands": 1755,
+     "profit": 625.36,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-09-05"
+    },
+    {
+     "line": 69,
+     "hands": 435,
+     "profit": -233.81,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-09-06"
+    },
+    {
+     "line": 70,
+     "hands": 454,
+     "profit": 220.77,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-09-07"
+    },
+    {
+     "line": 71,
+     "hands": 421,
+     "profit": 261.51,
+     "stake": "NL100",
+     "game": "PLO",
+     "date": "2025-09-08"
+    },
+    {
+     "line": 72,
+     "hands": 708,
+     "profit": 325.81,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-09-09"
+    },
+    {
+     "line": 73,
+     "hands": 1397,
+     "profit": 431.01,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-09-10"
+    },
+    {
+     "line": 74,
+     "hands": 730,
+     "profit": -141.01,
+     "stake": "NL100",
+     "game": "PLO",
+     "date": "2025-09-12"
+    },
+    {
+     "line": 75,
+     "hands": 200,
+     "profit": -17.43,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-09-13"
+    },
+    {
+     "line": 76,
+     "hands": 324,
+     "profit": -146.95,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2025-09-14"
+    },
+    {
+     "line": 77,
+     "hands": 131,
+     "profit": -90.07,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-09-15"
+    },
+    {
+     "line": 78,
+     "hands": 387,
+     "profit": -97.66,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-09-16"
+    },
+    {
+     "line": 79,
+     "hands": 714,
+     "profit": -41.96,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-09-17"
+    },
+    {
+     "line": 80,
+     "hands": 277,
+     "profit": 234.3,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-09-18"
+    },
+    {
+     "line": 81,
+     "hands": 198,
+     "profit": 94.82,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-09-19"
+    },
+    {
+     "line": 82,
+     "hands": 278,
+     "profit": 50.03,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-09-20"
+    },
+    {
+     "line": 83,
+     "hands": 1223,
+     "profit": -120.61,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-09-21"
+    },
+    {
+     "line": 84,
+     "hands": 697,
+     "profit": 151.11,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-09-22"
+    },
+    {
+     "line": 85,
+     "hands": 1864,
+     "profit": -112.09,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-09-23"
+    },
+    {
+     "line": 86,
+     "hands": 383,
+     "profit": 3.96,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-09-24"
+    },
+    {
+     "line": 87,
+     "hands": 1098,
+     "profit": -383.02,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-09-25"
+    },
+    {
+     "line": 88,
+     "hands": 210,
+     "profit": 226.72,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-09-26"
+    },
+    {
+     "line": 89,
+     "hands": 1162,
+     "profit": -828.28,
+     "stake": "NL25",
+     "game": "PLO",
+     "date": "2025-09-27"
+    },
+    {
+     "line": 90,
+     "hands": 142,
+     "profit": -71.38,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-09-28"
+    },
+    {
+     "line": 91,
+     "hands": 735,
+     "profit": -227.66,
+     "stake": "NL100",
+     "game": "PLO",
+     "date": "2025-09-29"
+    },
+    {
+     "line": 92,
+     "hands": 492,
+     "profit": 457.5,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-09-30"
+    },
+    {
+     "line": 93,
+     "hands": 544,
+     "profit": -444.01,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2025-10-01"
+    },
+    {
+     "line": 94,
+     "hands": 247,
+     "profit": -59.67,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-10-02"
+    },
+    {
+     "line": 95,
+     "hands": 361,
+     "profit": 435.56,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-10-03"
+    },
+    {
+     "line": 96,
+     "hands": 864,
+     "profit": 355.77,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-10-04"
+    },
+    {
+     "line": 97,
+     "hands": 330,
+     "profit": 362.99,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-10-05"
+    },
+    {
+     "line": 98,
+     "hands": 90,
+     "profit": -39.52,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-10-06"
+    },
+    {
+     "line": 99,
+     "hands": 304,
+     "profit": -116.67,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-10-07"
+    },
+    {
+     "line": 100,
+     "hands": 518,
+     "profit": -20.32,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-10-08"
+    },
+    {
+     "line": 101,
+     "hands": 620,
+     "profit": -1.59,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-10-09"
+    },
+    {
+     "line": 102,
+     "hands": 391,
+     "profit": -336.92,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-10-10"
+    },
+    {
+     "line": 103,
+     "hands": 633,
+     "profit": -426.93,
+     "stake": "NL100",
+     "game": "PLO",
+     "date": "2025-10-11"
+    },
+    {
+     "line": 104,
+     "hands": 401,
+     "profit": 183.18,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-10-12"
+    },
+    {
+     "line": 105,
+     "hands": 180,
+     "profit": 138.18,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-10-13"
+    },
+    {
+     "line": 106,
+     "hands": 808,
+     "profit": 136.11,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-10-14"
+    },
+    {
+     "line": 107,
+     "hands": 1150,
+     "profit": 163.7,
+     "stake": "NL25",
+     "game": "PLO",
+     "date": "2025-10-15"
+    },
+    {
+     "line": 108,
+     "hands": 406,
+     "profit": -40.97,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-10-16"
+    },
+    {
+     "line": 109,
+     "hands": 1242,
+     "profit": 18.3,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-10-17"
+    },
+    {
+     "line": 110,
+     "hands": 1204,
+     "profit": 426.68,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2025-10-18"
+    },
+    {
+     "line": 111,
+     "hands": 782,
+     "profit": 135.57,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-10-19"
+    },
+    {
+     "line": 112,
+     "hands": 480,
+     "profit": 158.07,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-10-20"
+    },
+    {
+     "line": 113,
+     "hands": 358,
+     "profit": -60.04,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-10-21"
+    },
+    {
+     "line": 114,
+     "hands": 911,
+     "profit": 475.31,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2025-10-22"
+    },
+    {
+     "line": 115,
+     "hands": 395,
+     "profit": 8.68,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-10-23"
+    },
+    {
+     "line": 116,
+     "hands": 378,
+     "profit": -140.91,
+     "stake": "NL25",
+     "game": "PLO",
+     "date": "2025-10-24"
+    },
+    {
+     "line": 117,
+     "hands": 265,
+     "profit": -96.62,
+     "stake": "NL25",
+     "game": "PLO",
+     "date": "2025-10-25"
+    },
+    {
+     "line": 118,
+     "hands": 923,
+     "profit": -404.18,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-10-26"
+    },
+    {
+     "line": 119,
+     "hands": 784,
+     "profit": -214.3,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-10-27"
+    },
+    {
+     "line": 120,
+     "hands": 2591,
+     "profit": 438.78,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-10-28"
+    },
+    {
+     "line": 121,
+     "hands": 187,
+     "profit": 29.74,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-10-29"
+    },
+    {
+     "line": 122,
+     "hands": 569,
+     "profit": -14.32,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-10-30"
+    },
+    {
+     "line": 123,
+     "hands": 410,
+     "profit": -49.27,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-10-31"
+    },
+    {
+     "line": 124,
+     "hands": 2207,
+     "profit": 983.82,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2025-11-01"
+    },
+    {
+     "line": 125,
+     "hands": 712,
+     "profit": 8.93,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2025-11-02"
+    },
+    {
+     "line": 126,
+     "hands": 584,
+     "profit": -305.66,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-11-03"
+    },
+    {
+     "line": 127,
+     "hands": 955,
+     "profit": -28,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-11-04"
+    },
+    {
+     "line": 128,
+     "hands": 210,
+     "profit": -266.89,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-11-05"
+    },
+    {
+     "line": 129,
+     "hands": 174,
+     "profit": 113.36,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-11-06"
+    },
+    {
+     "line": 130,
+     "hands": 478,
+     "profit": 33.71,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-11-07"
+    },
+    {
+     "line": 131,
+     "hands": 462,
+     "profit": -110.2,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-11-08"
+    },
+    {
+     "line": 132,
+     "hands": 879,
+     "profit": 120.67,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-11-09"
+    },
+    {
+     "line": 133,
+     "hands": 281,
+     "profit": -339.47,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-11-10"
+    },
+    {
+     "line": 134,
+     "hands": 471,
+     "profit": 61.91,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-11-11"
+    },
+    {
+     "line": 135,
+     "hands": 227,
+     "profit": -177.96,
+     "stake": "NL100",
+     "game": "PLO",
+     "date": "2025-11-12"
+    },
+    {
+     "line": 136,
+     "hands": 368,
+     "profit": 68.74,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-11-13"
+    },
+    {
+     "line": 137,
+     "hands": 577,
+     "profit": 14.41,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-11-14"
+    },
+    {
+     "line": 138,
+     "hands": 347,
+     "profit": 217.42,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-11-15"
+    },
+    {
+     "line": 139,
+     "hands": 518,
+     "profit": 23.85,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-11-16"
+    },
+    {
+     "line": 140,
+     "hands": 115,
+     "profit": -110.24,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-11-17"
+    },
+    {
+     "line": 141,
+     "hands": 402,
+     "profit": -10.6,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-11-18"
+    },
+    {
+     "line": 142,
+     "hands": 315,
+     "profit": 281.58,
+     "stake": "NL100",
+     "game": "PLO",
+     "date": "2025-11-19"
+    },
+    {
+     "line": 143,
+     "hands": 880,
+     "profit": -155.15,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-11-20"
+    },
+    {
+     "line": 144,
+     "hands": 82,
+     "profit": -53.87,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-11-21"
+    },
+    {
+     "line": 145,
+     "hands": 336,
+     "profit": -145.07,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-11-22"
+    },
+    {
+     "line": 146,
+     "hands": 684,
+     "profit": 303.38,
+     "stake": "NL25",
+     "game": "PLO",
+     "date": "2025-11-24"
+    },
+    {
+     "line": 147,
+     "hands": 867,
+     "profit": 72.3,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2025-11-25"
+    },
+    {
+     "line": 148,
+     "hands": 576,
+     "profit": -279.04,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-11-26"
+    },
+    {
+     "line": 149,
+     "hands": 857,
+     "profit": -137.76,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-11-27"
+    },
+    {
+     "line": 150,
+     "hands": 562,
+     "profit": -124.2,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-11-28"
+    },
+    {
+     "line": 151,
+     "hands": 460,
+     "profit": -72.05,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-11-29"
+    },
+    {
+     "line": 152,
+     "hands": 71,
+     "profit": -26.39,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-11-30"
+    },
+    {
+     "line": 153,
+     "hands": 496,
+     "profit": 239.47,
+     "stake": "NL100",
+     "game": "PLO",
+     "date": "2025-12-01"
+    },
+    {
+     "line": 154,
+     "hands": 50,
+     "profit": 58.68,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-12-02"
+    },
+    {
+     "line": 155,
+     "hands": 152,
+     "profit": 45.6,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-12-03"
+    },
+    {
+     "line": 156,
+     "hands": 615,
+     "profit": -235.25,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-12-04"
+    },
+    {
+     "line": 157,
+     "hands": 813,
+     "profit": -302.54,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-12-05"
+    },
+    {
+     "line": 158,
+     "hands": 169,
+     "profit": 86.36,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-12-06"
+    },
+    {
+     "line": 159,
+     "hands": 517,
+     "profit": -335.44,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2025-12-07"
+    },
+    {
+     "line": 160,
+     "hands": 582,
+     "profit": 214.95,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-12-08"
+    },
+    {
+     "line": 161,
+     "hands": 531,
+     "profit": 296.37,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-12-09"
+    },
+    {
+     "line": 162,
+     "hands": 495,
+     "profit": -152.72,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-12-10"
+    },
+    {
+     "line": 163,
+     "hands": 709,
+     "profit": -90.71,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-12-11"
+    },
+    {
+     "line": 164,
+     "hands": 34,
+     "profit": -13.98,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-12-12"
+    },
+    {
+     "line": 165,
+     "hands": 1011,
+     "profit": 401.98,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-12-13"
+    },
+    {
+     "line": 166,
+     "hands": 795,
+     "profit": 303.05,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-12-14"
+    },
+    {
+     "line": 167,
+     "hands": 651,
+     "profit": 176.59,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-12-15"
+    },
+    {
+     "line": 168,
+     "hands": 241,
+     "profit": 214.58,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-12-16"
+    },
+    {
+     "line": 169,
+     "hands": 3610,
+     "profit": 837.54,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-12-17"
+    },
+    {
+     "line": 170,
+     "hands": 1127,
+     "profit": -358.49,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-12-18"
+    },
+    {
+     "line": 171,
+     "hands": 489,
+     "profit": 22.41,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-12-19"
+    },
+    {
+     "line": 172,
+     "hands": 1178,
+     "profit": -437.88,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2025-12-20"
+    },
+    {
+     "line": 173,
+     "hands": 186,
+     "profit": -5.49,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-12-21"
+    },
+    {
+     "line": 174,
+     "hands": 343,
+     "profit": -128.84,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2025-12-22"
+    },
+    {
+     "line": 175,
+     "hands": 300,
+     "profit": -336.9,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-12-23"
+    },
+    {
+     "line": 176,
+     "hands": 966,
+     "profit": -565.05,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-12-24"
+    },
+    {
+     "line": 177,
+     "hands": 120,
+     "profit": -2.39,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-12-25"
+    },
+    {
+     "line": 178,
+     "hands": 213,
+     "profit": 124.48,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2025-12-26"
+    },
+    {
+     "line": 179,
+     "hands": 825,
+     "profit": -11.19,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-12-27"
+    },
+    {
+     "line": 180,
+     "hands": 379,
+     "profit": -308.16,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2025-12-28"
+    },
+    {
+     "line": 181,
+     "hands": 344,
+     "profit": 316.63,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-12-29"
+    },
+    {
+     "line": 182,
+     "hands": 112,
+     "profit": -103.06,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-12-30"
+    },
+    {
+     "line": 183,
+     "hands": 382,
+     "profit": -1.13,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2025-12-31"
+    },
+    {
+     "line": 184,
+     "hands": 687,
+     "profit": 230.27,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-01-01"
+    },
+    {
+     "line": 185,
+     "hands": 149,
+     "profit": 146.89,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-01-02"
+    },
+    {
+     "line": 186,
+     "hands": 191,
+     "profit": -139.06,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2026-01-03"
+    },
+    {
+     "line": 187,
+     "hands": 248,
+     "profit": -82.63,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-01-04"
+    },
+    {
+     "line": 188,
+     "hands": 78,
+     "profit": -88.94,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-01-05"
+    },
+    {
+     "line": 189,
+     "hands": 240,
+     "profit": -96.06,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-01-06"
+    },
+    {
+     "line": 190,
+     "hands": 1396,
+     "profit": 70.93,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-01-07"
+    },
+    {
+     "line": 191,
+     "hands": 500,
+     "profit": -308.73,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2026-01-08"
+    },
+    {
+     "line": 192,
+     "hands": 112,
+     "profit": -28.35,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-01-09"
+    },
+    {
+     "line": 193,
+     "hands": 530,
+     "profit": -174.32,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-01-10"
+    },
+    {
+     "line": 194,
+     "hands": 417,
+     "profit": 117.84,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-01-11"
+    },
+    {
+     "line": 195,
+     "hands": 1698,
+     "profit": -470.84,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2026-01-12"
+    },
+    {
+     "line": 196,
+     "hands": 96,
+     "profit": 16.23,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-01-13"
+    },
+    {
+     "line": 197,
+     "hands": 354,
+     "profit": -64.46,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2026-01-14"
+    },
+    {
+     "line": 198,
+     "hands": 467,
+     "profit": 66.93,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2026-01-15"
+    },
+    {
+     "line": 199,
+     "hands": 2245,
+     "profit": 304.14,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2026-01-16"
+    },
+    {
+     "line": 200,
+     "hands": 587,
+     "profit": 153.16,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-01-17"
+    },
+    {
+     "line": 201,
+     "hands": 1219,
+     "profit": -627.87,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-01-18"
+    },
+    {
+     "line": 202,
+     "hands": 196,
+     "profit": 35.07,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-01-19"
+    },
+    {
+     "line": 203,
+     "hands": 363,
+     "profit": 151.76,
+     "stake": "NL25",
+     "game": "PLO",
+     "date": "2026-01-20"
+    },
+    {
+     "line": 204,
+     "hands": 134,
+     "profit": 107.91,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-01-21"
+    },
+    {
+     "line": 205,
+     "hands": 482,
+     "profit": 283.23,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-01-22"
+    },
+    {
+     "line": 206,
+     "hands": 177,
+     "profit": 175.02,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-01-23"
+    },
+    {
+     "line": 207,
+     "hands": 517,
+     "profit": -23.54,
+     "stake": "NL100",
+     "game": "PLO",
+     "date": "2026-01-24"
+    },
+    {
+     "line": 208,
+     "hands": 416,
+     "profit": -47.51,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2026-01-25"
+    },
+    {
+     "line": 209,
+     "hands": 229,
+     "profit": -220.79,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-01-26"
+    },
+    {
+     "line": 210,
+     "hands": 197,
+     "profit": -64.32,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2026-01-27"
+    },
+    {
+     "line": 211,
+     "hands": 153,
+     "profit": 12.62,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-01-28"
+    },
+    {
+     "line": 212,
+     "hands": 306,
+     "profit": 32.47,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-01-29"
+    },
+    {
+     "line": 213,
+     "hands": 96,
+     "profit": 86.54,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2026-01-30"
+    },
+    {
+     "line": 214,
+     "hands": 1014,
+     "profit": -4.6,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-01-31"
+    },
+    {
+     "line": 215,
+     "hands": 205,
+     "profit": -105.03,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-02-01"
+    },
+    {
+     "line": 216,
+     "hands": 140,
+     "profit": 149.34,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-02-02"
+    },
+    {
+     "line": 217,
+     "hands": 258,
+     "profit": 65.69,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-02-03"
+    },
+    {
+     "line": 218,
+     "hands": 871,
+     "profit": 82.57,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-02-05"
+    },
+    {
+     "line": 219,
+     "hands": 1191,
+     "profit": 196.93,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-02-06"
+    },
+    {
+     "line": 220,
+     "hands": 531,
+     "profit": 254.23,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-02-07"
+    },
+    {
+     "line": 221,
+     "hands": 2065,
+     "profit": -426.7,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-02-08"
+    },
+    {
+     "line": 222,
+     "hands": 1815,
+     "profit": 154.46,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-02-09"
+    },
+    {
+     "line": 223,
+     "hands": 173,
+     "profit": 221.47,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2026-02-10"
+    },
+    {
+     "line": 224,
+     "hands": 231,
+     "profit": -244.79,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-02-11"
+    },
+    {
+     "line": 225,
+     "hands": 798,
+     "profit": -28.52,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2026-02-12"
+    },
+    {
+     "line": 226,
+     "hands": 1008,
+     "profit": 618.88,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-02-13"
+    },
+    {
+     "line": 227,
+     "hands": 98,
+     "profit": -99.48,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-02-14"
+    },
+    {
+     "line": 228,
+     "hands": 1161,
+     "profit": 307.37,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-02-15"
+    },
+    {
+     "line": 229,
+     "hands": 414,
+     "profit": 222.8,
+     "stake": "NL25",
+     "game": "PLO",
+     "date": "2026-02-16"
+    },
+    {
+     "line": 230,
+     "hands": 584,
+     "profit": 72.89,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-02-17"
+    },
+    {
+     "line": 231,
+     "hands": 152,
+     "profit": -14.89,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-02-18"
+    },
+    {
+     "line": 232,
+     "hands": 635,
+     "profit": -116.84,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-02-19"
+    },
+    {
+     "line": 233,
+     "hands": 257,
+     "profit": 142.76,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-02-20"
+    },
+    {
+     "line": 234,
+     "hands": 1360,
+     "profit": 96.02,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-02-21"
+    },
+    {
+     "line": 235,
+     "hands": 329,
+     "profit": -109.37,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-02-22"
+    },
+    {
+     "line": 236,
+     "hands": 616,
+     "profit": 53.2,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-02-23"
+    },
+    {
+     "line": 237,
+     "hands": 132,
+     "profit": 72.45,
+     "stake": "NL100",
+     "game": "PLO",
+     "date": "2026-02-24"
+    },
+    {
+     "line": 238,
+     "hands": 195,
+     "profit": -301.94,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-02-25"
+    },
+    {
+     "line": 239,
+     "hands": 240,
+     "profit": -120.43,
+     "stake": "NL100",
+     "game": "PLO",
+     "date": "2026-02-26"
+    },
+    {
+     "line": 240,
+     "hands": 91,
+     "profit": -46.74,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2026-02-27"
+    },
+    {
+     "line": 241,
+     "hands": 759,
+     "profit": -76.27,
+     "stake": "NL25",
+     "game": "PLO",
+     "date": "2026-02-28"
+    },
+    {
+     "line": 242,
+     "hands": 307,
+     "profit": -49.97,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-03-01"
+    },
+    {
+     "line": 243,
+     "hands": 171,
+     "profit": 155.02,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2026-03-02"
+    },
+    {
+     "line": 244,
+     "hands": 272,
+     "profit": -166.48,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2026-03-03"
+    },
+    {
+     "line": 245,
+     "hands": 129,
+     "profit": -302.77,
+     "stake": "NL25",
+     "game": "PLO",
+     "date": "2026-03-04"
+    },
+    {
+     "line": 246,
+     "hands": 155,
+     "profit": 333.93,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2026-03-05"
+    },
+    {
+     "line": 247,
+     "hands": 303,
+     "profit": -181.67,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2026-03-06"
+    },
+    {
+     "line": 248,
+     "hands": 376,
+     "profit": 78.88,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-03-07"
+    },
+    {
+     "line": 249,
+     "hands": 408,
+     "profit": -272.55,
+     "stake": "NL25",
+     "game": "PLO",
+     "date": "2026-03-08"
+    },
+    {
+     "line": 250,
+     "hands": 601,
+     "profit": -115.43,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-03-09"
+    },
+    {
+     "line": 251,
+     "hands": 303,
+     "profit": -31.27,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-03-10"
+    },
+    {
+     "line": 252,
+     "hands": 202,
+     "profit": 34.66,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-03-11"
+    },
+    {
+     "line": 253,
+     "hands": 60,
+     "profit": -52.19,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-03-12"
+    },
+    {
+     "line": 254,
+     "hands": 2569,
+     "profit": -223.88,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2026-03-13"
+    },
+    {
+     "line": 255,
+     "hands": 164,
+     "profit": -176.94,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-03-14"
+    },
+    {
+     "line": 256,
+     "hands": 215,
+     "profit": 132.29,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-03-15"
+    },
+    {
+     "line": 257,
+     "hands": 680,
+     "profit": -188.83,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-03-16"
+    },
+    {
+     "line": 258,
+     "hands": 363,
+     "profit": -115.49,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-03-17"
+    },
+    {
+     "line": 259,
+     "hands": 215,
+     "profit": -131.93,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-03-18"
+    },
+    {
+     "line": 260,
+     "hands": 724,
+     "profit": 135.86,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-03-19"
+    },
+    {
+     "line": 261,
+     "hands": 724,
+     "profit": 286.68,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2026-03-20"
+    },
+    {
+     "line": 262,
+     "hands": 324,
+     "profit": -171.84,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2026-03-21"
+    },
+    {
+     "line": 263,
+     "hands": 577,
+     "profit": 36.61,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-03-22"
+    },
+    {
+     "line": 264,
+     "hands": 154,
+     "profit": 6.43,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-03-23"
+    },
+    {
+     "line": 265,
+     "hands": 138,
+     "profit": -10.13,
+     "stake": "NL25",
+     "game": "PLO",
+     "date": "2026-03-24"
+    },
+    {
+     "line": 266,
+     "hands": 290,
+     "profit": -5.37,
+     "stake": "NL25",
+     "game": "PLO",
+     "date": "2026-03-25"
+    },
+    {
+     "line": 267,
+     "hands": 303,
+     "profit": -312.86,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-03-26"
+    },
+    {
+     "line": 268,
+     "hands": 1231,
+     "profit": 259.81,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-03-27"
+    },
+    {
+     "line": 269,
+     "hands": 291,
+     "profit": 304.74,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2026-03-28"
+    },
+    {
+     "line": 270,
+     "hands": 109,
+     "profit": 33.25,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2026-03-29"
+    },
+    {
+     "line": 271,
+     "hands": 170,
+     "profit": 31.47,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-03-30"
+    },
+    {
+     "line": 272,
+     "hands": 4413,
+     "profit": -643.22,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2026-03-31"
+    },
+    {
+     "line": 273,
+     "hands": 189,
+     "profit": 71.43,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-04-01"
+    },
+    {
+     "line": 274,
+     "hands": 102,
+     "profit": -123.24,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2026-04-02"
+    },
+    {
+     "line": 275,
+     "hands": 327,
+     "profit": 74.39,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-04-03"
+    },
+    {
+     "line": 276,
+     "hands": 1408,
+     "profit": 367.46,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-04-04"
+    },
+    {
+     "line": 277,
+     "hands": 637,
+     "profit": -343.67,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-04-05"
+    },
+    {
+     "line": 278,
+     "hands": 584,
+     "profit": 21.11,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-04-06"
+    },
+    {
+     "line": 279,
+     "hands": 223,
+     "profit": 217.43,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2026-04-07"
+    },
+    {
+     "line": 280,
+     "hands": 1343,
+     "profit": -312.55,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2026-04-08"
+    },
+    {
+     "line": 281,
+     "hands": 163,
+     "profit": 197.66,
+     "stake": "NL25",
+     "game": "PLO",
+     "date": "2026-04-09"
+    },
+    {
+     "line": 282,
+     "hands": 124,
+     "profit": -132.21,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-04-10"
+    },
+    {
+     "line": 283,
+     "hands": 173,
+     "profit": -51.17,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-04-11"
+    },
+    {
+     "line": 284,
+     "hands": 1288,
+     "profit": -506.25,
+     "stake": "NL100",
+     "game": "PLO",
+     "date": "2026-04-12"
+    },
+    {
+     "line": 285,
+     "hands": 317,
+     "profit": 201.19,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-04-13"
+    },
+    {
+     "line": 286,
+     "hands": 216,
+     "profit": 31.08,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2026-04-14"
+    },
+    {
+     "line": 287,
+     "hands": 1319,
+     "profit": -777.5,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2026-04-15"
+    },
+    {
+     "line": 288,
+     "hands": 239,
+     "profit": 24.31,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2026-04-16"
+    },
+    {
+     "line": 289,
+     "hands": 88,
+     "profit": -55.87,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-04-17"
+    },
+    {
+     "line": 290,
+     "hands": 1206,
+     "profit": -242.71,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-04-19"
+    },
+    {
+     "line": 291,
+     "hands": 333,
+     "profit": -162.24,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2026-04-20"
+    },
+    {
+     "line": 292,
+     "hands": 948,
+     "profit": -125.25,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-04-21"
+    },
+    {
+     "line": 293,
+     "hands": 136,
+     "profit": 146.86,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-04-22"
+    },
+    {
+     "line": 294,
+     "hands": 357,
+     "profit": -59.35,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-04-23"
+    },
+    {
+     "line": 295,
+     "hands": 467,
+     "profit": -252.44,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2026-04-24"
+    },
+    {
+     "line": 296,
+     "hands": 129,
+     "profit": 80.82,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-04-25"
+    },
+    {
+     "line": 297,
+     "hands": 451,
+     "profit": 72.96,
+     "stake": "NL25",
+     "game": "PLO",
+     "date": "2026-04-26"
+    },
+    {
+     "line": 298,
+     "hands": 173,
+     "profit": -203.54,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-04-27"
+    },
+    {
+     "line": 299,
+     "hands": 1140,
+     "profit": 135.1,
+     "stake": "NL100",
+     "game": "PLO",
+     "date": "2026-04-28"
+    },
+    {
+     "line": 300,
+     "hands": 600,
+     "profit": -151.94,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-04-29"
+    },
+    {
+     "line": 301,
+     "hands": 687,
+     "profit": 84.48,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-04-30"
+    },
+    {
+     "line": 302,
+     "hands": 515,
+     "profit": 41.57,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-05-01"
+    },
+    {
+     "line": 303,
+     "hands": 1217,
+     "profit": 272.55,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-05-02"
+    },
+    {
+     "line": 304,
+     "hands": 1524,
+     "profit": 619.98,
+     "stake": "NL25",
+     "game": "PLO",
+     "date": "2026-05-03"
+    },
+    {
+     "line": 305,
+     "hands": 479,
+     "profit": -251.08,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2026-05-04"
+    },
+    {
+     "line": 306,
+     "hands": 64,
+     "profit": 149.08,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-05-05"
+    },
+    {
+     "line": 307,
+     "hands": 237,
+     "profit": -42.79,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2026-05-06"
+    },
+    {
+     "line": 308,
+     "hands": 357,
+     "profit": 164.47,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-05-07"
+    },
+    {
+     "line": 309,
+     "hands": 985,
+     "profit": -318.24,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2026-05-08"
+    },
+    {
+     "line": 310,
+     "hands": 132,
+     "profit": -80.32,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-05-09"
+    },
+    {
+     "line": 311,
+     "hands": 4962,
+     "profit": -582.13,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-05-10"
+    },
+    {
+     "line": 312,
+     "hands": 340,
+     "profit": -61.87,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-05-11"
+    },
+    {
+     "line": 313,
+     "hands": 1251,
+     "profit": -8.33,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-05-12"
+    },
+    {
+     "line": 314,
+     "hands": 319,
+     "profit": -130.09,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-05-13"
+    },
+    {
+     "line": 315,
+     "hands": 267,
+     "profit": 29.84,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2026-05-14"
+    },
+    {
+     "line": 316,
+     "hands": 227,
+     "profit": -21.02,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2026-05-15"
+    },
+    {
+     "line": 317,
+     "hands": 180,
+     "profit": -197.53,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-05-16"
+    },
+    {
+     "line": 318,
+     "hands": 856,
+     "profit": 246.19,
+     "stake": "NL25",
+     "game": "PLO",
+     "date": "2026-05-17"
+    },
+    {
+     "line": 319,
+     "hands": 394,
+     "profit": -85.45,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2026-05-18"
+    },
+    {
+     "line": 320,
+     "hands": 412,
+     "profit": 199.7,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-05-19"
+    },
+    {
+     "line": 321,
+     "hands": 481,
+     "profit": 122.7,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2026-05-20"
+    },
+    {
+     "line": 322,
+     "hands": 1458,
+     "profit": -239.25,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-05-21"
+    },
+    {
+     "line": 323,
+     "hands": 737,
+     "profit": -297.47,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-05-22"
+    },
+    {
+     "line": 324,
+     "hands": 822,
+     "profit": -262.94,
+     "stake": "NL25",
+     "game": "PLO",
+     "date": "2026-05-23"
+    },
+    {
+     "line": 325,
+     "hands": 604,
+     "profit": -408.93,
+     "stake": "NL25",
+     "game": "PLO",
+     "date": "2026-05-24"
+    },
+    {
+     "line": 326,
+     "hands": 198,
+     "profit": -203.25,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-05-25"
+    },
+    {
+     "line": 327,
+     "hands": 280,
+     "profit": 52.95,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-05-26"
+    },
+    {
+     "line": 328,
+     "hands": 497,
+     "profit": -15.28,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-05-27"
+    },
+    {
+     "line": 329,
+     "hands": 229,
+     "profit": 488.45,
+     "stake": "NL100",
+     "game": "PLO",
+     "date": "2026-05-28"
+    },
+    {
+     "line": 330,
+     "hands": 936,
+     "profit": 286.82,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2026-05-29"
+    },
+    {
+     "line": 331,
+     "hands": 1651,
+     "profit": -523.49,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-05-30"
+    },
+    {
+     "line": 332,
+     "hands": 1005,
+     "profit": 445.76,
+     "stake": "NL100",
+     "game": "NLHE 6-max",
+     "date": "2026-05-31"
+    },
+    {
+     "line": 333,
+     "hands": 407,
+     "profit": 142.93,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2026-06-01"
+    },
+    {
+     "line": 334,
+     "hands": 326,
+     "profit": 525.12,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2026-06-02"
+    },
+    {
+     "line": 335,
+     "hands": 587,
+     "profit": 344.31,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-06-03"
+    },
+    {
+     "line": 336,
+     "hands": 64,
+     "profit": -14.42,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-06-04"
+    },
+    {
+     "line": 337,
+     "hands": 146,
+     "profit": -24.24,
+     "stake": "NL50",
+     "game": "PLO",
+     "date": "2026-06-05"
+    },
+    {
+     "line": 338,
+     "hands": 213,
+     "profit": -169.74,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-06-06"
+    },
+    {
+     "line": 339,
+     "hands": 756,
+     "profit": 110.54,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-06-07"
+    },
+    {
+     "line": 340,
+     "hands": 276,
+     "profit": 135.88,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-06-08"
+    },
+    {
+     "line": 341,
+     "hands": 261,
+     "profit": 62.01,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-06-09"
+    },
+    {
+     "line": 342,
+     "hands": 325,
+     "profit": -155.38,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-06-10"
+    },
+    {
+     "line": 343,
+     "hands": 914,
+     "profit": 66.89,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-06-11"
+    },
+    {
+     "line": 344,
+     "hands": 639,
+     "profit": 156.91,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-06-12"
+    },
+    {
+     "line": 345,
+     "hands": 937,
+     "profit": -362.21,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-06-13"
+    },
+    {
+     "line": 346,
+     "hands": 919,
+     "profit": 15.58,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-06-14"
+    },
+    {
+     "line": 347,
+     "hands": 195,
+     "profit": 59.99,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-06-15"
+    },
+    {
+     "line": 348,
+     "hands": 1314,
+     "profit": 557.93,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-06-16"
+    },
+    {
+     "line": 349,
+     "hands": 290,
+     "profit": 466.2,
+     "stake": "NL25",
+     "game": "PLO",
+     "date": "2026-06-17"
+    },
+    {
+     "line": 350,
+     "hands": 839,
+     "profit": 378.58,
+     "stake": "NL25",
+     "game": "PLO",
+     "date": "2026-06-18"
+    },
+    {
+     "line": 351,
+     "hands": 519,
+     "profit": -66.24,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-06-19"
+    },
+    {
+     "line": 352,
+     "hands": 272,
+     "profit": 120.43,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-06-20"
+    },
+    {
+     "line": 353,
+     "hands": 279,
+     "profit": 54.94,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-06-21"
+    },
+    {
+     "line": 354,
+     "hands": 578,
+     "profit": -90.04,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-06-22"
+    },
+    {
+     "line": 355,
+     "hands": 275,
+     "profit": -135.42,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-06-23"
+    },
+    {
+     "line": 356,
+     "hands": 4102,
+     "profit": 706.46,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-06-24"
+    },
+    {
+     "line": 357,
+     "hands": 593,
+     "profit": 192.09,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-06-25"
+    },
+    {
+     "line": 358,
+     "hands": 318,
+     "profit": 394.63,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-06-26"
+    },
+    {
+     "line": 359,
+     "hands": 1718,
+     "profit": 503.32,
+     "stake": "NL25",
+     "game": "NLHE 6-max",
+     "date": "2026-06-27"
+    },
+    {
+     "line": 360,
+     "hands": 772,
+     "profit": -487.58,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-06-28"
+    },
+    {
+     "line": 361,
+     "hands": 1006,
+     "profit": 198.44,
+     "stake": "NL50",
+     "game": "NLHE 6-max",
+     "date": "2026-06-29"
+    }
+   ],
+   "problems": [],
+   "selections": [
+    {
+     "id": "all",
+     "filter": {
+      "stakes": null,
+      "games": null,
+      "from": null,
+      "to": null
+     },
+     "summary": {
+      "n": 360,
+      "hands": 217728,
+      "profit": 2032.52,
+      "winRate": 0.933513374485597,
+      "variance": 10355.0248022395,
+      "sd": 101.759642305973,
+      "standardError": 2.18081301371608,
+      "sdInterval": [
+       94.8297986887901,
+       109.790549111722
+      ],
+      "lengths": {
+       "min": 34,
+       "max": 4962,
+       "mean": 604.8,
+       "median": 448.5,
+       "cv": 0.977096310844676
+      },
+      "scaling": {
+       "short": {
+        "n": 180,
+        "maxHands": 446,
+        "sd": 107.594027127554
+       },
+       "long": {
+        "n": 180,
+        "minHands": 451,
+        "sd": 95.8670267727635
+       },
+       "ratio": 1.08005781141427,
+       "z": 1.00515288816046,
+       "p": 0.314823251766676,
+       "flag": false
+      },
+      "stability": {
+       "groups": 10,
+       "q": 11.3225603010738,
+       "p": 0.254245362960778,
+       "standardError": 2.56186110225084,
+       "ordered": "date",
+       "flag": false,
+       "multiplier": 1.17472753791278
+      }
+     }
+    },
+    {
+     "id": "NL25",
+     "filter": {
+      "stakes": [
+       "NL25"
+      ],
+      "games": null,
+      "from": null,
+      "to": null
+     },
+     "summary": {
+      "n": 129,
+      "hands": 77247,
+      "profit": 3589.94,
+      "winRate": 4.64735200072495,
+      "variance": 10481.5126590176,
+      "sd": 102.379258929812,
+      "standardError": 3.68358902722646,
+      "sdInterval": [
+       91.2268505690281,
+       116.662763091852
+      ],
+      "lengths": {
+       "min": 34,
+       "max": 2591,
+       "mean": 598.813953488372,
+       "median": 492,
+       "cv": 0.727575782661651
+      },
+      "scaling": {
+       "short": {
+        "n": 64,
+        "maxHands": 480,
+        "sd": 113.784189093362
+       },
+       "long": {
+        "n": 65,
+        "minHands": 492,
+        "sd": 89.2587068740911
+       },
+       "ratio": 1.27156151000499,
+       "z": 1.86950208090421,
+       "p": 0.0615529896862352,
+       "flag": false
+      },
+      "stability": {
+       "groups": 10,
+       "q": 5.28177242174296,
+       "p": 0.80908625002489,
+       "standardError": 2.93001848402428,
+       "ordered": "date",
+       "flag": false,
+       "multiplier": 1
+      }
+     }
+    },
+    {
+     "id": "NL25+NL50",
+     "filter": {
+      "stakes": [
+       "NL25",
+       "NL50"
+      ],
+      "games": null,
+      "from": null,
+      "to": null
+     },
+     "summary": {
+      "n": 290,
+      "hands": 177815,
+      "profit": 4559.02,
+      "winRate": 2.56391193093946,
+      "variance": 10377.4150990984,
+      "sd": 101.869598502686,
+      "standardError": 2.41579677647675,
+      "sdInterval": [
+       94.1986043874459,
+       110.911248674591
+      ],
+      "lengths": {
+       "min": 34,
+       "max": 4962,
+       "mean": 613.155172413793,
+       "median": 452.5,
+       "cv": 0.950588980688538
+      },
+      "scaling": {
+       "short": {
+        "n": 145,
+        "maxHands": 451,
+        "sd": 106.609970873376
+       },
+       "long": {
+        "n": 145,
+        "minHands": 454,
+        "sd": 97.1413547946308
+       },
+       "ratio": 1.0676551617328,
+       "z": 0.757793186914485,
+       "p": 0.448574782003136,
+       "flag": false
+      },
+      "stability": {
+       "groups": 10,
+       "q": 8.7787033731927,
+       "p": 0.457947661436668,
+       "standardError": 2.48068729768006,
+       "ordered": "date",
+       "flag": false,
+       "multiplier": 1.02686091886336
+      }
+     }
+    },
+    {
+     "id": "PLO",
+     "filter": {
+      "stakes": null,
+      "games": [
+       "PLO"
+      ],
+      "from": null,
+      "to": null
+     },
+     "summary": {
+      "n": 76,
+      "hands": 49555,
+      "profit": 1156.62,
+      "winRate": 2.33401271314701,
+      "variance": 17648.289607329,
+      "sd": 132.846865252173,
+      "standardError": 5.96770807916654,
+      "sdInterval": [
+       114.568954201965,
+       158.118256830909
+      ],
+      "lengths": {
+       "min": 91,
+       "max": 2245,
+       "mean": 652.039473684211,
+       "median": 506.5,
+       "cv": 0.746001871477873
+      },
+      "scaling": {
+       "short": {
+        "n": 38,
+        "maxHands": 496,
+        "sd": 145.142974800302
+       },
+       "long": {
+        "n": 38,
+        "minHands": 517,
+        "sd": 118.509514461881
+       },
+       "ratio": 1.18906597237371,
+       "z": 1.07565529272128,
+       "p": 0.282081466451952,
+       "flag": false
+      },
+      "stability": {
+       "groups": 10,
+       "q": 14.3508423602122,
+       "p": 0.110380976347071,
+       "standardError": 7.04405963053148,
+       "ordered": "date",
+       "flag": false,
+       "multiplier": 1.18036263454684
+      }
+     }
+    },
+    {
+     "id": "2025-10 to 2026-03",
+     "filter": {
+      "stakes": null,
+      "games": null,
+      "from": "2025-10",
+      "to": "2026-03"
+     },
+     "summary": {
+      "n": 180,
+      "hands": 102162,
+      "profit": 157.239999999999,
+      "winRate": 0.153912413617587,
+      "variance": 9748.59699825411,
+      "sd": 98.7349836595627,
+      "standardError": 3.08906015343822,
+      "sdInterval": [
+       89.480486948785,
+       110.141377563953
+      ],
+      "lengths": {
+       "min": 34,
+       "max": 4413,
+       "mean": 567.566666666667,
+       "median": 401.5,
+       "cv": 1.02965855446852
+      },
+      "scaling": {
+       "short": {
+        "n": 90,
+        "maxHands": 401,
+        "sd": 107.136420904447
+       },
+       "long": {
+        "n": 90,
+        "minHands": 402,
+        "sd": 89.5810493520747
+       },
+       "ratio": 1.2044696936423,
+       "z": 1.67814483703405,
+       "p": 0.0933188239852099,
+       "flag": false
+      },
+      "stability": {
+       "groups": 10,
+       "q": 5.53210442388803,
+       "p": 0.785678793592773,
+       "standardError": 2.36462674660864,
+       "ordered": "date",
+       "flag": false,
+       "multiplier": 1
+      }
+     }
+    },
+    {
+     "id": "NL50 NLHE from 2026-01",
+     "filter": {
+      "stakes": [
+       "NL50"
+      ],
+      "games": [
+       "NLHE 6-max"
+      ],
+      "from": "2026-01",
+      "to": null
+     },
+     "summary": {
+      "n": 66,
+      "hands": 39675,
+      "profit": -741.22,
+      "winRate": -1.86822936357908,
+      "variance": 7103.33711882675,
+      "sd": 84.2812975625479,
+      "standardError": 4.2312895509033,
+      "sdInterval": [
+       71.9550218472563,
+       101.743317124256
+      ],
+      "lengths": {
+       "min": 60,
+       "max": 4962,
+       "mean": 601.136363636364,
+       "median": 328,
+       "cv": 1.33497116207381
+      },
+      "scaling": {
+       "short": {
+        "n": 33,
+        "maxHands": 327,
+        "sd": 78.9743833806494
+       },
+       "long": {
+        "n": 33,
+        "minHands": 329,
+        "sd": 90.2968980131088
+       },
+       "ratio": 0.865653767797854,
+       "z": -0.986889735110207,
+       "p": 0.323696711039633,
+       "flag": false
+      },
+      "stability": {
+       "groups": 10,
+       "q": 9.00241954452196,
+       "p": 0.437050873034985,
+       "standardError": 5.43705160046204,
+       "ordered": "date",
+       "flag": false,
+       "multiplier": 1.28496325648556
+      }
+     }
+    }
+   ],
+   "groupings": [
+    {
+     "by": "stake",
+     "groups": [
+      {
+       "key": "NL50",
+       "n": 161,
+       "hands": 100568,
+       "winRate": 0.963606713865245,
+       "sd": 101.596959299382,
+       "standardError": 3.20369234436456
+      },
+      {
+       "key": "NL25",
+       "n": 129,
+       "hands": 77247,
+       "winRate": 4.64735200072495,
+       "sd": 102.379258929812,
+       "standardError": 3.68358902722646
+      },
+      {
+       "key": "NL100",
+       "n": 70,
+       "hands": 39913,
+       "winRate": -6.3300177886904,
+       "sd": 100.187983402067,
+       "standardError": 5.01485579443438
+      }
+     ],
+     "test": {
+      "groups": 3,
+      "q": 3.06256457909336,
+      "p": 0.216258183838427,
+      "standardError": 2.29431830479105
+     }
+    },
+    {
+     "by": "game",
+     "groups": [
+      {
+       "key": "NLHE 6-max",
+       "n": 284,
+       "hands": 168173,
+       "winRate": 0.520832713931487,
+       "sd": 91.9474001749872,
+       "standardError": 2.2421327290645
+      },
+      {
+       "key": "PLO",
+       "n": 76,
+       "hands": 49555,
+       "winRate": 2.33401271314701,
+       "sd": 132.846865252173,
+       "standardError": 5.96770807916654
+      }
+     ],
+     "test": {
+      "groups": 2,
+      "q": 0.121523470830419,
+      "p": 0.727388000654369,
+      "standardError": 0.637508678051204
+     }
+    },
+    {
+     "by": "month",
+     "groups": [
+      {
+       "key": "2025-07",
+       "n": 31,
+       "hands": 19037,
+       "winRate": 3.36654935126333,
+       "sd": 84.0010132996497,
+       "standardError": 6.08814896205294
+      },
+      {
+       "key": "2025-08",
+       "n": 31,
+       "hands": 18888,
+       "winRate": -5.15883100381194,
+       "sd": 111.319974164798,
+       "standardError": 8.09990844224954
+      },
+      {
+       "key": "2025-09",
+       "n": 29,
+       "hands": 18818,
+       "winRate": 4.80353916462961,
+       "sd": 104.632985750474,
+       "standardError": 7.6274942020573
+      },
+      {
+       "key": "2025-10",
+       "n": 31,
+       "hands": 19326,
+       "winRate": 5.17634275069854,
+       "sd": 102.819677049532,
+       "standardError": 7.39614212202529
+      },
+      {
+       "key": "2025-11",
+       "n": 29,
+       "hands": 15657,
+       "winRate": -0.245704796576612,
+       "sd": 96.2777586563761,
+       "standardError": 7.6943457124281
+      },
+      {
+       "key": "2025-12",
+       "n": 31,
+       "hands": 18435,
+       "winRate": -0.274098182804446,
+       "sd": 106.853305275845,
+       "standardError": 7.86984882119899
+      },
+      {
+       "key": "2026-01",
+       "n": 31,
+       "hands": 15494,
+       "winRate": -2.91086872337679,
+       "sd": 84.6117958222491,
+       "standardError": 6.79749875802425
+      },
+      {
+       "key": "2026-02",
+       "n": 27,
+       "hands": 16309,
+       "winRate": 6.2545833588816,
+       "sd": 96.3591281029464,
+       "standardError": 7.54534662014444
+      },
+      {
+       "key": "2026-03",
+       "n": 31,
+       "hands": 16941,
+       "winRate": -7.81057788796411,
+       "sd": 107.452013400259,
+       "standardError": 8.25553145241597
+      },
+      {
+       "key": "2026-04",
+       "n": 29,
+       "hands": 15367,
+       "winRate": -11.5419405218976,
+       "sd": 96.255616441394,
+       "standardError": 7.76482252883015
+      },
+      {
+       "key": "2026-05",
+       "n": 31,
+       "hands": 23616,
+       "winRate": -2.5804539295393,
+       "sd": 112.841233447887,
+       "standardError": 7.3428499682112
+      },
+      {
+       "key": "2026-06",
+       "n": 29,
+       "hands": 19840,
+       "winRate": 18.5882560483871,
+       "sd": 110.323036263808,
+       "standardError": 7.83240925451222
+      }
+     ],
+     "test": {
+      "groups": 12,
+      "q": 11.9221452787118,
+      "p": 0.369523704819469,
+      "standardError": 2.288588980756
+     }
+    },
+    {
+     "by": "quarter",
+     "groups": [
+      {
+       "key": "2025-Q3",
+       "n": 91,
+       "hands": 56743,
+       "winRate": 1.0052693724336,
+       "sd": 100.052648609827,
+       "standardError": 4.20022391379344
+      },
+      {
+       "key": "2025-Q4",
+       "n": 91,
+       "hands": 53418,
+       "winRate": 1.70612902018046,
+       "sd": 101.262887584774,
+       "standardError": 4.38133534962711
+      },
+      {
+       "key": "2026-Q1",
+       "n": 89,
+       "hands": 48744,
+       "winRate": -1.5471442639094,
+       "sd": 96.4969295586185,
+       "standardError": 4.37071926380344
+      },
+      {
+       "key": "2026-Q2",
+       "n": 89,
+       "hands": 58823,
+       "winRate": 2.21828196453768,
+       "sd": 110.263750282875,
+       "standardError": 4.54631134937733
+      }
+     ],
+     "test": {
+      "groups": 4,
+      "q": 0.41451216963084,
+      "p": 0.937228571534579,
+      "standardError": 0.787557172984448
+     }
+    },
+    {
+     "by": "year",
+     "groups": [
+      {
+       "key": "2025",
+       "n": 182,
+       "hands": 110161,
+       "winRate": 1.34512213941413,
+       "sd": 100.384856011076,
+       "standardError": 3.02450471288107
+      },
+      {
+       "key": "2026",
+       "n": 178,
+       "hands": 107567,
+       "winRate": 0.511978580791508,
+       "sd": 103.419433789784,
+       "standardError": 3.15328066231992
+      }
+     ],
+     "test": {
+      "groups": 2,
+      "q": 0.0364822135632343,
+      "p": 0.84852310422169,
+      "standardError": 0.41651265021763
+     }
+    }
+   ]
+  },
+  {
+   "file": "short-and-long.csv",
+   "delimiter": ",",
+   "columns": {
+    "hands": "hands",
+    "profit": "profit_bb"
+   },
+   "rows": 300,
+   "sessions": [
+    {
+     "line": 2,
+     "hands": 36,
+     "profit": 237,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 3,
+     "hands": 3874,
+     "profit": 254.83,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 4,
+     "hands": 2852,
+     "profit": -400.76,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 5,
+     "hands": 2104,
+     "profit": -256.67,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 6,
+     "hands": 142,
+     "profit": 126.17,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 7,
+     "hands": 2752,
+     "profit": 928.05,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 8,
+     "hands": 3230,
+     "profit": -400.76,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 9,
+     "hands": 113,
+     "profit": 33.5,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 10,
+     "hands": 3248,
+     "profit": -866.72,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 11,
+     "hands": 2967,
+     "profit": 525.17,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 12,
+     "hands": 58,
+     "profit": 4.14,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 13,
+     "hands": 2191,
+     "profit": 346.33,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 14,
+     "hands": 116,
+     "profit": -43.93,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 15,
+     "hands": 2098,
+     "profit": 882.98,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 16,
+     "hands": 142,
+     "profit": -219.64,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 17,
+     "hands": 76,
+     "profit": 71.82,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 18,
+     "hands": 129,
+     "profit": -147.25,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 19,
+     "hands": 56,
+     "profit": -93.11,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 20,
+     "hands": 135,
+     "profit": -167.15,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 21,
+     "hands": 127,
+     "profit": 137.33,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 22,
+     "hands": 127,
+     "profit": 5.17,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 23,
+     "hands": 42,
+     "profit": -189.06,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 24,
+     "hands": 2282,
+     "profit": 732.77,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 25,
+     "hands": 2054,
+     "profit": 162.35,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 26,
+     "hands": 139,
+     "profit": 73.39,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 27,
+     "hands": 105,
+     "profit": 108.75,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 28,
+     "hands": 74,
+     "profit": -130.05,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 29,
+     "hands": 2128,
+     "profit": 711.26,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 30,
+     "hands": 110,
+     "profit": -141.4,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 31,
+     "hands": 1951,
+     "profit": 518.26,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 32,
+     "hands": 77,
+     "profit": 1.67,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 33,
+     "hands": 2356,
+     "profit": 343.98,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 34,
+     "hands": 42,
+     "profit": -44.62,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 35,
+     "hands": 3438,
+     "profit": 140.63,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 36,
+     "hands": 144,
+     "profit": 185.16,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 37,
+     "hands": 3212,
+     "profit": 331.91,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 38,
+     "hands": 84,
+     "profit": 50.08,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 39,
+     "hands": 3661,
+     "profit": 141.49,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 40,
+     "hands": 3916,
+     "profit": 201.25,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 41,
+     "hands": 2572,
+     "profit": -36.98,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 42,
+     "hands": 103,
+     "profit": -8.37,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 43,
+     "hands": 3342,
+     "profit": -562.01,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 44,
+     "hands": 1662,
+     "profit": -98.13,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 45,
+     "hands": 54,
+     "profit": -89.86,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 46,
+     "hands": 136,
+     "profit": -221.02,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 47,
+     "hands": 2526,
+     "profit": -976.49,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 48,
+     "hands": 3439,
+     "profit": 428.04,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 49,
+     "hands": 43,
+     "profit": -2.32,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 50,
+     "hands": 2538,
+     "profit": -475.72,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 51,
+     "hands": 3721,
+     "profit": -240.11,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 52,
+     "hands": 51,
+     "profit": -81.48,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 53,
+     "hands": 49,
+     "profit": -58.62,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 54,
+     "hands": 69,
+     "profit": 83.05,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 55,
+     "hands": 63,
+     "profit": 200.91,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 56,
+     "hands": 95,
+     "profit": -13.18,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 57,
+     "hands": 3586,
+     "profit": -250.3,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 58,
+     "hands": 46,
+     "profit": 49.01,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 59,
+     "hands": 49,
+     "profit": -102.46,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 60,
+     "hands": 3344,
+     "profit": 573.9,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 61,
+     "hands": 2536,
+     "profit": -283.52,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 62,
+     "hands": 136,
+     "profit": -311.26,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 63,
+     "hands": 2388,
+     "profit": 177.14,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 64,
+     "hands": 76,
+     "profit": 173.22,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 65,
+     "hands": 80,
+     "profit": 43.14,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 66,
+     "hands": 113,
+     "profit": 104.96,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 67,
+     "hands": 47,
+     "profit": 47.98,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 68,
+     "hands": 2538,
+     "profit": 65.71,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 69,
+     "hands": 1813,
+     "profit": 162.55,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 70,
+     "hands": 100,
+     "profit": -61.22,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 71,
+     "hands": 3099,
+     "profit": 128.87,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 72,
+     "hands": 87,
+     "profit": -51.89,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 73,
+     "hands": 89,
+     "profit": 90.14,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 74,
+     "hands": 3259,
+     "profit": 1138.02,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 75,
+     "hands": 114,
+     "profit": 250.44,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 76,
+     "hands": 98,
+     "profit": 179.97,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 77,
+     "hands": 140,
+     "profit": 141.05,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 78,
+     "hands": 123,
+     "profit": -267.02,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 79,
+     "hands": 3698,
+     "profit": 863.04,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 80,
+     "hands": 3568,
+     "profit": 436.2,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 81,
+     "hands": 93,
+     "profit": -134.96,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 82,
+     "hands": 55,
+     "profit": 76.04,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 83,
+     "hands": 108,
+     "profit": 96.89,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 84,
+     "hands": 2598,
+     "profit": 376.46,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 85,
+     "hands": 32,
+     "profit": -51.97,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 86,
+     "hands": 139,
+     "profit": 3.94,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 87,
+     "hands": 2338,
+     "profit": 539.22,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 88,
+     "hands": 127,
+     "profit": 186.12,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 89,
+     "hands": 99,
+     "profit": -136.76,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 90,
+     "hands": 2474,
+     "profit": -98.9,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 91,
+     "hands": 36,
+     "profit": -165.9,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 92,
+     "hands": 93,
+     "profit": -1.68,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 93,
+     "hands": 134,
+     "profit": 60.85,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 94,
+     "hands": 2926,
+     "profit": -588.85,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 95,
+     "hands": 2972,
+     "profit": -107.07,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 96,
+     "hands": 132,
+     "profit": 55.48,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 97,
+     "hands": 93,
+     "profit": 85.9,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 98,
+     "hands": 55,
+     "profit": 206.45,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 99,
+     "hands": 43,
+     "profit": -223.47,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 100,
+     "hands": 113,
+     "profit": 243.52,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 101,
+     "hands": 76,
+     "profit": 55.34,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 102,
+     "hands": 2022,
+     "profit": 1163.93,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 103,
+     "hands": 1981,
+     "profit": -614.13,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 104,
+     "hands": 83,
+     "profit": -39.82,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 105,
+     "hands": 45,
+     "profit": -338.53,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 106,
+     "hands": 3982,
+     "profit": 774.86,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 107,
+     "hands": 1948,
+     "profit": 115.29,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 108,
+     "hands": 69,
+     "profit": 211.32,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 109,
+     "hands": 142,
+     "profit": -50.02,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 110,
+     "hands": 3146,
+     "profit": 665.27,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 111,
+     "hands": 78,
+     "profit": 139.97,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 112,
+     "hands": 145,
+     "profit": 304.22,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 113,
+     "hands": 101,
+     "profit": -85.49,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 114,
+     "hands": 78,
+     "profit": -37.56,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 115,
+     "hands": 38,
+     "profit": 37.26,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 116,
+     "hands": 84,
+     "profit": 109.09,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 117,
+     "hands": 2327,
+     "profit": -137.66,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 118,
+     "hands": 82,
+     "profit": -80.56,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 119,
+     "hands": 109,
+     "profit": -37.28,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 120,
+     "hands": 2766,
+     "profit": -299.77,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 121,
+     "hands": 3621,
+     "profit": -549.63,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 122,
+     "hands": 105,
+     "profit": -188.12,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 123,
+     "hands": 134,
+     "profit": 16.79,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 124,
+     "hands": 114,
+     "profit": -164.22,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 125,
+     "hands": 106,
+     "profit": -118.03,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 126,
+     "hands": 60,
+     "profit": 93.51,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 127,
+     "hands": 114,
+     "profit": -95.62,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 128,
+     "hands": 1849,
+     "profit": 622.41,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 129,
+     "hands": 55,
+     "profit": -170.76,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 130,
+     "hands": 46,
+     "profit": 14.16,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 131,
+     "hands": 2177,
+     "profit": 685.33,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 132,
+     "hands": 88,
+     "profit": 153.78,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 133,
+     "hands": 93,
+     "profit": -2.13,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 134,
+     "hands": 113,
+     "profit": -43.46,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 135,
+     "hands": 3647,
+     "profit": -575.36,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 136,
+     "hands": 2622,
+     "profit": -28.08,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 137,
+     "hands": 2102,
+     "profit": 435.77,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 138,
+     "hands": 92,
+     "profit": 19.92,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 139,
+     "hands": 3876,
+     "profit": -1206.66,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 140,
+     "hands": 3541,
+     "profit": 1644.86,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 141,
+     "hands": 137,
+     "profit": 70.81,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 142,
+     "hands": 112,
+     "profit": 125.32,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 143,
+     "hands": 64,
+     "profit": 10.99,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 144,
+     "hands": 91,
+     "profit": 6.14,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 145,
+     "hands": 3513,
+     "profit": -294.25,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 146,
+     "hands": 70,
+     "profit": -130.62,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 147,
+     "hands": 42,
+     "profit": -161.85,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 148,
+     "hands": 82,
+     "profit": 90.68,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 149,
+     "hands": 32,
+     "profit": -278.45,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 150,
+     "hands": 3212,
+     "profit": -165.72,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 151,
+     "hands": 33,
+     "profit": 187.69,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 152,
+     "hands": 54,
+     "profit": 18.89,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 153,
+     "hands": 140,
+     "profit": -385.53,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 154,
+     "hands": 1576,
+     "profit": 86.01,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 155,
+     "hands": 103,
+     "profit": -29.41,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 156,
+     "hands": 51,
+     "profit": 67.14,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 157,
+     "hands": 131,
+     "profit": -162,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 158,
+     "hands": 2242,
+     "profit": -241.2,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 159,
+     "hands": 37,
+     "profit": 62.66,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 160,
+     "hands": 2321,
+     "profit": 532.63,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 161,
+     "hands": 1875,
+     "profit": 807.04,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 162,
+     "hands": 68,
+     "profit": 31.17,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 163,
+     "hands": 71,
+     "profit": 115.27,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 164,
+     "hands": 81,
+     "profit": 57.93,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 165,
+     "hands": 2941,
+     "profit": -548.06,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 166,
+     "hands": 2810,
+     "profit": 296.04,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 167,
+     "hands": 82,
+     "profit": -189.18,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 168,
+     "hands": 3771,
+     "profit": 1094.58,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 169,
+     "hands": 46,
+     "profit": -97.88,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 170,
+     "hands": 129,
+     "profit": -155.24,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 171,
+     "hands": 61,
+     "profit": 157.74,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 172,
+     "hands": 1518,
+     "profit": 38.97,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 173,
+     "hands": 148,
+     "profit": 10.73,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 174,
+     "hands": 1643,
+     "profit": 493.78,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 175,
+     "hands": 71,
+     "profit": -393.19,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 176,
+     "hands": 1924,
+     "profit": 197.9,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 177,
+     "hands": 84,
+     "profit": -287.64,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 178,
+     "hands": 3508,
+     "profit": 610.83,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 179,
+     "hands": 2033,
+     "profit": 426.33,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 180,
+     "hands": 55,
+     "profit": -186.33,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 181,
+     "hands": 108,
+     "profit": 191.62,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 182,
+     "hands": 68,
+     "profit": 145.56,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 183,
+     "hands": 55,
+     "profit": -104.84,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 184,
+     "hands": 136,
+     "profit": -109.42,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 185,
+     "hands": 3413,
+     "profit": -17.15,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 186,
+     "hands": 129,
+     "profit": -18.49,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 187,
+     "hands": 3536,
+     "profit": 224.79,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 188,
+     "hands": 33,
+     "profit": 371.45,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 189,
+     "hands": 2320,
+     "profit": -715.37,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 190,
+     "hands": 58,
+     "profit": 156.29,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 191,
+     "hands": 136,
+     "profit": 575.44,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 192,
+     "hands": 64,
+     "profit": -24.57,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 193,
+     "hands": 83,
+     "profit": 42.74,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 194,
+     "hands": 32,
+     "profit": -137.41,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 195,
+     "hands": 3772,
+     "profit": -44.4,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 196,
+     "hands": 2649,
+     "profit": -251.84,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 197,
+     "hands": 131,
+     "profit": 113.6,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 198,
+     "hands": 3337,
+     "profit": 424.96,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 199,
+     "hands": 110,
+     "profit": 31.98,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 200,
+     "hands": 91,
+     "profit": 290.67,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 201,
+     "hands": 1783,
+     "profit": 1015.87,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 202,
+     "hands": 3275,
+     "profit": -693.84,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 203,
+     "hands": 106,
+     "profit": 20.93,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 204,
+     "hands": 119,
+     "profit": -24.43,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 205,
+     "hands": 145,
+     "profit": 303.52,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 206,
+     "hands": 136,
+     "profit": 100.86,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 207,
+     "hands": 115,
+     "profit": 295.33,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 208,
+     "hands": 1836,
+     "profit": 169.29,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 209,
+     "hands": 3650,
+     "profit": 866.33,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 210,
+     "hands": 67,
+     "profit": -185.25,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 211,
+     "hands": 73,
+     "profit": -137.57,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 212,
+     "hands": 3093,
+     "profit": 189.71,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 213,
+     "hands": 2471,
+     "profit": 635.54,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 214,
+     "hands": 129,
+     "profit": 22.4,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 215,
+     "hands": 95,
+     "profit": -332.46,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 216,
+     "hands": 125,
+     "profit": 236.03,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 217,
+     "hands": 2416,
+     "profit": 742.69,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 218,
+     "hands": 3975,
+     "profit": 865.53,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 219,
+     "hands": 1574,
+     "profit": 300.17,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 220,
+     "hands": 63,
+     "profit": -78.15,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 221,
+     "hands": 3108,
+     "profit": 919.59,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 222,
+     "hands": 1598,
+     "profit": -78.09,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 223,
+     "hands": 2744,
+     "profit": -163.29,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 224,
+     "hands": 2794,
+     "profit": 397.02,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 225,
+     "hands": 1603,
+     "profit": 516.03,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 226,
+     "hands": 90,
+     "profit": 15.48,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 227,
+     "hands": 104,
+     "profit": -131.44,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 228,
+     "hands": 3474,
+     "profit": 1044.33,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 229,
+     "hands": 2821,
+     "profit": 1231.2,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 230,
+     "hands": 54,
+     "profit": 197.57,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 231,
+     "hands": 113,
+     "profit": -23.94,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 232,
+     "hands": 77,
+     "profit": 27.62,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 233,
+     "hands": 75,
+     "profit": 43.85,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 234,
+     "hands": 66,
+     "profit": 15.13,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 235,
+     "hands": 1592,
+     "profit": 64.52,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 236,
+     "hands": 94,
+     "profit": -65.61,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 237,
+     "hands": 111,
+     "profit": -265.86,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 238,
+     "hands": 2825,
+     "profit": 374.82,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 239,
+     "hands": 82,
+     "profit": 314.01,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 240,
+     "hands": 125,
+     "profit": -110.41,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 241,
+     "hands": 2355,
+     "profit": 683.68,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 242,
+     "hands": 34,
+     "profit": -173.3,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 243,
+     "hands": 63,
+     "profit": -99.68,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 244,
+     "hands": 3307,
+     "profit": 684.62,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 245,
+     "hands": 140,
+     "profit": 395.36,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 246,
+     "hands": 133,
+     "profit": -29.56,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 247,
+     "hands": 100,
+     "profit": -226.37,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 248,
+     "hands": 2938,
+     "profit": 111.02,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 249,
+     "hands": 2758,
+     "profit": 156.16,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 250,
+     "hands": 63,
+     "profit": -0.46,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 251,
+     "hands": 3817,
+     "profit": -673.2,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 252,
+     "hands": 146,
+     "profit": -50.77,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 253,
+     "hands": 68,
+     "profit": -11.35,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 254,
+     "hands": 35,
+     "profit": -83.28,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 255,
+     "hands": 1863,
+     "profit": 787.37,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 256,
+     "hands": 111,
+     "profit": -150.16,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 257,
+     "hands": 59,
+     "profit": -126.44,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 258,
+     "hands": 91,
+     "profit": -186.13,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 259,
+     "hands": 74,
+     "profit": -182.26,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 260,
+     "hands": 75,
+     "profit": 24.17,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 261,
+     "hands": 84,
+     "profit": 121,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 262,
+     "hands": 2069,
+     "profit": 367.06,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 263,
+     "hands": 92,
+     "profit": 97.44,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 264,
+     "hands": 30,
+     "profit": -85.28,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 265,
+     "hands": 2994,
+     "profit": 50.43,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 266,
+     "hands": 118,
+     "profit": 19.04,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 267,
+     "hands": 3818,
+     "profit": -261.69,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 268,
+     "hands": 3801,
+     "profit": 447.17,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 269,
+     "hands": 1598,
+     "profit": 58.72,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 270,
+     "hands": 2953,
+     "profit": 270.1,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 271,
+     "hands": 3571,
+     "profit": 524.21,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 272,
+     "hands": 2402,
+     "profit": -617.54,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 273,
+     "hands": 141,
+     "profit": -257.01,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 274,
+     "hands": 122,
+     "profit": -145.2,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 275,
+     "hands": 71,
+     "profit": -44.53,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 276,
+     "hands": 32,
+     "profit": -58.71,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 277,
+     "hands": 68,
+     "profit": -72.59,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 278,
+     "hands": 2548,
+     "profit": 479.37,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 279,
+     "hands": 96,
+     "profit": 47.02,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 280,
+     "hands": 107,
+     "profit": -14.56,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 281,
+     "hands": 79,
+     "profit": -40.36,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 282,
+     "hands": 3406,
+     "profit": 897.83,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 283,
+     "hands": 1991,
+     "profit": 746.26,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 284,
+     "hands": 126,
+     "profit": -97.22,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 285,
+     "hands": 90,
+     "profit": -221.65,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 286,
+     "hands": 134,
+     "profit": -143.76,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 287,
+     "hands": 3800,
+     "profit": -248.49,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 288,
+     "hands": 2521,
+     "profit": 131.17,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 289,
+     "hands": 66,
+     "profit": 138.15,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 290,
+     "hands": 47,
+     "profit": 67.64,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 291,
+     "hands": 83,
+     "profit": -19.93,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 292,
+     "hands": 1695,
+     "profit": 95.75,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 293,
+     "hands": 72,
+     "profit": 64.19,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 294,
+     "hands": 2191,
+     "profit": 98.33,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 295,
+     "hands": 1738,
+     "profit": -508.39,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 296,
+     "hands": 3454,
+     "profit": 298.95,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 297,
+     "hands": 2976,
+     "profit": -538.59,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 298,
+     "hands": 116,
+     "profit": 66.47,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 299,
+     "hands": 46,
+     "profit": -28.77,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 300,
+     "hands": 143,
+     "profit": 174.5,
+     "stake": "",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 301,
+     "hands": 3039,
+     "profit": 34.05,
+     "stake": "",
+     "game": "",
+     "date": null
+    }
+   ],
+   "problems": [],
+   "selections": [
+    {
+     "id": "all",
+     "filter": {
+      "stakes": null,
+      "games": null,
+      "from": null,
+      "to": null
+     },
+     "summary": {
+      "n": 300,
+      "hands": 341272,
+      "profit": 22532.56,
+      "winRate": 6.60252232823086,
+      "variance": 22378.9330241226,
+      "sd": 149.595899088587,
+      "standardError": 2.56076284265661,
+      "sdInterval": [
+       138.506632302458,
+       162.630315119224
+      ],
+      "lengths": {
+       "min": 30,
+       "max": 3982,
+       "mean": 1137.57333333333,
+       "median": 129,
+       "cv": 1.20898860515298
+      },
+      "scaling": {
+       "short": {
+        "n": 150,
+        "maxHands": 129,
+        "sd": 173.803288045199
+       },
+       "long": {
+        "n": 150,
+        "minHands": 129,
+        "sd": 119.964975229999
+       },
+       "ratio": 1.4552958991257,
+       "z": 3.74081411548748,
+       "p": 0.000183425162491702,
+       "flag": true
+      },
+      "stability": {
+       "groups": 10,
+       "q": 5.9342429496898,
+       "p": 0.746481091003005,
+       "standardError": 2.22272716954515,
+       "ordered": "file",
+       "flag": false,
+       "multiplier": 1
+      }
+     }
+    }
+   ],
+   "groupings": []
+  }
+ ]
+}

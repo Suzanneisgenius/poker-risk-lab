@@ -17,7 +17,7 @@ the first.
 | | |
 |---|---|
 | **Case study** | [`case-study/index.html`](case-study/index.html): three questions, one at a time, plus how a misleading result was checked. Static page: open the file directly, or `/case-study/` on the running app. |
-| **Validation** | [`case-study/validation.html`](case-study/validation.html): PokerKit cross-checks (hands, equity, ranges), exact-value checks, interval coverage, engine agreement, the bankroll-from-results page against the Python research code, and benchmark conditions. A failed check is shown as failed and stops the build. |
+| **Validation** | [`case-study/validation.html`](case-study/validation.html): PokerKit cross-checks (hands, equity, ranges), exact-value checks, interval coverage, engine agreement, the bankroll-from-results page and the session import against the Python research code, a simulation of unequal session lengths, and benchmark conditions. A failed check is shown as failed and stops the build. |
 | **Demo** | `npm start`, then <http://localhost:4174>. No public deployment URL yet. |
 | **Reproduce** | `pip install -r requirements-research.txt`, `python -m src.experiments.case_study --case all`, then `npm run build`. Every check in [`checks/`](checks/README.md) has its own command and saved output. |
 | **Limits** | Conditional model estimates, not advice. The alternative models are stress tests, not descriptions of real games. The Preflop ranges are demonstration data. |
@@ -186,7 +186,10 @@ The suite provides five tools behind one dark UI:
 - **Pot Odds & EV** — turns the latest card-derived equity into a call/fold
   decision with EV in big blinds; manual equity remains an advanced option.
 - **Bankroll Risk** — starts from your own results: hands, net win rate and a
-  volatility from your tracker or a labelled assumption. It gives the win
+  volatility from your tracker or a labelled assumption, or a CSV of sessions
+  (`hands`, `profit_bb`, optional stake, game and date) read in the browser,
+  weighted by hands, filtered and compared by stake, game and period, with
+  checks of whether the sessions fit the model. It gives the win
   rate's posterior interval, the average risk of ruin over it and the risk's
   posterior interval, and the bankroll for “risk below X% with Y% posterior
   probability” over the hands you plan to play, next to the average-risk and

@@ -24,6 +24,10 @@ const CASES = [
   { id: "200bb-buy-ins", hands: 300000, winRate: 1, sd: 130, prior: "weak", bank: 25, bbPerBuyIn: 200, horizon: 500000, target: 2, credibility: 90 },
   { id: "sample-size-100-at-95-and-99", hands: 20000, winRate: 6, sd: 100, prior: "none", bank: 40, horizon: 100000, margin: 1, sampleLevel: 95 },
   { id: "sample-size-half-bb-at-99", hands: 20000, winRate: 6, sd: 100, prior: "skeptical", bank: 40, horizon: 100000, margin: 0.5, sampleLevel: 99 },
+  // From imported sessions: an estimated volatility with its interval, and a
+  // standard error widened for a win rate that drifts.
+  { id: "sessions-estimated-volatility", hands: 180412, winRate: 3.86, sd: 90.4, sdSource: "sessions", sdRange: [82.9, 99.6], prior: "weak", bank: 40, horizon: 200000 },
+  { id: "sessions-widened-for-drift", hands: 180412, winRate: 3.86, sd: 90.4, sdSource: "sessions", sdRange: [82.9, 99.6], seMultiplier: 1.88, prior: "none", bank: 40, horizon: 200000 },
 ];
 
 const cases = CASES.map(({ id, ...input }) => ({ id, input, result: computeBankrollPosterior(input) }));

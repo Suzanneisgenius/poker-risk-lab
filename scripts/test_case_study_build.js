@@ -25,9 +25,12 @@ broken.pokerkit.heads_up_exact[0].match = false;
 broken.pokerkit.three_way.difference_in_se = 6;
 broken.posterior.cases[0].passed = false;
 broken.posterior.cases[0].failures = ["risk.average: web 0.2, python 0.1"];
+Object.assign(broken.sessionImport.files[0], { passed: false, failures: ["winRate: web 1, python 2"] });
+broken.sessionLengths.cells.find((c) => c.model === "model").coverage_95.as_is = 0.9;
 const { pages, failures } = render(broken);
 for (const name of ["Range equity, flop to river", "Range equity, preflop", "Range check (all_passed)",
-  "PokerKit heads-up equity", "PokerKit three-way equity", "Bankroll from results against Python"]) {
+  "PokerKit heads-up equity", "PokerKit three-way equity", "Bankroll from results against Python",
+  "Session import against Python", "Unequal session lengths (simulation)"]) {
   assert.ok(failures.includes(name), `${name} is reported as failed`);
 }
 const html = text(pages.validation);
@@ -35,7 +38,9 @@ assert.match(html, /<span class="fail">different, by up to 1 × 10⁻¹ \(1 × 1
 assert.match(html, /<span class="fail">9\.00 and 0\.91 standard errors \(4 allowed\)<\/span>/);
 assert.match(html, /<span class="fail">different in 1 of 7<\/span>/);
 assert.match(html, /<span class="fail">6\.00 standard errors, more than the 4 allowed,<\/span>/);
-assert.match(html, /<span class="fail">outside tolerance in 1 of 9 cases<\/span>/);
+assert.match(html, new RegExp(`<span class="fail">outside tolerance in 1 of ${broken.posterior.cases.length} cases</span>`));
+assert.match(html, new RegExp(`<span class="fail">differ in 1 of ${broken.sessionImport.files.length} files</span>`));
+assert.match(html, /<span class="fail">not within 4 Monte Carlo standard errors of 95%<\/span>/);
 assert.doesNotMatch(html, /class="pass">equal to within/);
 assert.doesNotMatch(html, /class="pass">9\.00/);
 // The summary table data carries the verdicts too.

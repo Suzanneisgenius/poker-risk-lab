@@ -271,6 +271,17 @@ assert.match(oneCombo.methodText, /^Exact: 1 combo × 1,712,304 runouts each/);
   const se = Math.sqrt(mc.risk.average * (1 - mc.risk.average) / n);
   assert.ok(Math.abs(ruined / n - mc.risk.average) < 4 * se, `simulated ${ruined / n} vs closed form ${mc.risk.average} (SE ${se})`);
 
+  // From imported sessions: the volatility interval adds two marked rows, and a
+  // standard-error multiplier widens the win rate (and the hands needed) as stated.
+  const fromSessions = computeBankrollPosterior({ ...posteriorCase, sd: 90.4, sdSource: "sessions", sdRange: [82.9, 99.6], prior: "none" });
+  assert.deepEqual(fromSessions.sensitivity.volatility.map((row) => [row.sd, row.bound]),
+    [[70, null], [82.9, "low"], [90, null], [90.4, null], [99.6, "high"], [120, null], [150, null]]);
+  assert.deepEqual(fromSessions.sources.items[1].values, [70, 90, 90.4, 120, 150], "interval ends are not assumptions");
+  const widened = computeBankrollPosterior({ ...posteriorCase, sd: 90.4, sdSource: "sessions", prior: "none", seMultiplier: 1.5 });
+  closeRelative(widened.winRate.standardError, 1.5 * fromSessions.winRate.standardError, 1e-14, "widened standard error");
+  closeRelative(widened.sampleSize.totalHands, 2.25 * fromSessions.sampleSize.totalHands, 1e-6, "hands needed scale with the square");
+  assert.ok(widened.bankroll.credible.buyIns > fromSessions.bankroll.credible.buyIns, "a wider interval needs more bankroll");
+
   assert.equal(estimateCost("bankroll-posterior", posteriorCase), 1);
   for (const bad of [
     { ...posteriorCase, hands: 50 },
@@ -283,6 +294,9 @@ assert.match(oneCombo.methodText, /^Exact: 1 combo × 1,712,304 runouts each/);
     { ...posteriorCase, credibility: 40 },
     { ...posteriorCase, horizon: 20000000 },
     { ...posteriorCase, bbPerBuyIn: 0 },
+    { ...posteriorCase, sdSource: "sessions", sdRange: [100, 120] },
+    { ...posteriorCase, sdRange: [80] },
+    { ...posteriorCase, seMultiplier: 0.5 },
   ]) {
     assert.throws(() => compute("bankroll-posterior", bad), (error) => error instanceof ValidationError && error.status === 400, JSON.stringify(bad));
   }

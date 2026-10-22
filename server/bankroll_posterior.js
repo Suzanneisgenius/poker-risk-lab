@@ -58,7 +58,7 @@ function normalizePosteriorInput(input) {
     hands: Math.round(number(input.hands, "Hands played", 100, 100000000)),
     winRate: number(input.winRate, "Net win rate", -200, 200, " bb/100"),
     sd: number(input.sd, "Volatility", 10, 500, " bb/100"),
-    sdSource: choice(input.sdSource, "Volatility source", ["tracker", "assumed"], "assumed"),
+    sdSource: choice(input.sdSource, "Volatility source", ["tracker", "assumed", "sessions"], "assumed"),
     prior: choice(input.prior, "Prior", Object.keys(PRIORS), "weak"),
     bankBuyIns: number(input.bank, "Bankroll", 0.1, 100000, " buy-ins"),
     thresholdBuyIns: number(input.thr ?? 0, "Ruin threshold", 0, 100000, " buy-ins"),
@@ -68,7 +68,18 @@ function normalizePosteriorInput(input) {
     credibility: number(input.credibility ?? 80, "Posterior probability", 50, 99.9, "%") / 100,
     margin: number(input.margin ?? 1, "Precision", 0.1, 100, " bb/100"),
     sampleLevel: number(input.sampleLevel ?? 95, "Interval level", 50, 99.9, "%") / 100,
+    // From imported sessions: the volatility's 95% interval (extra rows in the
+    // volatility table) and how much to widen the win rate's standard error
+    // when its stability check finds the win rate changing over time.
+    sdRange: null,
+    seMultiplier: number(input.seMultiplier ?? 1, "Standard-error multiplier", 1, 10),
   };
+  if (input.sdRange != null) {
+    if (!Array.isArray(input.sdRange) || input.sdRange.length !== 2) throw new ValidationError("The volatility range must be two numbers.");
+    const [low, high] = input.sdRange.map((v) => number(v, "The volatility range", 10, 500, " bb/100"));
+    if (!(low <= p.sd && p.sd <= high)) throw new ValidationError("The volatility range must contain the volatility.");
+    p.sdRange = [low, high];
+  }
   if (p.bankBuyIns <= p.thresholdBuyIns) throw new ValidationError("Bankroll must be above the ruin threshold.");
   p.bank = p.bankBuyIns * p.bbPerBuyIn;
   p.thr = p.thresholdBuyIns * p.bbPerBuyIn;
@@ -77,8 +88,9 @@ function normalizePosteriorInput(input) {
 
 // Normal posterior for the true win rate. `dataWeight` is the share of the
 // posterior precision that comes from the results (1 with no prior).
-function posterior(observed, hands, sd, prior) {
-  const standardError = sd / Math.sqrt(hands / 100);
+// `multiplier` widens the standard error (sessions whose win rate drifts).
+function posterior(observed, hands, sd, prior, multiplier = 1) {
+  const standardError = (multiplier * sd) / Math.sqrt(hands / 100);
   const dataPrecision = 1 / (standardError * standardError);
   const priorPrecision = Number.isFinite(prior.sd) ? 1 / (prior.sd * prior.sd) : 0;
   const precision = dataPrecision + priorPrecision;
@@ -141,7 +153,7 @@ function winRateFor(riskAt, target) {
 
 // Everything that depends on one choice of volatility, prior and sample size.
 function evaluate(p, sd, prior, hands) {
-  const post = posterior(p.winRate, hands, sd, prior);
+  const post = posterior(p.winRate, hands, sd, prior, p.seMultiplier);
   const zInterval = normalQuantile(0.5 + INTERVAL_LEVEL / 2);
   const interval = [post.mean - zInterval * post.sd, post.mean + zInterval * post.sd];
   // Risk is at most its q-quantile with posterior probability q, and that
@@ -173,13 +185,14 @@ function evaluate(p, sd, prior, hands) {
 }
 
 // Hands for a central interval of +/- margin bb/100 from results alone, with
-// independent results, a stable win rate and the given volatility.
-function sampleSize(sd, margin, level, hands) {
+// independent results, a stable win rate and the given volatility (times the
+// standard-error multiplier, when one is used).
+function sampleSize(sd, margin, level, hands, multiplier = 1) {
   const z = normalQuantile(0.5 + level / 2);
-  const total = 100 * ((z * sd) / margin) ** 2;
+  const total = 100 * ((z * sd * multiplier) / margin) ** 2;
   return {
     level, margin, z,
-    currentHalfWidth: (z * sd) / Math.sqrt(hands / 100),
+    currentHalfWidth: (z * sd * multiplier) / Math.sqrt(hands / 100),
     totalHands: Math.ceil(total),
     moreHands: Math.max(0, Math.ceil(total) - hands),
   };
@@ -204,11 +217,15 @@ function computeBankrollPosterior(input) {
     requiredBuyIns: buyIns(result.bankroll.credible),
   });
 
-  const volatilities = [...new Set([...VOLATILITY_ASSUMPTIONS, p.sd])].sort((a, b) => a - b);
+  const volatilities = [...new Set([...VOLATILITY_ASSUMPTIONS, p.sd, ...(p.sdRange || [])])].sort((a, b) => a - b);
   const byVolatility = volatilities.map((sd) => {
     const result = sd === p.sd ? main : evaluate(p, sd, prior, p.hands);
-    return row(result, { sd, current: sd === p.sd, handsForMargin: sampleSize(sd, p.margin, p.sampleLevel, p.hands).totalHands });
+    const bound = p.sdRange && sd !== p.sd ? (sd === p.sdRange[0] ? "low" : sd === p.sdRange[1] ? "high" : null) : null;
+    return row(result, { sd, current: sd === p.sd, bound, handsForMargin: sampleSize(sd, p.margin, p.sampleLevel, p.hands, p.seMultiplier).totalHands });
   });
+  // The spread across the assumptions (and the volatility in use), leaving out
+  // the extra rows for the ends of an estimated volatility's interval.
+  const assumed = byVolatility.filter((r) => !r.bound || VOLATILITY_ASSUMPTIONS.includes(r.sd));
   const byPrior = Object.values(PRIORS).map((option) => {
     const result = option.id === p.prior ? main : evaluate(p, p.sd, option, p.hands);
     return row(result, { prior: option.id, label: option.label, current: option.id === p.prior, dataWeight: result.winRate.dataWeight });
@@ -225,7 +242,7 @@ function computeBankrollPosterior(input) {
   const span = (values) => [Math.min(...values), Math.max(...values)];
   const sources = [
     { id: "winRate", range: main.risk.interval },
-    { id: "volatility", range: span(byVolatility.map((r) => r.averageRisk)), values: volatilities },
+    { id: "volatility", range: span(assumed.map((r) => r.averageRisk)), values: assumed.map((r) => r.sd) },
     { id: "prior", range: span(byPrior.map((r) => r.averageRisk)) },
   ];
   const widest = sources.reduce((best, source) => (source.range[1] - source.range[0] > best.range[1] - best.range[0] ? source : best));
@@ -246,6 +263,7 @@ function computeBankrollPosterior(input) {
       hands: p.hands, winRate: p.winRate, sd: p.sd, sdSource: p.sdSource, prior: p.prior, priorLabel: prior.label,
       bank: p.bankBuyIns, thr: p.thresholdBuyIns, bbPerBuyIn: p.bbPerBuyIn, horizon: p.horizon,
       target: p.target, credibility: p.credibility, margin: p.margin, sampleLevel: p.sampleLevel,
+      sdRange: p.sdRange, seMultiplier: p.seMultiplier,
     },
     winRate: {
       observed: p.winRate,
@@ -265,7 +283,7 @@ function computeBankrollPosterior(input) {
       average: answer(main.bankroll.average),
       plugIn: answer(main.bankroll.plugIn),
     },
-    sampleSize: sampleSize(p.sd, p.margin, p.sampleLevel, p.hands),
+    sampleSize: sampleSize(p.sd, p.margin, p.sampleLevel, p.hands, p.seMultiplier),
     sensitivity: { volatility: byVolatility, prior: byPrior, sample: bySample },
     sources: { items: sources, widest: widest.id },
     curve,

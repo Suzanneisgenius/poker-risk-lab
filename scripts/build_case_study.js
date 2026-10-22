@@ -27,13 +27,21 @@ function loadInputs() {
     benchmark: read("checks/evaluator-benchmark/results.json"),
     engines: read("checks/engine-agreement/results.json"),
     posterior: read("checks/bankroll-posterior-python/results.json"),
+    sessionImport: read("checks/session-import-python/results.json"),
+    sessionLengths: read("checks/session-lengths/results.json"),
   };
 }
 
 // Whether each check passed, decided again here from its saved numbers (not
 // only from the check's own all_passed flag). Page wording and colour come
 // from these, so a failed check is never shown as a pass.
-function verdicts({ pokerkit, ranges, benchmark, posterior }) {
+function verdicts({ pokerkit, ranges, benchmark, posterior, sessionImport, sessionLengths }) {
+  // The study's claims about the estimator when the model holds: coverage
+  // within 4 Monte Carlo standard errors of 95%, and the two checks' false
+  // alarms no more than 4 standard errors above their nominal 1% and 5%.
+  const n = sessionLengths.settings.histories_per_cell;
+  const se = (p) => Math.sqrt((p * (1 - p)) / n);
+  const modelCells = sessionLengths.cells.filter((c) => c.model === "model");
   return {
     pk_order: pokerkit.hand_order.disagreement_count === 0,
     pk_headsup: pokerkit.heads_up_exact.every((s) => s.match),
@@ -46,6 +54,10 @@ function verdicts({ pokerkit, ranges, benchmark, posterior }) {
     r_flag: ranges.all_passed === true,
     b_mismatch: benchmark.agreement.score_mismatches === 0,
     posterior: posterior.all_passed === true && posterior.cases.every((c) => c.passed && !c.failures.length),
+    sessions: sessionImport.all_passed === true && sessionImport.files.every((f) => f.passed && !f.failures.length),
+    lengths: modelCells.every((c) => Math.abs(c.coverage_95.as_is - 0.95) <= 4 * se(0.95)
+      && (c.flags.spread_against_length == null || c.flags.spread_against_length <= 0.01 + 4 * se(0.01))
+      && c.flags.stability <= 0.05 + 4 * se(0.05)),
   };
 }
 const CHECK_NAMES = {
@@ -53,10 +65,13 @@ const CHECK_NAMES = {
   pk_flag: "PokerKit check (all_passed)", r_notation: "Range notation", r_exact: "Range equity, flop to river",
   r_pre: "Range equity, preflop", r_flag: "Range check (all_passed)", b_mismatch: "Evaluator rewrite",
   posterior: "Bankroll from results against Python",
+  sessions: "Session import against Python", lengths: "Unequal session lengths (simulation)",
 };
 
 function render(inputs) {
-  const { noise, uncertainty, assumptions, overview, calc, pokerkit, ranges, handOrder, accuracy, benchmark, engines, posterior } = inputs;
+  const { noise, uncertainty, assumptions, overview, calc, pokerkit, ranges, handOrder, accuracy, benchmark, engines, posterior, sessionImport, sessionLengths } = inputs;
+  const study = (model) => sessionLengths.cells.filter((c) => c.model === model);
+  const spanPct = (values, d = 1) => `${pct(Math.min(...values), d)}–${pct(Math.max(...values), d)}`;
   const ok = verdicts(inputs);
   const failures = Object.keys(ok).filter((key) => !ok[key]).map((key) => CHECK_NAMES[key]);
   const status = (key) => (ok[key] ? "pass" : "fail");
@@ -174,6 +189,30 @@ function render(inputs) {
     p_se: Math.max(...posterior.cases.map((c) => Math.abs(c.posterior_draws.difference_in_se))).toFixed(2),
     p_draws: int(posterior.cases[0].posterior_draws.draws),
     p_text: ok.posterior ? "within tolerance in every case" : `outside tolerance in ${posterior.cases.filter((c) => !c.passed).length} of ${posterior.cases.length} cases`,
+    s_files: String(sessionImport.files.length),
+    s_sessions: int(sessionImport.files.reduce((sum, f) => sum + f.sessions, 0)),
+    s_numbers: int(sessionImport.comparisons),
+    s_rel: tenPower(Math.max(...sessionImport.files.map((f) => f.largest_difference.relative)), 1),
+    s_prob: tenPower(Math.max(...sessionImport.files.map((f) => f.largest_difference.probability)), 1),
+    s_text: ok.sessions ? "agree in every file" : `differ in ${sessionImport.files.filter((f) => !f.passed).length} of ${sessionImport.files.length} files`,
+    l_histories: int(sessionLengths.settings.histories_per_cell),
+    l_sessions: String(sessionLengths.settings.sessions_per_history),
+    l_mc_se: (sessionLengths.settings.coverage_monte_carlo_se * 100).toFixed(2),
+    l_model_cover: spanPct(study("model").map((c) => c.coverage_95.as_is)),
+    l_model_text: ok.lengths ? "within 4 Monte Carlo standard errors of 95%" : "not within 4 Monte Carlo standard errors of 95%",
+    l_sd_weighted: `${Math.min(...study("model").map((c) => c.volatility.mean_weighted)).toFixed(1)}–${Math.max(...study("model").map((c) => c.volatility.mean_weighted)).toFixed(1)}`,
+    l_sd_naive: Math.max(...study("model").map((c) => c.volatility.mean_naive)).toFixed(0),
+    l_rmse_ratio: Math.max(...study("model").map((c) => c.win_rate.rmse_unweighted / c.win_rate.rmse_weighted)).toFixed(1),
+    l_alarm_length: spanPct(study("model").filter((c) => c.flags.spread_against_length != null).map((c) => c.flags.spread_against_length)),
+    l_alarm_heavy: spanPct(study("heavyTails").filter((c) => c.flags.spread_against_length != null).map((c) => c.flags.spread_against_length)),
+    l_alarm_stability: spanPct(study("model").map((c) => c.flags.stability)),
+    l_effect_mixed: pct(sessionLengths.cells.find((c) => c.model === "sessionEffect" && c.pattern === "mixed").flags.spread_against_length),
+    l_drift_cover: spanPct(study("drift").map((c) => c.coverage_95.as_is)),
+    l_drift_flag: spanPct(study("drift").map((c) => c.flags.stability)),
+    l_drift_lag1_flag: spanPct(study("drift").map((c) => c.flags.lag1_on_raw_rates)),
+    l_drift_widened: spanPct(study("drift").map((c) => c.coverage_95.widened_by_blocks_when_flagged)),
+    l_drift_always: spanPct(study("drift").map((c) => c.coverage_95.widened_by_blocks_always)),
+    l_drift_lag1: spanPct(study("drift").map((c) => c.coverage_95.widened_by_lag1_like_python)),
   };
 
   // "Recorded with" for the reproduction table.
@@ -204,6 +243,8 @@ function render(inputs) {
     { check: "Bankroll risk", benchmark: "Finite-horizon Brownian formula (exact for the model)", compared: "40 seeds, bridge on and off", result: `${pct(multiPlus3.mean_risk_bridge, 2)} vs ${pct(noise.exact_risk, 2)}` },
     { check: "Interval coverage", benchmark: "Exact value", compared: "40 runs at each of 3 sizes", result: noise.rows.map((r) => r.wilson_intervals_covering_exact).join(", ") + " of 40" },
     { check: "Bankroll from results", benchmark: "Python research code and scipy (internal)", compared: `${int(posterior.comparisons)} numbers, ${posterior.cases.length} cases`, result: ok.posterior ? "within tolerance" : "differences", ok: ok.posterior },
+    { check: "Session import", benchmark: "pandas, Python research code, scipy (internal)", compared: `${int(sessionImport.comparisons)} numbers, ${sessionImport.files.length} files`, result: ok.sessions ? "agree" : "differences", ok: ok.sessions },
+    { check: "Unequal session lengths", benchmark: "Simulated histories with a known win rate", compared: `${sessionLengths.cells.length} cells × ${int(sessionLengths.settings.histories_per_cell)} histories`, result: ok.lengths ? `95% interval covers ${spanPct(study("model").map((c) => c.coverage_95.as_is))}` : "coverage off", ok: ok.lengths },
     { check: "Two engines", benchmark: "Each other (internal)", compared: `${int(engines.paths_per_run)} paths, 4 settings`, result: `largest gap ${Math.max(...engines.rows.map((r) => Math.abs(r.difference_in_se))).toFixed(2)} SE` },
   ];
 
@@ -222,6 +263,7 @@ function render(inputs) {
       ranges: ranges.exact.map(({ id, hero, board, range, combos, hands, ours, pokerkit: theirs, split, match }) => ({ id, hero, board, range, combos, hands, ours, pokerkit: theirs, ahead: split.ahead, match })),
       accuracy: { spots: accuracy.spots },
       engines: engines.rows,
+      lengths: { patterns: sessionLengths.patterns, models: sessionLengths.models, cells: sessionLengths.cells },
     },
   };
 

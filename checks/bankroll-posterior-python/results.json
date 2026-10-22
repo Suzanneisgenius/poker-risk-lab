@@ -200,8 +200,48 @@
         "difference_in_se": 0.83
       },
       "passed": true
+    },
+    {
+      "id": "sessions-estimated-volatility",
+      "comparisons": 308,
+      "largest_difference": {
+        "probability": 1.7e-08,
+        "win_rate": 1.8e-15,
+        "bankroll_relative": 2.4e-08,
+        "hands": 1.0
+      },
+      "widest_source": "winRate",
+      "widest_source_matches": true,
+      "failures": [],
+      "posterior_draws": {
+        "draws": 20000,
+        "seed": 9,
+        "average": 0.065823,
+        "difference_in_se": -0.25
+      },
+      "passed": true
+    },
+    {
+      "id": "sessions-widened-for-drift",
+      "comparisons": 308,
+      "largest_difference": {
+        "probability": 5.9e-08,
+        "win_rate": 4.4e-15,
+        "bankroll_relative": 3.2e-08,
+        "hands": 0.87
+      },
+      "widest_source": "winRate",
+      "widest_source_matches": true,
+      "failures": [],
+      "posterior_draws": {
+        "draws": 20000,
+        "seed": 10,
+        "average": 0.148583,
+        "difference_in_se": -1.39
+      },
+      "passed": true
     }
   ],
-  "comparisons": 2612,
+  "comparisons": 3228,
   "all_passed": true
 }

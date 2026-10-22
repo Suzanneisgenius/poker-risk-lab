@@ -116,6 +116,28 @@
     <p class="limits"><strong>Limits.</strong> Same author, same model: this shows the two implementations agree, not that the model is right. Without the bridge correction there is no closed form, so those rows compare the engines only. Command: <code>python -I checks/engine-agreement/run.py</code>.</p>
   </article>
 
+  <article aria-labelledby="sessions">
+    <h3 id="sessions">Sessions of different lengths (simulation)</h3>
+    <p>Bankroll Risk can import a CSV of sessions. Each session counts in proportion to its hands: the win rate is total profit over total hands, and the volatility weights each session's squared deviation by its hands, as <code>src/inference.py</code> does. Is that right when sessions run from 30 to 4,000 hands? {{l_histories}} simulated histories of {{l_sessions}} sessions per cell, true win rate +3 and volatility 90 bb/100, four length patterns and four ways results arrive, each run through the page's own estimator:</p>
+    <ul>
+      <li><strong>When the model holds, length does not matter.</strong> The 95% interval covers the true win rate in {{l_model_cover}} of histories in every length pattern (<span class="{{v_lengths}}">{{l_model_text}}</span>; one standard error is {{l_mc_se}} points), and the weighted volatility averages {{l_sd_weighted}}. The plain average of session win rates is up to {{l_rmse_ratio}}× as far off, and the spread of session win rates scaled to the average session (a common shortcut) averages up to {{l_sd_naive}} instead of 90.</li>
+      <li><strong>Spread against length.</strong> The page compares how far shorter and longer sessions stray per 100 hands. It raises {{l_alarm_length}} false alarms when the model holds and {{l_alarm_heavy}} with heavy-tailed sessions; a variance-ratio F test, tried first, raised about 16% with heavy tails. With an extra 80 bb swing per session it flags {{l_effect_mixed}} of histories of mixed short and long sessions.</li>
+      <li><strong>A win rate that drifts is the weak point.</strong> With the session win rate wandering (AR(1), 0.9, SD 10 bb/100), the interval covers only {{l_drift_cover}}. The page's stability check (10 blocks in time order) flags {{l_drift_flag}} of these histories, against {{l_drift_lag1_flag}} for a lag-1 test of session win rates; widening when it flags gives {{l_drift_widened}}, widening always {{l_drift_always}}. Widening by the lag-1 correlation, as <code>src/inference.py</code> does, gives {{l_drift_lag1}}. False alarms when the model holds: {{l_alarm_stability}}.</li>
+    </ul>
+    <div class="table-wrap"><table>
+      <caption>Coverage of the 95% interval and how often the checks flag, by length pattern and how results arrive</caption>
+      <thead><tr><th>Lengths</th><th>Results</th><th class="num">Covers</th><th class="num">Widened if flagged</th><th class="num">Volatility (weighted / naive)</th><th class="num">Length flag</th><th class="num">Stability flag</th></tr></thead>
+      <tbody id="table-lengths"></tbody>
+    </table></div>
+    <p class="limits"><strong>Limits.</strong> Simulated histories, not real ones: the drift, the extra swing and the heavy tails are stress tests of chosen sizes. No check on {{l_sessions}} sessions fully repairs an interval for a drifting win rate, so the page says so when the stability check flags. Command: <code>node checks/session-lengths/run.js --check</code> (about 2 seconds; in CI).</p>
+  </article>
+
+  <article aria-labelledby="session-import">
+    <h3 id="session-import">Session import: page against the research code (internal)</h3>
+    <p>{{s_files}} synthetic files ({{s_sessions}} sessions), including a semicolon export with decimal commas and unreadable rows, a drifting history and one with lopsided short and long sessions, read by the page and by pandas. For every selection and grouping the page offers, the estimates are recomputed with <code>src/inference.py</code> (<code>estimate_edge</code>) and the checks with numpy and scipy: {{s_numbers}} numbers <span class="{{v_sessions}}">{{s_text}}</span>, largest difference {{s_rel}} (relative) and {{s_prob}} in a p-value.</p>
+    <p class="limits"><strong>Limits.</strong> Internal: both sides are this repository's code and the files are simulated. Runs in CI. Command: <code>python -I checks/session-import-python/run.py --check</code>.</p>
+  </article>
+
   <article aria-labelledby="posterior">
     <h3 id="posterior">Bankroll from your results: page against the research code (internal)</h3>
     <p>Bankroll Risk can start from a player's own results: hands played, net win rate and volatility. The page (<code>server/bankroll_posterior.js</code>) forms a Normal posterior for the win rate and averages the Brownian risk over it in closed form. The research code computes the same model separately: <code>src/bayes.py</code> for the posterior, <code>src/validation.py</code> for the risk formula, adaptive quadrature for the average and Brent's method for the bankrolls.</p>
@@ -133,6 +155,7 @@
     <li><strong>Ruin checked only every 100 hands understated risk</strong> by {{c_endpoint_gap}} points on average at +3 bb/100. Fixed with the Brownian-bridge correction (engine 2026-10-21).</li>
     <li><strong>A version change looked like lower risk</strong> (7.85% → 6.35% at seed 42). Traced to the change of random numbers, not the correction; see the <a href="./#investigation">case study</a>.</li>
     <li><strong>Figures quoted without a seed list.</strong> An earlier release note gave 40-seed averages without saying which seeds. Traced to seeds 7919 × 1–40; every figure now has a script, its seeds and saved output.</li>
+    <li><strong>Session checks that did not hold up.</strong> A lag-1 correlation test of session win rates (the rule in <code>src/inference.py</code>) rarely noticed a drifting win rate, and widening by it barely helped; a variance-ratio F test of short against long sessions raised false alarms with heavy tails. The page uses block-based and absolute-deviation checks instead; <code>src/inference.py</code> is unchanged.</li>
     <li><strong>“Ahead of the range” counted whole hands.</strong> The summary under Hand Equity classed each hand by its average over its combos, so A♥K♥ against J2s on Q♥7♥2♣ read “ahead of 100%” while two of the three combos are ahead (66.7%). Exact results now decide combo by combo and are checked against PokerKit; Monte Carlo results say they decide hand by hand and mark hands within 1.96 standard errors of 50% as too close to call.</li>
     <li><strong>A half weight was described as half the combos.</strong> <code>AKs:0.5</code> keeps all four AKs combos at half weight. The help text and the combo count now say so (4 combos, weighted count 2).</li>
     <li><strong>A failed check could still be shown as passed.</strong> This page's pass wording and colour were written into the template. They now follow each check's saved result, and <code>npm run build</code> stops when a check has failed.</li>
@@ -147,6 +170,7 @@
     <li>That the Preflop ranges are good strategy: they are illustrative demonstration data, not solver output.</li>
     <li>Correctness on every possible hand: the evaluator checks are large samples, not proofs.</li>
     <li>That a range describes what a real opponent holds: the equity is only as good as the range typed in.</li>
+    <li>That real sessions behave like the simulated ones: the session checks look for the departures tested above, not every departure.</li>
   </ul>
 </section>
 </main>
@@ -164,6 +188,8 @@
     `<tr><td>${s.hero} vs ${s.villain}${s.board ? " on " + s.board : " preflop"}</td><td class="num">${num(s.runouts)}</td><td class="num">${pct(s.ours.equity, 4)}</td><td class="num">${pct(s.pokerkit.equity, 4)}</td><td>${s.match ? '<span class="pass">identical</span>' : '<span class="fail">differ</span>'}</td></tr>`).join("");
   document.getElementById("table-ranges").innerHTML = DATA.ranges.map((s) =>
     `<tr><td>${s.hero} vs <code>${s.range.length > 40 ? s.range.slice(0, s.range.lastIndexOf(",", 38)) + ", …" : s.range}</code> on ${s.board}</td><td class="num">${num(s.combos)}</td><td class="num">${pct(s.ours, 4)}</td><td class="num">${pct(s.pokerkit, 4)}</td><td class="num">${pct(s.ahead, 1)}</td><td>${s.match ? `<span class="pass">equal (${s.hands})</span>` : '<span class="fail">differ</span>'}</td></tr>`).join("");
+  document.getElementById("table-lengths").innerHTML = DATA.lengths.cells.map((c) =>
+    `<tr><td>${DATA.lengths.patterns[c.pattern]}</td><td>${DATA.lengths.models[c.model]}</td><td class="num">${pct(c.coverage_95.as_is, 1)}</td><td class="num">${pct(c.coverage_95.widened_by_blocks_when_flagged, 1)}</td><td class="num">${c.volatility.mean_weighted.toFixed(1)} / ${c.volatility.mean_naive.toFixed(1)}</td><td class="num">${c.flags.spread_against_length == null ? "—" : pct(c.flags.spread_against_length, 1)}</td><td class="num">${pct(c.flags.stability, 1)}</td></tr>`).join("");
   document.getElementById("table-engines").innerHTML = DATA.engines.map((r) =>
     `<tr><td>${r.scenario.winrate_bb100 > 0 ? "+" : ""}${r.scenario.winrate_bb100} bb/100</td><td>${r.bridge ? "continuous" : "every 100 hands"}</td><td class="num">${pct(r.web_engine, 2)}</td><td class="num">${pct(r.research_engine, 2)}</td><td class="num">${Math.abs(r.difference_in_se).toFixed(2)} SE</td><td class="num">${r.analytical == null ? "—" : pct(r.analytical, 2)}</td></tr>`).join("");
   // Error against time: one table per spot, with RMSE bars on a shared scale.

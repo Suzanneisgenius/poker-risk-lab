@@ -57,6 +57,52 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-10-22 — Bankroll Risk: import your sessions (CSV)
+
+- **Import a CSV of sessions** instead of typing totals: one row per session
+  with `hands` and `profit_bb` (profit in big blinds, after rake), and
+  optionally `stake`, `game` and `date` (YYYY-MM-DD). Common column names are
+  recognised (`Profit (bb)`, `net_bb`, …), as are semicolon exports with
+  decimal commas, quoted cells and a Unicode minus. Rows that cannot be read
+  are listed by line and left out; ambiguous dates such as 31/01/2026 are not
+  guessed. The file is read in the browser; only the totals of the selection
+  are sent to the calculator. A template and a simulated example file are
+  included (`standalone/shared/sessions-example.csv`, clearly marked as not
+  real results).
+- **Weighted by hands.** The win rate is total profit over total hands; the
+  volatility weights each session's squared deviation by its hands, so it is
+  estimated from the sessions (with a 95% interval) instead of assumed. The
+  interval's ends become extra rows in the volatility table.
+- **Filter and compare.** Select stakes, games and a range of months; compare
+  the selection's groups by stake, game, month, quarter or year, with a test
+  of whether their win rates differ by more than chance.
+- **Two checks of the model**, shown with the selection: do short and long
+  sessions swing alike per 100 hands, and is the win rate steady over time
+  (10 blocks of sessions in date order)? When the win rate is not steady the
+  page suggests widening its interval by the spread between the blocks, and
+  says that this only partly fixes it.
+- **Checked by simulation for unequal lengths** (`checks/session-lengths/`, in
+  CI): 16,000 histories per length pattern, sessions of 30 to 4,000 hands.
+  When the model holds, the 95% interval covers 94.3–95.2% in every pattern
+  and the weighted volatility averages 89.8–90.1 (truth 90). The plain average
+  of session win rates is up to 2.9× as far off, and scaling the spread of
+  session win rates to the average session gives up to 261. A drifting win
+  rate is the weak point: coverage falls to 75.5–83.5%; the stability check
+  flags 20–40% of those histories and widening when it flags gives 82.7–85.9%.
+- **What the study changed.** The first versions of the two checks did not
+  hold up: a lag-1 correlation test of session win rates (the rule in
+  `src/inference.py`) flagged drift only 5–13.5% of the time and widening by it
+  barely helped, and a variance-ratio F test raised about 16% false alarms
+  with heavy-tailed sessions. The page uses a block-based stability check and
+  a test on absolute deviations instead. `src/inference.py` is unchanged.
+- **Checked against the Python research code** (`checks/session-import-python/`,
+  internal, in CI): 5 synthetic files (1,040 sessions) read by pandas, with
+  every selection and grouping recomputed by `estimate_edge` and scipy; 5,600
+  numbers agree (largest difference 2 × 10⁻¹⁴ relative, 3.5 × 10⁻⁸ in a
+  p-value). The normal helpers moved to `standalone/shared/stats.js`, shared by
+  page and server, with chi-square, F and incomplete gamma/beta functions
+  checked against scipy.
+
 ## 2026-10-22 — Bankroll Risk from your own results
 
 - **Start from a results summary.** Hands played and net win rate (after rake,
