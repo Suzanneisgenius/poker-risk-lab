@@ -18,6 +18,8 @@ const {
   logPhi,
   MAX_PATH_STEPS,
 } = require("./compute.js");
+const { computeBankrollPosterior, averageRisk } = require("./bankroll_posterior.js");
+const { normalQuantile } = require("./brownian.js");
 const { clientIp } = require("./client_ip.js");
 const { ValidationError } = require("./errors.js");
 
@@ -196,6 +198,96 @@ assert.ok(preflopRange.ms < 5000, `preflop range run took ${Math.round(preflopRa
 const oneCombo = computeEquity({ hero: aceKing, opponents: [{ range: "QsQd" }], board: [] });
 assert.match(oneCombo.methodText, /^Exact: 1 combo × 1,712,304 runouts each/);
 
+// --- Bankroll from results (posterior) ------------------------------------------
+{
+  const posteriorCase = { hands: 40000, winRate: 4, sd: 90, prior: "weak", bank: 30, horizon: 100000 };
+  const r = computeBankrollPosterior(posteriorCase);
+  // Conjugate update: SE 90 / sqrt(400) = 4.5; prior Normal(0, 10^2).
+  closeRelative(r.winRate.standardError, 4.5, 1e-15, "standard error");
+  closeRelative(r.winRate.mean, 4 * (1 / 4.5 ** 2) / (1 / 4.5 ** 2 + 1 / 100), 1e-14, "posterior mean");
+  const flat = computeBankrollPosterior({ ...posteriorCase, prior: "none" });
+  assert.equal(flat.winRate.mean, 4);
+  closeRelative(flat.winRate.sd, 4.5, 1e-15, "no prior: posterior sd = SE");
+  closeRelative(flat.winRate.interval[1] - flat.winRate.interval[0], 2 * 1.959963984540054 * 4.5, 1e-12, "95% interval width");
+
+  // The closed-form average equals brute-force integration over the posterior,
+  // and with no posterior spread it is the plain Brownian risk.
+  const simpson = (mean, sd, sigma, bank, thr, hands) => {
+    const n = 40000, lo = -12, step = 24 / n;
+    let sum = 0;
+    for (let i = 0; i <= n; i += 1) {
+      const z = lo + i * step;
+      sum += (i === 0 || i === n ? 1 : i % 2 ? 4 : 2) * brownFinite(mean + sd * z, sigma, bank, thr, hands) * Math.exp(-z * z / 2);
+    }
+    return (sum * step) / 3 / Math.sqrt(2 * Math.PI);
+  };
+  for (const [mean, sd, sigma, bank, thr, hands] of [[3.3, 4.1, 90, 3000, 0, 100000], [-2, 0.5, 90, 1500, 0, 1000000], [5, 20, 150, 500, 100, 10000], [10, 40, 120, 300, 0, 1000]]) {
+    const exact = averageRisk(mean, sd, sigma, bank, thr, hands);
+    assert.ok(Math.abs(exact - simpson(mean, sd, sigma, bank, thr, hands)) < 1e-7, `average risk ${[mean, sd, sigma, bank, thr, hands]}`);
+  }
+  closeRelative(averageRisk(3, 1e-9, 90, 3000, 0, 100000), brownFinite(3, 90, 3000, 0, 100000), 1e-9, "zero spread");
+
+  // Each bankroll answer meets its own definition exactly at the boundary.
+  // "80% posterior upper bound of risk <= 5%" is the same statement as
+  // "posterior probability >= 80% that risk <= 5%".
+  const atCredible = computeBankrollPosterior({ ...posteriorCase, bank: r.bankroll.credible.buyIns });
+  assert.ok(Math.abs(atCredible.risk.upper - 0.05) < 1e-9, "upper bound = target at the answer");
+  assert.ok(Math.abs(atCredible.risk.probAtMostTarget - 0.8) < 1e-6, "P(risk <= target) = 80% at the answer");
+  assert.ok(computeBankrollPosterior({ ...posteriorCase, bank: r.bankroll.credible.buyIns * 0.99 }).risk.probAtMostTarget < 0.8);
+  assert.ok(Math.abs(computeBankrollPosterior({ ...posteriorCase, bank: r.bankroll.average.buyIns }).risk.average - 0.05) < 1e-9);
+  assert.ok(Math.abs(computeBankrollPosterior({ ...posteriorCase, bank: r.bankroll.plugIn.buyIns }).risk.plugIn - 0.05) < 1e-9);
+  assert.equal(r.bankroll.credible.met, false);
+  closeRelative(r.bankroll.credible.moreBuyIns, r.bankroll.credible.buyIns - 30, 1e-12, "buy-ins still needed");
+  // Risk quantiles follow the win rate's (risk falls as the win rate rises).
+  assert.ok(r.risk.interval[0] < r.risk.median && r.risk.median < r.risk.upper && r.risk.upper < r.risk.interval[1]);
+  assert.ok(r.risk.plugIn < r.risk.average, "this record: ignoring the uncertainty understates risk");
+
+  // The same record looked at three ways.
+  const needed = (rows) => rows.map((row) => row.requiredBuyIns);
+  const increasing = (values) => values.every((value, i) => i === 0 || value > values[i - 1]);
+  assert.ok(increasing(needed(r.sensitivity.volatility)), "more volatility needs more bankroll");
+  assert.ok(increasing(needed(r.sensitivity.sample).reverse()), "more hands at the same win rate need less bankroll");
+  assert.deepEqual(r.sensitivity.volatility.map((row) => row.sd), [70, 90, 120, 150]);
+  assert.deepEqual(r.sensitivity.sample.map((row) => row.hands), [10000, 40000, 160000, 640000]);
+  assert.deepEqual(r.sensitivity.prior.map((row) => [row.prior, row.current]), [["none", false], ["weak", true], ["skeptical", false]]);
+  assert.equal(computeBankrollPosterior({ ...posteriorCase, sd: 85 }).sensitivity.volatility.length, 5, "the entered volatility joins the four assumptions");
+  assert.equal(r.sources.widest, "winRate");
+
+  // About 3.84 million hands for +/- 1 bb/100 at 95% with volatility 100.
+  const sample = computeBankrollPosterior({ ...posteriorCase, sd: 100, margin: 1, sampleLevel: 95 }).sampleSize;
+  assert.equal(sample.totalHands, 3841459);
+  assert.equal(sample.moreHands, 3841459 - 40000);
+  closeRelative(sample.currentHalfWidth, 1.959963984540054 * 100 / 20, 1e-14, "current half-width");
+
+  // End to end: the existing path simulator, with each path's win rate drawn
+  // from the posterior (stratified), lands within 4 binomial SE of the closed form.
+  const mc = computeBankrollPosterior({ hands: 20000, winRate: 3, sd: 90, prior: "none", bank: 15, horizon: 20000 });
+  const n = 20000;
+  let ruined = 0;
+  for (let i = 0; i < n; i += 1) {
+    const wr = mc.winRate.mean + mc.winRate.sd * normalQuantile((i + 0.5) / n);
+    ruined += simulateBankroll({ wr, sd: 90, bank: 1500, thr: 0, hands: 20000, step: 100, seed: 9000 + i }, 1, 0).ruinedCount;
+  }
+  const se = Math.sqrt(mc.risk.average * (1 - mc.risk.average) / n);
+  assert.ok(Math.abs(ruined / n - mc.risk.average) < 4 * se, `simulated ${ruined / n} vs closed form ${mc.risk.average} (SE ${se})`);
+
+  assert.equal(estimateCost("bankroll-posterior", posteriorCase), 1);
+  for (const bad of [
+    { ...posteriorCase, hands: 50 },
+    { ...posteriorCase, winRate: "four" },
+    { ...posteriorCase, sd: 0 },
+    { ...posteriorCase, prior: "optimistic" },
+    { ...posteriorCase, sdSource: "guess" },
+    { ...posteriorCase, thr: 30 },
+    { ...posteriorCase, target: 60 },
+    { ...posteriorCase, credibility: 40 },
+    { ...posteriorCase, horizon: 20000000 },
+    { ...posteriorCase, bbPerBuyIn: 0 },
+  ]) {
+    assert.throws(() => compute("bankroll-posterior", bad), (error) => error instanceof ValidationError && error.status === 400, JSON.stringify(bad));
+  }
+}
+
 // --- Error types ---------------------------------------------------------------
 for (const [type, input] of [
   ["ev", { pot: -1, call: 5, equityPct: 40 }],
@@ -278,4 +370,4 @@ for (const hands of [100, 150, 99999, 100000, 250000, 333333, 500000, 1000000]) 
 assert.equal(budget.maxBankrollPaths(1000000), 5500);
 assert.equal(budget.maxBankrollPaths(100000), 20000);
 
-process.stdout.write("Brownian, client-IP, rate-limit cost, work-ceiling, error-type, and frontend-limit unit tests passed.\n");
+process.stdout.write("Brownian, posterior bankroll, client-IP, rate-limit cost, work-ceiling, error-type, and frontend-limit unit tests passed.\n");

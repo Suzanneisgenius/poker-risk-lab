@@ -17,7 +17,7 @@ the first.
 | | |
 |---|---|
 | **Case study** | [`case-study/index.html`](case-study/index.html): three questions, one at a time, plus how a misleading result was checked. Static page: open the file directly, or `/case-study/` on the running app. |
-| **Validation** | [`case-study/validation.html`](case-study/validation.html): PokerKit cross-checks (hands, equity, ranges), exact-value checks, interval coverage, engine agreement and benchmark conditions. |
+| **Validation** | [`case-study/validation.html`](case-study/validation.html): PokerKit cross-checks (hands, equity, ranges), exact-value checks, interval coverage, engine agreement, the bankroll-from-results page against the Python research code, and benchmark conditions. A failed check is shown as failed and stops the build. |
 | **Demo** | `npm start`, then <http://localhost:4174>. No public deployment URL yet. |
 | **Reproduce** | `pip install -r requirements-research.txt`, `python -m src.experiments.case_study --case all`, then `npm run build`. Every check in [`checks/`](checks/README.md) has its own command and saved output. |
 | **Limits** | Conditional model estimates, not advice. The alternative models are stress tests, not descriptions of real games. The Preflop ranges are demonstration data. |
@@ -185,7 +185,16 @@ The suite provides five tools behind one dark UI:
   Monte Carlo. Range results show equity against each hand in the range.
 - **Pot Odds & EV** — turns the latest card-derived equity into a call/fold
   decision with EV in big blinds; manual equity remains an advanced option.
-- **Bankroll Risk** — the Monte Carlo risk-of-ruin engine with a finite-horizon
+- **Bankroll Risk** — starts from your own results: hands, net win rate and a
+  volatility from your tracker or a labelled assumption. It gives the win
+  rate's posterior interval, the average risk of ruin over it and the risk's
+  posterior interval, and the bankroll for “risk below X% with Y% posterior
+  probability” over the hands you plan to play, next to the average-risk and
+  fixed-win-rate answers. Tables show how the answer changes with volatility,
+  prior and sample size, plus a sample-size estimate for a given precision.
+  These are exact for the model (closed form, no simulation;
+  `server/bankroll_posterior.js`). The second mode is the Monte Carlo
+  risk-of-ruin engine with a finite-horizon
   Brownian reference line. Like the Python engine, it monitors ruin
   continuously with a Brownian-bridge correction (the method from
   `barrier_resolution.py`), and its risk-versus-bankroll curve reuses the same

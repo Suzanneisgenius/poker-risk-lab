@@ -39,6 +39,7 @@ const routes = new Map([
   ["/api/ev", { type: "ev", timeout: 10000 }],
   ["/api/bankroll", { type: "bankroll", timeout: 45000 }],
   ["/api/risk-lab", { type: "risk-lab", timeout: 55000 }],
+  ["/api/bankroll-posterior", { type: "bankroll-posterior", timeout: 10000 }],
   ["/api/preflop", { type: "preflop", timeout: 10000 }],
   ["/api/gto", { type: "gto", timeout: 45000 }],
 ]);

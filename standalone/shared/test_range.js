@@ -10,7 +10,7 @@ const parse = (text) => {
   assert.equal(parsed.error, undefined, `${text}: ${parsed.error}`);
   return parsed.weights;
 };
-const count = (text) => R.summarize(parse(text)).combos;
+const count = (text) => R.summarize(parse(text)).weighted;
 const canonical = (text) => R.formatRange(parse(text));
 const errorOf = (text) => R.parseRange(text).error;
 
@@ -41,11 +41,17 @@ for (const [text, combos, formatted] of cases) {
   assert.equal(count(text), combos, `${text} has ${combos} combos`);
   assert.equal(canonical(text), formatted, `${text} formats as ${formatted}`);
 }
-for (const bad of ["AKx", "QQs", "QQs+", "AK-QQ", "AKs-AQo", "AK-QT", "AsAs", "AKs:1.5", "AKs:-1", "AKs:abc", "AKs:0.5:1", ":0.5", "any", "A1s", "AKss"]) {
+for (const bad of ["AKs:0.0000001", "AKs:0.12345", "AKs:12.345%", "QQs", "QQs+", "AK-QQ", "AKs-AQo", "AK-QT", "AsAs", "AKs:1.5", "AKs:-1", "AKs:abc", "AKs:0.5:1", ":0.5", "any", "A1s", "AKss"]) {
   assert.ok(errorOf(bad), `${bad} is rejected`);
 }
 assert.match(errorOf("aks, akx"), /“akx”/, "errors quote the entry as typed");
 assert.match(errorOf("x".repeat(20001)), /too long/);
+
+// Weights are whole multiples of 0.0001, read the same way as fractions or percentages.
+assert.equal(canonical("AKs:0.50000"), "AKs:0.5");
+assert.deepEqual(parse("AKs:12.34%"), parse("AKs:0.1234"));
+assert.equal(canonical("AKs:0.0001"), "AKs:0.0001");
+assert.match(errorOf("AKs:0.00001"), /too many decimals/);
 
 // --- Formatting round trip ---------------------------------------------------
 // Random class-level and combo-level ranges survive format -> parse unchanged.
@@ -61,12 +67,26 @@ for (let trial = 0; trial < 300; trial++) {
   const text = R.formatRange(weights);
   assert.deepEqual(parse(text), weights, `round trip: ${text.slice(0, 80)}`);
 }
+// Any accepted weight survives format -> parse, down to the smallest step.
+for (let trial = 0; trial < 300; trial++) {
+  const text = R.CLASSES.filter(() => random() < 0.15)
+    .map((name) => `${name}:${(Math.floor(random() * 10001) / 10000).toFixed(4)}`).join(", ");
+  const weights = parse(text);
+  assert.deepEqual(parse(R.formatRange(weights)), weights, `4-decimal round trip: ${text.slice(0, 80)}`);
+}
+for (const w of ["0.0001", "0.0009", "0.9999", "0.3333", "1%", "0.01%", "99.99%"]) {
+  const weights = parse(`AKs:${w}, QQ`);
+  assert.deepEqual(parse(R.formatRange(weights)), weights, `round trip of weight ${w}`);
+}
 
 // --- Summaries, matrix cells and toggling --------------------------------------
 const tens = parse("TT+, AKs");
-assert.deepEqual(R.summarize(tens), { combos: 34, live: 34, hands: 6, share: 34 / 1326 });
+assert.deepEqual(R.summarize(tens), { combos: 34, weighted: 34, live: 34, liveWeighted: 34, hands: 6, share: 34 / 1326 });
 const deadAce = 3 * 13 + 12, deadKing = 3 * 13 + 11; // As, Ks
 assert.equal(R.summarize(tens, [deadAce, deadKing]).live, 30 - 3 - 3 + 3, "card removal: AA and KK lose 3 combos each, AKs keeps 3");
+// A weight keeps every combo and scales how often each one enters the range.
+const halfSuited = R.summarize(parse("AKs:0.5"), [1 * 13 + 12, 3 * 13 + 11]); // Ad, Ks
+assert.deepEqual(halfSuited, { combos: 4, weighted: 2, live: 2, liveWeighted: 1, hands: 1, share: 2 / 1326 }, "AKs:0.5 with Ad Ks known: 4 combos (weighted 2), 2 live (weighted 1)");
 const aks = R.CLASS_INDEX.get("AKs");
 assert.deepEqual(R.classState(parse("AKs:0.5"), aks), { weight: 0.5, mixed: false });
 assert.deepEqual(R.classState(parse("AsKs"), aks), { weight: 0.25, mixed: true });

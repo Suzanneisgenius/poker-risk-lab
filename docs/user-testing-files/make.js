@@ -44,8 +44,17 @@ const files = {
     scenario("Break-even, seed 7", ...current(0, 7)), scenario("+3 bb/100, seed 7", ...current(3, 7))),
 };
 // The current engine's seed-42 result with B's risk changed by hand after saving.
+// The edit is consistent (survival and the 95% interval changed to match), so
+// the import accepts it and only recomputing shows that it does not match.
+const wilson = (p, n, z = 1.96) => {
+  const centre = (p + (z * z) / (2 * n)) / (1 + (z * z) / n);
+  const half = (z * Math.sqrt((p * (1 - p)) / n + (z * z) / (4 * n * n))) / (1 + (z * z) / n);
+  return [Math.max(0, centre - half), Math.min(1, centre + half)];
+};
 const edited = record("2026-10-22T10:05:00.000Z", scenario("Break-even", ...current(0, 42)), scenario("+3 bb/100", ...current(3, 42)));
 edited.b.results.risk_of_ruin = 0.0535;
+edited.b.results.survival = 1 - 0.0535;
+[edited.b.results.ci95_low, edited.b.results.ci95_high] = wilson(0.0535, edited.b.inputs.paths);
 edited.difference.risk_b_minus_a_pp = (edited.b.results.risk_of_ruin - edited.a.results.risk_of_ruin) * 100;
 files["3-edited-by-hand.json"] = edited;
 

@@ -155,6 +155,23 @@ expectTrue("card removal drops combos with known cards",
 check("shares sum to 1", flopRange.groups.reduce((s, g) => s + g.share, 0), 1, 1e-12);
 check("win + tie + lose = 1", flopRange.win + flopRange.tie + flopRange.lose, 1, 1e-12);
 check("equity = share-weighted group equities", flopRange.equity, flopRange.groups.reduce((s, g) => s + g.share * g.equity, 0), 1e-12);
+// Ahead / even / behind is decided combo by combo in exact runs. J2s against
+// AhKh on Qh7h2c averages 52.5%, but JhTh-style blockers split it: two combos
+// at 54.4% and one at 48.7%, so hero is ahead of 2/3 of it, not all of it.
+const j2 = E.equityVsRange(ak, rangeOf("J2s"), flop);
+check("J2s average equity", j2.equity, 52 / 99, 1e-12);
+check("J2s: ahead of 2/3 of the combos", j2.split.ahead, 2 / 3, 1e-12);
+check("J2s: behind 1/3", j2.split.behind, 1 / 3, 1e-12);
+expectTrue("J2s combo equities 48.7% to 54.4%", j2.split.basis === "combo"
+  && Math.abs(j2.groups[0].comboEquity[0] - 0.4868686868686869) < 1e-12 && Math.abs(j2.groups[0].comboEquity[1] - 0.5444444444444444) < 1e-12);
+const counted = { ahead: 0, even: 0, behind: 0 };
+let countedWeight = 0;
+for (const c of weighted) {
+  if ([...ak, ...flop].some((k) => c.cards.includes(k))) continue;
+  const e = E.equityExact(ak, c.cards, flop).equity;
+  counted[e > 0.5 ? "ahead" : e < 0.5 ? "behind" : "even"] += c.weight; countedWeight += c.weight;
+}
+for (const key of ["ahead", "even", "behind"]) check(`weighted range split ${key} = combo-by-combo count`, flopRange.split[key], counted[key] / countedWeight, 1e-12);
 const turn = ["Qh","7h","2c","9s"].map(C), river = [...turn, C("3d")];
 check("turn range = weighted mean of exact combos", E.equityVsRange(ak, weighted, turn).equity, byCombo(ak, weighted, turn), 1e-12);
 check("river range = weighted mean of exact combos", E.equityVsRange(ak, weighted, river).equity, byCombo(ak, weighted, river), 1e-12);
@@ -170,6 +187,10 @@ const preMC = E.equityVsRange(ak, small, [], { trials: 150000, seed: 11 });
 const preExact = byCombo(ak, small, []);
 expectTrue("preflop range of several combos uses Monte Carlo", preMC.method === "monte-carlo" && preMC.standardError > 0);
 check("preflop stratified MC ≈ exact (4 SE)", preMC.equity, preExact, 4 * preMC.standardError);
+expectTrue("Monte Carlo decides hand by hand, with a close-call bucket",
+  preMC.split.basis === "hand" && preMC.split.even === 0 && Math.abs(preMC.split.ahead + preMC.split.close + preMC.split.behind - 1) < 1e-12
+  && preMC.groups.every((g) => ["ahead", "close", "behind"].includes(g.call)
+    && (g.call === "close") === (Math.abs(g.equity - 0.5) <= 1.96 * g.standardError)));
 check("forced exact preflop = weighted mean of exact combos", E.equityVsRange(ak, small, [], { exactLimit: Infinity }).equity, preExact, 1e-12);
 expectTrue("same seed, same result", E.equityVsRange(ak, small, [], { trials: 5000, seed: 3 }).equity === E.equityVsRange(ak, small, [], { trials: 5000, seed: 3 }).equity);
 expectTrue("every hand in the range gets at least one trial",

@@ -15,6 +15,7 @@
     "test:unit": "node server/test_unit.js",
     "check:calc-change": "node checks/calculation-change-2026-10-21/run.js --check",
     "test:range": "node standalone/shared/test_range.js",
-    "test": "node standalone/engines/test_engines.js && node standalone/shared/test_range.js && node server/test_unit.js && node server/test_api.js && npm run test:ui"
+    "test": "node standalone/engines/test_engines.js && node standalone/shared/test_range.js && node server/test_unit.js && node server/test_api.js && npm run check:posterior && node scripts/test_case_study_build.js && npm run test:ui",
+    "check:posterior": "node checks/bankroll-posterior-python/ours.js --check"
   }
 }

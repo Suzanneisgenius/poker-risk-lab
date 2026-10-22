@@ -1,0 +1,207 @@
+{
+  "purpose": "Internal check: the page's posterior bankroll calculation against the Python research code and scipy.",
+  "command": "python -I checks/bankroll-posterior-python/run.py --check",
+  "model": {
+    "name": "bankroll-posterior",
+    "version": "2026-10-22",
+    "likelihood": "observed win rate ~ Normal(true win rate, (volatility / sqrt(hands / 100))^2), volatility held fixed",
+    "posterior": "Normal-Normal conjugate update",
+    "risk": "finite-horizon Brownian first passage; average over the posterior in closed form"
+  },
+  "tolerance": {
+    "probability": 1e-06,
+    "win_rate": 1e-09,
+    "bankroll_relative": 1e-05,
+    "hands": 1,
+    "mc_se": 4.0
+  },
+  "environment": {
+    "python": "3.12.14",
+    "scipy": "1.18.1",
+    "numpy": "2.5.4"
+  },
+  "cases": [
+    {
+      "id": "40k-hands-plus-4-assumed-90",
+      "comparisons": 284,
+      "largest_difference": {
+        "probability": 5e-08,
+        "win_rate": 3.6e-15,
+        "bankroll_relative": 2.1e-08,
+        "hands": 0.65
+      },
+      "widest_source": "winRate",
+      "widest_source_matches": true,
+      "failures": [],
+      "posterior_draws": {
+        "draws": 20000,
+        "seed": 0,
+        "average": 0.165572,
+        "difference_in_se": 1.13
+      },
+      "passed": true
+    },
+    {
+      "id": "40k-hands-plus-4-tracker-85-no-prior",
+      "comparisons": 292,
+      "largest_difference": {
+        "probability": 5.5e-08,
+        "win_rate": 3.6e-15,
+        "bankroll_relative": 2.4e-08,
+        "hands": 0.65
+      },
+      "widest_source": "winRate",
+      "widest_source_matches": true,
+      "failures": [],
+      "posterior_draws": {
+        "draws": 20000,
+        "seed": 1,
+        "average": 0.132111,
+        "difference_in_se": -0.69
+      },
+      "passed": true
+    },
+    {
+      "id": "case-study-50k-plus-3",
+      "comparisons": 284,
+      "largest_difference": {
+        "probability": 5.8e-08,
+        "win_rate": 3.6e-15,
+        "bankroll_relative": 2.3e-08,
+        "hands": 0.65
+      },
+      "widest_source": "winRate",
+      "widest_source_matches": true,
+      "failures": [],
+      "posterior_draws": {
+        "draws": 20000,
+        "seed": 2,
+        "average": 0.190376,
+        "difference_in_se": 1.0
+      },
+      "passed": true
+    },
+    {
+      "id": "5k-hands-plus-12-skeptical",
+      "comparisons": 292,
+      "largest_difference": {
+        "probability": 6.2e-08,
+        "win_rate": 7.1e-15,
+        "bankroll_relative": 1.7e-08,
+        "hands": 0.83
+      },
+      "widest_source": "winRate",
+      "widest_source_matches": true,
+      "failures": [],
+      "posterior_draws": {
+        "draws": 20000,
+        "seed": 3,
+        "average": 0.409104,
+        "difference_in_se": 0.61
+      },
+      "passed": true
+    },
+    {
+      "id": "2m-hands-threshold-1pct-95",
+      "comparisons": 292,
+      "largest_difference": {
+        "probability": 2.3e-08,
+        "win_rate": 1.3e-15,
+        "bankroll_relative": 1.2e-08,
+        "hands": 0.65
+      },
+      "widest_source": "volatility",
+      "widest_source_matches": true,
+      "failures": [],
+      "posterior_draws": {
+        "draws": 20000,
+        "seed": 4,
+        "average": 0.127508,
+        "difference_in_se": 1.42
+      },
+      "passed": true
+    },
+    {
+      "id": "losing-100k-minus-3",
+      "comparisons": 292,
+      "largest_difference": {
+        "probability": 4.4e-08,
+        "win_rate": 3.6e-15,
+        "bankroll_relative": 1.3e-08,
+        "hands": 0.65
+      },
+      "widest_source": "winRate",
+      "widest_source_matches": true,
+      "failures": [],
+      "posterior_draws": {
+        "draws": 20000,
+        "seed": 5,
+        "average": 0.291884,
+        "difference_in_se": 1.32
+      },
+      "passed": true
+    },
+    {
+      "id": "200bb-buy-ins",
+      "comparisons": 292,
+      "largest_difference": {
+        "probability": 5.5e-08,
+        "win_rate": 1.8e-15,
+        "bankroll_relative": 1.9e-08,
+        "hands": 0.65
+      },
+      "widest_source": "winRate",
+      "widest_source_matches": true,
+      "failures": [],
+      "posterior_draws": {
+        "draws": 20000,
+        "seed": 6,
+        "average": 0.456527,
+        "difference_in_se": -0.27
+      },
+      "passed": true
+    },
+    {
+      "id": "sample-size-100-at-95-and-99",
+      "comparisons": 292,
+      "largest_difference": {
+        "probability": 7.6e-08,
+        "win_rate": 7.1e-15,
+        "bankroll_relative": 2.1e-08,
+        "hands": 0.65
+      },
+      "widest_source": "winRate",
+      "widest_source_matches": true,
+      "failures": [],
+      "posterior_draws": {
+        "draws": 20000,
+        "seed": 7,
+        "average": 0.13193,
+        "difference_in_se": 0.26
+      },
+      "passed": true
+    },
+    {
+      "id": "sample-size-half-bb-at-99",
+      "comparisons": 292,
+      "largest_difference": {
+        "probability": 4.7e-08,
+        "win_rate": 7.1e-15,
+        "bankroll_relative": 2.1e-08,
+        "hands": 0.66
+      },
+      "widest_source": "winRate",
+      "widest_source_matches": true,
+      "failures": [],
+      "posterior_draws": {
+        "draws": 20000,
+        "seed": 8,
+        "average": 0.203813,
+        "difference_in_se": 0.83
+      },
+      "passed": true
+    }
+  ],
+  "comparisons": 2612,
+  "all_passed": true
+}

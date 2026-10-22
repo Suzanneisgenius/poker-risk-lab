@@ -13,8 +13,11 @@
       "pokerkit": "AA",
       "combos": 6,
       "pokerkit_combos": 6,
+      "weighted_count": 6,
+      "pokerkit_weighted_count": 6.0,
       "only_ours": [],
       "only_pokerkit": [],
+      "weights_match": true,
       "match": true
     },
     {
@@ -23,8 +26,11 @@
       "pokerkit": "QQ+",
       "combos": 18,
       "pokerkit_combos": 18,
+      "weighted_count": 18,
+      "pokerkit_weighted_count": 18.0,
       "only_ours": [],
       "only_pokerkit": [],
+      "weights_match": true,
       "match": true
     },
     {
@@ -33,8 +39,11 @@
       "pokerkit": "22+",
       "combos": 78,
       "pokerkit_combos": 78,
+      "weighted_count": 78,
+      "pokerkit_weighted_count": 78.0,
       "only_ours": [],
       "only_pokerkit": [],
+      "weights_match": true,
       "match": true
     },
     {
@@ -43,8 +52,11 @@
       "pokerkit": "99-66",
       "combos": 24,
       "pokerkit_combos": 24,
+      "weighted_count": 24,
+      "pokerkit_weighted_count": 24.0,
       "only_ours": [],
       "only_pokerkit": [],
+      "weights_match": true,
       "match": true
     },
     {
@@ -53,8 +65,11 @@
       "pokerkit": "22-55",
       "combos": 24,
       "pokerkit_combos": 24,
+      "weighted_count": 24,
+      "pokerkit_weighted_count": 24.0,
       "only_ours": [],
       "only_pokerkit": [],
+      "weights_match": true,
       "match": true
     },
     {
@@ -63,8 +78,11 @@
       "pokerkit": "AKs",
       "combos": 4,
       "pokerkit_combos": 4,
+      "weighted_count": 4,
+      "pokerkit_weighted_count": 4.0,
       "only_ours": [],
       "only_pokerkit": [],
+      "weights_match": true,
       "match": true
     },
     {
@@ -73,8 +91,11 @@
       "pokerkit": "AKo",
       "combos": 12,
       "pokerkit_combos": 12,
+      "weighted_count": 12,
+      "pokerkit_weighted_count": 12.0,
       "only_ours": [],
       "only_pokerkit": [],
+      "weights_match": true,
       "match": true
     },
     {
@@ -83,8 +104,11 @@
       "pokerkit": "AK",
       "combos": 16,
       "pokerkit_combos": 16,
+      "weighted_count": 16,
+      "pokerkit_weighted_count": 16.0,
       "only_ours": [],
       "only_pokerkit": [],
+      "weights_match": true,
       "match": true
     },
     {
@@ -93,8 +117,11 @@
       "pokerkit": "ATs+",
       "combos": 16,
       "pokerkit_combos": 16,
+      "weighted_count": 16,
+      "pokerkit_weighted_count": 16.0,
       "only_ours": [],
       "only_pokerkit": [],
+      "weights_match": true,
       "match": true
     },
     {
@@ -103,8 +130,11 @@
       "pokerkit": "KTo+",
       "combos": 36,
       "pokerkit_combos": 36,
+      "weighted_count": 36,
+      "pokerkit_weighted_count": 36.0,
       "only_ours": [],
       "only_pokerkit": [],
+      "weights_match": true,
       "match": true
     },
     {
@@ -113,8 +143,11 @@
       "pokerkit": "AT+",
       "combos": 64,
       "pokerkit_combos": 64,
+      "weighted_count": 64,
+      "pokerkit_weighted_count": 64.0,
       "only_ours": [],
       "only_pokerkit": [],
+      "weights_match": true,
       "match": true
     },
     {
@@ -123,8 +156,11 @@
       "pokerkit": "T9s-65s",
       "combos": 20,
       "pokerkit_combos": 20,
+      "weighted_count": 20,
+      "pokerkit_weighted_count": 20.0,
       "only_ours": [],
       "only_pokerkit": [],
+      "weights_match": true,
       "match": true
     },
     {
@@ -133,8 +169,11 @@
       "pokerkit": "AK-QJ",
       "combos": 48,
       "pokerkit_combos": 48,
+      "weighted_count": 48,
+      "pokerkit_weighted_count": 48.0,
       "only_ours": [],
       "only_pokerkit": [],
+      "weights_match": true,
       "match": true
     },
     {
@@ -143,8 +182,11 @@
       "pokerkit": "AsKs",
       "combos": 1,
       "pokerkit_combos": 1,
+      "weighted_count": 1,
+      "pokerkit_weighted_count": 1.0,
       "only_ours": [],
       "only_pokerkit": [],
+      "weights_match": true,
       "match": true
     },
     {
@@ -153,8 +195,11 @@
       "pokerkit": "AhKd, AdKh",
       "combos": 2,
       "pokerkit_combos": 2,
+      "weighted_count": 2,
+      "pokerkit_weighted_count": 2.0,
       "only_ours": [],
       "only_pokerkit": [],
+      "weights_match": true,
       "match": true
     },
     {
@@ -163,8 +208,11 @@
       "pokerkit": "A5s A4s A3s A2s",
       "combos": 16,
       "pokerkit_combos": 16,
+      "weighted_count": 16,
+      "pokerkit_weighted_count": 16.0,
       "only_ours": [],
       "only_pokerkit": [],
+      "weights_match": true,
       "match": true
     },
     {
@@ -173,8 +221,11 @@
       "pokerkit": "K9o K8o K7o K6o",
       "combos": 48,
       "pokerkit_combos": 48,
+      "weighted_count": 48,
+      "pokerkit_weighted_count": 48.0,
       "only_ours": [],
       "only_pokerkit": [],
+      "weights_match": true,
       "match": true
     },
     {
@@ -183,8 +234,11 @@
       "pokerkit": "QQ+ AKs AQo+ KQ JTs 76s-54s A5s A4s A3s A2s 22",
       "combos": 100,
       "pokerkit_combos": 100,
+      "weighted_count": 100,
+      "pokerkit_weighted_count": 100.0,
       "only_ours": [],
       "only_pokerkit": [],
+      "weights_match": true,
       "match": true
     },
     {
@@ -193,8 +247,11 @@
       "pokerkit": "55+, A5s+, K9s+, QJs, A9o+, KJo+",
       "combos": 200,
       "pokerkit_combos": 200,
+      "weighted_count": 200,
+      "pokerkit_weighted_count": 200.0,
       "only_ours": [],
       "only_pokerkit": [],
+      "weights_match": true,
       "match": true
     },
     {
@@ -203,8 +260,115 @@
       "pokerkit": "33+, A2+, K2s+, Q5s+, J7s+, T9s, K4o+, Q8o+, J9o+",
       "combos": 536,
       "pokerkit_combos": 536,
+      "weighted_count": 536,
+      "pokerkit_weighted_count": 536.0,
       "only_ours": [],
       "only_pokerkit": [],
+      "weights_match": true,
+      "match": true
+    },
+    {
+      "text": "AKs, AKs",
+      "ours": "AKs, AKs",
+      "pokerkit": "AKs, AKs",
+      "combos": 4,
+      "pokerkit_combos": 4,
+      "weighted_count": 4,
+      "pokerkit_weighted_count": 4.0,
+      "only_ours": [],
+      "only_pokerkit": [],
+      "weights_match": true,
+      "match": true
+    },
+    {
+      "text": "AK, AKs:0.5",
+      "ours": "AK, AKs:0.5",
+      "pokerkit": "AK, AKs:0.5",
+      "combos": 16,
+      "pokerkit_combos": 16,
+      "weighted_count": 14.0,
+      "pokerkit_weighted_count": 14.0,
+      "only_ours": [],
+      "only_pokerkit": [],
+      "weights_match": true,
+      "match": true
+    },
+    {
+      "text": "QQ+, KK:0",
+      "ours": "QQ+, KK:0",
+      "pokerkit": "QQ+, KK:0",
+      "combos": 12,
+      "pokerkit_combos": 12,
+      "weighted_count": 12,
+      "pokerkit_weighted_count": 12.0,
+      "only_ours": [],
+      "only_pokerkit": [],
+      "weights_match": true,
+      "match": true
+    },
+    {
+      "text": "TT+:0.5, JJ",
+      "ours": "TT+:0.5, JJ",
+      "pokerkit": "TT+:0.5, JJ",
+      "combos": 30,
+      "pokerkit_combos": 30,
+      "weighted_count": 18.0,
+      "pokerkit_weighted_count": 18.0,
+      "only_ours": [],
+      "only_pokerkit": [],
+      "weights_match": true,
+      "match": true
+    },
+    {
+      "text": "AsKs, AKs:0.25",
+      "ours": "AsKs, AKs:0.25",
+      "pokerkit": "AsKs, AKs:0.25",
+      "combos": 4,
+      "pokerkit_combos": 4,
+      "weighted_count": 1.0,
+      "pokerkit_weighted_count": 1.0,
+      "only_ours": [],
+      "only_pokerkit": [],
+      "weights_match": true,
+      "match": true
+    },
+    {
+      "text": "AKs:0.25, AsKs",
+      "ours": "AKs:0.25, AsKs",
+      "pokerkit": "AKs:0.25, AsKs",
+      "combos": 4,
+      "pokerkit_combos": 4,
+      "weighted_count": 1.75,
+      "pokerkit_weighted_count": 1.75,
+      "only_ours": [],
+      "only_pokerkit": [],
+      "weights_match": true,
+      "match": true
+    },
+    {
+      "text": "22+:25%, 55-33",
+      "ours": "22+:25%, 55-33",
+      "pokerkit": "22+:25%, 55-33",
+      "combos": 78,
+      "pokerkit_combos": 78,
+      "weighted_count": 33.0,
+      "pokerkit_weighted_count": 33.0,
+      "only_ours": [],
+      "only_pokerkit": [],
+      "weights_match": true,
+      "match": true
+    },
+    {
+      "text": "AhKd AdKh, AK:0.75",
+      "ours": "AhKd AdKh, AK:0.75",
+      "pokerkit": "AhKd AdKh, AK:0.75",
+      "combos": 16,
+      "pokerkit_combos": 16,
+      "weighted_count": 12.0,
+      "pokerkit_weighted_count": 12.0,
+      "only_ours": [],
+      "only_pokerkit": [],
+      "weights_match": true,
       "match": true
     }
   ],
@@ -221,6 +385,19 @@
       "ours": 0.6083629083629083,
       "pokerkit": 0.6083629083629083,
       "difference": 0.0,
+      "hands": 16,
+      "ours_hands": 16,
+      "split": {
+        "ahead": 0.72972972973,
+        "even": 0.0,
+        "behind": 0.27027027027
+      },
+      "ours_split": {
+        "ahead": 0.72972972973,
+        "even": 0,
+        "behind": 0.27027027027
+      },
+      "largest_hand_difference": 1.1e-16,
       "match": true
     },
     {
@@ -235,6 +412,19 @@
       "ours": 0.901315789473684,
       "pokerkit": 0.9013157894736842,
       "difference": -2.220446049250313e-16,
+      "hands": 12,
+      "ours_hands": 12,
+      "split": {
+        "ahead": 0.973684210526,
+        "even": 0.0,
+        "behind": 0.026315789474
+      },
+      "ours_split": {
+        "ahead": 0.973684210526,
+        "even": 0,
+        "behind": 0.026315789474
+      },
+      "largest_hand_difference": 1.1e-16,
       "match": true
     },
     {
@@ -249,6 +439,19 @@
       "ours": 0.6516515758883933,
       "pokerkit": 0.6516515758883936,
       "difference": -3.3306690738754696e-16,
+      "hands": 169,
+      "ours_hands": 169,
+      "split": {
+        "ahead": 0.940795559667,
+        "even": 0.0,
+        "behind": 0.059204440333
+      },
+      "ours_split": {
+        "ahead": 0.940795559667,
+        "even": 0,
+        "behind": 0.059204440333
+      },
+      "largest_hand_difference": 3.3e-16,
       "match": true
     },
     {
@@ -263,6 +466,19 @@
       "ours": 0.36245572609208976,
       "pokerkit": 0.36245572609208976,
       "difference": 0.0,
+      "hands": 24,
+      "ours_hands": 24,
+      "split": {
+        "ahead": 0.0,
+        "even": 0.0,
+        "behind": 1.0
+      },
+      "ours_split": {
+        "ahead": 0,
+        "even": 0,
+        "behind": 1.0
+      },
+      "largest_hand_difference": 1.1e-16,
       "match": true
     },
     {
@@ -277,6 +493,46 @@
       "ours": 0.9013452914798206,
       "pokerkit": 0.9013452914798207,
       "difference": -1.1102230246251565e-16,
+      "hands": 14,
+      "ours_hands": 14,
+      "split": {
+        "ahead": 0.820627802691,
+        "even": 0.161434977578,
+        "behind": 0.017937219731
+      },
+      "ours_split": {
+        "ahead": 0.820627802691,
+        "even": 0.161434977578,
+        "behind": 0.017937219731
+      },
+      "largest_hand_difference": 0.0,
+      "match": true
+    },
+    {
+      "id": "flop-one-hand-split-by-suits",
+      "hero": "AhKh",
+      "board": "Qh7h2c",
+      "range": "J2s",
+      "combos": 3,
+      "ours_combos": 3,
+      "weight": 3.0,
+      "runouts_per_combo": 990,
+      "ours": 0.5252525252525253,
+      "pokerkit": 0.5252525252525252,
+      "difference": 1.1102230246251565e-16,
+      "hands": 1,
+      "ours_hands": 1,
+      "split": {
+        "ahead": 0.666666666667,
+        "even": 0.0,
+        "behind": 0.333333333333
+      },
+      "ours_split": {
+        "ahead": 0.666666666667,
+        "even": 0,
+        "behind": 0.333333333333
+      },
+      "largest_hand_difference": 1.1e-16,
       "match": true
     }
   ],

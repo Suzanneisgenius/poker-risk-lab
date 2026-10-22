@@ -165,8 +165,11 @@ Canonical hero scenario: **win rate 3 bb/100, std 90 bb/100, bankroll 3,000 bb
 - Bayesian (edge 1.86 bb/100 over 50k hands; SE 3.98; 95% CI includes 0;
   P(edge > 0) ≈ **65%**): plug-in ruin **27.3%** → uncertainty-integrated
   **37.4%** (**×1.37**); P(true risk > 25%) ≈ **55%**.
-- Model risk (same edge & variance): AR(1) dependence **×1.44**, regime switching
-  **×1.20**; variance-matched heavy tails / shocks ≈ neutral.
+- Model risk (same +3 bb/100 edge, 30 BI, 100k hands, ruin observed at 100-hand
+  checkpoints; `reports/case-study/assumptions.json`): AR(1) dependence **×2.87**
+  (same spread per step, wider total); regime switching **×1.65**, but with wider
+  steps (SD ≈ 101 vs 90), so not variance-matched; heavy tails / shocks at the
+  same spread per step ≈ neutral.
 
 > Regenerate all of the above with the high-precision configs before publishing,
 > and update any decimal that changes. Mark anything not yet regenerated as a

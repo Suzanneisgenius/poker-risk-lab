@@ -69,9 +69,13 @@ strategy, and translating that strategy back to the full game in real time.
   win rate's confidence interval still includes zero (P(edge > 0) ≈ **65%**);
   propagating that uncertainty raises modeled ruin risk from **27.3%** (plug-in)
   to **37.4%** (**×1.37**).
-- **Model risk:** holding edge and variance fixed, serial dependence inflates
-  ruin risk — AR(1) **×1.44**, regime switching **×1.20** — while variance-matched
-  heavy tails and shocks are roughly neutral.
+- **Model risk:** at the same +3 bb/100 edge (30 buy-ins, 90 bb/100, 100k
+  hands, ruin observed at 100-hand checkpoints; `reports/case-study/assumptions.json`),
+  swings that carry over between steps raise ruin risk — AR(1) **×2.87**, with the
+  same spread per step but a wider total. Regime switching gives **×1.65**, but its
+  steps are also wider (SD about 101 instead of 90), so it does not hold the
+  variance fixed. Heavy tails and shocks at the same spread per step are roughly
+  neutral. (An earlier quick run in a different scenario gave ×1.44 and ×1.20.)
 - **Toy CFR:** my Kuhn-poker CFR converges to the known game value **−1/18 ≈
   −0.0556** and reproduces the equilibrium's qualitative structure (the best hand
   bets three times as often as the worst as a bluff; the middle hand checks first;

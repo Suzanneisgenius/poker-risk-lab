@@ -211,6 +211,10 @@ let eqRangeWeights=PokerRange.parseRange($('eq_range_text').value).weights||new 
 let eqRangeError='';
 let eqRangeFocus=0;
 const comboCount=n=>(Number.isInteger(n)?n:+n.toFixed(2)).toLocaleString('en-US')+(n===1?' combo':' combos');
+// Combos are the two-card holdings; a weight below 1 makes a combo enter the
+// range less often, so the weighted count can differ from the number of combos.
+const weightedCount=n=>(Number.isInteger(n)?n:+n.toFixed(2)).toLocaleString('en-US');
+const comboLabel=(count,weight)=>comboCount(count)+(Math.abs(weight-count)>1e-9?`, weighted ${weightedCount(weight)}`:'');
 function equityKnownCards(){return [...SLOTS.hero,...SLOTS.board].map(s=>cardState[s]).filter(v=>v!=null);}
 function renderRangeEditor(){
   const editor=$('eq_range_editor'),on=rangeOpponentActive();
@@ -221,7 +225,7 @@ function renderRangeEditor(){
     const s=PokerRange.summarize(eqRangeWeights,equityKnownCards());
     status.dataset.state=s.combos?'ok':'error';
     status.textContent=!s.combos?'The range is empty. Type hands, tap the chart or use Top %.'
-      :`${comboCount(s.combos)} · ${(s.share*100).toFixed(1)}% of starting hands`+(s.live<s.combos-1e-9?` · ${comboCount(s.live)} left after your cards and the board`:'')
+      :`${comboLabel(s.combos,s.weighted)} · ${(s.share*100).toFixed(1)}% of starting hands`+(s.live<s.combos?` · ${comboLabel(s.live,s.liveWeighted)} left after your cards and the board`:'')
         +(s.live?'':'. Every one uses a known card.');
   }
   const matrix=$('eq_range_matrix');
@@ -233,9 +237,12 @@ function renderRangeEditor(){
   }).join('');
   if(focused!=null)matrix.querySelector(`[data-range-class="${focused}"]`)?.focus();
 }
+// The chart and Top % write the range as text; the state is whatever that text
+// parses back to, so the preview always matches what is sent to the server.
 function setRangeFromWeights(weights){
-  eqRangeWeights=weights;eqRangeError='';
-  $('eq_range_text').value=PokerRange.formatRange(weights);
+  const text=PokerRange.formatRange(weights),parsed=PokerRange.parseRange(text);
+  eqRangeWeights=parsed.weights||weights;eqRangeError=parsed.error||'';
+  $('eq_range_text').value=text;
   renderRangeEditor();markEquityDirty();
 }
 $('eq_range_text').addEventListener('input',()=>{
@@ -360,24 +367,28 @@ document.querySelectorAll('.exbtn').forEach(b=>b.addEventListener('click',()=>{
 }));
 
 // Equity against each hand in the range, toughest first, with the share of the
-// range where hero is ahead, even or behind.
+// range where hero is ahead, even or behind. Exact runs decide that combo by
+// combo; Monte Carlo runs only hand by hand (res.split.basis says which).
 function renderRangeBreakdown(res){
   const box=$('eq_breakdown');box.hidden=!res;if(!res)return;
   const rows=[...res.groups].sort((a,b)=>a.equity-b.equity||b.share-a.share);
-  const bucket={ahead:0,even:0,behind:0};
-  rows.forEach(g=>{bucket[g.equity>0.5+1e-9?'ahead':g.equity<0.5-1e-9?'behind':'even']+=g.share;});
+  const split=res.split,byCombo=split.basis==='combo';
   const pct=v=>(v*100).toFixed(v>0&&v<.001?2:1)+'%';
-  const parts=[bucket.ahead&&`ahead of ${pct(bucket.ahead)} of this range`,bucket.behind&&`behind ${pct(bucket.behind)}`,bucket.even&&`even with ${pct(bucket.even)}`].filter(Boolean);
-  $('eq_breakdown_summary').textContent=`You're ${parts.length>1?parts.slice(0,-1).join(', ')+' and '+parts.at(-1):parts[0]}.`;
-  $('eq_breakdown_bar').innerHTML=`<span style="width:${bucket.ahead*100}%;background:${C.pos}"></span><span style="width:${bucket.even*100}%;background:${C.muted}"></span><span style="width:${bucket.behind*100}%;background:${C.ruin}"></span>`;
-  $('eq_breakdown_bar').setAttribute('aria-label',`Share of the range: ahead ${pct(bucket.ahead)}, even ${pct(bucket.even)}, behind ${pct(bucket.behind)}`);
+  const parts=[split.ahead&&`ahead of ${pct(split.ahead)}`,split.behind&&`behind ${pct(split.behind)}`,split.even&&`even with ${pct(split.even)}`,split.close&&`too close to call against ${pct(split.close)}`].filter(Boolean);
+  const list=parts.length>1?parts.slice(0,-1).join(', ')+' and '+parts.at(-1):parts[0];
+  $('eq_breakdown_summary').textContent=byCombo?`Combo by combo, weighted: you're ${list} of this range.`:`Hand by hand, using each hand's average over its combos: you're ${list} of this range.`;
+  $('eq_breakdown_bar').innerHTML=`<span style="width:${split.ahead*100}%;background:${C.pos}"></span><span style="width:${(split.even+split.close)*100}%;background:${C.muted}"></span><span style="width:${split.behind*100}%;background:${C.ruin}"></span>`;
+  $('eq_breakdown_bar').setAttribute('aria-label',`Share of the range: ahead ${pct(split.ahead)}, ${byCombo?'even':'too close to call'} ${pct(split.even+split.close)}, behind ${pct(split.behind)}`);
   $('eq_breakdown_rows').innerHTML=rows.map(g=>{
-    const e=g.equity*100,tone=g.equity>0.5+1e-9?'ahead':g.equity<0.5-1e-9?'behind':'even';
-    return `<tr><th scope="row">${escapeHtml(g.group)}</th><td>${pct(g.share)} <span class="dim">${comboCount(g.weight)}</span></td><td><span class="range-eq ${tone}"><span style="width:${e}%"></span></span>${e.toFixed(1)}%</td></tr>`;
+    const e=g.equity*100;
+    const tone=byCombo?(g.split.ahead===1?'ahead':g.split.behind===1?'behind':g.split.even===1?'even':'mixed'):g.call;
+    const spread=byCombo&&tone==='mixed'?` <span class="dim">combos ${(g.comboEquity[0]*100).toFixed(1)}–${(g.comboEquity[1]*100).toFixed(1)}%</span>`:'';
+    return `<tr><th scope="row">${escapeHtml(g.group)}</th><td>${pct(g.share)} <span class="dim">${comboLabel(g.combos,g.weight)}</span></td><td><span class="range-eq ${tone}"><span style="width:${e}%"></span></span>${e.toFixed(1)}%${spread}</td></tr>`;
   }).join('');
   const largestError=Math.max(...rows.map(g=>g.standardError))*100;
-  $('eq_breakdown_note').textContent='Ahead means more than 50% equity against that hand.'+(res.method==='exact'?''
-    :` Each hand's value comes from fewer trials than the total; standard errors reach ${largestError.toFixed(1)} pp for the smallest shares, so hands near 50% can land on either side.`);
+  $('eq_breakdown_note').textContent=byCombo
+    ?'Ahead means more than 50% equity against that combo over every runout. A hand whose combos fall on both sides shows the range of its combos.'
+    :`Ahead means the hand's average equity is above 50% by more than 1.96 standard errors; too close to call means within that margin. Monte Carlo does not separate a hand's combos, which can sit on different sides of 50%. Standard errors reach ${largestError.toFixed(1)} pp for the smallest shares.`;
 }
 
 let equityRequest=0;
@@ -450,7 +461,7 @@ async function runEquity(showResult=false){
     $('eq_toev').disabled=false;
     const cardText=i=>RANKS[i%13]+SUIT_SYM[Math.floor(i/13)];
     const shortRange=text=>text.length>60?text.slice(0,text.lastIndexOf(',',57))+', …':text;
-    const opponentText=range?`range ${shortRange(range.text)} (${comboCount(range.live)})`
+    const opponentText=range?`range ${shortRange(range.text)} (${comboLabel(range.live,range.liveWeighted)})`
       :opponents.map((hand,index)=>hand?hand.map(cardText).join(' '):`Opponent ${index+1} random`).join(' · ');
     window.__lastEquityContext=hero.map(cardText).join(' ')+' vs '+opponentText+(board.length?' · board '+board.map(cardText).join(' '):'');
     eqResultBasis=window.__lastEquityContext+' · '+(res.method==='exact'?'exact':`${res.trials.toLocaleString()} trials, seed ${seed}`);
@@ -652,6 +663,173 @@ document.querySelectorAll('.bksdpreset').forEach(button=>button.addEventListener
 }));
 ['bk_wr','bk_sd','bk_bank','bk_hands'].forEach(id=>$(id).addEventListener('input',()=>{document.querySelectorAll('.bkpreset').forEach(x=>x.setAttribute('aria-pressed','false'));if(id==='bk_sd')document.querySelectorAll('.bksdpreset').forEach(x=>x.setAttribute('aria-pressed','false'));}));
 ['bk_wr','bk_sd','bk_bank','bk_thr','bk_hands','bk_paths','bk_seed'].forEach(id=>$(id).addEventListener('input',()=>markBankrollDirty()));
+
+/* ================= 3b. BANKROLL FROM YOUR RESULTS ================= */
+// Same three readings everywhere: the observed win rate taken as exact (amber),
+// the average over the win rate's posterior (violet) and the posterior upper
+// bound that the answer uses (pink). Dash styles repeat the distinction.
+const BP_SERIES={upper:{color:'#F472B6',dash:'solid'},average:{color:'#C4B5FD',dash:'dash'},plugIn:{color:'#FBBF24',dash:'dot'}};
+const BP_PRIOR_SHORT={none:'no prior',weak:'weakly informative prior',skeptical:'skeptical prior'};
+const BP_FIELDS=['bp_hands','bp_wr','bp_sd','bp_bank','bp_thr','bp_bb','bp_horizon','bp_target','bp_cred','bp_margin','bp_level'];
+let bpRequest=0,bpController=null,bpBasis='',bpTimer=null,bpHasResult=false;
+function setBpState(state,note=''){setResultState($('bp_results'),$('bp_result_state'),state,{note,basis:bpBasis});}
+const bkMode=()=>document.querySelector('input[name="bk_mode"]:checked').value;
+const bpSdSource=()=>document.querySelector('input[name="bp_sd_source"]:checked').value;
+const bpPrior=()=>document.querySelector('input[name="bp_prior"]:checked').value;
+const bpAssumedSd=()=>+(document.querySelector('.bpsdpreset[aria-pressed="true"]')?.dataset.sd||90);
+const bpPct=v=>v<0.0005?'<0.1%':v>0.9995?'>99.9%':(v*100).toFixed(1)+'%';
+const bpSigned=v=>(v<0?'−':'+')+Math.abs(v).toFixed(1);
+const bpLevel=v=>`${Number((v*100).toFixed(1))}%`;
+const bpBI=v=>v==null?'—':v<100?String(Math.round(v*10)/10):Math.round(v).toLocaleString();
+const bpRange=(lo,hi)=>`${bpPct(lo)} to ${bpPct(hi)}`;
+const bpHands=n=>n>=1e6?`${(n/1e6).toFixed(n>=1e7?1:2)} million`:Math.round(n).toLocaleString();
+function bpQuestionText(){
+  const thr=+$('bp_thr').value,horizon=+$('bp_horizon').value;
+  $('bp_question_text').textContent=`Bankroll so that, given these results and this model, the posterior probability is at least ${$('bp_cred').value||'…'}% that the risk of falling to ${thr>0?thr+' buy-ins':'zero'} within ${horizon>0?horizon.toLocaleString():'…'} hands is below ${$('bp_target').value||'…'}%.`;
+}
+function scheduleBp(){
+  bpQuestionText();
+  ++bpRequest;bpController?.abort();bpController=null;
+  setBpState(bpHasResult?'stale':'empty','Inputs changed. Updating…');
+  clearTimeout(bpTimer);bpTimer=setTimeout(runBp,350);
+}
+async function runBp(){
+  clearTimeout(bpTimer);
+  ++bpRequest;bpController?.abort();bpController=null;
+  const fields=BP_FIELDS.filter(id=>id!=='bp_sd'||bpSdSource()==='tracker');
+  if(fields.some(id=>$(id).value.trim()===''||!Number.isFinite(Number($(id).value)))){
+    setBpState(bpHasResult?'stale':'empty','Fill in every number to calculate.');return;
+  }
+  const sdSource=bpSdSource();
+  const input={hands:+$('bp_hands').value,winRate:+$('bp_wr').value,sd:sdSource==='tracker'?+$('bp_sd').value:bpAssumedSd(),sdSource,prior:bpPrior(),
+    bank:+$('bp_bank').value,thr:+$('bp_thr').value,bbPerBuyIn:+$('bp_bb').value,horizon:+$('bp_horizon').value,
+    target:+$('bp_target').value,credibility:+$('bp_cred').value,margin:+$('bp_margin').value,sampleLevel:+$('bp_level').value};
+  const request=++bpRequest;
+  const controller=new AbortController();bpController=controller;
+  setBpState('pending',bpHasResult?'The previous result stays visible until this one finishes.':'');
+  try{
+    const result=await apiJSON('/api/bankroll-posterior',input,15000,controller.signal);
+    if(request!==bpRequest)return;
+    renderBp(result);
+  }catch(error){if(request===bpRequest)setBpState(bpHasResult?'error':'empty',errorMessage(error));}
+  finally{if(request===bpRequest)bpController=null;}
+}
+function renderBp(r){
+  const i=r.inputs,w=r.winRate,risk=r.risk,b=r.bankroll;
+  const q=bpLevel(i.credibility),tgt=bpLevel(i.target),thr=i.thr>0?`${bpBI(i.thr)} buy-ins`:'zero',horizon=`${i.horizon.toLocaleString()} hands`;
+  const sdText=`${i.sd} bb/100 (${i.sdSource==='tracker'?'from your tracker':'assumed'})`;
+  bpBasis=`${i.hands.toLocaleString()} hands at ${bpSigned(i.winRate)} bb/100 · volatility ${sdText} · ${BP_PRIOR_SHORT[i.prior]} · ${bpBI(i.bank)} buy-ins of ${i.bbPerBuyIn} bb · ${horizon} · threshold ${thr} · risk below ${tgt} with ${q} posterior probability`;
+  bpHasResult=true;setBpState('current');
+
+  const need=b.credible;
+  $('bp_need').textContent=need.buyIns==null?'Too large to compute':`${bpBI(need.buyIns)} buy-ins`;
+  $('bp_need_bb').textContent=need.bb==null?'':`${Math.round(need.bb).toLocaleString()} bb`;
+  const atYours=`At your ${bpBI(i.bank)} buy-ins, the posterior probability that risk is below ${tgt} is ${bpPct(risk.probAtMostTarget)}; the question asks for ${q}.`;
+  $('bp_gap').className='bp-gap '+(need.met?'is-met':'is-short');
+  const gapHead=document.createElement('strong'),gapRest=document.createElement('span');
+  gapHead.textContent=need.met?`Your ${bpBI(i.bank)} buy-ins are enough.`:`You have ${bpBI(i.bank)}: about ${bpBI(need.moreBuyIns)} more needed.`;
+  gapRest.textContent=' '+atYours;
+  $('bp_gap').replaceChildren(gapHead,gapRest);
+  $('bp_definition').textContent=`Meaning: given these ${i.hands.toLocaleString()} hands and this model, there is at least a ${q} posterior probability that the chance of falling to ${thr} within the next ${horizon} is below ${tgt}. This is the ${q} posterior upper bound of model risk. It is not the average risk, and not a ${q} chance of avoiding ruin.`;
+
+  const weight=i.prior==='none'?'results only, no prior':`${Math.round(w.dataWeight*100)}% of the weight from your results`;
+  $('bp_kpis').innerHTML=kpiCard('Win rate, 95% interval',`${bpSigned(w.interval[0])} to ${bpSigned(w.interval[1])}`,`bb/100 · posterior mean ${bpSigned(w.mean)}`)+
+    kpiCard('Chance the win rate is above 0',bpPct(w.probPositive),weight)+
+    kpiCard('Average risk',bpPct(risk.average),'averaged over the win rate’s uncertainty')+
+    kpiCard('Risk, 95% interval',bpRange(risk.interval[0],risk.interval[1]),'posterior interval of model risk')+
+    kpiCard(`Risk, ${q} upper bound`,bpPct(risk.upper),`at your bankroll · limit ${tgt}`)+
+    kpiCard('Observed win rate as exact',bpPct(risk.plugIn),`if ${bpSigned(i.winRate)} bb/100 were certain`);
+  rollKpis('bp_kpis');
+
+  const answer='<span class="bp-tag">this answer</span>';
+  const compare=a=>a.buyIns==null?'—':a.met?`enough (${bpBI(i.bank-a.buyIns)} to spare)`:`${bpBI(a.moreBuyIns)} more`;
+  $('bp_readings').innerHTML=[
+    [`Risk below ${tgt} with ${q} posterior probability${answer}`,b.credible],
+    [`Average risk below ${tgt}`,b.average],
+    [`Risk below ${tgt} if ${bpSigned(i.winRate)} bb/100 were exact`,b.plugIn],
+  ].map(([label,a],k)=>`<tr${k===0?' class="is-current"':''}><th scope="row">${label}</th><td class="num">${bpBI(a.buyIns)} BI</td><td class="num">${compare(a)}</td></tr>`).join('');
+  $('bp_readings_note').textContent=`The last row ignores that the win rate is uncertain; it is what a calculator with a fixed win rate (like the simulation mode) gives. “${q} sure that risk is below ${tgt}” is also different from “a ${q} chance of not going broke”, which is average risk below ${bpLevel(1-i.credibility)}.`;
+
+  const labels={winRate:['Uncertain win rate','95% posterior interval'],volatility:['Volatility assumption',`${r.sources.items[1].values.join(', ')} bb/100`],prior:['Prior','none, weak, skeptical']};
+  $('bp_sources').innerHTML=r.sources.items.map(s=>{
+    const [lo,hi]=s.range,left=(lo*100).toFixed(2),width=Math.max(0,(hi-lo)*100).toFixed(2);
+    return `<div class="bp-source${s.id===r.sources.widest?' is-widest':''}"><div class="bp-source-label">${labels[s.id][0]}<small>${labels[s.id][1]}</small></div><div class="bp-source-track" aria-hidden="true"><span class="bp-source-range" style="left:${left}%;width:${width}%"></span></div><div class="bp-source-value">${bpRange(lo,hi)}</div></div>`;
+  }).join('');
+  const widest=r.sources.items.find(s=>s.id===r.sources.widest),span=bpRange(widest.range[0],widest.range[1]);
+  $('bp_sources_text').textContent=r.sources.widest==='winRate'
+    ?`In your numbers the uncertain win rate moves the risk most (${span}), as it did in the case study’s tested scenarios. More hands would narrow it; more simulation would not.`
+    :r.sources.widest==='volatility'
+      ?`In your numbers the volatility assumption moves the average risk more (${span}) than the win rate’s own uncertainty.${i.sdSource==='assumed'?' A standard deviation from your tracker would remove most of it.':` The answer uses your tracker’s ${i.sd}; the range shows what 70 to 150 would give.`}`
+      :`In your numbers the choice of prior moves the average risk most (${span}): with this few hands the prior still carries real weight.`;
+
+  const head=cols=>`<tr>${cols.map((c,k)=>`<th scope="col"${k?' class="num"':''}>${c}</th>`).join('')}</tr>`;
+  const mark=row=>row.current?'<span class="bp-tag">yours</span>':'';
+  const interval=row=>`${bpSigned(row.interval[0])} to ${bpSigned(row.interval[1])}`;
+  const margin=`± ${i.margin} at ${bpLevel(i.sampleLevel)}`;
+  $('bp_sens_sd_head').innerHTML=head(['Volatility (bb/100)','Win rate, 95% interval','Average risk',`Risk, ${q} bound`,'Bankroll needed',`Hands for ${margin}`]);
+  $('bp_sens_sd').innerHTML=r.sensitivity.volatility.map(row=>`<tr${row.current?' class="is-current"':''}><th scope="row">${row.sd}${mark(row)}</th><td class="num">${interval(row)}</td><td class="num">${bpPct(row.averageRisk)}</td><td class="num">${bpPct(row.upperRisk)}</td><td class="num">${bpBI(row.requiredBuyIns)} BI</td><td class="num">${bpHands(row.handsForMargin)}</td></tr>`).join('');
+  $('bp_sens_prior_head').innerHTML=head(['Prior','Weight of your results','Win rate, 95% interval','Above 0','Average risk','Bankroll needed']);
+  $('bp_sens_prior').innerHTML=r.sensitivity.prior.map(row=>`<tr${row.current?' class="is-current"':''}><th scope="row">${escapeHtml(row.label)}${mark(row)}</th><td class="num">${Math.round(row.dataWeight*100)}%</td><td class="num">${interval(row)}</td><td class="num">${bpPct(row.probPositive)}</td><td class="num">${bpPct(row.averageRisk)}</td><td class="num">${bpBI(row.requiredBuyIns)} BI</td></tr>`).join('');
+  $('bp_sens_n_head').innerHTML=head(['Hands played','Win rate, 95% interval','Above 0','Average risk',`Risk, ${q} bound`,'Bankroll needed']);
+  $('bp_sens_n').innerHTML=r.sensitivity.sample.map(row=>`<tr${row.current?' class="is-current"':''}><th scope="row">${bpHands(row.hands)}${mark(row)}</th><td class="num">${interval(row)}</td><td class="num">${bpPct(row.probPositive)}</td><td class="num">${bpPct(row.averageRisk)}</td><td class="num">${bpPct(row.upperRisk)}</td><td class="num">${bpBI(row.requiredBuyIns)} BI</td></tr>`).join('');
+
+  const s=r.sampleSize;
+  $('bp_sample_text').textContent=`With your ${i.hands.toLocaleString()} hands, a ${bpLevel(s.level)} interval for the win rate from the results alone is ± ${s.currentHalfWidth.toFixed(1)} bb/100. Narrowing it to ± ${s.margin} bb/100 takes about ${bpHands(s.totalHands)} hands in total${s.moreHands>0?`, ${bpHands(s.moreHands)} more than you have`:', which you already have'} (volatility ${sdText}).`;
+  $('bp_model_text').textContent=`${r.model.name}, version ${r.model.version}. Likelihood: ${r.model.likelihood}. Posterior: ${r.model.posterior}. Risk: ${r.model.risk}. Every number here is recomputed by the Python research code (src/bayes.py, src/validation.py) with scipy in checks/bankroll-posterior-python/.`;
+  $('bp_posterior_cap').textContent=`What the results and the ${BP_PRIOR_SHORT[i.prior]} say about your true win rate. Shaded: 95% interval. The answer uses the ${bpLevel(1-i.credibility)} point (${bpSigned(w.credible)} bb/100): risk at that win rate is the ${q} upper bound.`;
+  renderBpCharts(r);
+}
+function renderBpCharts(r){
+  if(!plotlyReady()){chartUnavailable('bp_posterior');chartUnavailable('bp_curve');return;}
+  const i=r.inputs,w=r.winRate,compact=$('bp_curve').clientWidth<520;
+  const start=w.mean-4*w.sd,end=w.mean+4*w.sd,density=x=>Math.exp(-.5*((x-w.mean)/w.sd)**2)/(w.sd*Math.sqrt(2*Math.PI));
+  const xs=Array.from({length:241},(_,k)=>start+(end-start)*k/240);
+  const inside=xs.filter(x=>x>=w.interval[0]&&x<=w.interval[1]);
+  const postLay=layout('','True win rate (bb/100)','',{showlegend:false,margin:{l:24,r:14,t:26,b:46}});
+  postLay.yaxis={showticklabels:false,showgrid:false,zeroline:false,fixedrange:true,rangemode:'tozero'};postLay.xaxis.fixedrange=true;
+  const vline=(x,color,dash)=>({type:'line',x0:x,x1:x,yref:'paper',y0:0,y1:1,line:{color,dash,width:1.5}});
+  postLay.shapes=[vline(0,C.muted,'dash'),vline(w.credible,BP_SERIES.upper.color,'dash')];
+  postLay.annotations=[{x:w.credible,y:1,yref:'paper',yanchor:'bottom',text:`${bpLevel(1-i.credibility)} point ${bpSigned(w.credible)}`,showarrow:false,font:{color:C.text,size:11},xanchor:w.credible<w.mean?'right':'left'}];
+  Plotly.react('bp_posterior',[
+    {x:inside.concat(inside.slice().reverse()),y:inside.map(density).concat(inside.map(()=>0)),fill:'toself',fillcolor:'rgba(196,181,253,.16)',line:{color:'rgba(0,0,0,0)'},hoverinfo:'skip'},
+    {x:xs,y:xs.map(density),mode:'lines',line:{color:'#C4B5FD',width:2},hovertemplate:'Win rate %{x:.1f} bb/100<extra></extra>'},
+    {x:[i.winRate],y:[density(i.winRate)],mode:'markers',marker:{color:BP_SERIES.plugIn.color,size:9,line:{color:'#111c2f',width:2}},hovertemplate:`Observed ${bpSigned(i.winRate)} bb/100<extra></extra>`},
+  ],postLay,CFG);
+  $('bp_posterior').setAttribute('aria-label',`Posterior of the win rate: mean ${bpSigned(w.mean)} bb/100, 95% interval ${bpSigned(w.interval[0])} to ${bpSigned(w.interval[1])}. Observed ${bpSigned(i.winRate)}. The answer uses ${bpSigned(w.credible)}.`);
+
+  const c=r.curve,b=r.bankroll;
+  const names={upper:`Risk with ${bpLevel(i.credibility)} posterior probability (the answer)`,average:'Average risk',plugIn:'Observed win rate as exact'};
+  const traces=['plugIn','average','upper'].map(key=>({x:c.bankroll,y:c[key],mode:'lines',name:names[key],line:{color:BP_SERIES[key].color,dash:BP_SERIES[key].dash,width:key==='upper'?2.6:2},hovertemplate:'%{x:.1f} buy-ins: %{y:.1%}<extra>'+names[key]+'</extra>'}));
+  const crossings=[['plugIn',b.plugIn],['average',b.average],['upper',b.credible]].filter(([,a])=>a.buyIns!=null);
+  traces.push({x:crossings.map(([,a])=>a.buyIns),y:crossings.map(()=>i.target),mode:'markers',showlegend:false,
+    marker:{color:crossings.map(([k])=>BP_SERIES[k].color),size:10,line:{color:'#111c2f',width:2}},
+    customdata:crossings.map(([k])=>names[k]),hovertemplate:'%{customdata}: %{x:.1f} buy-ins<extra>needed</extra>'});
+  const lay=layout('','Bankroll (buy-ins)','Risk of ruin',{yaxis:{tickformat:'.0%',gridcolor:C.grid,range:[0,1.02],fixedrange:true},
+    legend:{orientation:'h',x:0,y:1.02,yanchor:'bottom',font:{color:C.muted,size:compact?11:12}},margin:{l:56,r:14,t:compact?92:62,b:46}});
+  lay.xaxis.fixedrange=true;lay.xaxis.rangemode='tozero';
+  lay.shapes=[{type:'line',xref:'paper',x0:0,x1:1,y0:i.target,y1:i.target,line:{color:C.muted,dash:'dash',width:1}},
+    {type:'line',x0:i.bank,x1:i.bank,yref:'paper',y0:0,y1:1,line:{color:C.muted,dash:'dot',width:1.2}}];
+  lay.annotations=[{x:i.bank,y:1,yref:'paper',text:`yours ${bpBI(i.bank)}`,showarrow:false,xanchor:'left',yanchor:'top',xshift:4,font:{color:C.text,size:11}},
+    {xref:'paper',x:1,y:i.target,text:`limit ${bpLevel(i.target)}`,showarrow:false,xanchor:'right',yanchor:'bottom',font:{color:C.text,size:11}}];
+  Plotly.react('bp_curve',traces,lay,CFG);
+  $('bp_curve').setAttribute('aria-label',`Risk against bankroll. Bankroll needed for risk below ${bpLevel(i.target)}: ${bpBI(b.credible.buyIns)} buy-ins with ${bpLevel(i.credibility)} posterior probability, ${bpBI(b.average.buyIns)} for average risk, ${bpBI(b.plugIn.buyIns)} with the observed win rate taken as exact. You have ${bpBI(i.bank)}.`);
+}
+function setBkMode(mode){
+  $('bp_view').hidden=mode!=='results';$('bk_sim_view').hidden=mode==='results';
+  if(mode==='results'){if(!bpHasResult)runBp();}
+  else if(!bkResultBasis)runBankroll();
+  window.dispatchEvent(new Event('resize'));
+}
+document.querySelectorAll('input[name="bk_mode"]').forEach(radio=>radio.addEventListener('change',()=>setBkMode(radio.value)));
+document.querySelectorAll('input[name="bp_sd_source"]').forEach(radio=>radio.addEventListener('change',()=>{
+  const tracker=bpSdSource()==='tracker';$('bp_sd_tracker').hidden=!tracker;$('bp_sd_assumed').hidden=tracker;scheduleBp();
+}));
+document.querySelectorAll('.bpsdpreset').forEach(button=>button.addEventListener('click',()=>{
+  document.querySelectorAll('.bpsdpreset').forEach(x=>x.setAttribute('aria-pressed',String(x===button)));scheduleBp();
+}));
+document.querySelectorAll('input[name="bp_prior"]').forEach(radio=>radio.addEventListener('change',scheduleBp));
+BP_FIELDS.forEach(id=>$(id).addEventListener('input',scheduleBp));
+$('bp_run').addEventListener('click',runBp);
 
 /* ================= 4. GTO TRAINER ================= */
 const KUHN_LABELS={J:'J (bet/check first)',Q:'Q (bet/check first)',K:'K (bet/check first)',
@@ -1426,6 +1604,22 @@ const LAB_INPUT_KEYS=['winrate_bb100','std_bb100','bankroll_bi','ruin_threshold_
 const LAB_RESULT_KEYS=['risk_of_ruin','ci95_low','ci95_high','survival','p95_max_drawdown_bi'];
 const LAB_MODEL_KEYS=['name','version','increments','ruinMonitoring','randomNumbers'];
 // Check an imported comparison file and keep only the fields this page understands.
+// Values a saved comparison cannot hold: probabilities outside 0-1, an interval
+// that is reversed or misses its estimate, survival that is not 1 - risk, a
+// negative drawdown, or inputs no simulation could have used.
+function labRecordProblem(inputs,results){
+  const close=(x,y)=>Math.abs(x-y)<=1e-9;
+  const {risk_of_ruin:risk,ci95_low:low,ci95_high:high,survival}=results;
+  const outside=['risk_of_ruin','ci95_low','ci95_high','survival'].find(k=>results[k]<0||results[k]>1);
+  if(outside)return `${outside} must be between 0 and 1.`;
+  if(!(low<=risk+1e-9&&risk<=high+1e-9))return 'the 95% interval must run from ci95_low up to ci95_high and contain risk_of_ruin.';
+  if(!close(risk+survival,1))return 'survival must equal 1 − risk_of_ruin.';
+  if(results.p95_max_drawdown_bi<0)return 'p95_max_drawdown_bi cannot be negative.';
+  if(!(inputs.std_bb100>=0))return 'std_bb100 cannot be negative.';
+  if(!(inputs.ruin_threshold_bi>=0&&inputs.bankroll_bi>inputs.ruin_threshold_bi))return 'bankroll_bi must be above ruin_threshold_bi, which cannot be negative.';
+  if(!(inputs.hands>=1&&inputs.paths>=1&&Number.isInteger(inputs.paths)))return 'hands and paths must be positive, and paths a whole number.';
+  return '';
+}
 function labValidateRecord(value){
   if(!value||typeof value!=='object'||value.type!=='poker-analytics/risk-lab-comparison'||value.schema_version!==1)
     return {error:'this file is not a Risk Lab comparison (expected type poker-analytics/risk-lab-comparison, schema 1).'};
@@ -1436,11 +1630,15 @@ function labValidateRecord(value){
     if(!side||typeof side!=='object'||typeof side.name!=='string'||!side.inputs||!side.results)return {error:`${label} is missing its name, inputs or results.`};
     const bad=LAB_INPUT_KEYS.find(k=>!finite(side.inputs[k]))||LAB_RESULT_KEYS.find(k=>!finite(side.results[k]));
     if(bad)return {error:`${label}: ${bad} is missing or not a number.`};
+    const problem=labRecordProblem(side.inputs,side.results);
+    if(problem)return {error:`${label}: ${problem}`};
     const model=side.model&&typeof side.model==='object'?Object.fromEntries(LAB_MODEL_KEYS.filter(k=>typeof side.model[k]==='string').map(k=>[k,side.model[k].slice(0,160)])):null;
     sides[key]={name:side.name.slice(0,80),inputs:Object.fromEntries(LAB_INPUT_KEYS.map(k=>[k,side.inputs[k]])),
       results:Object.fromEntries(LAB_RESULT_KEYS.map(k=>[k,side.results[k]])),model:model&&Object.keys(model).length?model:null};
   }
-  const changed=Array.isArray(value.difference?.changed_inputs)?value.difference.changed_inputs.filter(v=>typeof v==='string').map(v=>v.slice(0,40)).slice(0,8):[];
+  // Recomputed from the inputs; the file's own list is not trusted.
+  const asParams=i=>({wr:i.winrate_bb100,sd:i.std_bb100,bank:i.bankroll_bi*100,hands:i.hands});
+  const changed=labChangedInputs(asParams(sides.a.inputs),asParams(sides.b.inputs));
   return {record:{type:value.type,schema_version:1,saved_at:typeof value.saved_at==='string'?value.saved_at.slice(0,40):'',a:sides.a,b:sides.b,
     difference:{risk_b_minus_a_pp:(sides.b.results.risk_of_ruin-sides.a.results.risk_of_ruin)*100,changed_inputs:changed,
       note:'Difference of point estimates. Intervals describe Monte Carlo error only; no interval or significance test is given for the difference.'}}};
@@ -1904,7 +2102,7 @@ function initializeModule(id){
   if(id==='risklab'){renderUncertaintyReference();runLab(LAB_QUICK_PATHS);}
   else if(id==='equity')runEquity();
   else if(id==='ev'){if(window.__lastEquity==null)runEquity();else runEV();}
-  else if(id==='bankroll')runBankroll();
+  else if(id==='bankroll'){if(bkMode()==='results')runBp();else runBankroll();}
   else if(id==='preflop')loadPreflop();
 }
 tabs.forEach(tab=>tab.addEventListener('click',()=>initializeModule(tab.dataset.mod)));

@@ -42,9 +42,9 @@
     <h3 id="pk">Against PokerKit (independent)</h3>
     <p>PokerKit {{pk_version}} is an open-source poker library from the University of Toronto Computer Poker Research Group, pinned in <code>checks/external-pokerkit/requirements.txt</code>. Both sides use the same rules: best five of seven cards, suits unranked, split pots shared equally.</p>
     <ul>
-      <li><strong>Hand order.</strong> {{pk_hands}} random seven-card hands (seed {{pk_seed}}) sorted by this engine's score; every neighbouring pair compared in PokerKit. <span class="pass">{{pk_disagreements}} disagreements</span> in {{pk_pairs}} pairs, across all {{pk_categories}} hand categories.</li>
-      <li><strong>Heads-up equity.</strong> Seven spots enumerated exactly by both, including two preflop spots of {{pk_preflop_runouts}} boards each. Win, tie and lose counts are <span class="pass">identical in all seven</span>.</li>
-      <li><strong>Three-way equity.</strong> This engine's Monte Carlo ({{pk_mw_trials}} trials) against PokerKit's exact enumeration: {{pk_mw_ours}} against {{pk_mw_exact}}, <span class="pass">{{pk_mw_se}} standard errors</span> apart.</li>
+      <li><strong>Hand order.</strong> {{pk_hands}} random seven-card hands (seed {{pk_seed}}) sorted by this engine's score; every neighbouring pair compared in PokerKit. <span class="{{v_pk_order}}">{{pk_disagreements}} disagreements</span> in {{pk_pairs}} pairs, across all {{pk_categories}} hand categories.</li>
+      <li><strong>Heads-up equity.</strong> {{pk_headsup_n}} spots enumerated exactly by both, including two preflop spots of {{pk_preflop_runouts}} boards each. Win, tie and lose counts are <span class="{{v_pk_headsup}}">{{pk_headsup_text}}</span>.</li>
+      <li><strong>Three-way equity.</strong> This engine's Monte Carlo ({{pk_mw_trials}} trials) against PokerKit's exact enumeration: {{pk_mw_ours}} against {{pk_mw_exact}}, <span class="{{v_pk_mw}}">{{pk_mw_text}}</span> apart.</li>
     </ul>
     <div class="table-wrap"><table>
       <caption>Heads-up spots, exact enumeration</caption>
@@ -58,13 +58,13 @@
     <h3 id="ranges">Ranges against PokerKit (independent)</h3>
     <p>Hand Equity can give one opponent a range such as <code>TT+, AQs+, AKo</code>. The same PokerKit version checks how ranges are read and the equity against them.</p>
     <ul>
-      <li><strong>Notation.</strong> {{r_notation}} range texts, from <code>QQ+</code> to <code>T9s-65s</code> and two Top % ranges: this parser and PokerKit's <code>parse_range</code> read <span class="pass">the same combos for {{r_notation_match}} of {{r_notation}}</span>. PokerKit rejects kicker ranges such as <code>A5s-A2s</code>, so for those it reads the hands spelled out.</li>
-      <li><strong>Flop, turn and river.</strong> {{r_exact}} spots, weighted and unweighted, including every one of the {{r_every_combos}} hands left on a flop. Every live combo on every runout, ranked by PokerKit: <span class="pass">equal to within {{r_max_diff}}</span>.</li>
-      <li><strong>Before the flop.</strong> The exact value (every combo on all {{r_pre_runouts}} boards) against {{r_pre_samples}} independent deals ranked by PokerKit: <span class="pass">{{r_pre_se}} standard errors</span> apart. The app's own Monte Carlo ({{r_pre_trials}} trials) is {{r_pre_ours_se}} standard errors from the exact value.</li>
+      <li><strong>Notation.</strong> {{r_notation}} range texts, from <code>QQ+</code> to <code>T9s-65s</code>, two Top % ranges, and eight with repeats, overrides and weights such as <code>QQ+, KK:0</code> and <code>AKs:0.25, AsKs</code>: this parser and PokerKit's <code>parse_range</code> read <span class="{{v_r_notation}}">{{r_notation_text}}</span>. PokerKit has no weights, so the check script applies them itself, with the last entry for a combo setting its weight. PokerKit rejects kicker ranges such as <code>A5s-A2s</code>, so for those it reads the hands spelled out.</li>
+      <li><strong>Flop, turn and river.</strong> {{r_exact}} spots, weighted and unweighted, including every one of the {{r_every_combos}} hands left on a flop. Every live combo on every runout, ranked by PokerKit. The total, the equity against each hand in the range (up to {{r_hands}} hands), and the weighted share of combos you are ahead of, even with and behind, decided combo by combo: <span class="{{v_r_exact}}">{{r_exact_text}}</span>. One spot is a single hand whose combos fall on both sides of 50%: J2s averages 52.5% against A♥K♥ on Q♥7♥2♣, but you are ahead of {{r_split_spot}} of it.</li>
+      <li><strong>Before the flop.</strong> The exact value (every combo on all {{r_pre_runouts}} boards) against {{r_pre_samples}} independent deals ranked by PokerKit: <span class="{{v_r_pre}}">{{r_pre_text}}</span> apart. The app's own Monte Carlo ({{r_pre_trials}} trials) is {{r_pre_ours_se}} standard errors from the exact value.</li>
     </ul>
     <div class="table-wrap"><table>
       <caption>Range spots, exact enumeration</caption>
-      <thead><tr><th>Spot</th><th class="num">Live combos</th><th class="num">This engine</th><th class="num">PokerKit</th></tr></thead>
+      <thead><tr><th>Spot</th><th class="num">Live combos</th><th class="num">This engine</th><th class="num">PokerKit</th><th class="num">Ahead of</th><th>Each hand</th></tr></thead>
       <tbody id="table-ranges"></tbody>
     </table></div>
     <p class="limits"><strong>Limits.</strong> PokerKit ranges have no weights, so the check script applies them; the preflop deals are sampled by the script, with PokerKit reading the ranges and ranking the hands. Top % uses this project's own order of the 169 hands by equity against a random hand ({{o_trials}} trials each; AA {{o_top}}, 32o {{o_bottom}}); {{o_close}} neighbouring pairs are within two standard errors and may swap. Commands: <code>python -I checks/range-equity-pokerkit/run.py --check</code> (about 25 seconds on 16 cores) and <code>node scripts/hand_order.js --check</code> (about 30 seconds).</p>
@@ -89,7 +89,7 @@
       </tbody>
       <caption>Seven-card evaluations per second</caption>
     </table></div>
-    <p>Median speed-up ×{{b_speedup}}, with <span class="pass">{{b_mismatch}} score differences</span> between the two evaluators on those hands. The current evaluator also agrees with a deliberately simple reference evaluator on 180,000 random hands in every <code>npm test</code> run (internal: both are in this repository).</p>
+    <p>Median speed-up ×{{b_speedup}}, with <span class="{{v_b_mismatch}}">{{b_mismatch}} score differences</span> between the two evaluators on those hands. The current evaluator also agrees with a deliberately simple reference evaluator on 180,000 random hands in every <code>npm test</code> run (internal: both are in this repository).</p>
     <p class="limits"><strong>Conditions.</strong> {{b_cpu}}, Node {{b_node}}, one thread, one warm-up pass. A micro-benchmark: request times also include enumeration and the server. Command: <code>node checks/evaluator-benchmark/run.js</code>.</p>
   </article>
 </section>
@@ -115,6 +115,16 @@
     </table></div>
     <p class="limits"><strong>Limits.</strong> Same author, same model: this shows the two implementations agree, not that the model is right. Without the bridge correction there is no closed form, so those rows compare the engines only. Command: <code>python -I checks/engine-agreement/run.py</code>.</p>
   </article>
+
+  <article aria-labelledby="posterior">
+    <h3 id="posterior">Bankroll from your results: page against the research code (internal)</h3>
+    <p>Bankroll Risk can start from a player's own results: hands played, net win rate and volatility. The page (<code>server/bankroll_posterior.js</code>) forms a Normal posterior for the win rate and averages the Brownian risk over it in closed form. The research code computes the same model separately: <code>src/bayes.py</code> for the posterior, <code>src/validation.py</code> for the risk formula, adaptive quadrature for the average and Brent's method for the bankrolls.</p>
+    <ul>
+      <li><strong>Every number on the page.</strong> {{p_cases}} cases: one record under several sample sizes, priors and volatilities, plus other plans, thresholds and questions. {{p_numbers}} numbers in all, including every row of the three “how the answer changes” tables and every point of the chart: <span class="{{v_posterior}}">{{p_text}}</span>. Largest difference {{p_prob}} in a probability and {{p_bank}} (relative) in a bankroll; the page's normal CDF has a relative error below 1.2 × 10⁻⁷.</li>
+      <li><strong>Against simulation.</strong> The research pipeline's own Monte Carlo over {{p_draws}} posterior draws is at most {{p_se}} standard errors from the closed-form average risk, and in <code>npm test</code> the path simulator, with each path's win rate drawn from the posterior, lands within 4 standard errors of it.</li>
+    </ul>
+    <p class="limits"><strong>Limits.</strong> Internal: both sides are this repository's code and share the model (independent Normal results, a stable win rate, volatility held fixed), so agreement shows the page computes what the research code computes, not that the model describes real results. Runs in CI: the Node job checks the page still gives <code>web.json</code>, and the Python job recomputes it. Command: <code>python -I checks/bankroll-posterior-python/run.py --check</code> (about 4 seconds).</p>
+  </article>
 </section>
 
 <section aria-labelledby="found">
@@ -123,6 +133,9 @@
     <li><strong>Ruin checked only every 100 hands understated risk</strong> by {{c_endpoint_gap}} points on average at +3 bb/100. Fixed with the Brownian-bridge correction (engine 2026-10-21).</li>
     <li><strong>A version change looked like lower risk</strong> (7.85% → 6.35% at seed 42). Traced to the change of random numbers, not the correction; see the <a href="./#investigation">case study</a>.</li>
     <li><strong>Figures quoted without a seed list.</strong> An earlier release note gave 40-seed averages without saying which seeds. Traced to seeds 7919 × 1–40; every figure now has a script, its seeds and saved output.</li>
+    <li><strong>“Ahead of the range” counted whole hands.</strong> The summary under Hand Equity classed each hand by its average over its combos, so A♥K♥ against J2s on Q♥7♥2♣ read “ahead of 100%” while two of the three combos are ahead (66.7%). Exact results now decide combo by combo and are checked against PokerKit; Monte Carlo results say they decide hand by hand and mark hands within 1.96 standard errors of 50% as too close to call.</li>
+    <li><strong>A half weight was described as half the combos.</strong> <code>AKs:0.5</code> keeps all four AKs combos at half weight. The help text and the combo count now say so (4 combos, weighted count 2).</li>
+    <li><strong>A failed check could still be shown as passed.</strong> This page's pass wording and colour were written into the template. They now follow each check's saved result, and <code>npm run build</code> stops when a check has failed.</li>
     <li><strong>Older research figures predate the correction.</strong> The quick-run figures in <code>reports/figures/</code> were made before it and without intervals; the case study uses regenerated results in <code>reports/case-study/</code>.</li>
   </ul>
 </section>
@@ -146,11 +159,11 @@
 
 {
   document.getElementById("table-summary").innerHTML = DATA.summary.map((r) =>
-    `<tr><td>${r.check}</td><td>${r.benchmark}</td><td>${r.compared}</td><td>${r.result}</td></tr>`).join("");
+    `<tr><td>${r.check}</td><td>${r.benchmark}</td><td>${r.compared}</td><td>${r.ok == null ? r.result : `<span class="${r.ok ? "pass" : "fail"}">${r.result}</span>`}</td></tr>`).join("");
   document.getElementById("table-pk").innerHTML = DATA.pokerkit.map((s) =>
-    `<tr><td>${s.hero} vs ${s.villain}${s.board ? " on " + s.board : " preflop"}</td><td class="num">${num(s.runouts)}</td><td class="num">${pct(s.ours.equity, 4)}</td><td class="num">${pct(s.pokerkit.equity, 4)}</td><td>${s.match ? '<span class="pass">identical</span>' : "differ"}</td></tr>`).join("");
+    `<tr><td>${s.hero} vs ${s.villain}${s.board ? " on " + s.board : " preflop"}</td><td class="num">${num(s.runouts)}</td><td class="num">${pct(s.ours.equity, 4)}</td><td class="num">${pct(s.pokerkit.equity, 4)}</td><td>${s.match ? '<span class="pass">identical</span>' : '<span class="fail">differ</span>'}</td></tr>`).join("");
   document.getElementById("table-ranges").innerHTML = DATA.ranges.map((s) =>
-    `<tr><td>${s.hero} vs <code>${s.range.length > 40 ? s.range.slice(0, s.range.lastIndexOf(",", 38)) + ", …" : s.range}</code> on ${s.board}</td><td class="num">${num(s.combos)}</td><td class="num">${pct(s.ours, 4)}</td><td class="num">${pct(s.pokerkit, 4)}</td></tr>`).join("");
+    `<tr><td>${s.hero} vs <code>${s.range.length > 40 ? s.range.slice(0, s.range.lastIndexOf(",", 38)) + ", …" : s.range}</code> on ${s.board}</td><td class="num">${num(s.combos)}</td><td class="num">${pct(s.ours, 4)}</td><td class="num">${pct(s.pokerkit, 4)}</td><td class="num">${pct(s.ahead, 1)}</td><td>${s.match ? `<span class="pass">equal (${s.hands})</span>` : '<span class="fail">differ</span>'}</td></tr>`).join("");
   document.getElementById("table-engines").innerHTML = DATA.engines.map((r) =>
     `<tr><td>${r.scenario.winrate_bb100 > 0 ? "+" : ""}${r.scenario.winrate_bb100} bb/100</td><td>${r.bridge ? "continuous" : "every 100 hands"}</td><td class="num">${pct(r.web_engine, 2)}</td><td class="num">${pct(r.research_engine, 2)}</td><td class="num">${Math.abs(r.difference_in_se).toFixed(2)} SE</td><td class="num">${r.analytical == null ? "—" : pct(r.analytical, 2)}</td></tr>`).join("");
   // Error against time: one table per spot, with RMSE bars on a shared scale.

@@ -57,6 +57,95 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-10-22 — Bankroll Risk from your own results
+
+- **Start from a results summary.** Hands played and net win rate (after rake,
+  actual winnings), then the plan: bankroll, big blinds per buy-in, hands to
+  play and a ruin threshold. The simulation with an assumed win rate is still
+  there as the second mode.
+- **Volatility is never passed off as an estimate.** A net win rate and a
+  hand count cannot tell how much results swing, so the player either enters
+  the standard deviation from a tracker or picks one of four labelled
+  assumptions (70, 90, 120, 150 bb/100). Every result names which it is, and a
+  table shows the answer under each assumption.
+- **Results.** A Normal posterior for the win rate (95% interval, chance it is
+  above 0, how much of the weight comes from the results), the average risk of
+  ruin over that posterior, and the 95% posterior interval of the risk.
+- **The question, defined.** “Risk below 5% with 80% confidence” means: given
+  these results and this model, the posterior probability that the risk of
+  ruin within the planned hands is below 5% is at least 80%. The page calls it
+  the 80% posterior upper bound of model risk and shows the bankroll it needs
+  next to two other readings: average risk below 5%, and risk below 5% with
+  the observed win rate taken as exact (what a fixed-win-rate calculator
+  gives). For 40,000 hands at +4 bb/100 with 90 bb/100 assumed, 30 buy-ins and
+  100,000 hands, the last says 28 buy-ins are enough; the first needs 56.9.
+- **Fast and exact for the model.** Risk falls as the win rate rises, so the
+  80% bound is the risk at the posterior's 20th percentile, and the bankroll
+  is one root of the Brownian formula: no simulation. The average risk over a
+  Normal posterior has a closed form (`server/bankroll_posterior.js`), checked
+  against numerical integration and against the path simulator with each
+  path's win rate drawn from the posterior.
+- **How the answer changes.** The same results under each volatility
+  assumption, each prior (none, weakly informative Normal(0, 10²), skeptical
+  Normal(0, 2²)) and a quarter, 4× and 16× as many hands at the same win rate.
+  A short panel says which of these moves the risk most for the player's own
+  numbers; in the case study's tested scenarios it was the uncertain win rate.
+- **Sample size, with its assumptions.** Hands needed for a ±1 bb/100 interval
+  (precision and level adjustable) from results alone, assuming the volatility
+  shown, independent results and a stable win rate: about 3.84 million hands at
+  95% and 100 bb/100.
+- **Checked against the Python research code** (`checks/bankroll-posterior-python/`,
+  internal): 2,612 numbers in 9 cases, every table row and chart point
+  included, recomputed with `src/bayes.py`, `src/validation.py`, quadrature and
+  Brent's method. Largest differences 7.6 × 10⁻⁸ in a probability and
+  2.4 × 10⁻⁸ (relative) in a bankroll. Runs in CI: Node checks the page still
+  gives `web.json`, pytest recomputes it.
+- Session CSV import (hands and profit per session, grouped by stake, game
+  and period) is the next step and is not in this version.
+
+## 2026-10-22 — review fixes: ranges, Validation page, earlier findings
+
+- **A weight keeps every combo.** `AKs:0.5` is all four AKs combos, each at
+  half weight. The status now shows both counts (“4 combos, weighted 2”), the
+  help text says so, and the context line after a calculation does too.
+- **“Ahead of the range” is decided combo by combo.** It used to class each
+  hand by its average over its combos: A♥K♥ against J2s on Q♥7♥2♣ read
+  “ahead of 100%” while two of the three combos are ahead (66.7%). Exact
+  results now count each combo against every runout on whole numbers, and a
+  hand whose combos fall on both sides shows their range. Monte Carlo results
+  say they decide hand by hand, and call a hand within 1.96 standard errors of
+  50% too close to call. The equity itself was always right.
+- **Weights are stored to 4 decimals** (0.0001 steps; 2 decimals for
+  percentages), so the text written back by the chart or Top % reads back to
+  exactly the same range. More decimals are rejected with a message instead of
+  being rounded away (`AKs:0.0000001` used to become an empty range). The page
+  re-reads what it writes, so the preview always matches what is sent.
+- **The PokerKit range check covers more**: 28 range texts, including repeats,
+  overrides and weights, compared combo by combo with their weights; 6 exact
+  spots compared on the total, every hand's equity and share, and the ahead /
+  even / behind shares, including the J2s spot above.
+- **A failed check is shown as failed.** The Validation page's pass wording
+  and colour were written into the template; the old PokerKit section and the
+  new range section would both have shown a failed comparison in green. Pass
+  or fail now comes from each check's saved numbers, the wording follows it,
+  and `npm run build` stops with the names of the failed checks
+  (`--allow-failures` keeps the pages, marked as failing).
+  `scripts/test_case_study_build.js` injects failures in memory and checks both.
+- **Risk Lab comparison files are checked before import**: probabilities in
+  0–1, an interval in order that contains its estimate, survival equal to
+  1 − risk, a non-negative drawdown and usable inputs. The list of changed
+  inputs is recomputed from the inputs instead of read from the file. The
+  hand-edited user-testing file is now a consistent edit, which only
+  recomputing can catch.
+- **Monitoring wording.** The case study no longer says checkpoint-only
+  monitoring understates all five models alike: they are compared on the same
+  100-hand checkpoints, which does not establish equal monitoring bias or give
+  their continuously monitored risks.
+- **The Risk Lab's robustness note** quoted ×1.44 and ×1.20 from an earlier
+  quick scenario and said the variance was held fixed. It is now generated from
+  the case study's saved results (AR(1) ×2.87, regimes ×1.65) and says that the
+  regime model's steps are wider, so it does not hold the variance fixed.
+
 ## 2026-10-22 — opponent ranges in Hand Equity
 
 - **Give one opponent a range** instead of two cards: type it (`TT+, AQs+,

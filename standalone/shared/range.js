@@ -52,7 +52,7 @@ const PokerRange = (() => {
     return first ? cardText(a) + cardText(b) : cardText(b) + cardText(a);
   };
 
-  const HELP = "Write hands like QQ+, AKs, AQo+, KJ, A5s-A2s, T9s-65s or AsKs, separated by commas. Add :0.5 for half weight.";
+  const HELP = "Write hands like QQ+, AKs, AQo+, KJ, A5s-A2s, T9s-65s or AsKs, separated by commas. Add :0.5 to give those combos half weight.";
 
   // Class names covered by one hand pattern (no weight), or an error message
   // quoting `entry`, the text as typed.
@@ -113,8 +113,11 @@ const PokerRange = (() => {
   }
 
   // Parse range text. Entries are separated by commas, semicolons or spaces;
-  // an entry may end in :weight (0-1, or 0-100%). Later entries override
-  // earlier ones for the same combos, so "QQ+, KK:0" removes KK.
+  // an entry may end in :weight (0-1 with at most 4 decimals, or 0-100% with
+  // at most 2). A weight is how often each of those combos enters the range;
+  // every combo is kept. Later entries override earlier ones for the same
+  // combos, so "QQ+, KK:0" removes KK. Weights are stored as whole multiples of
+  // 0.0001, so formatRange writes back exactly what was read.
   function parseRange(text) {
     const source = String(text ?? "");
     if (source.length > 20000) return { error: "The range text is too long (20,000 characters at most)." };
@@ -126,8 +129,10 @@ const PokerRange = (() => {
       let weight = 1;
       if (rawWeight !== undefined) {
         const m = rawWeight.match(/^(\d+(?:\.\d+)?|\.\d+)(%?)$/);
-        weight = m ? Number(m[1]) / (m[2] ? 100 : 1) : NaN;
-        if (!(weight >= 0 && weight <= 1)) return { error: `The weight in “${entry}” must be from 0 to 1 (or 0% to 100%).` };
+        const steps = m ? (Number(m[1]) * 10000) / (m[2] ? 100 : 1) : NaN;
+        if (!(steps >= 0 && steps <= 10000)) return { error: `The weight in “${entry}” must be from 0 to 1 (or 0% to 100%).` };
+        if (Math.abs(steps - Math.round(steps)) > 1e-6) return { error: `The weight in “${entry}” has too many decimals: use at most 4 (0.1234) or 2 for a percentage (12.34%).` };
+        weight = Math.round(steps) / 10000;
       }
       // Ranks upper case, suits and s/o lower case; 10 means T.
       const pattern = rawHands.replace(/10/g, "T").replace(/[2-9tjqka]/g, (c) => c.toUpperCase()).replace(/[CDHSO]/g, (c) => c.toLowerCase());
@@ -139,7 +144,7 @@ const PokerRange = (() => {
     return { weights };
   }
 
-  const formatWeight = (w) => (w === 1 ? "" : ":" + String(Number(w.toFixed(6))));
+  const formatWeight = (w) => (w === 1 ? "" : ":" + String(Number(w.toFixed(4))));
 
   // Shortest-form text for a range, e.g. "TT+, AQs+, KQs, AKo". Hands whose
   // combos do not all share one weight are listed combo by combo.
@@ -186,23 +191,27 @@ const PokerRange = (() => {
     return [...pairs, ...suited, ...offsuit, ...combos].join(", ");
   }
 
-  // Weighted combo counts, overall and after removing known (dead) cards.
+  // Combo counts, overall and after removing known (dead) cards. `combos` and
+  // `live` count two-card holdings; `weighted` and `liveWeighted` add up their
+  // weights (AKs:0.5 is 4 combos with a weighted count of 2). `share` is the
+  // weighted count as a fraction of all 1,326 combos.
   function summarize(weights, deadCards = []) {
     const dead = new Set(deadCards);
-    let combos = 0, live = 0, hands = 0;
+    let combos = 0, weighted = 0, live = 0, liveWeighted = 0, hands = 0;
     CLASS_COMBOS.forEach((list) => {
       let any = false;
       for (const combo of list) {
         const w = weights[combo];
         if (!w) continue;
         any = true;
-        combos += w;
+        combos++;
+        weighted += w;
         const [a, b] = COMBOS[combo];
-        if (!dead.has(a) && !dead.has(b)) live += w;
+        if (!dead.has(a) && !dead.has(b)) { live++; liveWeighted += w; }
       }
       if (any) hands++;
     });
-    return { combos, live, hands, share: combos / COMBO_COUNT };
+    return { combos, weighted, live, liveWeighted, hands, share: weighted / COMBO_COUNT };
   }
 
   // Weight shown for one matrix cell: the mean over its combos, and whether

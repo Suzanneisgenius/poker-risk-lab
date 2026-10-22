@@ -376,6 +376,19 @@ async function main(){
     assert.match(reject(null),/not a Risk Lab comparison/);
     assert.match(reject({...record,b:{...record.b,inputs:{...record.b.inputs,seed:"42"}}}),/B: seed is missing or not a number/);
     assert.match(reject({...record,a:{...record.a,results:{...record.a.results,risk_of_ruin:null}}}),/A: risk_of_ruin/);
+    // Impossible saved values are rejected, and the changed inputs come from the inputs.
+    const withResults=(side,results)=>({...record,[side]:{...record[side],results:{...record[side].results,...results}}});
+    const withInputs=(side,inputs)=>({...record,[side]:{...record[side],inputs:{...record[side].inputs,...inputs}}});
+    assert.match(reject(withResults("a",{risk_of_ruin:1.2,ci95_high:1.3,survival:-0.2})),/A: risk_of_ruin must be between 0 and 1/);
+    assert.match(reject(withResults("b",{survival:-0.1})),/B: survival must be between 0 and 1/);
+    assert.match(reject(withResults("a",{ci95_low:0.3,ci95_high:0.25})),/A: the 95% interval must run from ci95_low up to ci95_high/);
+    assert.match(reject(withResults("b",{ci95_low:0.1,ci95_high:0.2})),/B: the 95% interval .* contain risk_of_ruin/);
+    assert.match(reject(withResults("a",{survival:0.5})),/A: survival must equal 1 − risk_of_ruin/);
+    assert.match(reject(withResults("b",{p95_max_drawdown_bi:-1})),/B: p95_max_drawdown_bi cannot be negative/);
+    assert.match(reject(withInputs("a",{bankroll_bi:0})),/A: bankroll_bi must be above ruin_threshold_bi/);
+    assert.match(reject(withInputs("b",{paths:0.5})),/B: hands and paths/);
+    h.ctx.file={...record,difference:{...record.difference,changed_inputs:["Bankroll","<b>anything</b>"]}};
+    assert.deepEqual([...h.run("labValidateRecord(file)").record.difference.changed_inputs],["Win rate"],"changed inputs are recomputed");
     // Loadable inputs match the Risk Lab controls; the seed is restored as saved.
     const problem=inputs=>{h.ctx.inputs=inputs;return h.run("labInputsProblem(inputs)");};
     const ok=record.b.inputs;

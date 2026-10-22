@@ -141,6 +141,21 @@ async function main() {
     assert.equal(detailedRisk.status, 200);
     assert.equal((await detailedRisk.json()).curve, null);
 
+    const fromResults = await post("/api/bankroll-posterior", {
+      hands: 40000, winRate: 4, sd: 90, sdSource: "assumed", prior: "weak", bank: 30, thr: 0, bbPerBuyIn: 100,
+      horizon: 100000, target: 5, credibility: 80, margin: 1, sampleLevel: 95,
+    });
+    assert.equal(fromResults.status, 200);
+    const posteriorResult = await fromResults.json();
+    assert.equal(posteriorResult.model.name, "bankroll-posterior");
+    assert.equal(posteriorResult.inputs.sdSource, "assumed");
+    assert.ok(posteriorResult.bankroll.credible.buyIns > posteriorResult.bankroll.plugIn.buyIns);
+    assert.equal(posteriorResult.sensitivity.prior.length, 3);
+    assert.equal(posteriorResult.curve.bankroll.length, 61);
+    const badResults = await post("/api/bankroll-posterior", { hands: 40000, winRate: 4, sd: 90, bank: 10, thr: 10, horizon: 100000 });
+    assert.equal(badResults.status, 400);
+    assert.match((await badResults.json()).error, /above the ruin threshold/);
+
     const preflop = await post("/api/preflop", { scenarioId: "cash-6max-100-btn-rfi-25" });
     assert.equal(preflop.status, 200);
     const preflopResult = await preflop.json();

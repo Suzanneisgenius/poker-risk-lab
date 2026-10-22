@@ -285,16 +285,31 @@ function equityVsRange(hero, range, board, {trials=30000, seed=42, exactLimit=EX
   const totalWeight=list.reduce((sum,g)=>sum+g.weight,0);
   const stats=exact?rangeExact(hero,list,board,deck,need,perCombo):rangeMonteCarlo(hero,list,board,deck,need,trials,seed,totalWeight);
   let equity=0,win=0,tie=0,lose=0,variance=0,count=0;
+  // Share of the range's weight hero is ahead of (equity above 50%), even
+  // with, or behind. Exact runs decide this combo by combo. A Monte Carlo
+  // run only has each hand's average over its combos, so it decides hand by
+  // hand and calls a hand "close" when its average is within 1.96 standard
+  // errors of 50%.
+  const split={basis:exact?"combo":"hand",ahead:0,even:0,close:0,behind:0};
   const out=list.map((g,i)=>{
-    const s=stats[i],share=g.weight/totalWeight;
+    const s=stats[i],share=g.weight/totalWeight,se=Math.sqrt(s.variance);
     equity+=share*s.equity; win+=share*s.win; tie+=share*s.tie; lose+=share*s.lose;
     variance+=share*share*s.variance; count+=s.trials;
-    return {group:g.group,combos:g.combos.length,weight:g.weight,share,equity:s.equity,win:s.win,tie:s.tie,lose:s.lose,trials:s.trials,standardError:Math.sqrt(s.variance)};
+    const row={group:g.group,combos:g.combos.length,weight:g.weight,share,equity:s.equity,win:s.win,tie:s.tie,lose:s.lose,trials:s.trials,standardError:se};
+    if(exact){
+      row.split={ahead:s.ahead/g.weight,even:s.even/g.weight,behind:s.behind/g.weight};
+      row.comboEquity=[s.minEquity,s.maxEquity];
+      for(const key of ["ahead","even","behind"]) split[key]+=s[key]/totalWeight;
+    }else{
+      row.call=Math.abs(s.equity-0.5)<=1.96*se?"close":s.equity>0.5?"ahead":"behind";
+      split[row.call]+=share;
+    }
+    return row;
   });
   return {
     equity,win,tie,lose,trials:count,method:exact?"exact":"monte-carlo",
     combos:live.length,weight:totalWeight,removed:offered.length-live.length,
-    runoutsPerCombo:exact?perCombo:null,standardError:Math.sqrt(variance),groups:out,
+    runoutsPerCombo:exact?perCombo:null,standardError:Math.sqrt(variance),groups:out,split,
   };
 }
 
@@ -325,11 +340,18 @@ function rangeExact(hero, groups, board, deck, need, perCombo){
   }
   rec(0,0);
   return groups.map((g,gi)=>{
-    let w=0,t=0;
-    combos.forEach((c,i)=>{ if(c.group===gi){ w+=c.weight*win[i]; t+=c.weight*tie[i]; } });
+    let w=0,t=0,ahead=0,even=0,behind=0,minEquity=1,maxEquity=0;
+    combos.forEach((c,i)=>{
+      if(c.group!==gi) return;
+      w+=c.weight*win[i]; t+=c.weight*tie[i];
+      // Ahead, even or behind on whole counts: 2 wins + ties against all runouts.
+      const twice=2*win[i]+tie[i];
+      if(twice>perCombo) ahead+=c.weight; else if(twice===perCombo) even+=c.weight; else behind+=c.weight;
+      const e=twice/(2*perCombo); if(e<minEquity) minEquity=e; if(e>maxEquity) maxEquity=e;
+    });
     const scale=g.weight*perCombo;
     const winShare=w/scale, tieShare=t/scale;
-    return {equity:winShare+tieShare/2,win:winShare,tie:tieShare,lose:1-winShare-tieShare,trials:g.combos.length*perCombo,variance:0};
+    return {equity:winShare+tieShare/2,win:winShare,tie:tieShare,lose:1-winShare-tieShare,trials:g.combos.length*perCombo,variance:0,ahead,even,behind,minEquity,maxEquity};
   });
 }
 

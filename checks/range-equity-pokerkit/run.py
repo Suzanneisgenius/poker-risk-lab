@@ -10,10 +10,14 @@ independent open-source implementation. It is pinned in requirements.txt.
 
 Three comparisons:
 1. Notation: the combos our parser reads from each range text must be
-   exactly the combos PokerKit's parse_range reads.
+   exactly the combos PokerKit's parse_range reads, with the same weight on
+   each. PokerKit has no weights, repeats or overrides, so this script applies
+   them itself: the last entry for a combo sets its weight.
 2. Exact equity on the flop, turn and river: every live combo on every
    runout, ranked by PokerKit, with combos parsed by PokerKit and weights
-   applied here. Must equal ours to 1e-9.
+   applied here. The total, the equity and share of every hand in the range,
+   and the weighted share of combos hero is ahead of, even with and behind
+   must equal ours (to 1e-9; the shares to 1e-12).
 3. Preflop: our exact value (every combo on all 1,712,304 runouts) against an
    independent Monte Carlo estimate: combos parsed and hands ranked by
    PokerKit, sampling written below (a combo by weight, then five board cards
@@ -78,13 +82,25 @@ def pokerkit_combos(text: str) -> set[str]:
 
 
 def weighted_range(text: str) -> dict[str, float]:
-    """Combos with weights. Entries are 'hands' or 'hands:weight'; later entries win."""
+    """Combos with weights, written here independently of the app's parser.
+
+    Entries are 'hands' or 'hands:weight' (0-1, or a percentage); PokerKit reads
+    the hands. A repeated combo takes the weight of its last entry, and a weight
+    of 0 removes it.
+    """
     weights: dict[str, float] = {}
     for entry in re.split(r"[\s,;]+", text.strip()):
         hands, _, weight = entry.partition(":")
+        value = float(weight[:-1]) / 100 if weight.endswith("%") else float(weight) if weight else 1.0
         for combo in pokerkit_combos(hands):
-            weights[combo] = float(weight) if weight else 1.0
+            weights[combo] = value
     return {c: w for c, w in weights.items() if w > 0}
+
+
+def hand_class(combo: str) -> str:
+    """'AsKs' -> 'AKs', 'AhKd' -> 'AKo', 'QsQd' -> 'QQ' (higher rank first)."""
+    a, b = combo[:2], combo[2:]
+    return a[0] + b[0] if a[0] == b[0] else a[0] + b[0] + ("s" if a[1] == b[1] else "o")
 
 
 def live_combos(text: str, known: list[str]) -> list[tuple[str, float]]:
@@ -92,7 +108,7 @@ def live_combos(text: str, known: list[str]) -> list[tuple[str, float]]:
 
 
 def _exact_chunk(args: tuple[str, str, list[tuple[str, float]]]) -> list[tuple[float, int]]:
-    """Exact equity of `hero` against each combo in the chunk, over every runout."""
+    """Hero's pot shares summed over every runout, and the runout count, for each combo."""
     hero, board, combos = args
     hero_cards, board_cards = cards(hero), cards(board)
     need = 5 - len(board_cards)
@@ -109,7 +125,7 @@ def _exact_chunk(args: tuple[str, str, list[tuple[str, float]]]) -> list[tuple[f
             h, v = hero_scores[runout], hand(villain, full)
             share += 1.0 if h > v else 0.5 if h == v else 0.0
             runouts += 1
-        out.append((share / runouts, runouts))
+        out.append((share, runouts))
     return out
 
 
@@ -139,12 +155,17 @@ def run() -> dict:
     # 1. Notation.
     notation = []
     for case in ours["notation"]:
-        mine, theirs = set(case["combos"]), pokerkit_combos(case["pokerkit"])
+        theirs_weighted = weighted_range(case["pokerkit"])
+        mine, theirs = set(case["combos"]), set(theirs_weighted)
+        weights_match = mine == theirs and all(abs(case["weights"][c] - theirs_weighted[c]) <= 1e-12 for c in mine)
         notation.append({
             "text": case["text"], "ours": case["ours"], "pokerkit": case["pokerkit"],
             "combos": len(mine), "pokerkit_combos": len(theirs),
+            "weighted_count": round(sum(case["weights"].values()), 10),
+            "pokerkit_weighted_count": round(sum(theirs_weighted.values()), 10),
             "only_ours": sorted(mine - theirs)[:10], "only_pokerkit": sorted(theirs - mine)[:10],
-            "match": mine == theirs,
+            "weights_match": weights_match,
+            "match": mine == theirs and weights_match,
         })
 
     with ProcessPoolExecutor() as pool:
@@ -158,14 +179,40 @@ def run() -> dict:
                 [r for part in pool.map(_exact_chunk, [(spot["hero"], spot["board"], chunk) for chunk in chunks]) for r in part],
             ))
             weight = sum(w for _, w in combos)
-            equity = sum(w * results[c][0] for c, w in combos) / weight
+            equity = sum(w * results[c][0] / results[c][1] for c, w in combos) / weight
             runouts = {r for _, r in results.values()}
+            # Per hand: weighted equity and share, and the weight of combos hero is
+            # ahead of / even with / behind, decided per combo on whole counts.
+            groups: dict[str, dict] = {}
+            for c, w in combos:
+                total, n = results[c]
+                g = groups.setdefault(hand_class(c), {"weight": 0.0, "equity": 0.0, "ahead": 0.0, "even": 0.0, "behind": 0.0})
+                g["weight"] += w
+                g["equity"] += w * total / n
+                g["ahead" if 2 * total > n else "even" if 2 * total == n else "behind"] += w
+            split = {k: sum(g[k] for g in groups.values()) / weight for k in ("ahead", "even", "behind")}
+            mine = {g["group"]: g for g in spot["groups"]}
+            group_gap = 0.0
+            for name, g in groups.items():
+                ours_group = mine.get(name)
+                if ours_group is None:
+                    group_gap = math.inf
+                    continue
+                theirs_group = {"share": g["weight"] / weight, "equity": g["equity"] / g["weight"],
+                                **{k: g[k] / g["weight"] for k in ("ahead", "even", "behind")}}
+                group_gap = max(group_gap, abs(ours_group["share"] - theirs_group["share"]), abs(ours_group["equity"] - theirs_group["equity"]),
+                                *(abs(ours_group["split"][k] - theirs_group[k]) for k in ("ahead", "even", "behind")))
+            split_gap = max(abs(spot["split"][k] - split[k]) for k in split)
             exact.append({
                 "id": spot["id"], "hero": spot["hero"], "board": spot["board"], "range": spot["range"],
                 "combos": len(combos), "ours_combos": spot["combos"], "weight": weight,
                 "runouts_per_combo": runouts.pop() if len(runouts) == 1 else sorted(runouts),
                 "ours": spot["equity"], "pokerkit": equity, "difference": spot["equity"] - equity,
-                "match": len(combos) == spot["combos"] and abs(spot["equity"] - equity) <= 1e-9,
+                "hands": len(groups), "ours_hands": len(mine),
+                "split": {k: round(v, 12) for k, v in split.items()}, "ours_split": {k: round(spot["split"][k], 12) for k in split},
+                "largest_hand_difference": float(f"{group_gap:.1e}"),
+                "match": len(combos) == spot["combos"] and abs(spot["equity"] - equity) <= 1e-9
+                and len(groups) == len(mine) and group_gap <= 1e-9 and split_gap <= 1e-12,
             })
 
         # 3. Preflop: independent Monte Carlo against our exact value.
@@ -223,12 +270,13 @@ def main() -> None:
             f.write(text)
     print(f"PokerKit {result['environment']['pokerkit']} · {platform.machine()} · {seconds:.0f} s")
     matched = sum(c["match"] for c in result["notation"])
-    print(f"Notation: {matched} of {len(result['notation'])} range texts give the same combos")
+    print(f"Notation: {matched} of {len(result['notation'])} range texts give the same combos and weights")
     for c in result["notation"]:
         if not c["match"]:
             print(f"  MISMATCH {c['text']}: only ours {c['only_ours']}, only PokerKit {c['only_pokerkit']}")
     for s in result["exact"]:
-        print(f"  {s['id']:<28} {s['combos']:>5} combos  ours {s['ours']:.9f}  pokerkit {s['pokerkit']:.9f}  "
+        print(f"  {s['id']:<30} {s['combos']:>5} combos  ours {s['ours']:.9f}  pokerkit {s['pokerkit']:.9f}  "
+              f"{s['hands']} hands (largest gap {s['largest_hand_difference']:.0e})  ahead {s['split']['ahead']:.4f}  "
               f"{'match' if s['match'] else 'MISMATCH'}")
     for s in result["preflop"]:
         m, o = s["independent_monte_carlo"], s["ours_monte_carlo"]

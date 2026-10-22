@@ -12,6 +12,8 @@ const PokerRange = require("../standalone/shared/range.js");
 const { trainKuhnTracked, averageGameValue } = require("../standalone/engines/cfr.js");
 const { getPreflopDataset } = require("./preflop.js");
 const { ValidationError } = require("./errors.js");
+const { brownFinite, logPhi } = require("./brownian.js");
+const { computeBankrollPosterior } = require("./bankroll_posterior.js");
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
@@ -130,7 +132,10 @@ function computeEquity(input) {
         : `Monte Carlo: ${result.trials.toLocaleString("en-US")} trials split across the ${result.groups.length} hands in the range by their share of it (seed ${seed}).`;
       return {
         result: { ...result, players: 2 },
-        range: { text: PokerRange.formatRange(plan.weights), combos: summary.combos, hands: summary.hands, live: result.weight },
+        range: {
+          text: PokerRange.formatRange(plan.weights), combos: summary.combos, weighted: summary.weighted, hands: summary.hands,
+          live: result.combos, liveWeighted: result.weight,
+        },
         methodText,
       };
     }
@@ -200,41 +205,6 @@ function gaussFactory(seed) {
     spare = magnitude * Math.sin(2 * Math.PI * v);
     return magnitude * Math.cos(2 * Math.PI * v);
   };
-}
-
-// log(erfc(z)) for z >= 0. Chebyshev fit from Numerical Recipes (erfcc), with
-// fractional error below 1.2e-7 everywhere. Staying in log space means it never
-// underflows, however far into the tail z is.
-function logErfc(z) {
-  const t = 1 / (1 + 0.5 * z);
-  return Math.log(t) - z * z - 1.26551223 + t * (1.00002368 + t * (0.37409196 + t * (0.09678418
-    + t * (-0.18628806 + t * (0.27886807 + t * (-1.13520398 + t * (1.48851587
-    + t * (-0.82215223 + t * 0.17087277))))))));
-}
-
-// log of the standard normal CDF, accurate in both tails.
-function logPhi(x) {
-  const z = -x / Math.SQRT2;
-  if (z >= 0) return Math.log(0.5) + logErfc(z);
-  return Math.log1p(-0.5 * Math.exp(logErfc(-z)));
-}
-
-// Finite-horizon first-passage probability for Brownian motion with drift.
-// The reflection term exp(-2 mu b / sigma^2) overflows for negative drift and
-// large bankrolls while its partner Phi(...) underflows, so both are combined
-// in log space (as src/validation.py does with scipy's log_ndtr).
-function brownFinite(winRate, standardDeviation, bankroll, threshold, hands) {
-  const distance = bankroll - threshold;
-  if (distance <= 0) return 1;
-  const drift = winRate / 100;
-  const variance = (standardDeviation * standardDeviation) / 100;
-  if (variance <= 0) return distance + drift * hands <= 0 ? 1 : 0;
-  const denominator = Math.sqrt(variance * hands);
-  const first = (-distance - drift * hands) / denominator;
-  const second = (-distance + drift * hands) / denominator;
-  const logReflection = (-2 * drift * distance) / variance + logPhi(second);
-  const probability = Math.exp(logPhi(first)) + Math.exp(logReflection);
-  return clamp(probability, 0, 1);
 }
 
 // murmur3's 32-bit finalizer: a cheap, well-mixed integer hash.
@@ -531,6 +501,7 @@ function compute(type, input) {
     case "ev": return computeEv(input);
     case "bankroll": return computeBankroll(input);
     case "risk-lab": return computeRiskLab(input);
+    case "bankroll-posterior": return computeBankrollPosterior(input);
     case "preflop": return computePreflop(input);
     case "gto": return computeGto(input);
     default: throw new ValidationError("Unknown calculation type.");
@@ -543,6 +514,7 @@ module.exports = {
   computeEv,
   computeBankroll,
   computeRiskLab,
+  computeBankrollPosterior,
   computePreflop,
   computeGto,
   estimateCost,
