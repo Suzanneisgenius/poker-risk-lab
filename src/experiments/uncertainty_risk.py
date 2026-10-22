@@ -51,7 +51,7 @@ def run(cfg: dict[str, Any]) -> dict[str, Any]:
     est = estimate_edge(hands, profit, cfg.get("confidence_level", 0.95))
 
     prior = _prior_from_cfg(cfg.get("prior", {}))
-    # Likelihood SE uses the autocorrelation-adjusted standard error.
+    # Likelihood SE: widened by the stability check when it flags.
     post = normal_normal_posterior(est.winrate_bb100, est.se_winrate_adjusted, prior)
 
     r = cfg["risk"]
@@ -174,7 +174,11 @@ def main(argv: list[str] | None = None) -> None:
     print(f"Observed edge      : {est.winrate_bb100:.2f} bb/100 over {est.total_hands:,} hands")
     print(f"Volatility (sigma) : {est.std_bb100:.1f} bb/100")
     print(f"SE of the edge     : {est.se_winrate:.2f} bb/100 "
-          f"(adjusted {est.se_winrate_adjusted:.2f})")
+          f"(used {est.se_winrate_adjusted:.2f})")
+    if est.stability_groups:
+        print(f"Stability check    : {est.stability_groups} groups of blocks, "
+              f"p = {est.stability_p:.3f}, "
+              + (f"SE widened ×{est.se_multiplier:.2f}" if est.se_multiplier > 1 else "SE not widened"))
     print(f"{int(est.confidence_level*100)}% CI for edge   : "
           f"[{est.ci_low:.2f}, {est.ci_high:.2f}] bb/100")
     print(f"Prior              : {post.prior.name} (mean {post.prior.mean}, std {post.prior.std})")

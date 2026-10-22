@@ -36,7 +36,7 @@
    },
    "coverage_95": {
     "as_is": 0.9483,
-    "widened_by_lag1_like_python": 0.9563,
+    "widened_by_lag1": 0.9563,
     "widened_by_blocks_when_flagged": 0.9513,
     "widened_by_blocks_always": 0.9605
    },
@@ -60,7 +60,7 @@
    },
    "coverage_95": {
     "as_is": 0.944,
-    "widened_by_lag1_like_python": 0.951,
+    "widened_by_lag1": 0.951,
     "widened_by_blocks_when_flagged": 0.9455,
     "widened_by_blocks_always": 0.9563
    },
@@ -84,7 +84,7 @@
    },
    "coverage_95": {
     "as_is": 0.8345,
-    "widened_by_lag1_like_python": 0.8568,
+    "widened_by_lag1": 0.8568,
     "widened_by_blocks_when_flagged": 0.8593,
     "widened_by_blocks_always": 0.8908
    },
@@ -108,7 +108,7 @@
    },
    "coverage_95": {
     "as_is": 0.949,
-    "widened_by_lag1_like_python": 0.9555,
+    "widened_by_lag1": 0.9555,
     "widened_by_blocks_when_flagged": 0.9513,
     "widened_by_blocks_always": 0.961
    },
@@ -132,7 +132,7 @@
    },
    "coverage_95": {
     "as_is": 0.9523,
-    "widened_by_lag1_like_python": 0.959,
+    "widened_by_lag1": 0.959,
     "widened_by_blocks_when_flagged": 0.9558,
     "widened_by_blocks_always": 0.9633
    },
@@ -156,7 +156,7 @@
    },
    "coverage_95": {
     "as_is": 0.9483,
-    "widened_by_lag1_like_python": 0.9535,
+    "widened_by_lag1": 0.9535,
     "widened_by_blocks_when_flagged": 0.9498,
     "widened_by_blocks_always": 0.9603
    },
@@ -180,7 +180,7 @@
    },
    "coverage_95": {
     "as_is": 0.783,
-    "widened_by_lag1_like_python": 0.808,
+    "widened_by_lag1": 0.808,
     "widened_by_blocks_when_flagged": 0.8328,
     "widened_by_blocks_always": 0.8673
    },
@@ -204,7 +204,7 @@
    },
    "coverage_95": {
     "as_is": 0.949,
-    "widened_by_lag1_like_python": 0.954,
+    "widened_by_lag1": 0.954,
     "widened_by_blocks_when_flagged": 0.9515,
     "widened_by_blocks_always": 0.9598
    },
@@ -228,7 +228,7 @@
    },
    "coverage_95": {
     "as_is": 0.943,
-    "widened_by_lag1_like_python": 0.95,
+    "widened_by_lag1": 0.95,
     "widened_by_blocks_when_flagged": 0.945,
     "widened_by_blocks_always": 0.9538
    },
@@ -252,7 +252,7 @@
    },
    "coverage_95": {
     "as_is": 0.9665,
-    "widened_by_lag1_like_python": 0.9723,
+    "widened_by_lag1": 0.9723,
     "widened_by_blocks_when_flagged": 0.9675,
     "widened_by_blocks_always": 0.971
    },
@@ -276,7 +276,7 @@
    },
    "coverage_95": {
     "as_is": 0.8055,
-    "widened_by_lag1_like_python": 0.8195,
+    "widened_by_lag1": 0.8195,
     "widened_by_blocks_when_flagged": 0.8465,
     "widened_by_blocks_always": 0.8788
    },
@@ -300,7 +300,7 @@
    },
    "coverage_95": {
     "as_is": 0.952,
-    "widened_by_lag1_like_python": 0.9575,
+    "widened_by_lag1": 0.9575,
     "widened_by_blocks_when_flagged": 0.956,
     "widened_by_blocks_always": 0.9653
    },
@@ -324,7 +324,7 @@
    },
    "coverage_95": {
     "as_is": 0.9475,
-    "widened_by_lag1_like_python": 0.9513,
+    "widened_by_lag1": 0.9513,
     "widened_by_blocks_when_flagged": 0.949,
     "widened_by_blocks_always": 0.9558
    },
@@ -348,7 +348,7 @@
    },
    "coverage_95": {
     "as_is": 0.9878,
-    "widened_by_lag1_like_python": 0.9893,
+    "widened_by_lag1": 0.9893,
     "widened_by_blocks_when_flagged": 0.9878,
     "widened_by_blocks_always": 0.988
    },
@@ -372,7 +372,7 @@
    },
    "coverage_95": {
     "as_is": 0.7553,
-    "widened_by_lag1_like_python": 0.771,
+    "widened_by_lag1": 0.771,
     "widened_by_blocks_when_flagged": 0.8265,
     "widened_by_blocks_always": 0.8643
    },
@@ -396,7 +396,7 @@
    },
    "coverage_95": {
     "as_is": 0.9475,
-    "widened_by_lag1_like_python": 0.9545,
+    "widened_by_lag1": 0.9545,
     "widened_by_blocks_when_flagged": 0.9525,
     "widened_by_blocks_always": 0.962
    },

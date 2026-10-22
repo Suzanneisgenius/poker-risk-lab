@@ -9,8 +9,8 @@ separately:
   standard error
   volatility interval   own chi-square quantile       scipy.stats.chi2
   length check          own Welch test                numpy + scipy.stats.norm
-  stability check,      own blocks and chi-square     numpy + scipy.stats.chi2
-  group comparison
+  stability check       own blocks and chi-square     src.inference.estimate_edge (scipy.stats.chi2)
+  group comparison      own chi-square                numpy + scipy.stats.chi2
 
 This is an internal check: both sides are this repository's code, so agreement
 shows the page computes what the research code computes, not that the model
@@ -93,9 +93,11 @@ def heterogeneity(groups: list[dict], win_rate: float, sd: float) -> dict:
 
 
 def summarize(df: pd.DataFrame) -> dict:
+    # In time order, which the stability check needs; the rest does not depend on order.
+    ordered = chronological(df)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        est = estimate_edge(df["hands"].to_numpy(float), df["profit"].to_numpy(float))
+        est = estimate_edge(ordered["hands"].to_numpy(float), ordered["profit"].to_numpy(float))
     n, sd, se = est.n_blocks, est.std_bb100, est.se_winrate
     h = df["hands"].to_numpy(float)
     out = {
@@ -117,13 +119,10 @@ def summarize(df: pd.DataFrame) -> dict:
         p = min(1.0, 2 * float(stats.norm.sf(abs(z))))
         out["scaling"] = {"short": {"n": ns, "sd": sds}, "long": {"n": nl, "sd": sdl}, "ratio": ms / ml, "z": z, "p": p,
                           "flag": bool(p < 0.01 and abs(math.log(ms / ml)) > math.log(1.12))}
-    if n >= 20:
-        ordered = chronological(df)
-        G = min(10, n // 5)
-        blocks = [weighted(ordered.iloc[(g * n) // G:((g + 1) * n) // G]) for g in range(G)]
-        het = heterogeneity(blocks, est.winrate_bb100, sd)
-        out["stability"] = {**het, "flag": bool(het["p"] < 0.05),
-                            "multiplier": min(10.0, max(1.0, het["standardError"] / se))}
+    if est.stability_groups:
+        out["stability"] = {"groups": est.stability_groups, "q": est.stability_q, "p": est.stability_p,
+                            "standardError": est.se_between_groups, "flag": est.stability_flag,
+                            "multiplier": est.stability_multiplier}
     return out
 
 

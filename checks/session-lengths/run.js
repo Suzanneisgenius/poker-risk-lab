@@ -14,10 +14,11 @@
 //  - the weighted volatility, against the naive one (spread of session win
 //    rates scaled to the average session length);
 //  - how often the 95% interval (win rate +/- 1.96 standard errors, as the page
-//    shows with no prior) covers the true win rate: as is; widened as
-//    src/inference.py does (by the lag-1 correlation of the session win rates,
-//    whenever it is positive); and widened by the between-block standard error
-//    when the page's stability check flags;
+//    shows with no prior) covers the true win rate: as is; widened by the lag-1
+//    correlation of the session win rates whenever it is positive (the rule
+//    src/inference.py used until 2026-10-22); and widened by the between-block
+//    standard error when the stability check flags (the page's rule, and
+//    src/inference.py's since then);
 //  - how often the page's two checks flag (spread against length, stability),
 //    and how often a lag-1 test of the raw session win rates would.
 "use strict";
@@ -83,7 +84,7 @@ const MODELS = {
   },
 };
 
-// The lag-1 correlation src/inference.py uses: of the raw session win rates.
+// The lag-1 correlation src/inference.py used until 2026-10-22: of the raw session win rates.
 function rawRateRho(sessions) {
   const r = S.chronological(sessions).map((s) => (100 * s.profit) / s.hands);
   const x = r.slice(0, -1), y = r.slice(1), n = x.length;
@@ -126,7 +127,7 @@ function cell(patternKey, modelKey, index) {
     pattern: patternKey, model: modelKey,
     win_rate: { bias: r4(sums.errW / HISTORIES), rmse_weighted: r4(Math.sqrt(sums.sqW / HISTORIES)), rmse_unweighted: r4(Math.sqrt(sums.sqU / HISTORIES)) },
     volatility: { mean_weighted: r4(sums.sd / HISTORIES), mean_naive: r4(sums.sdNaive / HISTORIES) },
-    coverage_95: { as_is: r4(sums.cover / HISTORIES), widened_by_lag1_like_python: r4(sums.coverPy / HISTORIES),
+    coverage_95: { as_is: r4(sums.cover / HISTORIES), widened_by_lag1: r4(sums.coverPy / HISTORIES),
       widened_by_blocks_when_flagged: r4(sums.coverPage / HISTORIES), widened_by_blocks_always: r4(sums.coverBlocks / HISTORIES) },
     flags: {
       spread_against_length: sums.scalingTested ? r4(sums.scaling / sums.scalingTested) : null,
@@ -161,7 +162,7 @@ if (process.argv.includes("--check")) {
   for (const c of cells) {
     console.log(`${c.pattern.padEnd(10)} ${c.model.padEnd(14)} ${c.win_rate.rmse_weighted.toFixed(2).padStart(5)} / ${c.win_rate.rmse_unweighted.toFixed(2).padStart(5)}  `
       + `${c.volatility.mean_weighted.toFixed(1).padStart(5)} / ${c.volatility.mean_naive.toFixed(1).padStart(5)}  `
-      + `${pct(c.coverage_95.as_is)} ${pct(c.coverage_95.widened_by_lag1_like_python)} ${pct(c.coverage_95.widened_by_blocks_when_flagged)} ${pct(c.coverage_95.widened_by_blocks_always)}  `
+      + `${pct(c.coverage_95.as_is)} ${pct(c.coverage_95.widened_by_lag1)} ${pct(c.coverage_95.widened_by_blocks_when_flagged)} ${pct(c.coverage_95.widened_by_blocks_always)}  `
       + `${pct(c.flags.spread_against_length)} ${pct(c.flags.stability)} ${pct(c.flags.lag1_on_raw_rates)}`);
   }
   console.log(`${Math.round((Date.now() - started) / 1000)} s`);

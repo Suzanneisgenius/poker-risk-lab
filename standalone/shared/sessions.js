@@ -204,9 +204,10 @@ const PokerSessions = (() => {
   //    blocks' win rates compared (heterogeneity, above). When it flags, the
   //    between-block standard error is the honest one: the page offers to
   //    widen the interval by that ratio.
-  // The lag-1 correlation src/inference.py uses was tried first; in
-  // checks/session-lengths it rarely noticed a drifting win rate and widening
-  // by it did not restore the interval's coverage.
+  // A lag-1 correlation (src/inference.py's rule until 2026-10-22) was tried
+  // first; in checks/session-lengths it rarely noticed a drifting win rate and
+  // widening by it did not restore the interval's coverage. src/inference.py
+  // now runs this same stability check.
   function summarize(sessions) {
     const base = weighted(sessions);
     if (base.n < 2) return { ...base, sd: null, standardError: null };

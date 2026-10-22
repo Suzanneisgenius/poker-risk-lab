@@ -212,7 +212,7 @@ function render(inputs) {
     l_drift_lag1_flag: spanPct(study("drift").map((c) => c.flags.lag1_on_raw_rates)),
     l_drift_widened: spanPct(study("drift").map((c) => c.coverage_95.widened_by_blocks_when_flagged)),
     l_drift_always: spanPct(study("drift").map((c) => c.coverage_95.widened_by_blocks_always)),
-    l_drift_lag1: spanPct(study("drift").map((c) => c.coverage_95.widened_by_lag1_like_python)),
+    l_drift_lag1: spanPct(study("drift").map((c) => c.coverage_95.widened_by_lag1)),
   };
 
   // "Recorded with" for the reproduction table.
