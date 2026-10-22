@@ -59,6 +59,15 @@ increment ~ Normal(mean = winrate_bb100 * step_hands / 100,
 all subsequent steps and can never recover. Terminal bankroll is defined
 consistently for survivors and ruined paths.
 
+**Continuous monitoring.** By default (`bridge=True`) ruin is also detected
+*between* step ends: when a step starts and ends above the threshold, the path
+is ruined with the Brownian-bridge probability `exp(-2 a0 a1 / s2)` that it
+touched the threshold in between. Endpoint-only monitoring (`bridge=False`)
+underestimates first-passage risk; on 200k-path checks it ran 5–36 standard
+errors below the finite-horizon Brownian benchmark, while the bridge-corrected
+estimate stayed within 1 standard error. The web engine (`server/compute.js`)
+uses the same correction.
+
 **Monte Carlo estimation.** The engine is fully vectorized (`np.random.default_rng`,
 no per-path Python loops, optional path-chunking with a memory guard). Risk of ruin
 is the fraction of ruined paths, with a path-level **bootstrap** confidence interval
@@ -137,11 +146,11 @@ The suite provides five tools behind one dark UI:
 - **Pot Odds & EV** — turns the latest card-derived equity into a call/fold
   decision with EV in big blinds; manual equity remains an advanced option.
 - **Bankroll Risk** — the Monte Carlo risk-of-ruin engine with a finite-horizon
-  Brownian reference line. Unlike the Python research engine, which detects
-  ruin only at step ends, the web engine monitors ruin continuously with a
-  Brownian-bridge correction (the method from `barrier_resolution.py`), and its
-  risk-versus-bankroll curve reuses the same simulated swings at every bankroll
-  (common random numbers) with pointwise 95% Wilson intervals.
+  Brownian reference line. Like the Python engine, it monitors ruin
+  continuously with a Brownian-bridge correction (the method from
+  `barrier_resolution.py`), and its risk-versus-bankroll curve reuses the same
+  simulated swings at every bankroll (common random numbers) with pointwise 95%
+  Wilson intervals.
 - **Preflop** — browse, compare, and practise five 169-hand demonstration
   ranges. These illustrative frequencies validate the complete product workflow
   but are not solver-verified; the private API is ready for licensed solver

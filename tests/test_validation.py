@@ -97,18 +97,19 @@ def test_markov_resolution_too_fine_raises():
 
 def test_mc_finite_and_markov_reasonably_consistent():
     # A parameter set with a meaningful, moderate ruin probability.
-    res = simulate_bankroll(
-        n_paths=40_000, n_hands=100_000, winrate_bb100=2.0, std_bb100=90.0,
-        bankroll_bb=1500.0, seed=42,
-    )
-    mc = estimate_risk_of_ruin(res, seed=0)
+    common = dict(n_paths=40_000, n_hands=100_000, winrate_bb100=2.0,
+                  std_bb100=90.0, bankroll_bb=1500.0, seed=42)
+    endpoint = estimate_risk_of_ruin(simulate_bankroll(**common, bridge=False), seed=0)
+    bridged = estimate_risk_of_ruin(simulate_bankroll(**common), seed=0)
     fin = brownian_ruin_finite(2.0, 90.0, 1500.0, 100_000)["probability"]
     mk = markov_chain_ruin(2.0, 90.0, 1500.0, 100_000)["probability"]
-    # MC and Markov both monitor ruin at 100-hand steps, so they agree closely.
-    assert abs(mc["point_estimate"] - mk) < 0.03
-    # The continuous-monitoring Brownian approximation is a touch higher than
-    # the discretely-monitored MC; allow for that finite-step gap.
-    assert abs(mc["point_estimate"] - fin) < 0.06
+    # Endpoint-only MC and the Markov chain both monitor ruin at 100-hand
+    # steps, so they agree closely.
+    assert abs(endpoint["point_estimate"] - mk) < 0.03
+    # The default bridge-corrected MC monitors continuously, like the Brownian
+    # first-passage formula, so it lands within its own interval of it.
+    assert bridged["ci_low"] - 0.005 <= fin <= bridged["ci_high"] + 0.005
+    assert abs(bridged["point_estimate"] - fin) < abs(endpoint["point_estimate"] - fin)
 
 
 def test_comparison_assembles_table():

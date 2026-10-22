@@ -54,11 +54,14 @@ def _seeds(base_seed: int, n: int) -> list[int]:
 
 
 def ruin_estimate(sc: Scenario, n_paths: int, seed: int) -> float:
+    # The estimand here is the discretely monitored ruin probability, so the
+    # bridge correction stays off (this also keeps the saved results
+    # reproducible).
     res = simulate_bankroll(
         n_paths=n_paths, n_hands=sc.n_hands, winrate_bb100=sc.winrate_bb100,
         std_bb100=sc.std_bb100, bankroll_bb=sc.bankroll_bb,
         ruin_threshold_bb=sc.ruin_threshold_bb, seed=seed,
-        step_hands=sc.step_hands, store_n_paths=0,
+        step_hands=sc.step_hands, store_n_paths=0, bridge=False,
     )
     return float(res["ruined"].mean())
 

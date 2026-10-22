@@ -10,8 +10,18 @@ A path is *ruined* the first time its bankroll is <= ``ruin_threshold_bb``.
 Ruin is absorbing: a ruined path is clipped to the threshold for all later
 steps and can never recover.
 
+By default ruin is monitored continuously (``bridge=True``), matching the web
+engine in ``server/compute.js``: when a step starts and ends above the
+threshold, the path is still ruined with the Brownian-bridge probability
+``exp(-2 a0 a1 / s2)`` that it touched the threshold in between (``a0, a1`` are
+the distances above the threshold at the step ends, ``s2`` the step variance).
+With ``bridge=False`` ruin is only detected at step ends, which underestimates
+first-passage risk; see ``src/experiments/barrier_resolution.py``.
+
 All randomness flows through ``np.random.default_rng(seed)`` so that every
 reported number is reproducible from the config alone. No module-level RNG.
+Bridge uniforms come from a second generator spawned from the same seed, so
+the Normal increments are identical with and without the bridge.
 """
 
 from __future__ import annotations
@@ -48,6 +58,9 @@ class SimulationConfig:
         Seed for ``np.random.default_rng``.
     step_hands:
         Number of hands aggregated into a single Normal increment.
+    bridge:
+        Monitor ruin continuously with the Brownian-bridge correction
+        (default) instead of only at step ends.
     """
 
     n_paths: int
@@ -58,6 +71,7 @@ class SimulationConfig:
     ruin_threshold_bb: float = 0.0
     seed: int = 42
     step_hands: int = 100
+    bridge: bool = True
 
     def validate(self) -> None:
         """Raise ``ValueError`` with a clear message on invalid input."""
@@ -96,14 +110,15 @@ def _step_sizes(n_hands: int, step_hands: int) -> list[int]:
     return sizes
 
 
-def estimate_memory_bytes(n_paths: int, n_steps: int) -> int:
+def estimate_memory_bytes(n_paths: int, n_steps: int, bridge: bool = True) -> int:
     """Rough peak memory for a full (non-chunked) run, in bytes.
 
     We hold several float64 arrays of shape ``(n_paths, n_steps + 1)``
     simultaneously (raw, clipped, running peak, drawdown). The factor of 5
-    is a deliberately conservative estimate.
+    is a deliberately conservative estimate; the bridge correction adds two
+    more (crossing probabilities and their uniforms).
     """
-    return int(n_paths) * (int(n_steps) + 1) * 8 * 5
+    return int(n_paths) * (int(n_steps) + 1) * 8 * (7 if bridge else 5)
 
 
 # ---------------------------------------------------------------------------
@@ -123,11 +138,17 @@ def simulate_bankroll(
     store_n_paths: int | None = None,
     max_memory_gb: float = 2.0,
     chunk_paths: int | None = None,
+    bridge: bool = True,
 ) -> dict[str, Any]:
     """Run a vectorized Monte Carlo bankroll simulation.
 
     Parameters
     ----------
+    bridge:
+        Monitor ruin continuously with the Brownian-bridge correction
+        (default). A step that crosses the threshold internally counts as ruin
+        at the end of that step. ``False`` detects ruin only at step ends and
+        reproduces the results of earlier versions exactly.
     store_n_paths:
         Number of full bankroll paths to retain for plotting. ``None`` stores
         all paths. Summary statistics are always computed over *all* paths.
@@ -155,6 +176,7 @@ def simulate_bankroll(
         ruin_threshold_bb=ruin_threshold_bb,
         seed=42 if seed is None else int(seed),
         step_hands=step_hands,
+        bridge=bool(bridge),
     )
     config.validate()
 
@@ -166,20 +188,21 @@ def simulate_bankroll(
     step_arr = np.asarray(sizes, dtype=np.float64)
     step_mean = winrate_bb100 * step_arr / 100.0
     step_std = std_bb100 * np.sqrt(step_arr / 100.0)
+    step_var = step_std**2
 
     # Decide on chunking.
     hard_ceiling_bytes = 8 * 1024**3  # absolute refusal above 8 GB
-    est = estimate_memory_bytes(n_paths, n_steps)
+    est = estimate_memory_bytes(n_paths, n_steps, config.bridge)
     limit_bytes = int(max_memory_gb * 1024**3)
     if chunk_paths is None:
         if est <= limit_bytes:
             chunk_paths = n_paths
         else:
-            per_path = max(estimate_memory_bytes(1, n_steps), 1)
+            per_path = max(estimate_memory_bytes(1, n_steps, config.bridge), 1)
             chunk_paths = max(1, limit_bytes // per_path)
     chunk_paths = int(min(chunk_paths, n_paths))
 
-    if estimate_memory_bytes(chunk_paths, n_steps) > hard_ceiling_bytes:
+    if estimate_memory_bytes(chunk_paths, n_steps, config.bridge) > hard_ceiling_bytes:
         raise MemoryError(
             "This configuration would allocate more than 8 GB even when "
             "chunked. Reduce n_paths, reduce the horizon, or increase "
@@ -191,6 +214,10 @@ def simulate_bankroll(
     store_n_paths = int(min(store_n_paths, n_paths))
 
     rng = np.random.default_rng(config.seed)
+    # Separate stream for bridge uniforms: the Normal increments stay identical
+    # to a bridge=False run, and drawing per chunk keeps results independent of
+    # the chunk size.
+    bridge_rng = np.random.default_rng(np.random.SeedSequence(config.seed).spawn(1)[0])
     threshold = float(ruin_threshold_bb)
     col_idx = np.arange(n_cols)
 
@@ -223,6 +250,17 @@ def simulate_bankroll(
 
         # First ruin column (<= threshold).
         breached = raw <= threshold
+        if config.bridge:
+            # Intrastep crossing: for a step whose ends are a0, a1 > 0 above
+            # the threshold, P(touch) = exp(-2 a0 a1 / step variance). A hit
+            # marks the step's end column, like an endpoint breach would.
+            a0 = raw[:, :-1] - threshold
+            a1 = raw[:, 1:] - threshold
+            both_above = (a0 > 0) & (a1 > 0)
+            with np.errstate(divide="ignore", over="ignore", under="ignore", invalid="ignore"):
+                crossing = np.exp(-2.0 * a0 * a1 / step_var[np.newaxis, :])
+            crossing[~both_above] = 0.0
+            breached[:, 1:] |= bridge_rng.random(size=(m, n_steps)) < crossing
         any_ruined = breached.any(axis=1)
         first = np.where(any_ruined, breached.argmax(axis=1), -1)
 
@@ -294,5 +332,5 @@ def simulate_from_config(
         ruin_threshold_bb=config.ruin_threshold_bb,
         seed=config.seed,
         step_hands=config.step_hands,
-        **kwargs,
+        **{"bridge": config.bridge, **kwargs},
     )
