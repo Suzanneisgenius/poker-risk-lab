@@ -55,7 +55,7 @@ quantities. We keep them explicitly separate.
 | Observed block returns $r_i$ | Realized profit over a block of hands. |
 | Finite-horizon ruin | $P(\exists k \le K : B_k \le b)$ over a fixed horizon $H = \sum \Delta h_k$. |
 | Infinite-horizon ruin | $P(\exists k < \infty : B_k \le b)$; the classic gambler's-ruin limit. |
-| Discrete barrier monitoring | Ruin checked only at step boundaries (what Monte Carlo does). |
+| Discrete barrier monitoring | Ruin checked only at step boundaries (endpoint-only Monte Carlo, `bridge=False`). |
 | Continuous barrier monitoring | Ruin if the barrier is crossed *at any instant* (what the Brownian first-passage formula assumes). |
 | Conditional risk $P(\text{ruin}\mid \mu,\sigma,B_0,H)$ | Risk for a *fixed* parameter vector. |
 | Uncertainty-integrated risk $P(\text{ruin}\mid D)$ | Risk after integrating parameter uncertainty against data $D$. |
@@ -165,6 +165,13 @@ compares (i) endpoint-only monitoring, (ii) bridge-corrected monitoring, and
 the discrete estimate converges to the continuous benchmark as `step_hands`
 decreases. We do **not** assume convergence in advance; we report the observed
 behavior.
+
+The production engines apply this correction by default: `simulate_bankroll`
+in `src/simulation.py` (`bridge=True`) and the web engine in
+`server/compute.js`. A step whose bridge draw fires counts as ruin at the end of
+that step. `bridge=False` keeps endpoint-only monitoring; the Monte Carlo
+convergence experiment uses it because its estimand is the discretely
+monitored ruin probability.
 
 *Reference:* the Brownian-bridge crossing probability is standard; see e.g.
 Glasserman, *Monte Carlo Methods in Financial Engineering* (2004), §6.4, on

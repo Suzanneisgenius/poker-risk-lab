@@ -1,0 +1,187 @@
+{
+  "purpose": "Independent cross-check of the hand evaluator and equity engine against PokerKit.",
+  "command": "python -I checks/external-pokerkit/run.py --check",
+  "environment": {
+    "pokerkit": "0.7.7",
+    "python": "3.12.14",
+    "node": "v24.21.0"
+  },
+  "hand_order": {
+    "hands": 20000,
+    "seed": 20261022,
+    "neighbouring_pairs": 19999,
+    "disagreements": [],
+    "disagreement_count": 0,
+    "categories": {
+      "One pair": 8802,
+      "Two pair": 4622,
+      "High card": 3572,
+      "Three of a kind": 1005,
+      "Straight": 902,
+      "Flush": 566,
+      "Full house": 481,
+      "Four of a kind": 42,
+      "Straight flush": 8
+    }
+  },
+  "heads_up_exact": [
+    {
+      "id": "preflop-AKs-vs-QQ",
+      "hero": "AsKs",
+      "villain": "QhQd",
+      "board": "",
+      "runouts": 1712304,
+      "ours": {
+        "win": 787966,
+        "tie": 6732,
+        "lose": 917606,
+        "equity": 0.46214457245909607
+      },
+      "pokerkit": {
+        "win": 787966,
+        "tie": 6732,
+        "lose": 917606,
+        "equity": 0.46214457245909607
+      },
+      "match": true
+    },
+    {
+      "id": "preflop-76s-vs-AKo",
+      "hero": "7c6c",
+      "villain": "AhKd",
+      "board": "",
+      "runouts": 1712304,
+      "ours": {
+        "win": 720259,
+        "tie": 6530,
+        "lose": 985515,
+        "equity": 0.4225441276782627
+      },
+      "pokerkit": {
+        "win": 720259,
+        "tie": 6530,
+        "lose": 985515,
+        "equity": 0.4225441276782627
+      },
+      "match": true
+    },
+    {
+      "id": "flop-flush-draw",
+      "hero": "AhKh",
+      "villain": "9s9d",
+      "board": "Qh7h2c",
+      "runouts": 990,
+      "ours": {
+        "win": 545,
+        "tie": 0,
+        "lose": 445,
+        "equity": 0.5505050505050505
+      },
+      "pokerkit": {
+        "win": 545,
+        "tie": 0,
+        "lose": 445,
+        "equity": 0.5505050505050505
+      },
+      "match": true
+    },
+    {
+      "id": "flop-combo-draw",
+      "hero": "8d7d",
+      "villain": "AcAs",
+      "board": "9d6c2d",
+      "runouts": 990,
+      "ours": {
+        "win": 557,
+        "tie": 0,
+        "lose": 433,
+        "equity": 0.5626262626262626
+      },
+      "pokerkit": {
+        "win": 557,
+        "tie": 0,
+        "lose": 433,
+        "equity": 0.5626262626262626
+      },
+      "match": true
+    },
+    {
+      "id": "flop-trips-board",
+      "hero": "KdKc",
+      "villain": "QsQh",
+      "board": "AsAhAd",
+      "runouts": 990,
+      "ours": {
+        "win": 987,
+        "tie": 2,
+        "lose": 1,
+        "equity": 0.997979797979798
+      },
+      "pokerkit": {
+        "win": 987,
+        "tie": 2,
+        "lose": 1,
+        "equity": 0.997979797979798
+      },
+      "match": true
+    },
+    {
+      "id": "turn-flush-draw",
+      "hero": "JcTc",
+      "villain": "KsKh",
+      "board": "Qc9h3c2s",
+      "runouts": 44,
+      "ours": {
+        "win": 13,
+        "tie": 0,
+        "lose": 31,
+        "equity": 0.29545454545454547
+      },
+      "pokerkit": {
+        "win": 13,
+        "tie": 0,
+        "lose": 31,
+        "equity": 0.29545454545454547
+      },
+      "match": true
+    },
+    {
+      "id": "river-split",
+      "hero": "AdQd",
+      "villain": "AcQc",
+      "board": "KsJhTc4d4h",
+      "runouts": 1,
+      "ours": {
+        "win": 0,
+        "tie": 1,
+        "lose": 0,
+        "equity": 0.5
+      },
+      "pokerkit": {
+        "win": 0,
+        "tie": 1,
+        "lose": 0,
+        "equity": 0.5
+      },
+      "match": true
+    }
+  ],
+  "three_way": {
+    "id": "flop-three-way",
+    "hands": [
+      "AsKd",
+      "QhQc",
+      "8s7s"
+    ],
+    "board": "Js9s2d",
+    "runouts": 903,
+    "pokerkit_exact_equity": 0.17940199335548174,
+    "ours_monte_carlo_equity": 0.18016666666666667,
+    "trials": 150000,
+    "seed": 1,
+    "standard_error": 0.000990679625763921,
+    "difference_in_se": 0.7718674042532031,
+    "within_4_se": true
+  },
+  "all_passed": true
+}

@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  node:
+    name: Node (build + npm test)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Build public pages
+        run: npm run build
+      # The committed pages are what the server serves; fail if someone edited
+      # standalone/build/ without rebuilding.
+      - name: Check built pages are up to date
+        run: git diff --exit-code -- index.html site/index.html standalone/poker-analytics-suite.html case-study/index.html case-study/validation.html
+      - name: Test engines, server units, and API
+        run: npm test
+      # The figures quoted in CHANGELOG.md must still come out of the engine.
+      - name: Check the archived calculation-change figures
+        run: npm run check:calc-change
+
+  python:
+    name: Python ${{ matrix.python-version }} (pytest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.11 is the minimum in pyproject.toml.
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run pytest
+        run: pytest

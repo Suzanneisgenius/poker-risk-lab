@@ -1,5 +1,50 @@
-# Bankroll Risk Lab
-### Uncertainty-Aware Simulation and Validation of Stochastic Ruin Models
+# Poker Risk Lab: Understanding Uncertainty in Simulation
+
+**How much should we trust a simulated risk estimate?** An interactive study of
+how numerical error, uncertain inputs and modelling assumptions affect a
+bankroll-risk estimate. Poker is the setting; the methods apply to any
+simulated risk with an absorbing boundary.
+
+![One risk estimate, three sources of uncertainty: simulation noise, an uncertain win rate and model assumptions, on one risk axis](reports/case-study/overview.png)
+
+**Main finding.** For one scenario (30 buy-ins, +3 bb/100, 90 bb/100 swings,
+100,000 hands; exact model risk 7.17%), a single simulation at the default
+2,000 paths lands within about ±1.13 points of the exact value. Not knowing the
+win rate after 50,000 hands leaves anything from 0.1% to 83.3% plausible, and
+five models of how results arrive give 6.4% to 20.3%. More computing only fixes
+the first.
+
+| | |
+|---|---|
+| **Case study** | [`case-study/index.html`](case-study/index.html): three questions, one at a time, plus how a misleading result was checked. Static page: open the file directly, or `/case-study/` on the running app. |
+| **Validation** | [`case-study/validation.html`](case-study/validation.html): PokerKit cross-check, exact-value checks, interval coverage, engine agreement and benchmark conditions. |
+| **Demo** | `npm start`, then <http://localhost:4174>. No public deployment URL yet. |
+| **Reproduce** | `pip install -r requirements-research.txt`, `python -m src.experiments.case_study --case all`, then `npm run build`. Every check in [`checks/`](checks/README.md) has its own command and saved output. |
+| **Limits** | Conditional model estimates, not advice. The alternative models are stress tests, not descriptions of real games. The Preflop ranges are demonstration data. |
+
+## Authorship and AI assistance
+
+My work focused on assessing the reliability of simulated bankroll-risk estimates.
+I investigated threshold crossings missed by 100-hand checkpoints, incorporated a
+Brownian-bridge correction, and compared the estimates with an analytical
+finite-horizon first-passage benchmark. When an engine update changed results for
+the same inputs and seed, I isolated changes to random-number generation from
+changes to ruin detection. Across 40 seeds with 2,000 paths per seed, I examined
+Monte Carlo variation alongside the systematic effect of the correction.
+
+I also investigated win-rate uncertainty and alternative models of bankroll
+returns. Validation included Markov-chain absorption calculations and comparisons
+between the Python research engine and the web implementation. I documented
+settings, seeds, versions, and limitations to make these comparisons reproducible.
+This work informed a central distinction in the project: increasing the simulation
+budget reduces Monte Carlo error, while parameter uncertainty and model
+assumptions require separate investigation.
+
+AI tools were used primarily to assist with code review, check calculations and
+written explanations, and identify potential errors. Their feedback supported my
+review and revision process.
+
+## Research framing
 
 **Research question:** *How reliable are finite-horizon ruin-risk estimates when
 the stochastic model, the estimated edge, the barrier-monitoring frequency, and
@@ -18,9 +63,20 @@ estimation for stochastic systems with absorbing boundaries*, demonstrated
 through four strands: (1) mathematical modeling, (2) statistical inference under
 parameter uncertainty, (3) numerical/computational validation, and
 (4) reproducible scientific software. See [`docs/methodology.md`](docs/methodology.md).
+The quick-run figures in `reports/figures/` predate the bridge correction and
+show no intervals; the case study uses the regenerated results in
+`reports/case-study/`.
 
 > Research and educational tool. Results depend on simplified model assumptions
 > and are **not** financial or gambling advice.
+
+> **Calculation engine update (2026-10-21):** bankroll results now count dips
+> to the ruin threshold between 100-hand checkpoints and use new random-number
+> streams, so the same settings and seed give different numbers than earlier
+> versions. See [`CHANGELOG.md`](CHANGELOG.md) for the before/after figures and
+> what they do and do not mean, and
+> [`checks/calculation-change-2026-10-21/`](checks/calculation-change-2026-10-21/README.md)
+> for the script and saved output that reproduce them.
 
 ---
 
@@ -58,6 +114,15 @@ increment ~ Normal(mean = winrate_bb100 * step_hands / 100,
 `ruin_threshold_bb`. Ruin is absorbing: the path is clipped to the threshold for
 all subsequent steps and can never recover. Terminal bankroll is defined
 consistently for survivors and ruined paths.
+
+**Continuous monitoring.** By default (`bridge=True`) ruin is also detected
+*between* step ends: when a step starts and ends above the threshold, the path
+is ruined with the Brownian-bridge probability `exp(-2 a0 a1 / s2)` that it
+touched the threshold in between. Endpoint-only monitoring (`bridge=False`)
+underestimates first-passage risk; on 200k-path checks it ran 5–36 standard
+errors below the finite-horizon Brownian benchmark, while the bridge-corrected
+estimate stayed within 1 standard error. The web engine (`server/compute.js`)
+uses the same correction.
 
 **Monte Carlo estimation.** The engine is fully vectorized (`np.random.default_rng`,
 no per-path Python loops, optional path-chunking with a memory guard). Risk of ruin
@@ -137,7 +202,11 @@ The suite provides five tools behind one dark UI:
 - **Pot Odds & EV** — turns the latest card-derived equity into a call/fold
   decision with EV in big blinds; manual equity remains an advanced option.
 - **Bankroll Risk** — the Monte Carlo risk-of-ruin engine with a finite-horizon
-  Brownian reference line.
+  Brownian reference line. Like the Python engine, it monitors ruin
+  continuously with a Brownian-bridge correction (the method from
+  `barrier_resolution.py`), and its risk-versus-bankroll curve reuses the same
+  simulated swings at every bankroll (common random numbers) with pointwise 95%
+  Wilson intervals.
 - **Preflop** — browse, compare, and practise five 169-hand demonstration
   ranges. These illustrative frequencies validate the complete product workflow
   but are not solver-verified; the private API is ready for licensed solver

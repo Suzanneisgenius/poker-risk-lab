@@ -8,6 +8,8 @@
  * builders without changing the public interface.
  */
 
+const { ValidationError } = require("./errors.js");
+
 const RANKS = ["A", "K", "Q", "J", "T", "9", "8", "7", "6", "5", "4", "3", "2"];
 const RANK_VALUE = Object.fromEntries(RANKS.map((rank, index) => [rank, 14 - index]));
 const ACTIONS = ["raise", "call", "jam", "fold"];
@@ -221,7 +223,7 @@ function scenarioSummary(scenario) {
 
 function getPreflopDataset(scenarioId = SCENARIO_SPECS[0].id) {
   const scenario = SCENARIOS.get(scenarioId);
-  if (!scenario) throw new Error("Choose an available preflop scenario.");
+  if (!scenario) throw new ValidationError("Choose an available preflop scenario.");
   return {
     dataset: {
       id: "demo-preflop-v1",

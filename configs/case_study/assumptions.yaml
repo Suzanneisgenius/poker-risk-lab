@@ -1,0 +1,21 @@
+# Case 3 — If results are not independent or not Normal, is the estimate still reliable?
+# Same scenario and the same edge in every model; each model also keeps the
+# per-step standard deviation where it can (see src/models.py). Ruin is checked
+# at 100-hand step ends for every model, so all levels are understated alike
+# (the bridge correction is exact only for Normal increments).
+scenario:
+  winrate_bb100: 3.0
+  std_bb100: 90.0
+  bankroll_bb: 3000.0
+  ruin_threshold_bb: 0.0
+  n_hands: 100000
+  step_hands: 100
+models: [gaussian, student_t, shock_mixture, ar1, regime_switching]
+params:
+  student_t: {df: 3.0}
+  shock_mixture: {p: 0.03, shock_mean: -4.0, shock_scale: 2.5}
+  ar1: {phi: 0.3}
+  regime_switching: {p_stay_normal: 0.98, p_stay_adverse: 0.90, mu_adverse: -5.0, vol_mult: 1.6}
+n_paths: 40000
+seed: 20240601
+spread_paths: 4000           # unabsorbed paths used to measure how much the 100k-hand total varies

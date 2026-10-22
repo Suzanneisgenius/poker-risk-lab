@@ -20,6 +20,18 @@ def _git_commit() -> str | None:
         return None
 
 
+def _code_changed_since_commit() -> bool | None:
+    """True when src/ or configs/ differ from the recorded commit."""
+    try:
+        out = subprocess.run(
+            ["git", "status", "--porcelain", "--", "src", "configs"],
+            capture_output=True, text=True, timeout=3,
+        )
+        return bool(out.stdout.strip()) if out.returncode == 0 else None
+    except Exception:
+        return None
+
+
 def package_versions() -> dict[str, str]:
     versions: dict[str, str] = {"python": sys.version.split()[0]}
     for name in ("numpy", "scipy", "pandas", "matplotlib"):
@@ -36,6 +48,7 @@ def provenance(**params: Any) -> dict[str, Any]:
     return {
         "timestamp_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "git_commit": _git_commit(),
+        "code_changed_since_commit": _code_changed_since_commit(),
         "platform": platform.platform(),
         "packages": package_versions(),
         "parameters": params,

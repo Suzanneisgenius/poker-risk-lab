@@ -1,0 +1,18 @@
+{
+  "type": "poker-analytics/risk-lab-comparison",
+  "schema_version": 1,
+  "saved_at": "2026-10-22T10:00:00.000Z",
+  "a": {
+    "name": "Break-even, seed 7",
+    "inputs": {
+      "winrate_bb100": 0,
+      "std_bb100": 90,
+      "bankroll_bi": 30,
+      "ruin_threshold_bi": 0,
+      "hands": 100000,
+      "paths": 2000,
+      "seed": 7
+    },
+    "results": {
+      "risk_of_ruin": 0.2975,
+      "

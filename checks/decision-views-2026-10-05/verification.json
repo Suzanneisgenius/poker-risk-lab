@@ -1,0 +1,124 @@
+{
+  "date": "2026-10-05",
+  "scope": "Local frontend/build revision; no Render deployment; no Python refit or fresh scientific reproduction",
+  "source_preservation": {
+    "unchanged_analysis_and_result_files": 40,
+    "hashes": {
+      "server/worker.js": "bf307775c7fa6889e399d8a43f283ff9aabfd5e0db258c0556a6f10847bd1898",
+      "server/preflop.js": "000c5b3ce4d2a9c358a3299f08c0fbeabebd197c80c0298f986eb26b7308e909",
+      "server/pool.js": "e76088f3d40ab76fa200308a7c68f19655b0359b997966cd4a3a1e969fc5a9d1",
+      "server/test_api.js": "4da174afabdefc6153551f6abce1bc9934f9b2af4bd9eecd7210ee15adee89e1",
+      "server/compute.js": "d9a8bcec7aa6ec7e7d1b6b0b783ecf6d95366d7db0cc1313a90b2f4b6dcbdc4f",
+      "server/app.js": "5ab5b8fa023b39b8463f2d4a2cde980e4fc09b1e8e506502a5286197db9d031d",
+      "standalone/engines/test_engines.js": "fda8f0af94462abe1c86a6ff931ecbfa5a6fe82f9fd186b9599a25665ac7e6ff",
+      "standalone/engines/equity.js": "83cd55d1b70b46ad9b4cc495e8c7c63ab36d0b888b423553ea66391eadc91436",
+      "standalone/engines/cfr.js": "10c2f662aea5932eea34ec4905e699c6ba47431c6fcf83b7e8922a95c7ee74c0",
+      "src/simulation.py": "f85f954c728c45d4b40d1ad395a408d52566aaffcc1bee9c6a2bde5e772442bd",
+      "src/scenarios.py": "047d19e265a46026072b669d7e1c4945a006353312be7431ef8c4c26a2b144f8",
+      "src/models.py": "148d11068703f73483f05f63517df4e522cee94a47c52d25e3b371c4f716163a",
+      "src/plotting.py": "3cdcb591d578a64d0e7b5201fc5c5d8ef2db78905d038ebf9e8630db0151b3a7",
+      "src/recommendations.py": "c4572e3cd00ff3f1e476e0fcb216d539ca418198519005ad5478cea623b9cae2",
+      "src/__init__.py": "0ab8b915b3ace076a524661a80cc3e38367a2fe24c7c0c05b03ef15a97cf4a3d",
+      "src/formatting.py": "faaf7f7327e248f9ae6512994f3febbeefc03876162b009a8651c944c0c6a495",
+      "src/sensitivity.py": "c64f3f1d7f816ed556384f4f1894ccfa3619696ed80fe5554ac6cb9df1a46656",
+      "src/bayes.py": "916698beb1c23aa69ecb0a726c2d621e59f52ffdb7969f71d82135fc4a727d71",
+      "src/inference.py": "c0c7debac8567ea5242e12d61c9f35adc8f9bb356dff0fe714a8f90aacb23946",
+      "src/analytics.py": "f923e06a9360fa84d2df47daad35ffef0b9b891bc3162b45024c8f1acd706f8e",
+      "src/validation.py": "7a1b894fb5ac81dea7fcb2163530f3ac69b275435ea2fcdee0321c9411182ef5",
+      "src/experiments/__init__.py": "aafad32573e727190a0cfa65095ea14259599b7e14e8f967110bbb283daf0885",
+      "src/experiments/monte_carlo_convergence.py": "4e53cd83853746c80247e3f9dd8fc9cd2d9fab6559bc158618167125cb2df345",
+      "src/experiments/uncertainty_risk.py": "d1f4f141ea3dc2995cb5d4188ba78af0a8984547ba645988ef2d033ce49ba6d3",
+      "src/experiments/_provenance.py": "ed4c641d4bf03ff0233e581e3d3d510c736f3c34783c3e3b79f583cb4233734a",
+      "src/experiments/model_risk.py": "64940cd968ad69dfbe44c4d8b82ba7eebfffaa0c70d5a344033c168394c43227",
+      "src/experiments/barrier_resolution.py": "7c93b2e41065a7b8c3362ccac5ea46ef7d82023ab9ce8ad659ebffca94757a6e",
+      "configs/monte_carlo_convergence.yaml": "c9e7be4d1efca3588a732b7fe6d0bf7ea03b7f90bfea5684a6fe49fe4bb2a115",
+      "configs/barrier_resolution.yaml": "950ee71b5df8523bbb4bf4635922b59cbba7d6b97a727c4a4b9ddd709e1bf131",
+      "configs/mc_quick.yaml": "1721a637be800284f24d7f93737ceb91ce3fb9f962883dd6850c928ad6a3f6fb",
+      "configs/uncertainty_risk.yaml": "6943ae157b72df60cc3d7ac251e6070e9ea122e8df9f4b9cbe6fa4708c10f994",
+      "configs/model_risk.yaml": "65b5089442bea04071e3b6c24773e97a613554ddf00d8a96a09811bb31540f78",
+      "reports/tables/uncertainty_risk_demo.provenance.json": "62db03502804d54176a648bc00e3995a9c9c9bd4f25cd4266f5611ba64e5e167",
+      "reports/tables/model_risk_quick.csv": "490d687bed534c78c9ae04e9595838dc7c39150f6fc214cc9866200a1047a2c4",
+      "reports/tables/uncertainty_risk_demo.json": "5d99004a3c22103fb7509ed36cee922b6d5cc0f78999408ba1c21e6f0e362494",
+      "reports/tables/mc_convergence_quick.csv": "da5d7db51fc3666f5892aff39f5177092c45a7614e512f4e0ca654c437967d4e",
+      "reports/tables/model_risk_quick.provenance.json": "ec41243127e587da0bfca43d1c964466cca2bf4b1e41b0101ff9f2b7a12b1700",
+      "reports/tables/barrier_resolution_quick.provenance.json": "a36e317048d67fa72a69ceac1a91b5f771a18efbf31bc92345c2e8d0ecbf4094",
+      "reports/tables/mc_convergence_quick.provenance.json": "94cb10051b305434908e03a942b7e92ca3e79670b34aee8d3eee8b555be92924",
+      "reports/tables/barrier_resolution_quick.csv": "24029e9d63c197ffd4df97b6d0878627503fd26c87ca2e46e5f74182c8221910"
+    }
+  },
+  "build": {
+    "synchronized_pages": [
+      "index.html",
+      "site/index.html",
+      "standalone/poker-analytics-suite.html"
+    ],
+    "unique_static_ids": 183,
+    "syntax_check": "passed"
+  },
+  "executed_checks": {
+    "existing_engine_suite": "passed",
+    "existing_api_suite": "passed; temporary localhost server required sandbox escalation",
+    "narrow_numerical_checks": "passed"
+  },
+  "browser": {
+    "actual_css_viewports": [
+      [
+        1281,
+        900
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "horizontal_document_overflow_in_final_affected_views": false,
+    "console_warning_error_entries_on_final_checks": 0,
+    "risk_comparison": [
+      "Save A",
+      "Change B preset",
+      "Keyboard input change",
+      "Stale B disclosure and disabled save while pending",
+      "Multiple changed-input disclosure",
+      "Replace A",
+      "Clear comparison",
+      "Adjust B opens assumptions"
+    ],
+    "uncertainty_case": [
+      "Fixed synthetic data classification",
+      "27.3 vs 37.4 percent mean-risk comparison",
+      "10.1 pp unrounded difference",
+      "0.9-97.3 percent posterior risk interval",
+      "Fitted Normal density",
+      "Keyboard source disclosure",
+      "Unchanged under live controls",
+      "Aligned narrow metric values"
+    ],
+    "ev": [
+      "Fresh direct loading calculates card equity",
+      "Manual equity",
+      "0 and 100 percent sensitivity endpoints",
+      "Reset test without changing main equity",
+      "20 percent test gives -2 bb while current 45 percent remains +1.75 bb",
+      "50 percent at pot 10/call 10 gives break-even",
+      "Invalid input disables sensitivity and labels previous result",
+      "Headline stays inside result card after focusing slider; internal scrollTop zero at both widths"
+    ]
+  },
+  "limits": [
+    "No Safari/Firefox/physical-device check",
+    "No screen-reader audit",
+    "A saved only in current page session",
+    "Graphical bankroll summaries use 80 stored example paths; headline risk uses all paths",
+    "Separate A/B Monte Carlo intervals do not test their difference",
+    "Existing Plotly CDN dependency retained"
+  ],
+  "screenshots": [
+    "35-uncertainty-case-desktop.jpg",
+    "37-comparison-phone-final.jpg",
+    "38-comparison-chart-390.jpg",
+    "40-uncertainty-phone-aligned.jpg",
+    "41-posterior-phone.jpg",
+    "44-ev-final-desktop.jpg",
+    "45-ev-phone-clip-final.jpg"
+  ]
+}

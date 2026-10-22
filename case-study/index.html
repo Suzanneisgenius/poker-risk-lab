@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Poker Risk Lab — Case Study</title>
+<meta name="description" content="How numerical error, uncertain inputs and modelling assumptions affect a simulated bankroll-risk estimate.">
+<style>
+:root{
+  --bg:#0b1220;--surface:rgba(19,32,52,.82);--surface2:#111c2f;--line:rgba(148,190,222,.18);
+  --text:#e6edf3;--muted:#9fb0c6;--dim:#7d8ea6;--accent:#38bdf8;--warn:#fbbf24;--ruin:#f87171;--pos:#4ade80;
+  --radius:14px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.wrap{max-width:960px;margin:0 auto;padding:0 16px}
+.top{border-bottom:1px solid var(--line);background:rgba(11,18,32,.9);position:sticky;top:0;z-index:5}
+.top .wrap{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;justify-content:space-between;padding-top:10px;padding-bottom:10px}
+.top strong{font-size:15px}
+.top nav{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:14px}
+.top nav a{text-decoration:none}
+.top nav a[aria-current="page"]{color:var(--text);font-weight:650}
+h1{font-size:clamp(28px,5vw,40px);line-height:1.15;margin:0 0 12px}
+h2{font-size:24px;line-height:1.25;margin:0 0 12px}
+h3{font-size:19px;line-height:1.3;margin:0 0 8px}
+section{padding:36px 0;border-bottom:1px solid var(--line)}
+section:last-of-type{border-bottom:0}
+.eyebrow{margin:0 0 8px;color:var(--accent);font-size:13px;font-weight:650;letter-spacing:.06em;text-transform:uppercase}
+.lede{font-size:18px;color:var(--muted);max-width:720px;margin:0 0 18px}
+.question{font-size:21px;font-weight:650;color:var(--warn);margin:0}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0 0;padding:0;list-style:none}
+.grid3 li{background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px}
+.grid3 strong{display:block;margin-bottom:2px}
+.finding{font-size:17px;max-width:800px}
+article{margin:0 0 28px;padding:20px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}
+article:last-child{margin-bottom:0}
+.case-n{color:var(--accent);font-weight:700}
+.control{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0}
+.control>span{font-size:14px;color:var(--muted);margin-right:4px}
+.control button{font:inherit;font-size:14px;min-height:40px;padding:6px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);color:var(--text);cursor:pointer}
+.control button[aria-pressed="true"]{border-color:var(--accent);background:rgba(56,189,248,.16);font-weight:650}
+.explain{margin:12px 0 0}
+.method,.limits{margin:10px 0 0;font-size:14px;color:var(--muted)}
+.method strong,.limits strong{color:var(--text)}
+/* Interval and dot charts (HTML, so text stays readable at any width) */
+.chart{margin:8px 0 0}
+.row{display:grid;grid-template-columns:minmax(0,15rem) minmax(0,1fr);gap:4px 14px;align-items:center;margin:0 0 10px}
+.row-label{font-size:14px;color:var(--muted);line-height:1.3}
+.track{position:relative;height:26px;border-radius:6px;background:rgba(148,190,222,.06)}
+.bar{position:absolute;top:6px;height:14px;border-radius:3px;min-width:3px}
+.bar.noise{background:var(--accent)}.bar.parameter{background:var(--warn)}.bar.model{background:var(--ruin)}
+.bar.band{top:3px;height:20px;background:rgba(56,189,248,.18)}
+.value{position:absolute;top:3px;font-size:12.5px;color:var(--muted);white-space:nowrap}
+.value.inside{color:#0b1220;font-weight:650}
+.dot{position:absolute;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:var(--accent)}
+.point{position:absolute;top:8px;width:10px;height:10px;margin-left:-5px;border-radius:50%}
+.whisker{position:absolute;top:12px;height:2px}
+.ref{position:absolute;top:-4px;bottom:-4px;width:0;border-left:1.5px dashed var(--warn)}
+.axis{position:relative;height:20px;margin-left:calc(min(15rem,40%) + 14px);font-size:12px;color:var(--dim)}
+.axis span{position:absolute;transform:translateX(-50%)}
+.axis-title{font-size:12.5px;color:var(--dim);margin:4px 0 0}
+.legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;color:var(--muted);margin:6px 0 0}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.model-card{margin:12px 0 0;padding:12px 14px;border-radius:12px;background:var(--surface2);border:1px solid var(--line)}
+.model-card p{margin:0 0 6px}
+.model-card dl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:8px 0 0}
+.model-card dt{font-size:12.5px;color:var(--muted)}
+.model-card dd{margin:0;font-weight:650}
+/* Tables */
+.table-wrap{overflow-x:auto;margin:12px 0 0}
+table{border-collapse:collapse;width:100%;font-size:14px}
+caption{text-align:left;color:var(--muted);font-size:13.5px;padding:0 0 6px}
+th,td{padding:7px 10px 7px 0;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+thead th{color:var(--muted);font-weight:600}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+code{font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;background:rgba(148,190,222,.1);padding:1px 5px;border-radius:5px;overflow-wrap:anywhere}
+details{margin:10px 0 0}
+summary{cursor:pointer;color:var(--accent);font-size:14px}
+ol.steps{padding-left:22px}
+ol.steps li{margin:0 0 8px}
+.pass{color:var(--pos);font-weight:650}
+.note{border-left:3px solid var(--warn);padding:2px 0 2px 12px;color:var(--muted)}
+footer{padding:28px 0 40px;color:var(--dim);font-size:14px}
+@media(max-width:720px){
+  .grid3{grid-template-columns:1fr}
+  .row{grid-template-columns:1fr}
+  .axis{margin-left:0}
+  .model-card dl{grid-template-columns:repeat(2,minmax(0,1fr))}
+  article{padding:16px}
+}
+@media print{.top{position:static}}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+figure{margin:16px 0 0}
+[id]{scroll-margin-top:72px}
+@media(max-width:720px){.top{position:static}[id]{scroll-margin-top:8px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <strong>Poker Risk Lab</strong>
+  <nav aria-label="Case study">
+    <a href="./" aria-current="page">Case study</a>
+    <a href="validation.html">Validation</a>
+    <a href="#reproduce">Reproduce</a>
+    <a href="../">Open the Risk Lab</a>
+  </nav>
+</div></header>
+
+<main class="wrap">
+<section aria-labelledby="title">
+  <p class="eyebrow">Computational statistics · case study</p>
+  <h1 id="title">Poker Risk Lab: Understanding Uncertainty in Simulation</h1>
+  <p class="lede">An interactive study of how numerical error, uncertain inputs and modelling assumptions affect a bankroll-risk estimate. Poker is the setting; the question applies to any simulated risk with an absorbing boundary.</p>
+  <p class="question">How much should we trust a simulated risk estimate?</p>
+</section>
+
+<section aria-labelledby="short">
+  <h2 id="short">The short answer</h2>
+  <p class="finding">For one scenario — 30 buy-ins, a +3 bb/100 win rate, 90 bb/100 swings, 100,000 hands — the model's exact risk of ruin is <strong>7.17%</strong>. A single simulation at the Risk Lab's default 2,000 paths lands within about <strong>±1.13 points</strong> of it. Not knowing the win rate after 50,000 hands leaves anything from <strong>0.1% to 83.3%</strong> plausible, and five ways results might arrive give <strong>6.4% to 20.3%</strong>. More computing only fixes the first.</p>
+  <figure class="card" aria-labelledby="overview-cap">
+    <div class="chart" id="chart-overview"></div>
+    <div class="legend" aria-hidden="true"><span><i style="background:var(--accent)"></i>Simulation noise</span><span><i style="background:var(--warn)"></i>Uncertain win rate</span><span><i style="background:var(--ruin)"></i>Model assumptions</span><span><i style="border-left:2px dashed var(--warn);border-radius:0;width:2px"></i>Exact model value</span></div>
+    <figcaption id="overview-cap" class="method">Simulation noise: expected 95% range of one run. Win rate: 95% interval of risk given the hands observed. Models: lowest to highest risk across the five models in question 3.</figcaption>
+    <details><summary>Data</summary><div class="table-wrap"><table id="table-overview"><thead><tr><th>Source</th><th class="num">Low</th><th class="num">High</th></tr></thead><tbody></tbody></table></div></details>
+  </figure>
+  <ul class="grid3">
+    <li><strong>Measures simulation error</strong>Repeated runs, interval coverage, and checks against a closed-form value and independent implementations.</li>
+    <li><strong>Propagates parameter uncertainty</strong>A posterior for the win rate is pushed through the risk formula, instead of plugging in one number.</li>
+    <li><strong>Stress-tests the assumptions</strong>Heavy tails, rare shocks and dependence at the same edge show which departures matter.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="cases">
+  <h2 id="cases">Three questions, one at a time</h2>
+
+  <article aria-labelledby="q1">
+    <h3 id="q1"><span class="case-n">1</span> · Why does the same setting give a different number on every run?</h3>
+    <div class="control" role="group" aria-label="Paths per run" id="ctl-noise">
+      <span>Paths per run</span>
+      <button type="button" data-value="500" aria-pressed="false">500</button>
+      <button type="button" data-value="2000" aria-pressed="true">2,000 (Risk Lab default)</button>
+      <button type="button" data-value="20000" aria-pressed="false">20,000</button>
+    </div>
+    <div class="chart" id="chart-noise" role="img" aria-labelledby="noise-explain"></div>
+    <p class="explain" id="noise-explain" aria-live="polite"></p>
+    <p class="method"><strong>Method.</strong> The same scenario run with seeds 0–39 at each size, with ruin monitored continuously (Brownian-bridge correction), so the finite-horizon Brownian formula is the exact value being estimated. The shaded band is the binomial 95% range for one run.</p>
+    <p class="limits"><strong>Limits.</strong> “Exact” means exact for this model — independent Normal results at a fixed win rate — not for real games.</p>
+  </article>
+
+  <article aria-labelledby="q2">
+    <h3 id="q2"><span class="case-n">2</span> · If the win rate itself is uncertain, how much do more paths help?</h3>
+    <div class="control" role="group" aria-label="Hands of history" id="ctl-history">
+      <span>Hands of history</span>
+      <button type="button" data-value="10000" aria-pressed="false">10k</button>
+      <button type="button" data-value="50000" aria-pressed="true">50k</button>
+      <button type="button" data-value="200000" aria-pressed="false">200k</button>
+      <button type="button" data-value="1000000" aria-pressed="false">1M</button>
+    </div>
+    <div class="chart" id="chart-uncertainty" role="img" aria-labelledby="uncertainty-explain"></div>
+    <p class="explain" id="uncertainty-explain" aria-live="polite"></p>
+    <p class="method"><strong>Method.</strong> Suppose a player's results so far average exactly +3 bb/100. The win rate's standard error is 90 / √(hands / 100); a Normal posterior (weakly informative prior, N(0, 10²)) is pushed through the risk formula with 20,000 draws. Simulation intervals are binomial 95% ranges at the same win rate.</p>
+    <p class="limits"><strong>Limits.</strong> The swing size is treated as known, and results are assumed independent; both make these intervals narrower than a full analysis would.</p>
+  </article>
+
+  <article aria-labelledby="q3">
+    <h3 id="q3"><span class="case-n">3</span> · If results are not independent or not Normal, is the estimate still reliable?</h3>
+    <div class="chart" id="chart-assumptions" role="img" aria-label="Risk of ruin with 95% intervals under five models of how results arrive"></div>
+    <div class="control" role="group" aria-label="Model details" id="ctl-model">
+      <span>Details for</span>
+      <button type="button" data-value="gaussian" aria-pressed="false">Baseline</button>
+      <button type="button" data-value="student_t" aria-pressed="false">Heavy tails</button>
+      <button type="button" data-value="shock_mixture" aria-pressed="false">Shocks</button>
+      <button type="button" data-value="ar1" aria-pressed="true">Swings carry over</button>
+      <button type="button" data-value="regime_switching" aria-pressed="false">Clustered regimes</button>
+    </div>
+    <div class="model-card" id="model-card" aria-live="polite"></div>
+    <p class="explain">Same edge everywhere. Changing the <em>shape</em> of a 100-hand result barely moves risk (6.4% with heavy tails, 7.3% with rare shocks, against 7.0%). Letting swings carry over from one step to the next raises it to <strong>20.3%</strong> (×2.87): each step still has the same spread, but the 100,000-hand total varies 1.37× as much.</p>
+    <p class="method"><strong>Method.</strong> 40,000 paths per model, one seed, ruin checked at the end of every 100-hand step for all five models (the bridge correction is exact only for Normal steps, so all levels are understated alike). Intervals are Wilson 95%.</p>
+    <p class="limits"><strong>Limits.</strong> These are controlled stress tests, not estimates of how real results arrive. The regime model's steps are also wider (standard deviation about 101 instead of 90).</p>
+  </article>
+</section>
+
+<section aria-labelledby="investigation">
+  <h2 id="investigation">Checking a misleading result</h2>
+  <p>After the simulator changed, the same settings and seed gave a lower risk at +3 bb/100: <strong>7.85% → 6.35%</strong>. A lower risk is easy to read as an improvement. Two things had changed at once — how ruin is monitored and how random numbers are drawn — so each was switched on separately.</p>
+  <ol class="steps">
+    <li><strong>Fix everything else.</strong> Same inputs, same seed, called directly through the calculation function.</li>
+    <li><strong>Change one thing at a time.</strong> New random numbers alone: 7.85% → 6.00% (−1.85 points, a different random sample). Adding the bridge correction: → 6.35% (+0.35 points).</li>
+    <li><strong>Look beyond one seed.</strong> Over seeds 0–39 the correction raised risk for every seed, by 0.355 points on average, and brought the average to 7.12% against the exact 7.17%.</li>
+    <li><strong>Conclusion.</strong> The drop was sampling, not a change in risk; the correction itself pushes the number up, as it should. The release notes say so, and every saved result now records the engine version.</li>
+  </ol>
+  <div class="table-wrap"><table>
+    <caption>Seed 42, 2,000 paths, 30 buy-ins, 90 bb/100, 100,000 hands</caption>
+    <thead><tr><th>Win rate</th><th class="num">Earlier engine</th><th class="num">New random numbers</th><th class="num">+ bridge correction</th></tr></thead>
+    <tbody id="table-calc"></tbody>
+  </table></div>
+  <p class="method">Script, seeds and every seed's output: <code>checks/calculation-change-2026-10-21/</code>.</p>
+</section>
+
+<section aria-labelledby="reproduce">
+  <h2 id="reproduce">Reproduce</h2>
+  <p>Each figure on this page comes from one command and one configuration file. The outputs record the commit, seeds, path counts and software versions; this page is built from them by <code>npm run build</code>.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Figure</th><th>Configuration</th><th>Command</th><th>Recorded with</th></tr></thead>
+    <tbody id="table-reproduce"></tbody>
+  </table></div>
+  <p class="method">Install with <code>pip install -r requirements-research.txt</code>. Validation checks have their own commands on the <a href="validation.html">Validation</a> page.</p>
+</section>
+
+<section aria-labelledby="not">
+  <h2 id="not">What this does not show</h2>
+  <ul>
+    <li>That any of these models describes real poker results. Agreement with the exact value checks the arithmetic, not the model.</li>
+    <li>A recommended bankroll. Every number is a conditional model estimate, not financial or gambling advice.</li>
+    <li>Anything about the Preflop ranges, which are illustrative demonstration data.</li>
+  </ul>
+</section>
+</main>
+
+<footer><div class="wrap">Poker Risk Lab · research and educational project.</div></footer>
+
+<script id="data" type="application/json">{"overview":{"rows":[{"source":"Simulation noise, 2,000 paths (Risk Lab default)","kind":"noise","interval":[0.06038539499094785,0.08299760925061055]},{"source":"Simulation noise, 20,000 paths","kind":"noise","interval":[0.06811619712076558,0.07526680712079281]},{"source":"Win rate known from 50,000 hands","kind":"parameter","interval":[0.0006670408847830324,0.8325276863869561]},{"source":"Win rate known from 1,000,000 hands","kind":"parameter","interval":[0.025297833338553382,0.17540146969400333]},{"source":"Five models of how results arrive","kind":"model","interval":[0.064425,0.202525]}],"reference_risk":0.0716915021207792},"noise":{"exact_risk":0.0716915021207792,"rows":[{"paths":500,"estimates":[0.064,0.084,0.064,0.068,0.084,0.076,0.042,0.062,0.056,0.074,0.08,0.07,0.076,0.076,0.056,0.068,0.048,0.07,0.078,0.088,0.082,0.066,0.066,0.078,0.078,0.08,0.076,0.084,0.08,0.068,0.072,0.07,0.08,0.052,0.068,0.08,0.06,0.074,0.09,0.06],"theory_95":[0.04907928786111649,0.09430371638044191],"min":0.042,"max":0.09,"wilson_intervals_covering_exact":38},{"paths":2000,"estimates":[0.0685,0.0705,0.0655,0.0775,0.0695,0.071,0.068,0.0645,0.0765,0.0825,0.0705,0.067,0.0845,0.076,0.07,0.065,0.068,0.058,0.074,0.0685,0.073,0.071,0.0765,0.0725,0.074,0.07,0.0645,0.0795,0.072,0.075,0.0715,0.0655,0.074,0.0665,0.0735,0.0735,0.073,0.0775,0.076,0.079],"theory_95":[0.06038539499094785,0.08299760925061055],"min":0.058,"max":0.0845,"wilson_intervals_covering_exact":38},{"paths":20000,"estimates":[0.07025,0.07265,0.0702,0.07255,0.0748,0.0725,0.0708,0.07335,0.07255,0.07305,0.0708,0.07175,0.0745,0.0742,0.0716,0.0709,0.0702,0.0687,0.0729,0.07195,0.06985,0.0713,0.0702,0.0752,0.07105,0.07185,0.0731,0.06845,0.0733,0.07315,0.06745,0.06965,0.07035,0.0699,0.0713,0.07075,0.0745,0.07075,0.06825,0.0721],"theory_95":[0.06811619712076558,0.07526680712079281],"min":0.06745,"max":0.0752,"wilson_intervals_covering_exact":39}]},"uncertainty":{"plug_in_risk":0.0716915021207792,"history":[{"hands":10000,"winrate_standard_error":9,"winrate_interval":[-11.454009245539133,14.768926372610956],"risk_interval":[0.000018512638489144126,0.9993344301100253],"expected_risk":0.325608658279243,"median_risk":0.14694601483886516,"p_risk_above_10pct":0.5423},{"hands":50000,"winrate_standard_error":4.024922359499621,"winrate_interval":[-4.736415086970703,9.899926274578277],"risk_interval":[0.0006670408847830324,0.8325276863869561],"expected_risk":0.19030896109099632,"median_risk":0.09122953755563078,"p_risk_above_10pct":0.4817},{"hands":200000,"winrate_standard_error":2.0124611797498106,"winrate_interval":[-0.9835961625767324,6.750054596022192],"risk_interval":[0.00648975268454109,0.40185683285298496],"expected_risk":0.11037293069072748,"median_risk":0.07700039109136882,"p_risk_above_10pct":0.40135},{"hands":1000000,"winrate_standard_error":0.9,"winrate_interval":[1.219028621797556,4.73276187517695],"risk_interval":[0.025297833338553382,0.17540146969400333],"expected_risk":0.07983453506392084,"median_risk":0.07287956162138359,"p_risk_above_10pct":0.25375}],"monte_carlo":[{"paths":2000,"interval":[0.06038539499094785,0.08299760925061055],"halfwidth":0.011306107129831353},{"paths":20000,"interval":[0.06811619712076558,0.07526680712079281],"halfwidth":0.003575305000013613},{"paths":200000,"interval":[0.07056089140779606,0.07282211283376233],"halfwidth":0.0011306107129831354}]},"assumptions":{"rows":[{"model":"gaussian","label":"Independent, Normal (baseline)","risk":0.070475,"wilson95":[0.06800780424153567,0.07302468796620175],"risk_vs_baseline":1,"per_step_sd_bb":89.95934249944055,"total_sd_ratio":1.0011705961710495},{"model":"student_t","label":"Heavy tails (Student-t, df 3)","risk":0.064425,"wilson95":[0.06206064001341449,0.06687301412402857],"risk_vs_baseline":0.914153955303299,"per_step_sd_bb":90.38048987295429,"total_sd_ratio":0.9983071829504844},{"model":"shock_mixture","label":"Rare large losses (3% shocks)","risk":0.073475,"wilson95":[0.07095883673575998,0.07607307930848706],"risk_vs_baseline":1.0425682866264634,"per_step_sd_bb":90.14147084113857,"total_sd_ratio":0.985259295829789},{"model":"ar1","label":"Swings carry over (AR(1), φ 0.3)","risk":0.202525,"wilson95":[0.19861528628558534,0.2064918451258499],"risk_vs_baseline":2.873714083008159,"per_step_sd_bb":89.98353271159529,"total_sd_ratio":1.3703012861153392},{"model":"regime_switching","label":"Bad stretches cluster (regimes)","risk":0.11655,"wilson95":[0.1134421584144205,0.11973148488237693],"risk_vs_baseline":1.6537779354380988,"per_step_sd_bb":101.06834044452577,"total_sd_ratio":1.1396747757347334}]},"calc":[{"winrate_bb100":0,"functional_fix_2026_10_05":{"ruined":555,"risk":0.2775,"wilson95":[0.258317,0.297536]},"new_streams_endpoint_only":{"ruined":560,"risk":0.28,"wilson95":[0.260758,0.300085]},"model_2026_10_21":{"ruined":578,"risk":0.289,"wilson95":[0.269553,0.309256]},"random_stream_change_pp":0.25,"bridge_change_pp":0.9,"total_change_pp":1.15},{"winrate_bb100":3,"functional_fix_2026_10_05":{"ruined":157,"risk":0.0785,"wilson95":[0.067504,0.091112]},"new_streams_endpoint_only":{"ruined":120,"risk":0.06,"wilson95":[0.050411,0.071276]},"model_2026_10_21":{"ruined":127,"risk":0.0635,"wilson95":[0.053627,0.075047]},"random_stream_change_pp":-1.85,"bridge_change_pp":0.35,"total_change_pp":-1.5}],"reproduce":[{"figure":"The short answer","config":"combines the three below","command":"python -m src.experiments.case_study --case overview","recorded":"commit cb62ca5; Python 3.12.14, NumPy 2.5.4; 2026-10-22"},{"figure":"1 · Simulation noise","config":"configs/case_study/noise.yaml","command":"python -m src.experiments.case_study --case noise","recorded":"commit cb62ca5; Python 3.12.14, NumPy 2.5.4; 2026-10-22; seeds 0–39; 500 / 2,000 / 20,000 paths; bridge on"},{"figure":"2 · Uncertain win rate","config":"configs/case_study/uncertainty.yaml","command":"python -m src.experiments.case_study --case uncertainty","recorded":"commit cb62ca5; Python 3.12.14, NumPy 2.5.4; 2026-10-22; 20,000 posterior draws, seed 0"},{"figure":"3 · Model assumptions","config":"configs/case_study/assumptions.yaml","command":"python -m src.experiments.case_study --case assumptions","recorded":"commit cb62ca5; Python 3.12.14, NumPy 2.5.4; 2026-10-22; 40,000 paths per model, seed 20240601"}]}</script>
+<script>
+// Small HTML charts: intervals, points and dot strips on a shared value axis.
+// Built from elements rather than SVG so labels keep their size on phones.
+const DATA = JSON.parse(document.getElementById("data").textContent);
+const pct = (v, d = 1) => (v * 100).toFixed(d) + "%";
+const num = (v) => v.toLocaleString("en-US");
+
+function node(tag, className, parent, text) {
+  const e = document.createElement(tag);
+  if (className) e.className = className;
+  if (text != null) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+
+// Position (in %) of value v on [lo, hi], clamped.
+const at = (v, lo, hi) => Math.max(0, Math.min(100, ((v - lo) / (hi - lo)) * 100));
+
+function axis(host, lo, hi, step, format, title) {
+  const a = node("div", "axis", host);
+  a.setAttribute("aria-hidden", "true");
+  for (let v = lo; v <= hi + 1e-9; v += step) {
+    const t = node("span", "", a, format(v));
+    t.style.left = at(v, lo, hi) + "%";
+  }
+  if (title) node("p", "axis-title", host, title);
+}
+
+function row(host, label) {
+  const r = node("div", "row", host);
+  node("div", "row-label", r, label);
+  return node("div", "track", r);
+}
+
+function reference(track, v, lo, hi) {
+  if (v == null) return;
+  node("span", "ref", track).style.left = at(v, lo, hi) + "%";
+}
+
+// rows: [{label, lo, hi, kind, text}]
+function intervals(host, rows, { lo, hi, step, format, title, ref }) {
+  host.replaceChildren();
+  for (const r of rows) {
+    const track = row(host, r.label);
+    reference(track, ref, lo, hi);
+    const bar = node("span", "bar " + r.kind, track);
+    bar.style.left = at(r.lo, lo, hi) + "%";
+    bar.style.width = Math.max(0.4, at(r.hi, lo, hi) - at(r.lo, lo, hi)) + "%";
+    const value = node("span", "value", track, r.text);
+    const start = at(r.lo, lo, hi), end = at(r.hi, lo, hi);
+    // After the bar if there is room, else inside a long bar, else before it.
+    if (end <= 72) value.style.left = end + 1.5 + "%";
+    else if (end - start > 22) { value.classList.add("inside"); value.style.right = 100 - end + 1 + "%"; }
+    else value.style.right = 100 - start + 1 + "%";
+  }
+  axis(host, lo, hi, step, format, title);
+}
+
+// rows: [{label, value, lo, hi, color, text}]
+function points(host, rows, { lo, hi, step, format, title, ref }) {
+  host.replaceChildren();
+  for (const r of rows) {
+    const track = row(host, r.label);
+    reference(track, ref, lo, hi);
+    const w = node("span", "whisker", track);
+    w.style.left = at(r.lo, lo, hi) + "%";
+    w.style.width = Math.max(0.3, at(r.hi, lo, hi) - at(r.lo, lo, hi)) + "%";
+    w.style.background = r.color;
+    const p = node("span", "point", track);
+    p.style.left = at(r.value, lo, hi) + "%";
+    p.style.background = r.color;
+    node("span", "value", track, r.text).style.left = at(r.hi, lo, hi) + 1.5 + "%";
+  }
+  axis(host, lo, hi, step, format, title);
+}
+
+// One dot per value, with a shaded expected range.
+function dots(host, label, values, band, { lo, hi, step, format, title, ref }) {
+  host.replaceChildren();
+  const track = row(host, label);
+  track.style.height = "48px";
+  const b = node("span", "bar band", track);
+  b.style.left = at(band[0], lo, hi) + "%";
+  b.style.width = at(band[1], lo, hi) - at(band[0], lo, hi) + "%";
+  b.style.top = "6px"; b.style.height = "36px";
+  reference(track, ref, lo, hi);
+  values.forEach((v, i) => {
+    const d = node("span", "dot", track);
+    d.style.left = at(v, lo, hi) + "%";
+    d.style.top = 8 + (i % 5) * 7 + "px";
+  });
+  axis(host, lo, hi, step, format, title);
+}
+
+// Segmented buttons that behave as one choice (aria-pressed).
+function choice(group, onChange) {
+  const buttons = [...group.querySelectorAll("button")];
+  const select = (button) => {
+    buttons.forEach((b) => b.setAttribute("aria-pressed", String(b === button)));
+    onChange(button.dataset.value);
+  };
+  buttons.forEach((b) => b.addEventListener("click", () => select(b)));
+  select(buttons.find((b) => b.getAttribute("aria-pressed") === "true") || buttons[0]);
+}
+
+// The short answer
+{
+  const kind = { noise: "noise", parameter: "parameter", model: "model" };
+  intervals(document.getElementById("chart-overview"),
+    DATA.overview.rows.map((r) => ({ label: r.source, lo: r.interval[0], hi: r.interval[1], kind: kind[r.kind], text: `${pct(r.interval[0])}–${pct(r.interval[1])}` })),
+    { lo: 0, hi: 1, step: 0.2, format: (v) => Math.round(v * 100) + "%", title: "Risk of ruin", ref: DATA.overview.reference_risk });
+  document.querySelector("#table-overview tbody").innerHTML = DATA.overview.rows
+    .map((r) => `<tr><td>${r.source}</td><td class="num">${pct(r.interval[0], 2)}</td><td class="num">${pct(r.interval[1], 2)}</td></tr>`).join("");
+}
+
+// 1. Noise
+{
+  const exact = DATA.noise.exact_risk;
+  const rows = Object.fromEntries(DATA.noise.rows.map((r) => [String(r.paths), r]));
+  const domain = { lo: 0.04, hi: 0.10, step: 0.01, format: (v) => Math.round(v * 100) + "%", title: "Estimated risk of ruin — one dot per seed (40 seeds)", ref: exact };
+  choice(document.getElementById("ctl-noise"), (value) => {
+    const r = rows[value];
+    dots(document.getElementById("chart-noise"), `${num(r.paths)} paths`, r.estimates, r.theory_95, domain);
+    const half = (r.theory_95[1] - exact) * 100;
+    document.getElementById("noise-explain").textContent =
+      `At ${num(r.paths)} paths, 95% of runs should land within ±${half.toFixed(2)} points of the exact ${pct(exact, 2)}. ` +
+      `These 40 runs ranged from ${pct(r.min, 2)} to ${pct(r.max, 2)}, and the 95% interval each run reports covered the exact value in ${r.wilson_intervals_covering_exact} of 40. ` +
+      (r.paths < 20000 ? "Ten times more paths narrows the spread by about √10." : "That is the floor for a 20,000-path run; the next tenfold costs ten times the time again.");
+  });
+}
+
+// 2. Parameter uncertainty
+{
+  const u = DATA.uncertainty;
+  const history = Object.fromEntries(u.history.map((h) => [String(h.hands), h]));
+  const signed = (v) => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(1);
+  choice(document.getElementById("ctl-history"), (value) => {
+    const h = history[value];
+    const rows = u.monte_carlo.map((m) => ({ label: `Simulation, ${num(m.paths)} paths`, lo: m.interval[0], hi: m.interval[1], kind: "noise", text: `±${(m.halfwidth * 100).toFixed(2)} pts` }));
+    rows.push({ label: `Win rate known from ${num(h.hands)} hands`, lo: h.risk_interval[0], hi: h.risk_interval[1], kind: "parameter", text: `${pct(h.risk_interval[0])}–${pct(h.risk_interval[1])}` });
+    intervals(document.getElementById("chart-uncertainty"), rows,
+      { lo: 0, hi: 1, step: 0.2, format: (v) => Math.round(v * 100) + "%", title: "Risk of ruin, 95% interval", ref: u.plug_in_risk });
+    const mc = u.monte_carlo;
+    document.getElementById("uncertainty-explain").textContent =
+      `After ${num(h.hands)} hands averaging +3 bb/100, the true win rate could plausibly be anywhere from ${signed(h.winrate_interval[0])} to ${signed(h.winrate_interval[1])} bb/100, ` +
+      `so the risk could be anywhere from ${pct(h.risk_interval[0])} to ${pct(h.risk_interval[1])}. ` +
+      `Simulation error at ${num(mc[0].paths)} paths is ±${(mc[0].halfwidth * 100).toFixed(2)} points; ${num(mc[mc.length - 1].paths / mc[0].paths)} times more paths shrinks it to ±${(mc[mc.length - 1].halfwidth * 100).toFixed(2)}, but leaves the win-rate interval exactly where it is.`;
+  });
+}
+
+// 3. Model assumptions
+{
+  const a = DATA.assumptions;
+  const top = Math.ceil(Math.max(...a.rows.map((r) => r.wilson95[1])) * 20) / 20 + 0.05;
+  points(document.getElementById("chart-assumptions"),
+    a.rows.map((r, i) => ({ label: r.label, value: r.risk, lo: r.wilson95[0], hi: r.wilson95[1], color: i === 0 ? "var(--accent)" : "var(--ruin)", text: `${pct(r.risk)} (×${r.risk_vs_baseline.toFixed(2)})` })),
+    { lo: 0, hi: top, step: 0.05, format: (v) => Math.round(v * 100) + "%", title: "Risk of ruin with 95% interval" });
+  const byKey = Object.fromEntries(a.rows.map((r) => [r.model, r]));
+  const about = {
+    gaussian: "Each 100-hand result is independent and Normal: the model the Risk Lab uses.",
+    student_t: "Same mean and spread per step, but more weight in the tails and the centre (Student-t, 3 degrees of freedom).",
+    shock_mixture: "Same mean and spread per step; 3% of steps come from a much worse distribution and the rest are slightly better.",
+    ar1: "Each step's swing carries 30% over into the next (φ = 0.3). Every step keeps the same spread, but good and bad runs last longer.",
+    regime_switching: "Results switch between a normal and an adverse regime (−5 bb/100, 1.6× the swings) that tends to persist. The long-run edge is still +3 bb/100.",
+  };
+  choice(document.getElementById("ctl-model"), (key) => {
+    const r = byKey[key];
+    const card = document.getElementById("model-card");
+    card.replaceChildren();
+    node("p", "", card).innerHTML = `<strong>${r.label}.</strong> ${about[key]}`;
+    const dl = node("dl", "", card);
+    for (const [k, v] of [["Risk of ruin", `${pct(r.risk, 2)} (${pct(r.wilson95[0], 1)}–${pct(r.wilson95[1], 1)})`], ["Against baseline", `×${r.risk_vs_baseline.toFixed(2)}`],
+      ["Spread of one step", `${r.per_step_sd_bb.toFixed(0)} bb`], ["Spread of the 100k total", `×${r.total_sd_ratio.toFixed(2)}`]]) {
+      node("dt", "", dl, k); node("dd", "", dl, v);
+    }
+  });
+}
+
+// Investigation table and reproduction table
+{
+  document.getElementById("table-calc").innerHTML = DATA.calc.map((r) =>
+    `<tr><th scope="row">${r.winrate_bb100 > 0 ? "+" : ""}${r.winrate_bb100} bb/100</th><td class="num">${pct(r.functional_fix_2026_10_05.risk, 2)}</td><td class="num">${pct(r.new_streams_endpoint_only.risk, 2)}</td><td class="num">${pct(r.model_2026_10_21.risk, 2)}</td></tr>`).join("");
+  document.getElementById("table-reproduce").innerHTML = DATA.reproduce.map((r) =>
+    `<tr><td>${r.figure}</td><td><code>${r.config}</code></td><td><code>${r.command}</code></td><td class="small">${r.recorded}</td></tr>`).join("");
+}
+</script>
+</body>
+</html>

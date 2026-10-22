@@ -1,0 +1,64 @@
+{
+  "type": "poker-analytics/risk-lab-comparison",
+  "schema_version": 1,
+  "saved_at": "2026-10-22T10:05:00.000Z",
+  "a": {
+    "name": "Break-even",
+    "inputs": {
+      "winrate_bb100": 0,
+      "std_bb100": 90,
+      "bankroll_bi": 30,
+      "ruin_threshold_bi": 0,
+      "hands": 100000,
+      "paths": 2000,
+      "seed": 42
+    },
+    "results": {
+      "risk_of_ruin": 0.289,
+      "ci95_low": 0.26955278550985173,
+      "ci95_high": 0.30925623811756464,
+      "survival": 0.7110000000000001,
+      "p95_max_drawdown_bi": 47.56391010525894
+    },
+    "model": {
+      "name": "bankroll-monte-carlo",
+      "version": "2026-10-21",
+      "increments": "i.i.d. Normal per 100-hand step",
+      "ruinMonitoring": "continuous (Brownian-bridge correction)",
+      "randomNumbers": "sfc32 stream per path, seeded from (seed, path index)"
+    }
+  },
+  "b": {
+    "name": "+3 bb/100",
+    "inputs": {
+      "winrate_bb100": 3,
+      "std_bb100": 90,
+      "bankroll_bi": 30,
+      "ruin_threshold_bi": 0,
+      "hands": 100000,
+      "paths": 2000,
+      "seed": 42
+    },
+    "results": {
+      "risk_of_ruin": 0.0535,
+      "ci95_low": 0.053626689201911104,
+      "ci95_high": 0.0750469544633367,
+      "survival": 0.9365,
+      "p95_max_drawdown_bi": 40.131889380795
+    },
+    "model": {
+      "name": "bankroll-monte-carlo",
+      "version": "2026-10-21",
+      "increments": "i.i.d. Normal per 100-hand step",
+      "ruinMonitoring": "continuous (Brownian-bridge correction)",
+      "randomNumbers": "sfc32 stream per path, seeded from (seed, path index)"
+    }
+  },
+  "difference": {
+    "risk_b_minus_a_pp": -23.549999999999997,
+    "changed_inputs": [
+      "Win rate"
+    ],
+    "note": "Difference of point estimates. Intervals describe Monte Carlo error only; no interval or significance test is given for the difference."
+  }
+}

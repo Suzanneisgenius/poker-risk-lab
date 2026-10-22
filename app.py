@@ -563,6 +563,10 @@ with tabs[4]:
             "std*sqrt(step/100))`.\n"
             "- Ruin is absorbing: once bankroll <= threshold, the path is "
             "clipped there and cannot recover.\n"
+            "- Ruin is monitored continuously: a Brownian-bridge correction "
+            "also counts a dip to the threshold inside a step, with "
+            "probability `exp(-2·a0·a1/step variance)`, so the result does "
+            "not depend much on `step_hands`.\n"
             "- Risk of ruin = fraction of ruined paths; CI by path-level "
             "bootstrap (or Wilson interval for large path counts).")
     with st.expander("Validation methods and why they differ"):

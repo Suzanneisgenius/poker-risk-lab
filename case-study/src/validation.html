@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Poker Risk Lab — Validation</title>
+<meta name="description" content="Which benchmarks the Poker Risk Lab engines are checked against, under what conditions, and what was found.">
+<style>
+/*STYLE*/
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <strong>Poker Risk Lab</strong>
+  <nav aria-label="Case study">
+    <a href="./">Case study</a>
+    <a href="validation.html" aria-current="page">Validation</a>
+    <a href="./#reproduce">Reproduce</a>
+    <a href="../">Open the Risk Lab</a>
+  </nav>
+</div></header>
+
+<main class="wrap">
+<section aria-labelledby="title">
+  <p class="eyebrow">Validation</p>
+  <h1 id="title">How the numbers are checked</h1>
+  <p class="lede">For each check: the benchmark, the conditions, the quantity compared, what was found, and what the check cannot show. Independent implementations are marked as such; checks written in this repository against its own reference code are marked internal.</p>
+</section>
+
+<section aria-labelledby="summary">
+  <h2 id="summary">Summary</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Check</th><th>Benchmark</th><th>Compared</th><th>Result</th></tr></thead>
+    <tbody id="table-summary"></tbody>
+  </table></div>
+</section>
+
+<section aria-labelledby="cards">
+  <h2 id="cards">Cards and equity</h2>
+
+  <article aria-labelledby="pk">
+    <h3 id="pk">Against PokerKit (independent)</h3>
+    <p>PokerKit {{pk_version}} is an open-source poker library from the University of Toronto Computer Poker Research Group, pinned in <code>checks/external-pokerkit/requirements.txt</code>. Both sides use the same rules: best five of seven cards, suits unranked, split pots shared equally.</p>
+    <ul>
+      <li><strong>Hand order.</strong> {{pk_hands}} random seven-card hands (seed {{pk_seed}}) sorted by this engine's score; every neighbouring pair compared in PokerKit. <span class="pass">{{pk_disagreements}} disagreements</span> in {{pk_pairs}} pairs, across all {{pk_categories}} hand categories.</li>
+      <li><strong>Heads-up equity.</strong> Seven spots enumerated exactly by both, including two preflop spots of {{pk_preflop_runouts}} boards each. Win, tie and lose counts are <span class="pass">identical in all seven</span>.</li>
+      <li><strong>Three-way equity.</strong> This engine's Monte Carlo ({{pk_mw_trials}} trials) against PokerKit's exact enumeration: {{pk_mw_ours}} against {{pk_mw_exact}}, <span class="pass">{{pk_mw_se}} standard errors</span> apart.</li>
+    </ul>
+    <div class="table-wrap"><table>
+      <caption>Heads-up spots, exact enumeration</caption>
+      <thead><tr><th>Spot</th><th class="num">Boards</th><th class="num">This engine</th><th class="num">PokerKit</th><th>Counts</th></tr></thead>
+      <tbody id="table-pk"></tbody>
+    </table></div>
+    <p class="limits"><strong>Limits.</strong> A sample of hands, not all 133,784,560 seven-card combinations. Command: <code>python -I checks/external-pokerkit/run.py --check</code> (about 80 seconds on 16 cores).</p>
+  </article>
+
+  <article aria-labelledby="acc">
+    <h3 id="acc">Exact or simulated? Error against time</h3>
+    <p>The app enumerates every heads-up spot with known cards exactly and simulates multiway spots. The table shows why, on spots whose exact value PokerKit confirmed: the error of the app's Monte Carlo over {{acc_seeds}} seeds at each size, and the time it takes.</p>
+    <div id="table-acc"></div>
+    <p class="explain">On the flop, exact enumeration takes {{acc_flop_ms}} ms and has no error — cheaper than even the smallest simulation. Preflop it takes {{acc_pre_ms}} ms, against {{acc_pre_mc_ms}} ms for the largest simulation, which is still {{acc_pre_mc_rmse}} points off on average.</p>
+    <p class="limits"><strong>Conditions.</strong> {{acc_cpu}}, Node {{acc_node}}, one thread, median time per run. Errors are reproducible; times are not. Command: <code>node checks/equity-accuracy/run.js</code>.</p>
+  </article>
+
+  <article aria-labelledby="eval">
+    <h3 id="eval">Evaluator rewrite: speed with its conditions</h3>
+    <p>The seven-card evaluator was rewritten from ranking all 21 five-card subsets to a bitmask scorer. Same machine, same {{b_hands}} hands, same process:</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Evaluator</th><th class="num">Median</th><th class="num">Slowest of {{b_repeats}}</th><th class="num">Fastest of {{b_repeats}}</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Earlier (21 subsets)</th><td class="num">{{b_old_med}}</td><td class="num">{{b_old_min}}</td><td class="num">{{b_old_max}}</td></tr>
+        <tr><th scope="row">Current (bitmask)</th><td class="num">{{b_new_med}}</td><td class="num">{{b_new_min}}</td><td class="num">{{b_new_max}}</td></tr>
+      </tbody>
+      <caption>Seven-card evaluations per second</caption>
+    </table></div>
+    <p>Median speed-up ×{{b_speedup}}, with <span class="pass">{{b_mismatch}} score differences</span> between the two evaluators on those hands. The current evaluator also agrees with a deliberately simple reference evaluator on 180,000 random hands in every <code>npm test</code> run (internal: both are in this repository).</p>
+    <p class="limits"><strong>Conditions.</strong> {{b_cpu}}, Node {{b_node}}, one thread, one warm-up pass. A micro-benchmark: request times also include enumeration and the server. Command: <code>node checks/evaluator-benchmark/run.js</code>.</p>
+  </article>
+</section>
+
+<section aria-labelledby="bankroll">
+  <h2 id="bankroll">Bankroll risk</h2>
+
+  <article aria-labelledby="exact">
+    <h3 id="exact">Against the exact value</h3>
+    <p>With continuous ruin monitoring, the finite-horizon Brownian formula is the exact answer for the model. For the Risk Lab default scenario it is {{exact}}.</p>
+    <ul>
+      <li><strong>Interval coverage.</strong> Of 40 runs at each size, the 95% interval each run reports covered the exact value {{cov_500}} times at 500 paths, {{cov_2000}} at 2,000 and {{cov_20000}} at 20,000 (about 38 expected).</li>
+      <li><strong>Bridge correction, paired.</strong> Seeds 0–39, each run with and without the correction: the corrected average is {{c_mean}} (s.e. {{c_se}} points) against {{exact}}; without it, {{c_endpoint}}. The correction raised risk for every seed.</li>
+    </ul>
+  </article>
+
+  <article aria-labelledby="engines">
+    <h3 id="engines">Two engines, one model</h3>
+    <p>The web engine (JavaScript, <code>server/compute.js</code>) and the research engine (Python, <code>src/simulation.py</code>) are separate code with different random-number generators. {{e_paths}} paths each, seed {{e_seed}}:</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Scenario</th><th>Ruin monitoring</th><th class="num">Web</th><th class="num">Research</th><th class="num">Apart</th><th class="num">Exact</th></tr></thead>
+      <tbody id="table-engines"></tbody>
+    </table></div>
+    <p class="limits"><strong>Limits.</strong> Same author, same model: this shows the two implementations agree, not that the model is right. Without the bridge correction there is no closed form, so those rows compare the engines only. Command: <code>python -I checks/engine-agreement/run.py</code>.</p>
+  </article>
+</section>
+
+<section aria-labelledby="found">
+  <h2 id="found">Discrepancies found and what was done</h2>
+  <ul>
+    <li><strong>Ruin checked only every 100 hands understated risk</strong> by {{c_endpoint_gap}} points on average at +3 bb/100. Fixed with the Brownian-bridge correction (engine 2026-10-21).</li>
+    <li><strong>A version change looked like lower risk</strong> (7.85% → 6.35% at seed 42). Traced to the change of random numbers, not the correction; see the <a href="./#investigation">case study</a>.</li>
+    <li><strong>Figures quoted without a seed list.</strong> An earlier release note gave 40-seed averages without saying which seeds. Traced to seeds 7919 × 1–40; every figure now has a script, its seeds and saved output.</li>
+    <li><strong>Older research figures predate the correction.</strong> The quick-run figures in <code>reports/figures/</code> were made before it and without intervals; the case study uses regenerated results in <code>reports/case-study/</code>.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="not">
+  <h2 id="not">What these checks do not show</h2>
+  <ul>
+    <li>That the bankroll model describes real games — see question 3 of the <a href="./">case study</a>.</li>
+    <li>That the Preflop ranges are good strategy: they are illustrative demonstration data, not solver output.</li>
+    <li>Correctness on every possible hand: the evaluator checks are large samples, not proofs.</li>
+  </ul>
+</section>
+</main>
+
+<footer><div class="wrap">Poker Risk Lab · validation. Built from saved outputs in <code>checks/</code> and <code>reports/case-study/</code> by <code>npm run build</code>.</div></footer>
+
+<script id="data" type="application/json">/*DATA*/</script>
+<script>
+/*CHARTS*/
+
+{
+  document.getElementById("table-summary").innerHTML = DATA.summary.map((r) =>
+    `<tr><td>${r.check}</td><td>${r.benchmark}</td><td>${r.compared}</td><td>${r.result}</td></tr>`).join("");
+  document.getElementById("table-pk").innerHTML = DATA.pokerkit.map((s) =>
+    `<tr><td>${s.hero} vs ${s.villain}${s.board ? " on " + s.board : " preflop"}</td><td class="num">${num(s.runouts)}</td><td class="num">${pct(s.ours.equity, 4)}</td><td class="num">${pct(s.pokerkit.equity, 4)}</td><td>${s.match ? '<span class="pass">identical</span>' : "differ"}</td></tr>`).join("");
+  document.getElementById("table-engines").innerHTML = DATA.engines.map((r) =>
+    `<tr><td>${r.scenario.winrate_bb100 > 0 ? "+" : ""}${r.scenario.winrate_bb100} bb/100</td><td>${r.bridge ? "continuous" : "every 100 hands"}</td><td class="num">${pct(r.web_engine, 2)}</td><td class="num">${pct(r.research_engine, 2)}</td><td class="num">${Math.abs(r.difference_in_se).toFixed(2)} SE</td><td class="num">${r.analytical == null ? "—" : pct(r.analytical, 2)}</td></tr>`).join("");
+  // Error against time: one table per spot, with RMSE bars on a shared scale.
+  const host = document.getElementById("table-acc");
+  const maxRmse = Math.max(...DATA.accuracy.spots.flatMap((s) => s.monte_carlo.map((m) => m.rmse_pp)));
+  host.innerHTML = DATA.accuracy.spots.map((s) => {
+    const exactRow = s.exact_seconds == null
+      ? `<tr><th scope="row">Exact (PokerKit)</th><td class="num">${num(s.runouts)} boards</td><td class="num">0</td><td></td><td class="num">—</td></tr>`
+      : `<tr><th scope="row">Exact (this engine)</th><td class="num">${num(s.runouts)} boards</td><td class="num">0</td><td></td><td class="num">${(s.exact_seconds * 1000).toFixed(1)} ms</td></tr>`;
+    const mc = s.monte_carlo.map((m) => `<tr><th scope="row">Monte Carlo</th><td class="num">${num(m.trials)} trials</td><td class="num">${m.rmse_pp.toFixed(2)}</td>` +
+      `<td style="min-width:90px"><span style="display:block;height:8px;border-radius:2px;background:var(--accent);width:${(m.rmse_pp / maxRmse * 100).toFixed(1)}%"></span></td><td class="num">${(m.mean_seconds * 1000).toFixed(2)} ms</td></tr>`).join("");
+    return `<div class="table-wrap"><table><caption>${s.label} · exact equity ${pct(s.exact_equity, 3)}</caption>` +
+      `<thead><tr><th>Method</th><th class="num">Size</th><th class="num">RMSE (points)</th><th><span class="sr-only">Error bar</span></th><th class="num">Time per run</th></tr></thead><tbody>${exactRow}${mc}</tbody></table></div>`;
+  }).join("");
+}
+</script>
+</body>
+</html>

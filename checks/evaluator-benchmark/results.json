@@ -1,0 +1,34 @@
+{
+  "purpose": "Same hands, same process: earlier seven-card evaluator (commit 097c6a3) against the current bitmask scorer.",
+  "command": "node checks/evaluator-benchmark/run.js --write",
+  "conditions": {
+    "cpu": "Apple M4 Max",
+    "cores": 16,
+    "platform": "darwin 25.6.0",
+    "node": "v24.21.0",
+    "hands": 200000,
+    "seed": 20261022,
+    "repeats": 7,
+    "warm_up": "one untimed pass per evaluator"
+  },
+  "agreement": {
+    "hands": 200000,
+    "score_mismatches": 0
+  },
+  "earlier": {
+    "evaluations_per_second": {
+      "min": 76011,
+      "median": 76344,
+      "max": 76688
+    }
+  },
+  "current": {
+    "evaluations_per_second": {
+      "min": 10206968,
+      "median": 10251547,
+      "max": 10516376
+    }
+  },
+  "median_speedup": 134.3,
+  "limits": "One machine, single thread, synthetic random hands; a micro-benchmark, not an end-to-end request time."
+}

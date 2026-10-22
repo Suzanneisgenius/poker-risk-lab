@@ -1,0 +1,57 @@
+{
+  "date": "2026-10-05",
+  "build": "passed",
+  "html_entry_hashes": {
+    "index.html": "a94672ac02996800f943923a2c63b8820a09ce0c0c05e88cee22043f99a1cbc0",
+    "site/index.html": "a94672ac02996800f943923a2c63b8820a09ce0c0c05e88cee22043f99a1cbc0",
+    "standalone/poker-analytics-suite.html": "a94672ac02996800f943923a2c63b8820a09ce0c0c05e88cee22043f99a1cbc0"
+  },
+  "unique_html_ids": 186,
+  "baseline_files": 40,
+  "unchanged_baseline_files": 39,
+  "changed_baseline_files": [
+    "server/compute.js"
+  ],
+  "scientific_core_and_saved_results": "unchanged",
+  "executed_tests": {
+    "ui_state_regression": "passed; 5 scenarios x 169 classes, gating, feedback, score, reload race, stale response, failure/retry, mode status, seed 0, exact multiway label",
+    "engine_tests": "passed",
+    "api_tests": "passed; API, cache, rate limit, security headers, input validation, public bundle"
+  },
+  "browser": {
+    "surface": "Codex in-app browser",
+    "css_viewports": [
+      [
+        1281,
+        900
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "coverage": [
+      "Trainer answer/next/review/scenario changes including Call and Jam",
+      "Library card selection, duplicate prevention, class mapping",
+      "Compare and swap",
+      "CFR run with seed 0, curve and table",
+      "Equity three presets, maximum 150000 trials, seed 0, five-opponent limit, clear/error, five-card exact tie",
+      "Equity to EV, dirty-card invalidation, missing-card error, manual equity, test slider, reset, break-even, invalid call",
+      "Bankroll presets, volatility choice, seed 0, empty and threshold errors, stale-result label, plots",
+      "Risk Lab presets, four sliders, 16000 paths, A/B save/replace/adjust/clear, fixed references",
+      "About, main navigation, hash route and legacy #gto, Preflop keyboard mode navigation"
+    ],
+    "console_warnings_or_errors": [],
+    "stable_document_width": {
+      "desktop": 1272,
+      "narrow": 381
+    },
+    "responsive_note": "Plotly temporarily retained desktop widths during immediate resize snapshots. Subsequent DOM inspections showed no document overflow after layout settled.",
+    "limits": [
+      "One browser surface only; CSS viewport simulation, not physical devices",
+      "No fresh Python scientific refit or reproduction",
+      "No Render or GitHub deployment",
+      "Not every possible card or numeric-input combination tested"
+    ]
+  }
+}

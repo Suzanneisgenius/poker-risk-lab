@@ -13,7 +13,7 @@ function startServer() {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [path.join(__dirname, "app.js")], {
       cwd: ROOT,
-      env: { ...process.env, PORT: String(port), HOST: "127.0.0.1", CALC_WORKERS: "2" },
+      env: { ...process.env, PORT: String(port), HOST: "127.0.0.1", CALC_WORKERS: "2", TRUST_PROXY_HOPS: "1" },
       stdio: ["ignore", "pipe", "pipe"],
     });
     const timer = setTimeout(() => reject(new Error("Test server did not start.")), 8000);
@@ -38,9 +38,12 @@ async function post(endpoint, body, headers = {}) {
 }
 
 async function main() {
-  const publicPage = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
-  for (const secretMarker of ["function equityMC", "function equityExact", "function simulateBankroll", "function trainKuhnTracked", "function rfiStrategy", "averageGameValue("]) {
-    assert.equal(publicPage.includes(secretMarker), false, `public HTML leaked ${secretMarker}`);
+  const SECRET_MARKERS = ["function equityMC", "function equityExact", "function simulateBankroll", "function trainKuhnTracked", "function rfiStrategy", "averageGameValue(", "function scoreHand"];
+  for (const file of ["index.html", "case-study/index.html", "case-study/validation.html"]) {
+    const publicPage = fs.readFileSync(path.join(ROOT, file), "utf8");
+    for (const secretMarker of SECRET_MARKERS) {
+      assert.equal(publicPage.includes(secretMarker), false, `${file} leaked ${secretMarker}`);
+    }
   }
 
   const server = await startServer();
@@ -52,6 +55,16 @@ async function main() {
     const page = await fetch(`${base}/`);
     assert.equal(page.status, 200);
     assert.match(page.headers.get("content-security-policy"), /frame-ancestors 'none'/);
+    for (const pagePath of ["/case-study/", "/case-study/index.html", "/case-study/validation.html"]) {
+      const caseStudy = await fetch(`${base}${pagePath}`);
+      assert.equal(caseStudy.status, 200, pagePath);
+      assert.match(caseStudy.headers.get("content-type"), /text\/html/);
+      assert.match(caseStudy.headers.get("content-security-policy"), /frame-ancestors 'none'/);
+    }
+    const bare = await fetch(`${base}/case-study`, { redirect: "manual" });
+    assert.equal(bare.status, 301);
+    assert.equal(bare.headers.get("location"), "/case-study/");
+    assert.equal((await fetch(`${base}/case-study/src/index.html`)).status, 404, "page sources are not served");
     assert.equal((await fetch(`${base}/standalone/engines/equity.js`)).status, 404);
     assert.equal((await fetch(`${base}/server/preflop.js`)).status, 404);
 
@@ -81,6 +94,21 @@ async function main() {
       hero: [51, 51], opponents: [null], board: [], trials: 1000, seed: 42,
     });
     assert.equal(duplicateCard.status, 400);
+    assert.equal((await duplicateCard.json()).error, "The same card cannot be used twice.");
+
+    // Input errors raised inside the worker keep their 4xx status; the old
+    // message-regex classification is gone.
+    const tooManyPathSteps = await post("/api/bankroll", { wr: 3, sd: 90, bank: 3000, hands: 1000000, paths: 20000 });
+    assert.equal(tooManyPathSteps.status, 400);
+    assert.match((await tooManyPathSteps.json()).error, /Paths × hands/);
+    const unknownScenario = await post("/api/preflop", { scenarioId: "does-not-exist" });
+    assert.equal(unknownScenario.status, 400);
+    const wrongType = await fetch(`${base}/api/ev`, { method: "POST", headers: { "Content-Type": "text/plain" }, body: "{}" });
+    assert.equal(wrongType.status, 415);
+    const oversized = await post("/api/ev", { padding: "x".repeat(40000) });
+    assert.equal(oversized.status, 413);
+    const badJson = await fetch(`${base}/api/ev`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{" });
+    assert.equal(badJson.status, 400);
 
     const foreignOrigin = await post("/api/ev", { pot: 10, call: 5, equityPct: 40 }, { Origin: "https://example.com" });
     assert.equal(foreignOrigin.status, 403);
@@ -129,7 +157,30 @@ async function main() {
     assert.equal(overLimit.status, 429);
     assert.ok(Number(overLimit.headers.get("retry-after")) >= 1);
 
-    process.stdout.write("API, cache, 100-point rate limit, security-header, validation, and public-bundle tests passed.\n");
+    // Forged entries to the left of the proxy-appended address must not open
+    // a fresh bucket: all of these belong to 203.0.113.20.
+    for (let request = 1; request <= 100; request += 1) {
+      const forged = { "X-Forwarded-For": `198.51.100.${request}, 203.0.113.20` };
+      const withinLimit = await post("/api/ev", { pot: 1000 + request, call: 1, equityPct: 50 }, forged);
+      assert.equal(withinLimit.status, 200, `forged request ${request} should share one bucket`);
+    }
+    const forgedOverLimit = await post("/api/ev", { pot: 2000, call: 1, equityPct: 50 }, { "X-Forwarded-For": "192.0.2.1, 203.0.113.20" });
+    assert.equal(forgedOverLimit.status, 429, "a new forged first entry must not reset the limit");
+
+    // Expensive requests are charged by work: one detailed Risk Lab run costs
+    // far more than one point.
+    const heavyHeaders = { "X-Forwarded-For": "203.0.113.30" };
+    const heavy = await post("/api/risk-lab", { wr: 3, sd: 90, bank: 3000, hands: 300000, paths: 16000, seed: 7 }, heavyHeaders);
+    assert.equal(heavy.status, 200);
+    let cheapAllowed = 0;
+    for (let request = 1; request <= 100; request += 1) {
+      const cheap = await post("/api/ev", { pot: 3000 + request, call: 1, equityPct: 50 }, heavyHeaders);
+      if (cheap.status !== 200) break;
+      cheapAllowed += 1;
+    }
+    assert.ok(cheapAllowed < 80, `a detailed Risk Lab run should use a large share of the budget (then ${cheapAllowed} EV calls fit)`);
+
+    process.stdout.write("API, cache, work-weighted rate limit, forged X-Forwarded-For, error status, security-header, validation, public-bundle and case-study page tests passed.\n");
   } finally {
     server.kill("SIGTERM");
   }

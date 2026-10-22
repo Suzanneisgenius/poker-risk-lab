@@ -39,6 +39,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--paths", type=int, default=50_000)
     p.add_argument("--step", type=int, default=100)
     p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--endpoint-only", action="store_true",
+                   help="detect ruin only at step ends (no Brownian-bridge correction)")
     return p.parse_args()
 
 
@@ -48,6 +50,7 @@ def main() -> None:
         n_paths=a.paths, n_hands=a.hands, winrate_bb100=a.winrate,
         std_bb100=a.std, bankroll_bb=a.bankroll,
         ruin_threshold_bb=a.threshold, seed=a.seed, step_hands=a.step,
+        bridge=not a.endpoint_only,
     )
     ror = estimate_risk_of_ruin(res, seed=a.seed)
     dd = drawdown_analytics(res)
@@ -62,6 +65,8 @@ def main() -> None:
     print(f"            bankroll={a.bankroll} bb  threshold={a.threshold} bb")
     print(f"            hands={a.hands:,}  paths={a.paths:,}  "
           f"step={a.step}  seed={a.seed}")
+    print(f"            ruin monitoring="
+          f"{'step ends only' if a.endpoint_only else 'continuous (Brownian bridge)'}")
     print("-" * 62)
     print("HEADLINE METRICS")
     print(f"  Risk of Ruin            : {ror['point_estimate']:.4f} "
