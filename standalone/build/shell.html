@@ -468,11 +468,18 @@
   .lab-saved h3{margin:0 0 4px;font-size:15px}
   .lab-saved-status{min-height:1em;margin:6px 0;color:var(--accent);font-size:13px}
   .lab-saved-list{margin:0;padding:0;list-style:none}
-  .lab-saved-list li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid rgba(111,128,151,.18)}
+  .lab-saved-list li{padding:10px 0;border-top:1px solid rgba(111,128,151,.18)}
+  .lab-saved-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .lab-saved-top{display:flex;align-items:center;justify-content:space-between;gap:12px}.lab-saved-top .btn{width:auto;min-height:36px;margin:0;padding:5px 12px;font-size:12.5px}
+  .lab-saved-detail{margin-top:8px;overflow-x:auto}.lab-saved-detail[hidden]{display:none}
+  .lab-saved-table{width:100%;min-width:420px;border-collapse:collapse;font-size:12.5px}
+  .lab-saved-table caption{text-align:left;color:var(--muted);padding:0 0 6px}
+  .lab-saved-table th,.lab-saved-table td{padding:5px 8px;text-align:left;border-bottom:1px solid rgba(111,128,151,.15)}
+  .lab-saved-table thead th{color:var(--muted);font-weight:600;overflow-wrap:anywhere}
   .lab-saved-list strong{display:block;font-size:13.5px;overflow-wrap:anywhere}.lab-saved-list span{display:block;color:var(--muted);font-size:12px}
   .lab-saved-actions{display:flex;flex-wrap:wrap;gap:6px;flex:none}
   @media(max-width:900px){.lab-guide-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
-  @media(max-width:600px){.lab-guide{padding:14px}.lab-guide-steps{grid-template-columns:1fr;gap:6px}.lab-guide-steps li{padding:8px 10px}.lab-guide-steps li:not([data-status="current"]) p{display:none}.lab-compare-names{grid-template-columns:1fr}.lab-saved-list li{flex-direction:column;align-items:flex-start}}
+  @media(max-width:600px){.lab-guide{padding:14px}.lab-guide-steps{grid-template-columns:1fr;gap:6px}.lab-guide-steps li{padding:8px 10px}.lab-guide-steps li:not([data-status="current"]) p{display:none}.lab-compare-names{grid-template-columns:1fr}.lab-saved-head{flex-direction:column;align-items:flex-start}}
   .lab-save-row .btn,.lab-compare-head .btn{width:auto;white-space:nowrap;min-height:42px;margin:0;font-size:13px}
   .lab-save-row p{color:var(--muted);font-size:13px;margin:0}
   .lab-compare{border:1px solid rgba(56,189,248,.25);border-radius:16px;padding:22px;margin:0 0 28px;background:rgba(17,28,47,.45)}
@@ -566,6 +573,10 @@
   .pf-trainer-setup select{width:100%}
   .pf-set-note{margin:0 0 10px;color:var(--muted);font-size:12.5px}
   .pf-start-set{width:auto;margin:0 0 12px}
+  .pf-resume{margin:0 0 14px;padding:12px 14px;border:1px solid rgba(56,189,248,.45);border-radius:12px;background:rgba(56,189,248,.07)}.pf-resume[hidden],.pf-previous[hidden]{display:none}
+  .pf-resume p{margin:0 0 8px;color:var(--text);font-size:13.5px}
+  .pf-resume-actions{display:flex;flex-wrap:wrap;gap:8px}.pf-resume-actions .btn,.pf-previous .btn{width:auto;min-height:38px;margin:0;font-size:13px}
+  .pf-previous{padding:14px 0 4px;border-bottom:1px solid rgba(111,128,151,.2)}.pf-previous p{margin:0 0 8px;color:var(--muted);font-size:12.5px}
   .pf-question-count{margin:4px 0 6px;color:var(--accent);font:650 12px ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase}
   .pf-decision-actions[hidden],.pf-frequency-options[hidden],.pf-review[hidden],#pf_question[hidden]{display:none}
   .pf-frequency-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0 15px}
@@ -591,6 +602,18 @@
   .pf-find .btn{width:auto;min-height:38px;margin:0;padding:6px 14px}
   .pf-find-status{color:var(--accent);font-size:13px}
   .pf-matrix-hint{flex-basis:100%;margin:0;color:var(--dim);font-size:12px}
+  .calc-change{margin:12px 0 0;padding:9px 12px;border:1px solid rgba(251,191,36,.35);border-radius:10px;background:rgba(251,191,36,.05);font-size:12.5px;color:var(--muted);line-height:1.5}
+  .calc-change summary{cursor:pointer;color:var(--median);font-weight:650}
+  .calc-change p{margin:8px 0 0}
+  .calc-change-table{margin:8px 0 0;border-collapse:collapse;font-size:12.5px}
+  .calc-change-table caption{text-align:left;padding:0 0 4px;color:var(--muted)}
+  .calc-change-table th,.calc-change-table td{padding:3px 10px 3px 0;text-align:left;color:var(--text)}
+  .calc-change-table thead th{color:var(--muted);font-weight:600}
+  .pf-find-result{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:-4px 0 14px;padding:10px 12px;border:1px solid rgba(56,189,248,.35);border-radius:12px;background:rgba(56,189,248,.06)}
+  .pf-find-result p{flex-basis:100%;margin:0;color:var(--text);font:600 14px ui-monospace,monospace}
+  .pf-find-result .btn{width:auto;min-height:36px;margin:0;padding:5px 12px;font-size:13px}
+  .pf-meta-details summary{cursor:pointer;color:var(--muted);font-size:12.5px;margin:6px 0}
+  .pf-hand-name:focus{outline:none}
   .pf-cell:focus-visible{outline:2px solid #fff;outline-offset:-3px;z-index:5}
   @media(max-width:900px){.pf-library>.pf-side{order:0}.pf-library>.pf-detail{order:1}.pf-library>.pf-main{order:2}}
   #pf_retry{width:auto;margin:0 0 14px}
@@ -674,7 +697,12 @@
           <p class="cap" id="lab_fan_note">Bands summarise the stored example paths; risk uses the full simulation.</p>
         </div>
       </div>
-      <div class="lab-run-footer"><span><span id="lab_paths">—</span> paths · seed 42</span><span id="lab_status" role="status" aria-live="polite">Calculating…</span></div>
+      <div class="lab-run-footer"><span><span id="lab_paths">—</span> paths · seed <span id="lab_seed">42</span></span><span id="lab_status" role="status" aria-live="polite">Calculating…</span></div>
+      <details class="calc-change" id="lab_calc_change"><summary>Calculation update · model 2026-10-21: numbers differ from earlier versions</summary>
+          <p>Two things changed at the same time. The simulator now also counts dips to zero <em>between</em> its 100-hand checkpoints (a Brownian-bridge correction), and every simulated path now has its own random-number stream (sfc32). The same settings and seed therefore give different numbers than earlier versions.</p>
+          <table class="calc-change-table"><caption>30 BI · 90 bb/100 swings · 100,000 hands · 2,000 paths · seed 42</caption><thead><tr><th scope="col">Win rate</th><th scope="col">Before</th><th scope="col">Model 2026-10-21</th></tr></thead><tbody><tr><th scope="row">0 bb/100</th><td>27.75%</td><td>28.90%</td></tr><tr><th scope="row">+3 bb/100</th><td>7.85%</td><td>6.35%</td></tr></tbody></table>
+          <p>Most of the +3 bb/100 drop comes from the different random sample (−1.85 points); the bridge correction on its own added +0.35 points. With 2,000 paths each run has a 95% interval of roughly ±1 point, so a new sample alone can move a result by a point or two. Averaged over many seeds the correction raises risk slightly (+0.4 to +0.8 points here) and brings it in line with the analytical benchmark. Neither change reflects anything you did, and neither is a change in real-world risk. A and B in one comparison always use the same model; exports record the model version.</p>
+      </details>
       <div class="lab-save-row"><button type="button" class="btn ghost" id="lab_save_a" disabled>Save current as A</button><p id="lab_save_hint" role="status" aria-live="polite">Save a baseline, then change the assumptions to compare it with B.</p><button type="button" class="btn ghost" id="lab_save_next" hidden>Change an assumption</button><button type="button" class="btn ghost" id="lab_view_compare" hidden>View comparison</button></div>
     </div>
 
@@ -717,10 +745,11 @@
       <p class="lab-limit">Intervals describe Monte Carlo error only. The difference uses unrounded point estimates; no interval or significance test for the difference is shown. A and B stay on this page until you reload. Save comparison keeps a copy in this browser; the downloads contain the inputs, results, seed and model version.</p>
     </section>
 
-    <section class="lab-saved" id="lab_saved" aria-labelledby="lab_saved_title" hidden>
-      <h3 id="lab_saved_title">Saved comparisons</h3>
-      <p class="cap">Kept in this browser only: reloading keeps them, clearing site data removes them. Load restores A and recomputes B from its saved inputs and seed.</p>
+    <section class="lab-saved" id="lab_saved" aria-labelledby="lab_saved_title">
+      <div class="lab-saved-top"><h3 id="lab_saved_title">Saved comparisons</h3><button type="button" class="btn ghost" id="lab_import">Import JSON</button><input type="file" id="lab_import_file" accept="application/json,.json" hidden></div>
+      <p class="cap">Kept in this browser only: reloading keeps them, clearing site data removes them. View saved results shows the numbers as saved; Recompute in Risk Lab runs them again with the current model and the saved seeds.</p>
       <p class="lab-saved-status" id="lab_saved_status" role="status" aria-live="polite"></p>
+      <p class="cap" id="lab_saved_empty">No saved comparisons in this browser yet.</p>
       <ul class="lab-saved-list" id="lab_saved_list"></ul>
     </section>
 
@@ -858,8 +887,8 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
         <div class="ev-result-head"><h2>EV of calling</h2><p class="result-state" id="ev_result_state" data-state="empty" role="status" aria-live="polite"><strong>No result yet</strong></p></div>
         <div class="ev-primary-row result-dim"><div><output id="ev_main_value">—</output><p id="ev_verdict"></p></div><div class="ev-gap-box"><span>Equity margin</span><strong id="ev_gap">—</strong><small id="ev_gap_note">Distance from break-even</small></div></div>
         <dl class="ev-equity-context result-dim"><div><dt>Equity used</dt><dd id="ev_current_pct">—</dd></div><div><dt>Break-even equity</dt><dd id="ev_threshold_pct">—</dd></div></dl>
-        <div class="ev-sensitivity result-dim"><h3>How EV changes with equity</h3><div id="ev_sensitivity_chart" role="img" aria-label="Expected value of calling as a function of assumed equity"></div><div class="ev-chart-key"><span><i></i>Current equity</span><span><i class="ev-key-threshold"></i>Break-even</span><span><i class="ev-key-test"></i>Test assumption</span></div>
-          <div class="ev-test-controls"><label for="ev_test_equity">Try an equity assumption <output id="ev_test_pct">—</output></label><input id="ev_test_equity" type="range" min="0" max="100" step="0.1" value="45" disabled><div><p id="ev_test_result" aria-live="polite"></p><button type="button" class="btn ghost" id="ev_reset_test" disabled>Reset to current equity</button></div></div>
+        <div class="ev-sensitivity result-dim"><h3>How EV changes with equity</h3><div id="ev_sensitivity_chart" role="img" aria-label="Expected value of calling as a function of assumed equity"></div><div class="ev-chart-key"><span><i></i>Equity used</span><span><i class="ev-key-threshold"></i>Break-even</span><span><i class="ev-key-test"></i>Test assumption</span></div>
+          <div class="ev-test-controls"><label for="ev_test_equity">Try an equity assumption <output id="ev_test_pct">—</output></label><input id="ev_test_equity" type="range" min="0" max="100" step="0.1" value="45" disabled><div><p id="ev_test_result" aria-live="polite"></p><button type="button" class="btn ghost" id="ev_reset_test" disabled>Reset to equity used</button></div></div>
           <p class="cap" id="ev_sensitivity_note"></p>
         </div>
         <p class="neutral decision-copy result-dim" id="ev_expl"></p>
@@ -905,6 +934,11 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
         </div></details>
         <button class="btn primary" id="bk_run">Run simulation</button>
         <p class="hint" id="bk_budget_note" role="status" aria-live="polite" hidden></p>
+        <details class="calc-change" id="bk_calc_change"><summary>Calculation update · model 2026-10-21: numbers differ from earlier versions</summary>
+          <p>Two things changed at the same time. The simulator now also counts dips to zero <em>between</em> its 100-hand checkpoints (a Brownian-bridge correction), and every simulated path now has its own random-number stream (sfc32). The same settings and seed therefore give different numbers than earlier versions.</p>
+          <table class="calc-change-table"><caption>30 BI · 90 bb/100 swings · 100,000 hands · 2,000 paths · seed 42</caption><thead><tr><th scope="col">Win rate</th><th scope="col">Before</th><th scope="col">Model 2026-10-21</th></tr></thead><tbody><tr><th scope="row">0 bb/100</th><td>27.75%</td><td>28.90%</td></tr><tr><th scope="row">+3 bb/100</th><td>7.85%</td><td>6.35%</td></tr></tbody></table>
+          <p>Most of the +3 bb/100 drop comes from the different random sample (−1.85 points); the bridge correction on its own added +0.35 points. With 2,000 paths each run has a 95% interval of roughly ±1 point, so a new sample alone can move a result by a point or two. Averaged over many seeds the correction raises risk slightly (+0.4 to +0.8 points here) and brings it in line with the analytical benchmark. Neither change reflects anything you did, and neither is a change in real-world risk. A and B in one comparison always use the same model; exports record the model version.</p>
+        </details>
         <div class="hint">The simulation runs on the private calculation service. Ruin is monitored continuously, including dips between 100-hand steps (Brownian-bridge correction). Paths and seed affect numerical precision and reproducibility, not your poker assumptions. The shaded band on the risk curve is a pointwise 95% interval.</div>
       </div>
       <div id="bk_results" data-result-state="empty">
@@ -936,6 +970,11 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
       <span class="pf-find-status" id="pf_find_status" role="status" aria-live="polite"></span>
       <p class="pf-matrix-hint" id="pf_matrix_hint">In the matrix, arrow keys move between hands and Enter selects.</p>
     </form>
+    <div class="pf-find-result" id="pf_find_result" hidden>
+      <p id="pf_find_summary" role="status" aria-live="polite"></p>
+      <button type="button" class="btn ghost" id="pf_find_details">View details</button>
+      <button type="button" class="btn ghost" id="pf_find_locate">Show in matrix</button>
+    </div>
 
     <div class="pf-view" id="pf-view-library" role="tabpanel" aria-labelledby="pf-mode-library">
       <div class="pf-library">
@@ -943,7 +982,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
           <h2>Scenario</h2>
           <label class="sr-only" for="pf_scenario">Preflop scenario</label>
           <select class="pf-scenario-select" id="pf_scenario"></select>
-          <dl class="pf-meta" id="pf_meta"></dl>
+          <details class="pf-meta-details" id="pf_meta_details" open><summary>Scenario details</summary><dl class="pf-meta" id="pf_meta"></dl></details>
           <div class="pf-context-note" id="pf_context_note" role="note"></div>
           <div class="pf-mix-panel">
             <div class="pf-mix-title"><strong>Action frequencies</strong><span id="pf_mix_hand">A5s</span></div>
@@ -964,7 +1003,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
           <div class="slots pf-card-slots" id="slots_preflop" aria-label="Selected preflop cards"></div>
           <button type="button" class="pf-change-hand" id="pf_change_hand">Change hand</button>
           <p class="pf-change-status" id="pf_change_status" role="status" aria-live="polite">Choose two cards; their ranks and suits determine the range class.</p>
-          <h3 class="pf-hand-name" id="pf_hand_name">A5s</h3>
+          <h3 class="pf-hand-name" id="pf_hand_name" tabindex="-1">A5s</h3>
           <div class="pf-detail-mix" id="pf_detail_mix"></div>
           <p class="pf-guidance" id="pf_guidance"></p>
           <div class="pf-detail-actions">
@@ -995,8 +1034,12 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
             <div class="fld"><label for="pf_trainer_select">Training scenario</label><select id="pf_trainer_select"></select></div>
             <div class="fld"><label for="pf_set_size">Practice set</label><select id="pf_set_size"><option value="10">10 questions</option><option value="20" selected>20 questions</option><option value="169">All 169 hands</option></select></div>
           </div>
-          <p class="pf-set-note" id="pf_set_note" role="note">Each scenario keeps its own set until you reload the page.</p>
+          <p class="pf-set-note" id="pf_set_note" role="note">Each scenario’s progress is saved in this browser.</p>
           <button type="button" class="btn ghost pf-start-set" id="pf_start_set" hidden>Start a new set now</button>
+          <div class="pf-resume" id="pf_resume" role="status" hidden>
+            <p id="pf_resume_text"></p>
+            <div class="pf-resume-actions"><button type="button" class="btn primary" id="pf_resume_continue">Continue this set</button><button type="button" class="btn ghost" id="pf_resume_new">Start a new set</button></div>
+          </div>
           <div class="pf-trainer-scenario" id="pf_trainer_scenario">Loading training spot…</div>
           <div class="pf-context-note" id="pf_trainer_context" role="note"></div>
           <div id="pf_question">
@@ -1028,6 +1071,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
             <div class="pf-trainer-actions">
               <button type="button" class="btn primary" id="pf_retry_missed">Retry missed</button>
               <button type="button" class="btn ghost" id="pf_new_set">New set</button>
+              <button type="button" class="btn ghost" id="pf_review_back" hidden>Back to the current set</button>
             </div>
           </div>
         </div>
@@ -1037,6 +1081,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
           <div class="pf-stat"><span>Action choices in range</span><strong class="accent" id="pf_stat_inrange">—</strong></div>
           <div class="pf-stat"><span>Frequency questions correct</span><strong class="mixed" id="pf_stat_frequency">—</strong></div>
           <div class="pf-stat"><span>Mixed-strategy hands seen</span><strong id="pf_stat_mixed">0</strong></div>
+          <div class="pf-previous" id="pf_previous" hidden><p id="pf_previous_text"></p><button type="button" class="btn ghost" id="pf_previous_view">View its review</button></div>
           <p class="pf-disclaimer">An action choice is “in range” when the demo range uses it at all (frequency above 0%). On a mixed hand that is easy to get without knowing the mix: Raise 60% / Fold 40% means raising about 6 times in 10, not every time. Frequency questions check that part. Frequencies come from the demonstration dataset, not solver output, so these numbers do not measure real-game skill or EV.</p>
         </aside>
       </div>

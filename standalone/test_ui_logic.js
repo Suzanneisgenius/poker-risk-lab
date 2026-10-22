@@ -27,12 +27,12 @@ class Element {
   removeAttribute(k){delete this.attributes[k];}
   replaceChildren(...nodes){this.children=nodes;this.textContent=nodes.map(node=>node.textContent).join(" | ");}
 }
-function harness(){
+function harness(storage=undefined){
   const elements=new Map(),get=id=>{if(!elements.has(id))elements.set(id,new Element(id));return elements.get(id);};
   const buttons=["raise","call","jam","fold"].map(action=>{const e=new Element(action);e.dataset.action=action;return e;});
   const modes=["library","compare","trainer"].map(mode=>{const e=new Element(mode);e.dataset.pfMode=mode;return e;});
   const views=modes.map(e=>new Element(`pf-view-${e.id}`));
-  const ctx=vm.createContext({console,$:get,RANKS:"23456789TJQKA",clamp:(v,lo,hi)=>Math.min(hi,Math.max(lo,v)),
+  const ctx=vm.createContext({console,$:get,...(storage?{localStorage:storage}:{}),RANKS:"23456789TJQKA",clamp:(v,lo,hi)=>Math.min(hi,Math.max(lo,v)),
     document:{createElement:()=>new Element(""),querySelectorAll:s=>s.includes("pf-action-button")?buttons:s===".pf-mode"?modes:s===".pf-view"?views:[]},
     renderPfContext:()=>{},pfCardHtml:hand=>hand,pfActionAria:hand=>JSON.stringify(hand.actions),renderPfMatrix:()=>{},
     renderPfLibrary:()=>{},errorMessage:error=>error.message,apiJSON:async(_p,input)=>computePreflop(input)});
@@ -50,8 +50,8 @@ function harness(){
 const scenarios=computePreflop({}).scenarios.map(summary=>computePreflop({scenarioId:summary.id}).scenario);
 const mixedOf=hand=>Object.values(hand.actions).filter(v=>v>0).length>1;
 // Load a scenario into a fresh harness with a fresh trainer state.
-function trainerFor(scenario,size=20){
-  const h=harness();h.ctx.scenario=scenario;
+function trainerFor(scenario,size=20,storage=undefined){
+  const h=harness(storage);h.ctx.scenario=scenario;
   h.run(`pfSetSize=${size};pfScenario=scenario;renderPfTrainer();`);
   return h;
 }
@@ -166,7 +166,7 @@ async function main(){
     t.ctx.name=outside;t.run("practicePfHand(name);renderPfTrainer()");
     assert.equal(t.get("pf_trainer_hand").textContent,outside);
     assert.equal(session(t).items.length,11);
-    assert.ok(t.get("pf_set_note").textContent.startsWith(`Added ${outside} from the Library`),"the extra question is explained");
+    assert.ok(t.get("pf_set_note").textContent.startsWith(`This set: 10 questions + 1 added from the Library (${outside}).`),"the extra question is explained");
     const later=session(t).items[5].hand;t.ctx.name=later;t.run("practicePfHand(name);renderPfTrainer()");
     assert.equal(t.get("pf_trainer_hand").textContent,later,"an unanswered later question moves forward");
     assert.equal(session(t).items.length,11,"no duplicate is added");
@@ -207,6 +207,84 @@ async function main(){
     await retry.run("loadPreflop()");assert.equal(retry.get("pf_retry").hidden,false);assert.ok(retry.buttons.every(b=>b.disabled));
     retry.ctx.apiJSON=async(_p,input)=>computePreflop(input);await retry.run("loadPreflop()");
     assert.equal(retry.get("pf_retry").hidden,true);
+  }
+
+  // --- The report's case: retry, then add a hand from the Library -------------------------
+  {
+    const t=trainerFor(scenarios[0],10);
+    let misses=0;
+    while(session(t).index<session(t).items.length){
+      const s=session(t),item=s.items[s.index],hand=currentHand(t);
+      if(item.kind==="frequency"){t.ctx.answer=item.options.find(v=>v!==hand.actions[item.action]);misses++;}
+      else{const zero=["raise","fold"].find(a=>hand.actions[a]===0);t.ctx.answer=zero||"raise";if(zero)misses++;}
+      t.run("answerPfTrainer(answer);nextPfTrainerHand()");
+    }
+    assert.ok(misses>=2,"the setup should miss several questions");
+    t.run("retryPfMissed()");
+    const first=currentHand(t),firstItem=session(t).items[0];
+    t.ctx.answer=firstItem.kind==="frequency"?first.actions[firstItem.action]:["raise","call","jam","fold"].find(a=>first.actions[a]>0);
+    t.run("answerPfTrainer(answer)");
+    const inSet=new Set(session(t).items.map(item=>item.hand));
+    const extra=scenarios[0].hands.find(hand=>!inSet.has(hand.hand)).hand;
+    t.ctx.name=extra;t.run("practicePfHand(name);renderPfTrainer()");
+    assert.equal(t.get("pf_stat_progress").textContent,`1 / ${misses+1}`,"the answer is kept");
+    assert.ok(t.get("pf_set_note").textContent.startsWith(`Retrying ${misses} missed question${misses===1?"":"s"} + 1 added from the Library (${extra}).`),t.get("pf_set_note").textContent);
+    assert.equal(session(t).items.filter(item=>item.origin==="missed").length,misses,"added questions do not change the missed count");
+    assert.equal(t.get("pf_trainer_hand").textContent,extra);
+  }
+
+  // --- Progress survives a reload; the previous review stays available ------------------------
+  {
+    const store=new Map(),storage={getItem:k=>store.has(k)?store.get(k):null,setItem:(k,v)=>store.set(k,String(v)),removeItem:k=>store.delete(k)};
+    const t=trainerFor(scenarios[1],20,storage);
+    for(let i=0;i<3;i++){const s=session(t),item=s.items[s.index],hand=currentHand(t);t.ctx.answer=item.kind==="frequency"?item.options[0]:["raise","call","jam","fold"].find(a=>hand.actions[a]>0);t.run("answerPfTrainer(answer);nextPfTrainerHand()");}
+    assert.ok(t.get("pf_set_note").textContent.includes("saved in this browser"));
+    const reloaded=harness(storage);reloaded.ctx.scenario=scenarios[1];
+    reloaded.run("loadPfProgress();pfScenario=scenario;renderPfTrainer()");
+    assert.equal(reloaded.get("pf_stat_progress").textContent,"3 / 20","answers survive a reload");
+    assert.equal(reloaded.get("pf_question_count").textContent,"Question 4 of 20");
+    assert.equal(reloaded.get("pf_resume").hidden,false,"returning offers continue or new");
+    assert.match(reloaded.get("pf_resume_text").textContent,/3 of 20 answered/);
+    reloaded.run("pfResumePending.delete(scenario.id);renderPfTrainer()");
+    assert.equal(reloaded.get("pf_resume").hidden,true);
+    // An answer is saved at once, before Next is pressed.
+    {const s=session(reloaded),item=s.items[s.index],hand=currentHand(reloaded);
+     reloaded.ctx.answer=item.kind==="frequency"?item.options[0]:["raise","call","jam","fold"].find(a=>hand.actions[a]>0);reloaded.run("answerPfTrainer(answer)");}
+    const midway=harness(storage);midway.ctx.scenario=scenarios[1];
+    midway.run("loadPfProgress();pfScenario=scenario;renderPfTrainer()");
+    assert.equal(midway.get("pf_stat_progress").textContent,"4 / 20","an answer survives a reload before Next");
+    assert.equal(midway.get("pf_next_hand").disabled,false,"the answered question shows its feedback");
+    reloaded.run("nextPfTrainerHand()");
+    // Finish the set, retry: the finished set's review stays available.
+    while(session(reloaded).index<session(reloaded).items.length){const s=session(reloaded),item=s.items[s.index],hand=currentHand(reloaded);
+      reloaded.ctx.answer=item.kind==="frequency"?item.options.find(v=>v!==hand.actions[item.action]):["raise","call","jam","fold"].find(a=>hand.actions[a]>0);
+      reloaded.run("answerPfTrainer(answer);nextPfTrainerHand()");}
+    reloaded.run("retryPfMissed()");
+    assert.equal(reloaded.get("pf_previous").hidden,false);
+    assert.match(reloaded.get("pf_previous_text").textContent,/^Previous set: /);
+    reloaded.run("pfViewingPrevious=true;renderPfTrainer()");
+    assert.equal(reloaded.get("pf_review").hidden,false);assert.equal(reloaded.get("pf_review_title").textContent,"Previous set · review");
+    assert.equal(reloaded.get("pf_review_back").hidden,false);assert.equal(reloaded.get("pf_retry_missed").hidden,true);
+    assert.equal((reloaded.get("pf_review_rows").innerHTML.match(/<tr /g)||[]).length,20);
+    // The previous review is saved too.
+    const again=harness(storage);again.ctx.scenario=scenarios[1];
+    again.run("loadPfProgress();pfScenario=scenario;renderPfTrainer()");
+    assert.equal(again.get("pf_previous").hidden,false,"the previous review survives a reload");
+    assert.ok(again.run("session=pfSessionFor(pfScenario);session.retry"),"the retry set is restored");
+    // Saved data that no longer matches the scenario is replaced, not trusted.
+    const data=JSON.parse(store.get("poker-analytics.trainer-progress.v1"));
+    data.sessions[scenarios[1].id].items[0].hand="ZZ";store.set("poker-analytics.trainer-progress.v1",JSON.stringify(data));
+    const tampered=harness(storage);tampered.ctx.scenario=scenarios[1];
+    tampered.run("loadPfProgress();pfScenario=scenario;renderPfTrainer()");
+    assert.equal(tampered.get("pf_stat_progress").textContent,"0 / 20");
+    store.set("poker-analytics.trainer-progress.v1","{not json");
+    const broken=harness(storage);broken.ctx.scenario=scenarios[1];
+    broken.run("loadPfProgress();pfScenario=scenario;renderPfTrainer()");
+    assert.equal(broken.get("pf_stat_progress").textContent,"0 / 20","unreadable saved data starts fresh");
+    // A browser that blocks storage still works and says so.
+    const blocked={getItem:()=>{throw new Error("blocked");},setItem:()=>{throw new Error("blocked");},removeItem:()=>{}};
+    const b=trainerFor(scenarios[2],10,blocked);b.run("loadPfProgress();renderPfTrainer()");
+    assert.ok(b.get("pf_set_note").textContent.includes("blocks saving"));
   }
 
   // --- Matrix search and keyboard movement --------------------------------------------
@@ -263,6 +341,32 @@ async function main(){
     assert.ok(csv.includes("input.winrate_bb100,0,3\n")&&csv.includes("model.version,2026-10-21,2026-10-21\n"));
     assert.ok(csv.includes('model.ruin_monitoring,continuous (Brownian-bridge correction),continuous (Brownian-bridge correction)'));
     assert.equal(h.run("labSlug('A · 30 BI / +3!')"),"a-30-bi-3");
+
+    // Import validation keeps only known fields and rejects malformed files.
+    h.ctx.file={...record,extra:"<script>",a:{...record.a,name:"x".repeat(200),secret:1}};
+    const valid=JSON.parse(JSON.stringify(h.run("labValidateRecord(file)")));
+    assert.ok(valid.record);assert.equal(valid.record.extra,undefined);assert.equal(valid.record.a.secret,undefined);
+    assert.equal(valid.record.a.name.length,80);assert.equal(valid.record.b.model.version,"2026-10-21");
+    assert.ok(Math.abs(valid.record.difference.risk_b_minus_a_pp-(-20))<1e-9,"the difference is recomputed from the results");
+    const reject=value=>{h.ctx.file=value;return h.run("labValidateRecord(file)").error;};
+    assert.match(reject({type:"other",schema_version:1}),/not a Risk Lab comparison/);
+    assert.match(reject(null),/not a Risk Lab comparison/);
+    assert.match(reject({...record,b:{...record.b,inputs:{...record.b.inputs,seed:"42"}}}),/B: seed is missing or not a number/);
+    assert.match(reject({...record,a:{...record.a,results:{...record.a.results,risk_of_ruin:null}}}),/A: risk_of_ruin/);
+    // Loadable inputs match the Risk Lab controls; the seed is restored as saved.
+    const problem=inputs=>{h.ctx.inputs=inputs;return h.run("labInputsProblem(inputs)");};
+    const ok=record.b.inputs;
+    assert.equal(problem(ok),"");assert.equal(problem({...ok,seed:7}),"");assert.equal(problem({...ok,paths:16000}),"");
+    assert.match(problem({...ok,ruin_threshold_bi:1}),/threshold/);assert.match(problem({...ok,winrate_bb100:0.3}),/win rate/);
+    assert.match(problem({...ok,hands:25000}),/horizon/);assert.match(problem({...ok,bankroll_bi:61}),/bankroll/);
+    assert.match(problem({...ok,seed:1.5}),/seed/);
+    // Load messages say what was recomputed and under which model.
+    const message=(checks,current)=>{h.ctx.checks=checks;h.ctx.current=current;return h.run("labLoadMessage('A → B',checks,current)");};
+    assert.equal(message([{side:"B",saved:0.0635,now:0.0635,savedVersion:"2026-10-21"}],"2026-10-21"),"Loaded “A → B”. Recomputed with model 2026-10-21: B matches the saved 6.35%.");
+    const older=message([{side:"A",saved:0.2775,now:0.289,savedVersion:"2026-10-05"},{side:"B",saved:0.0785,now:0.0635,savedVersion:"2026-10-05"}],"2026-10-21");
+    assert.match(older,/A is 28\.90% now \(saved 27\.75%\); B is 6\.35% now \(saved 7\.85%\)\./);
+    assert.match(older,/saved with model 2026-10-05, so differences reflect the model change/);
+    assert.match(message([{side:"B",saved:0.2,now:0.198,savedVersion:"2026-10-21"}],"2026-10-21"),/may have been edited/,"same model, different numbers is flagged");
   }
 
   // --- Shared result states ---------------------------------------------------------
@@ -281,6 +385,6 @@ async function main(){
   const seed=harness();seed.get("seed").value="0";assert.equal(seed.run("integerInput('seed',42)"),0);
   const showdown=computeEquity({hero:["Ah","Kd"].map(strToCard),opponents:[["As","Kc"].map(strToCard),["Ad","Kh"].map(strToCard)],board:["2c","3d","4h","5s","6c"].map(strToCard),trials:1000,seed:0});
   assert.equal(showdown.result.method,"exact");assert.equal(showdown.result.trials,1);assert.equal(showdown.result.equity,1/3);
-  console.log("PASS: practice sets (10/20/169) in all 5 scenarios; frequency questions; answer gating, reveal, no double scoring; review and retry missed; per-scenario progress; set-size change; practice this spot; unavailable actions; loading, races, retry; hand search; matrix keys; Risk Lab guide; comparison JSON/CSV; result states; seed 0; exact multiway showdown.");
+  console.log("PASS: practice sets (10/20/169) in all 5 scenarios; retry + added origins; saved progress, resume, previous review, corrupt or blocked storage; frequency questions; answer gating, reveal, no double scoring; review and retry missed; per-scenario progress; set-size change; practice this spot; unavailable actions; loading, races, retry; hand search; matrix keys; Risk Lab guide; comparison JSON/CSV, import validation, load messages; result states; seed 0; exact multiway showdown.");
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});

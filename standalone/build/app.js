@@ -382,13 +382,13 @@ function renderEVSensitivity(){
   $('ev_test_pct').textContent=test.toFixed(1)+'%';
   $('ev_test_result').textContent=`At ${test.toFixed(1)}% equity: ${evAmount(testEV)} EV per call.`;
   $('ev_sensitivity_note').textContent=`Pot ${r.pot.toLocaleString()} bb · call ${r.call.toLocaleString()} bb held fixed. Each +1 percentage point of equity adds ${((r.pot+r.call)/100).toLocaleString('en-US',{maximumFractionDigits:4})} bb to EV. The slider tests an assumption; it does not recalculate the cards.`;
-  $('ev_sensitivity_chart').setAttribute('aria-label',`EV increases linearly with equity at pot ${r.pot} bb and call ${r.call} bb. Break-even ${(r.requiredEquity*100).toFixed(1)} percent. Current EV ${r.evCall.toFixed(2)} bb; test EV ${testEV.toFixed(2)} bb.`);
+  $('ev_sensitivity_chart').setAttribute('aria-label',`EV increases linearly with equity at pot ${r.pot} bb and call ${r.call} bb. Break-even ${(r.requiredEquity*100).toFixed(1)} percent. EV for the displayed calculation ${r.evCall.toFixed(2)} bb; test EV ${testEV.toFixed(2)} bb.`);
   if(!plotlyReady()){chartUnavailable('ev_sensitivity_chart');return;}
   const threshold=r.requiredEquity*100;
   const traces=[
     {x:[0,threshold],y:[-r.call,0],mode:'lines',line:{color:C.ruin,width:2.4},hovertemplate:'Equity %{x:.1f}%<br>EV %{y:.2f} bb<extra></extra>'},
     {x:[threshold,100],y:[0,r.pot],mode:'lines',line:{color:C.pos,width:2.4},hovertemplate:'Equity %{x:.1f}%<br>EV %{y:.2f} bb<extra></extra>'},
-    {x:[current],y:[r.evCall],mode:'markers',marker:{size:11,color:C.accent,line:{color:C.text,width:1.5}},hovertemplate:'Current equity %{x:.1f}%<br>EV %{y:.2f} bb<extra></extra>'},
+    {x:[current],y:[r.evCall],mode:'markers',marker:{size:11,color:C.accent,line:{color:C.text,width:1.5}},hovertemplate:'Equity used %{x:.1f}%<br>EV %{y:.2f} bb<extra></extra>'},
   ];
   if(Math.abs(test-current)>.049)traces.push({x:[test],y:[testEV],mode:'markers',marker:{size:11,color:C.median,symbol:'diamond'},hovertemplate:'Test equity %{x:.1f}%<br>EV %{y:.2f} bb<extra></extra>'});
   const narrow=$('ev_sensitivity_chart').clientWidth<450;
@@ -651,13 +651,63 @@ function pfBuildSet(scenario,size,serial){
     return {hand:hand.hand,kind:'action'};
   });
 }
-function pfNewSession(scenario,items,retry=false){return {scenarioId:scenario.id,items,results:items.map(()=>null),index:0,size:items.length,retry};}
+// Items carry an origin when they did not come from the drawn set:
+// 'missed' (retrying a missed question) or 'added' (Practice this spot).
+function pfNewSession(scenario,items,retry=false){return {scenarioId:scenario.id,items,results:items.map(()=>null),index:0,size:items.length,retry,updatedAt:new Date().toISOString()};}
+// Progress is saved in this browser so a set can be finished another day.
+const PF_PROGRESS_KEY='poker-analytics.trainer-progress.v1';
+let pfStorageOK=true;
+const pfPreviousReviews=new Map();  // scenario id -> the finished set a retry or new set replaced
+const pfResumePending=new Set();     // scenarios restored with an unfinished set, until the visitor chooses
+let pfViewingPrevious=false;
+function pfSessionShape(session){
+  return Boolean(session)&&Array.isArray(session.items)&&Array.isArray(session.results)&&session.items.length>0&&
+    session.items.length===session.results.length&&Number.isInteger(session.index)&&session.index>=0&&session.index<=session.items.length&&
+    session.items.every(item=>item&&typeof item.hand==='string'&&(item.kind==='action'||(item.kind==='frequency'&&PF_ACTIONS.includes(item.action)&&Array.isArray(item.options)&&item.options.length===4)))&&
+    session.results.every((result,index)=>index<session.index?Boolean(result)&&typeof result.ok==='boolean':result===null||typeof result?.ok==='boolean');
+}
+const pfSessionFits=(session,scenario)=>session.items.every(item=>scenario.hands.some(hand=>hand.hand===item.hand));
+function savePfProgress(){
+  const data={version:1,setSize:pfSetSize,serial:pfSetSerial,sessions:Object.fromEntries(pfSessions),previous:Object.fromEntries(pfPreviousReviews)};
+  try{localStorage.setItem(PF_PROGRESS_KEY,JSON.stringify(data));pfStorageOK=true;}catch{pfStorageOK=false;}
+}
+function loadPfProgress(){
+  let data=null;
+  try{data=JSON.parse(localStorage.getItem(PF_PROGRESS_KEY)||'null');}catch{pfStorageOK=false;return;}
+  if(!data||data.version!==1)return;
+  if(PF_SET_SIZES.includes(data.setSize))pfSetSize=data.setSize;
+  if(Number.isInteger(data.serial))pfSetSerial=Math.max(pfSetSerial,data.serial);
+  for(const [id,session] of Object.entries(data.sessions||{})){
+    if(!pfSessionShape(session))continue;
+    pfSessions.set(id,session);
+    if(session.results.some(Boolean)&&session.index<session.items.length)pfResumePending.add(id);
+  }
+  for(const [id,session] of Object.entries(data.previous||{}))if(pfSessionShape(session))pfPreviousReviews.set(id,session);
+}
+function pfTouch(session){session.updatedAt=new Date().toISOString();savePfProgress();}
 function pfSessionFor(scenario){
   let session=pfSessions.get(scenario.id);
-  if(!session){session=pfNewSession(scenario,pfBuildSet(scenario,pfSetSize,++pfSetSerial));pfSessions.set(scenario.id,session);}
+  // A saved set that no longer matches the scenario's hands is replaced.
+  if(session&&!pfSessionFits(session,scenario)){pfSessions.delete(scenario.id);pfResumePending.delete(scenario.id);session=null;}
+  if(!session){session=pfNewSession(scenario,pfBuildSet(scenario,pfSetSize,++pfSetSerial));pfSessions.set(scenario.id,session);savePfProgress();}
   return session;
 }
-function pfStartNewSet(scenario){const session=pfNewSession(scenario,pfBuildSet(scenario,pfSetSize,++pfSetSerial));pfSessions.set(scenario.id,session);return session;}
+// Starting a new set keeps a finished set's review available as "previous".
+function pfReplaceSession(scenario,session){
+  const current=pfSessions.get(scenario.id);
+  if(current&&current.index>=current.items.length)pfPreviousReviews.set(scenario.id,current);
+  pfSessions.set(scenario.id,session);pfResumePending.delete(scenario.id);pfViewingPrevious=false;
+  savePfProgress();return session;
+}
+function pfStartNewSet(scenario){return pfReplaceSession(scenario,pfNewSession(scenario,pfBuildSet(scenario,pfSetSize,++pfSetSerial)));}
+// "Retrying 5 missed questions + 1 added from the Library (QJs)."
+function pfSetDescription(session){
+  const sizeText=size=>size===169?'all 169 hands':`${size} question${size===1?'':'s'}`;
+  const missed=session.items.filter(item=>item.origin==='missed').length,added=session.items.filter(item=>item.origin==='added');
+  let text=session.retry?`Retrying ${missed} missed question${missed===1?'':'s'}`:`This set: ${sizeText(session.size)}`;
+  if(added.length)text+=` + ${added.length} added from the Library (${added.map(item=>item.hand).join(', ')})`;
+  return text+'.';
+}
 function pfSessionStats(session){
   const stats={answered:0,total:session.items.length,actionTotal:0,actionInRange:0,frequencyTotal:0,frequencyCorrect:0,mixedSeen:0,missed:[]};
   session.items.forEach((item,index)=>{
@@ -893,6 +943,7 @@ function activatePfMode(mode){
   });
   document.querySelectorAll('.pf-view').forEach(view=>{view.hidden=view.id!==`pf-view-${mode}`;});
   $('pf_find_form').hidden=mode==='trainer';
+  $('pf_find_result').hidden=true;
   if(mode==='compare')renderPfCompare();
   if(mode==='trainer')renderPfTrainer();
   if(mode==='library'&&pfScenario&&!pfLoading&&!pfFailed){renderPfLibrary();$('pf_status').textContent='Library ready · select a hand or change the scenario';}
@@ -921,10 +972,9 @@ function trainerScenario(){return pfScenario||pfCache.values().next().value;}
 function renderPfSetNote(session){
   const answered=session.results.some(Boolean),finished=session.index>=session.items.length;
   const sizeText=size=>size===169?'all 169 hands':`${size} questions`;
-  let note='Each scenario keeps its own set until you reload the page.',offer=false;
-  if(session.added?.length)note=`Added ${session.added.join(', ')} from the Library to this set. `+note;
-  if(session.retry)note=`Retrying ${session.items.length} missed question${session.items.length===1?'':'s'}. `+note;
-  else if(session.size!==pfSetSize&&answered&&!finished){note=`This set keeps its ${sizeText(session.size)}; your next set will have ${sizeText(pfSetSize)}.`;offer=true;}
+  const keep=pfStorageOK?'Each scenario’s progress is saved in this browser; clearing site data removes it.':'This browser blocks saving, so progress lasts until you reload.';
+  let note=`${pfSetDescription(session)} ${keep}`,offer=false;
+  if(!session.retry&&session.size!==pfSetSize&&answered&&!finished){note=`This set keeps its ${sizeText(session.size)}; your next set will have ${sizeText(pfSetSize)}. ${keep}`;offer=true;}
   $('pf_set_note').textContent=note;
   $('pf_start_set').hidden=!offer;
   $('pf_start_set').textContent=`Start a set of ${sizeText(pfSetSize)} now`;
@@ -938,8 +988,9 @@ function renderPfTrainerStats(session){
   $('pf_stat_mixed').textContent=String(stats.mixedSeen);
   return stats;
 }
-function renderPfReview(scenario,session,stats){
-  $('pf_review_title').textContent=session.retry?'Retry complete':'Set complete';
+function renderPfReview(scenario,session,stats,previous=false){
+  $('pf_review_title').textContent=(previous?'Previous ':'')+(session.retry?(previous?'retry':'Retry complete'):(previous?'set':'Set complete'))+(previous?' · review':'');
+  $('pf_review_back').hidden=!previous;$('pf_retry_missed').hidden=previous;$('pf_new_set').hidden=previous;
   const parts=[];
   if(stats.actionTotal)parts.push(`${stats.actionInRange} of ${stats.actionTotal} action choices in range`);
   if(stats.frequencyTotal)parts.push(`${stats.frequencyCorrect} of ${stats.frequencyTotal} frequency questions correct`);
@@ -948,14 +999,31 @@ function renderPfReview(scenario,session,stats){
   $('pf_review_rows').innerHTML=session.items.map((item,index)=>{
     const result=session.results[index],hand=pfHand(scenario,item.hand),frequency=item.kind==='frequency';
     const verdict=frequency?(result.ok?'Correct':`Off by ${Math.abs(result.answer-hand.actions[item.action])} pp`):(result.ok?(result.mixed?'In range · mixed':'In range'):'Not in range');
-    return `<tr data-ok="${result.ok}"><td>${index+1}</td><th scope="row">${hand.hand}</th><td>${frequency?`How often ${PF_LABELS[item.action]}?`:'Action'}</td>`+
+    const origin=item.origin==='added'?' · added':item.origin==='missed'?' · retry':'';
+    return `<tr data-ok="${result.ok}"><td>${index+1}</td><th scope="row">${hand.hand}</th><td>${frequency?`How often ${PF_LABELS[item.action]}?`:'Action'}${origin}</td>`+
       `<td>${frequency?pfFrequencyLabel(result.answer):PF_LABELS[result.answer]}</td><td>${pfMixText(hand)}</td><td>${verdict}</td></tr>`;
   }).join('');
   const missed=stats.missed.length;
   $('pf_retry_missed').disabled=!missed;
   $('pf_retry_missed').textContent=missed?`Retry ${missed} missed`:'Nothing missed';
   $('pf_new_set').textContent=pfSetSize===169?'New 169-hand set':`New ${pfSetSize}-question set`;
-  $('pf_status').textContent=`Review · ${missed} missed of ${stats.total}`;
+  $('pf_status').textContent=previous?'Previous set · review':`Review · ${missed} missed of ${stats.total}`;
+}
+function renderPfSideExtras(scenario){
+  const previous=pfPreviousReviews.get(scenario.id);
+  $('pf_previous').hidden=!previous||pfViewingPrevious;
+  if(previous){
+    const stats=pfSessionStats(previous),parts=[];
+    if(stats.actionTotal)parts.push(`${stats.actionInRange}/${stats.actionTotal} in range`);
+    if(stats.frequencyTotal)parts.push(`${stats.frequencyCorrect}/${stats.frequencyTotal} frequency`);
+    $('pf_previous_text').textContent=`Previous ${previous.retry?'retry':'set'}: ${parts.join(' · ')} · ${stats.missed.length} missed.`;
+  }
+  const resume=pfResumePending.has(scenario.id)?pfSessions.get(scenario.id):null;
+  $('pf_resume').hidden=!resume;
+  if(resume){
+    const when=new Date(resume.updatedAt),stats=pfSessionStats(resume);
+    $('pf_resume_text').textContent=`You have an unfinished set${Number.isNaN(when.getTime())?'':` from ${when.toLocaleString('en-US',{dateStyle:'medium',timeStyle:'short'})}`}: ${stats.answered} of ${stats.total} answered.`;
+  }
 }
 function renderPfTrainer(){
   const scenario=trainerScenario();
@@ -971,8 +1039,11 @@ function renderPfTrainer(){
   renderPfContext(scenario,'pf_trainer_context');
   renderPfSetNote(session);
   const stats=renderPfTrainerStats(session);
-  const reviewing=session.index>=session.items.length;
+  if(pfViewingPrevious&&!pfPreviousReviews.has(scenario.id))pfViewingPrevious=false;
+  renderPfSideExtras(scenario);
+  const reviewing=session.index>=session.items.length||pfViewingPrevious;
   $('pf_question').hidden=reviewing;$('pf_review').hidden=!reviewing;
+  if(pfViewingPrevious){const previous=pfPreviousReviews.get(scenario.id);renderPfReview(scenario,previous,pfSessionStats(previous),true);return;}
   if(reviewing){renderPfReview(scenario,session,stats);return;}
   const item=session.items[session.index],hand=pfHand(scenario,item.hand),result=session.results[session.index];
   const frequency=item.kind==='frequency',last=session.index===session.items.length-1;
@@ -1014,6 +1085,7 @@ function answerPfTrainer(answer){
   const result=pfScoreAnswer(item,pfHand(scenario,item.hand),answer,pfScenarioAvailability(scenario));
   if(!result)return;
   session.results[session.index]=result;
+  pfResumePending.delete(scenario.id);pfTouch(session);
   renderPfTrainer();
   $('pf_next_hand').focus?.();
 }
@@ -1022,7 +1094,7 @@ function nextPfTrainerHand(){
   const scenario=trainerScenario();if(!scenario)return;
   const session=pfSessionFor(scenario);
   if(session.index>=session.items.length||!session.results[session.index])return;
-  session.index+=1;
+  session.index+=1;pfTouch(session);
   renderPfTrainer();
   if(session.index>=session.items.length)$('pf_review_title').focus?.();
   else document.querySelector?.('#pf_decision_actions:not([hidden]) .pf-action-button:not([hidden]):not(:disabled), #pf_frequency_options:not([hidden]) button')?.focus();
@@ -1031,7 +1103,7 @@ function retryPfMissed(){
   const scenario=trainerScenario();if(!scenario||pfLoading||pfFailed)return;
   const missed=pfSessionStats(pfSessionFor(scenario)).missed;
   if(!missed.length)return;
-  pfSessions.set(scenario.id,pfNewSession(scenario,missed.map(item=>({...item})),true));
+  pfReplaceSession(scenario,pfNewSession(scenario,missed.map(item=>({...item,origin:'missed'})),true));
   renderPfTrainer();
 }
 function newPfSet(){
@@ -1046,11 +1118,10 @@ function practicePfHand(name){
   if(session.index>=session.items.length)session=pfStartNewSet(scenario);
   const at=session.results[session.index]?session.index+1:session.index;
   const existing=session.items.findIndex((item,index)=>index>=at&&item.hand===name&&!session.results[index]);
-  const item=existing>=0?session.items.splice(existing,1)[0]:{hand:name,kind:'action'};
-  if(existing<0)session.added=(session.added||[]).concat(name);
+  const item=existing>=0?session.items.splice(existing,1)[0]:{hand:name,kind:'action',origin:'added'};
   if(existing>=0)session.results.splice(existing,1);
   session.items.splice(at,0,item);session.results.splice(at,0,null);
-  session.index=at;
+  session.index=at;pfResumePending.delete(scenario.id);pfViewingPrevious=false;pfTouch(session);
 }
 function selectPfHand(name,sourceId){
   pfSelectedHand=name;pfCompareHand=name;
@@ -1070,11 +1141,11 @@ pfModeButtons.forEach((button,index)=>{
     pfModeButtons[next].focus();activatePfMode(pfModeButtons[next].dataset.pfMode);
   });
 });
-['pf_scenario','pf_trainer_select'].forEach(id=>$(id).addEventListener('change',()=>loadPreflop($(id).value)));
+['pf_scenario','pf_trainer_select'].forEach(id=>$(id).addEventListener('change',()=>{pfViewingPrevious=false;loadPreflop($(id).value);}));
 $('pf_retry').addEventListener('click',()=>loadPreflop(pfRequestedScenario));
 ['pf_compare_a','pf_compare_b'].forEach(id=>$(id).addEventListener('change',renderPfCompare));
 $('pf_swap').addEventListener('click',()=>{const a=$('pf_compare_a').value;$('pf_compare_a').value=$('pf_compare_b').value;$('pf_compare_b').value=a;renderPfCompare();});
-['pf_matrix','pf_matrix_a','pf_matrix_b'].forEach(id=>$(id).addEventListener('click',event=>{const cell=event.target.closest('[data-pf-hand]');if(cell&&!pfLoading&&!pfFailed)selectPfHand(cell.dataset.pfHand,id);}));
+['pf_matrix','pf_matrix_a','pf_matrix_b'].forEach(id=>$(id).addEventListener('click',event=>{const cell=event.target.closest('[data-pf-hand]');if(cell&&!pfLoading&&!pfFailed){$('pf_find_result').hidden=cell.dataset.pfHand!==$('pf_find_result').dataset.hand||$('pf_find_result').hidden;selectPfHand(cell.dataset.pfHand,id);}}));
 function handlePfMatrixKey(event){
   const cell=event.target.closest('.pf-cell');if(!cell)return;
   const next=pfMatrixMove(Number(cell.dataset.row),Number(cell.dataset.column),event.key);
@@ -1093,8 +1164,24 @@ $('pf_find_form').addEventListener('submit',event=>{
   if(!pfScenario||pfLoading||pfFailed){$('pf_find_status').textContent='The range is still loading.';return;}
   $('pf_find').value=parsed.hand;
   selectPfHand(parsed.hand,pfMode==='compare'?'pf_matrix_a':'pf_matrix');
-  $('pf_find_status').textContent=`Showing ${parsed.hand}.`;
+  $('pf_find_status').textContent='';
+  // A one-line answer right under the search box, so phones need no scrolling to see it.
+  const mix=scenario=>pfMixText(pfHand(scenario,parsed.hand)).replace(/, /g,' / ');
+  const scenarioA=pfCache.get($('pf_compare_a').value)||pfScenario,scenarioB=pfCache.get($('pf_compare_b').value)||pfScenario;
+  $('pf_find_summary').textContent=pfMode==='compare'?`${parsed.hand} · A: ${mix(scenarioA)} · B: ${mix(scenarioB)}`:`${parsed.hand} · ${mix(pfScenario)}`;
+  $('pf_find_result').hidden=false;$('pf_find_result').dataset.hand=parsed.hand;
 });
+$('pf_find_details').addEventListener('click',()=>{
+  const target=pfMode==='compare'?$('pf_delta'):document.querySelector('.pf-detail');
+  target?.scrollIntoView({behavior:reducedMotion()?'auto':'smooth',block:'start'});
+  if(pfMode!=='compare')$('pf_hand_name').focus({preventScroll:true});
+});
+$('pf_find_locate').addEventListener('click',()=>{
+  const hand=$('pf_find_result').dataset.hand;
+  $(pfMode==='compare'?'pf_matrix_a':'pf_matrix').querySelector(`[data-pf-hand="${hand}"]`)?.focus();
+});
+// On phones the long scenario description starts folded.
+if(typeof matchMedia==='function'&&matchMedia('(max-width:600px)').matches)$('pf_meta_details').open=false;
 $('pf_compare_hand').addEventListener('click',()=>{pfCompareHand=pfSelectedHand;activatePfMode('compare');});
 $('pf_change_hand').addEventListener('click',()=>{
   cardState.pf0=null;cardState.pf1=null;renderPfHandSlots();
@@ -1115,8 +1202,18 @@ $('pf_set_size').addEventListener('change',()=>{
   // Only replace a set that has no answers yet or is finished; otherwise the
   // new size applies to the next set and the note offers to start it now.
   if(!session.results.some(Boolean)||session.index>=session.items.length)pfStartNewSet(scenario);
+  else savePfProgress();
   renderPfTrainer();
 });
+$('pf_resume_continue').addEventListener('click',()=>{
+  const scenario=trainerScenario();if(!scenario)return;
+  pfResumePending.delete(scenario.id);renderPfTrainer();
+  document.querySelector('#pf_decision_actions:not([hidden]) .pf-action-button:not([hidden]):not(:disabled), #pf_frequency_options:not([hidden]) button, #pf_next_hand:not(:disabled)')?.focus();
+});
+$('pf_resume_new').addEventListener('click',newPfSet);
+$('pf_previous_view').addEventListener('click',()=>{pfViewingPrevious=true;renderPfTrainer();$('pf_review_title').focus();});
+$('pf_review_back').addEventListener('click',()=>{pfViewingPrevious=false;renderPfTrainer();$('pf_previous_view').focus();});
+loadPfProgress();
 $('pf_view_range').addEventListener('click',()=>{
   const scenario=trainerScenario(),session=scenario&&pfSessionFor(scenario);
   const item=session?.items[Math.min(session.index,session.items.length-1)];
@@ -1128,7 +1225,9 @@ $('pf_view_range').addEventListener('click',()=>{
 const LAB_QUICK_PATHS=2000;
 const LAB_DETAILED_PATHS=16000;
 function labParams(paths,includeCurve=true){return {wr:+$('lab_wr').value,sd:+$('lab_sd').value,bank:(+$('lab_bank').value)*100,thr:0,
-  hands:Math.round(+$('lab_hn').value),paths:paths,seed:42,includeCurve};}
+  hands:Math.round(+$('lab_hn').value),paths:paths,seed:labSeed,includeCurve};}
+// The seed comes from a loaded comparison when there is one; presets and Clear restore 42.
+let labSeed=42;
 let labHasResult=false;
 let labCurrentResult=null;
 let labSavedA=null;
@@ -1174,6 +1273,52 @@ function labComparisonCSV(record){
     ['difference.changed_inputs',record.difference.changed_inputs.join('; '),''],
     ['saved_at',record.saved_at,'']);
   return rows.map(row=>row.map(cell).join(',')).join('\n')+'\n';
+}
+// Why saved inputs cannot be put back into the Risk Lab controls ('' when they can).
+function labInputsProblem(inputs){
+  const fits=(value,low,high,step)=>value>=low&&value<=high&&Math.abs((value-low)/step-Math.round((value-low)/step))<1e-9;
+  if(inputs.ruin_threshold_bi!==0)return 'Risk Lab uses a ruin threshold of 0 BI.';
+  if(!fits(inputs.winrate_bb100,-5,10,0.5))return 'the win rate must be −5 to 10 bb/100 in steps of 0.5.';
+  if(!fits(inputs.bankroll_bi,5,60,1))return 'the bankroll must be 5 to 60 BI.';
+  if(!fits(inputs.std_bb100,60,160,5))return 'the swings must be 60 to 160 bb/100 in steps of 5.';
+  if(!fits(inputs.hands,20000,300000,20000))return 'the horizon must be 20k to 300k hands in steps of 20k.';
+  if(!Number.isInteger(inputs.paths)||inputs.paths<100||inputs.paths>40000)return 'paths must be 100 to 40,000.';
+  if(!Number.isInteger(inputs.seed)||inputs.seed<-2147483648||inputs.seed>2147483647)return 'the seed must be a 32-bit integer.';
+  return '';
+}
+const LAB_INPUT_KEYS=['winrate_bb100','std_bb100','bankroll_bi','ruin_threshold_bi','hands','paths','seed'];
+const LAB_RESULT_KEYS=['risk_of_ruin','ci95_low','ci95_high','survival','p95_max_drawdown_bi'];
+const LAB_MODEL_KEYS=['name','version','increments','ruinMonitoring','randomNumbers'];
+// Check an imported comparison file and keep only the fields this page understands.
+function labValidateRecord(value){
+  if(!value||typeof value!=='object'||value.type!=='poker-analytics/risk-lab-comparison'||value.schema_version!==1)
+    return {error:'this file is not a Risk Lab comparison (expected type poker-analytics/risk-lab-comparison, schema 1).'};
+  const finite=v=>typeof v==='number'&&Number.isFinite(v);
+  const sides={};
+  for(const key of ['a','b']){
+    const side=value[key],label=key.toUpperCase();
+    if(!side||typeof side!=='object'||typeof side.name!=='string'||!side.inputs||!side.results)return {error:`${label} is missing its name, inputs or results.`};
+    const bad=LAB_INPUT_KEYS.find(k=>!finite(side.inputs[k]))||LAB_RESULT_KEYS.find(k=>!finite(side.results[k]));
+    if(bad)return {error:`${label}: ${bad} is missing or not a number.`};
+    const model=side.model&&typeof side.model==='object'?Object.fromEntries(LAB_MODEL_KEYS.filter(k=>typeof side.model[k]==='string').map(k=>[k,side.model[k].slice(0,160)])):null;
+    sides[key]={name:side.name.slice(0,80),inputs:Object.fromEntries(LAB_INPUT_KEYS.map(k=>[k,side.inputs[k]])),
+      results:Object.fromEntries(LAB_RESULT_KEYS.map(k=>[k,side.results[k]])),model:model&&Object.keys(model).length?model:null};
+  }
+  const changed=Array.isArray(value.difference?.changed_inputs)?value.difference.changed_inputs.filter(v=>typeof v==='string').map(v=>v.slice(0,40)).slice(0,8):[];
+  return {record:{type:value.type,schema_version:1,saved_at:typeof value.saved_at==='string'?value.saved_at.slice(0,40):'',a:sides.a,b:sides.b,
+    difference:{risk_b_minus_a_pp:(sides.b.results.risk_of_ruin-sides.a.results.risk_of_ruin)*100,changed_inputs:changed,
+      note:'Difference of point estimates. Intervals describe Monte Carlo error only; no interval or significance test is given for the difference.'}}};
+}
+// After a load: what was recomputed, how it compares with the saved values, and under which model.
+function labLoadMessage(name,checks,currentVersion){
+  const pct=v=>(v*100).toFixed(2)+'%';
+  const parts=checks.map(c=>Math.abs(c.now-c.saved)<1e-12?`${c.side} matches the saved ${pct(c.saved)}`:`${c.side} is ${pct(c.now)} now (saved ${pct(c.saved)})`);
+  const versions=[...new Set(checks.map(c=>c.savedVersion||'unknown'))];
+  const older=versions.some(v=>v!==currentVersion);
+  const differs=checks.some(c=>Math.abs(c.now-c.saved)>=1e-12);
+  return `Loaded “${name}”. Recomputed with model ${currentVersion}: ${parts.join('; ')}.`+
+    (older?` It was saved with model ${versions.join(' / ')}, so differences reflect the model change; the saved values stay under View saved results.`
+      :differs?' The model and seeds are the same, so these saved values did not come from this calculation; the file may have been edited.':'');
 }
 const labSlug=text=>String(text).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)||'scenario';
 function renderLabComparison(){
@@ -1227,7 +1372,7 @@ $('lab_save_a').addEventListener('click',()=>{
   renderLabComparison();renderLabGuide();
 });
 $('lab_clear_a').addEventListener('click',()=>{
-  labSavedA=null;$('lab_compare').hidden=true;$('lab_save_a').textContent='Save current as A';
+  labSavedA=null;labSeed=42;$('lab_compare').hidden=true;$('lab_save_a').textContent='Save current as A';
   $('lab_save_hint').textContent='Save a baseline, then change the assumptions to compare it with B.';
   $('lab_save_next').hidden=true;$('lab_view_compare').hidden=true;
   renderLabGuide();$('lab_save_a').focus();
@@ -1278,17 +1423,73 @@ function currentLabRecord(){
   if(!labSavedA||!labCurrentResult)return null;
   return labComparisonRecord($('lab_a_name').value.trim()||'A',labSavedA,$('lab_b_name').value.trim()||'B',labCurrentResult,new Date().toISOString());
 }
+const labSavedOpen=new Set();   // entries whose saved results are expanded
+function labSavedDetail(entry){
+  const r=entry.record,pct=v=>(v*100).toFixed(2)+'%';
+  const rows=[['Win rate (bb/100)',x=>x.inputs.winrate_bb100],['Swings (bb/100)',x=>x.inputs.std_bb100],['Bankroll (BI)',x=>x.inputs.bankroll_bi],
+    ['Horizon (hands)',x=>x.inputs.hands.toLocaleString()],['Paths · seed',x=>`${x.inputs.paths.toLocaleString()} · ${x.inputs.seed}`],
+    ['Risk of ruin',x=>pct(x.results.risk_of_ruin)],['95% MC interval',x=>`${pct(x.results.ci95_low)}–${pct(x.results.ci95_high)}`],
+    ['Survival',x=>pct(x.results.survival)],['P95 max drawdown',x=>`${x.results.p95_max_drawdown_bi.toFixed(1)} BI`],['Model version',x=>x.model?.version||'unknown']];
+  const problem=labInputsProblem(r.a.inputs)||labInputsProblem(r.b.inputs);
+  return `<table class="lab-saved-table"><caption>Values as saved${r.saved_at?` on ${escapeHtml(r.saved_at.slice(0,16).replace('T',' '))} UTC`:''}</caption>`+
+    `<thead><tr><th scope="col"></th><th scope="col">A · ${escapeHtml(r.a.name)}</th><th scope="col">B · ${escapeHtml(r.b.name)}</th></tr></thead><tbody>`+
+    rows.map(([label,get])=>`<tr><th scope="row">${label}</th><td>${escapeHtml(get(r.a))}</td><td>${escapeHtml(get(r.b))}</td></tr>`).join('')+
+    `</tbody></table><p class="cap">These are the saved numbers; they are not recalculated. Recompute in Risk Lab runs the current model.${problem?` This comparison cannot be loaded into the controls: ${escapeHtml(problem)}`:''}</p>`;
+}
 function renderLabSaved(message=null){
   const list=readLabSaved();
   if(message!=null)$('lab_saved_status').textContent=message;
-  const items=list||[];
-  $('lab_saved').hidden=!items.length&&!$('lab_saved_status').textContent;
+  const items=list||[],current=labCurrentResult?.model?.version;
+  $('lab_saved_empty').hidden=items.length>0;
+  $('lab_saved_empty').textContent=list?'No saved comparisons in this browser yet.':'This browser does not allow saving here. Downloads still work.';
   $('lab_saved_list').innerHTML=items.map(entry=>{
-    const r=entry.record,pct=v=>(v*100).toFixed(1)+'%';
-    return `<li><div><strong>${escapeHtml(r.a.name)} → ${escapeHtml(r.b.name)}</strong>`+
-      `<span>Risk ${pct(r.a.results.risk_of_ruin)} → ${pct(r.b.results.risk_of_ruin)} (${escapeHtml(signedValue(r.difference.risk_b_minus_a_pp))} pp) · saved ${escapeHtml(r.saved_at.slice(0,16).replace('T',' '))} UTC · model ${escapeHtml(r.b.model?.version||'unknown')}</span></div>`+
-      `<div class="lab-saved-actions"><button type="button" class="btn ghost" data-load="${escapeHtml(entry.id)}">Load</button><button type="button" class="btn ghost" data-json="${escapeHtml(entry.id)}">JSON</button><button type="button" class="btn ghost" data-delete="${escapeHtml(entry.id)}">Delete</button></div></li>`;
+    const r=entry.record,pct=v=>(v*100).toFixed(1)+'%',id=escapeHtml(entry.id),open=labSavedOpen.has(entry.id);
+    const versions=[r.a.model?.version,r.b.model?.version];
+    const older=current&&versions.some(v=>v!==current);
+    const problem=labInputsProblem(r.a.inputs)||labInputsProblem(r.b.inputs);
+    return `<li><div class="lab-saved-head"><div><strong>${escapeHtml(r.a.name)} → ${escapeHtml(r.b.name)}</strong>`+
+      `<span>Risk ${pct(r.a.results.risk_of_ruin)} → ${pct(r.b.results.risk_of_ruin)} (${escapeHtml(signedValue(r.difference.risk_b_minus_a_pp))} pp)${r.saved_at?` · saved ${escapeHtml(r.saved_at.slice(0,16).replace('T',' '))} UTC`:''}${entry.imported?' · imported':''}</span>`+
+      `<span>Model A ${escapeHtml(versions[0]||'unknown')} · B ${escapeHtml(versions[1]||'unknown')}${older?` · older than the current model ${escapeHtml(current)}`:''}</span></div>`+
+      `<div class="lab-saved-actions"><button type="button" class="btn ghost" data-view="${id}" aria-expanded="${open}" aria-controls="lab_saved_detail_${id}">View saved results</button>`+
+      `<button type="button" class="btn ghost" data-load="${id}"${problem?` disabled title="${escapeHtml(problem)}"`:''}>Recompute in Risk Lab</button>`+
+      `<button type="button" class="btn ghost" data-json="${id}">JSON</button><button type="button" class="btn ghost" data-delete="${id}">Delete</button></div></div>`+
+      `<div class="lab-saved-detail" id="lab_saved_detail_${id}"${open?'':' hidden'}>${open?labSavedDetail(entry):''}</div></li>`;
   }).join('');
+}
+function addLabSavedEntry(entry,message){
+  const list=readLabSaved();
+  if(!list){renderLabSaved('This browser does not allow saving here. Use Download JSON or CSV instead.');return false;}
+  list.unshift(entry);
+  const dropped=list.length>LAB_STORE_LIMIT?list.splice(LAB_STORE_LIMIT).length:0;
+  if(!writeLabSaved(list)){renderLabSaved('Saving failed (storage may be full or blocked). Use Download JSON or CSV instead.');return false;}
+  renderLabSaved(message+(dropped?` The oldest saved comparison was removed to stay within ${LAB_STORE_LIMIT}.`:''));
+  return true;
+}
+const labEntryId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+// Restore A (from its snapshot when it was saved under the current model, otherwise
+// recomputed from its own inputs and seed), then recompute B with its saved seed.
+async function loadLabEntry(entry){
+  const r=entry.record,a=r.a.inputs,b=r.b.inputs,name=`${r.a.name} → ${r.b.name}`;
+  const problem=labInputsProblem(a)||labInputsProblem(b);
+  if(problem){renderLabSaved(`“${name}” can be viewed but not loaded here: ${problem}`);return;}
+  const currentVersion=labCurrentResult?.model?.version,checks=[];
+  if(entry.snapshotA&&currentVersion&&r.a.model?.version===currentVersion)setLabSavedA(structuredClone(entry.snapshotA),r.a.name);
+  else{
+    renderLabSaved(`Loading “${name}”: recomputing A with the current model…`);
+    try{
+      const fresh=await apiJSON('/api/risk-lab',{wr:a.winrate_bb100,sd:a.std_bb100,bank:a.bankroll_bi*100,thr:0,hands:a.hands,paths:a.paths,seed:a.seed,includeCurve:false},70000);
+      setLabSavedA(fresh,r.a.name);
+      checks.push({side:'A',saved:r.a.results.risk_of_ruin,now:fresh.metrics.risk,savedVersion:r.a.model?.version});
+    }catch(error){renderLabSaved(`Could not recompute A: ${errorMessage(error)}`);return;}
+  }
+  $('lab_b_name').value=r.b.name;$('lab_b_name').dataset.edited='true';
+  $('lab_wr').value=b.winrate_bb100;$('lab_sd').value=b.std_bb100;$('lab_bank').value=b.bankroll_bi;$('lab_hn').value=b.hands;
+  labSeed=b.seed;
+  document.querySelectorAll('.labpreset').forEach(x=>x.setAttribute('aria-pressed','false'));
+  document.querySelectorAll('.sdpreset').forEach(x=>x.setAttribute('aria-pressed',String(Number(x.dataset.sd)===b.std_bb100)));
+  labLoadCheck={name,inputs:b,checks,saved:r.b.results.risk_of_ruin,savedVersion:r.b.model?.version};
+  renderLabSaved(`Loading “${name}”: recomputing B with its saved seed ${b.seed}…`);
+  runLab(b.paths);
 }
 function downloadLabRecord(record,format){
   const base=`risk-lab-${labSlug(record.a.name)}-vs-${labSlug(record.b.name)}`;
@@ -1299,32 +1500,35 @@ $('lab_export_json').addEventListener('click',()=>{const record=currentLabRecord
 $('lab_export_csv').addEventListener('click',()=>{const record=currentLabRecord();if(record)downloadLabRecord(record,'csv');});
 $('lab_save_comparison').addEventListener('click',()=>{
   const record=currentLabRecord();if(!record)return;
-  const list=readLabSaved();
-  if(!list){renderLabSaved('This browser does not allow saving here. Use Download JSON or CSV instead.');return;}
   const a=labSavedA;
   // A is stored with the summary its chart needs; B is recomputed from its inputs and seed on load.
-  const entry={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),record,
-    snapshotA:{params:a.params,metrics:a.metrics,model:a.model||null,fan:{xs:a.fan.xs,p25:a.fan.p25,p50:a.fan.p50,p75:a.fan.p75}}};
-  list.unshift(entry);
-  const dropped=list.length>LAB_STORE_LIMIT?list.splice(LAB_STORE_LIMIT).length:0;
-  if(!writeLabSaved(list)){renderLabSaved('Saving failed (storage may be full or blocked). Use Download JSON or CSV instead.');return;}
-  renderLabSaved(`Saved “${record.a.name} → ${record.b.name}” in this browser.${dropped?` The oldest saved comparison was removed to stay within ${LAB_STORE_LIMIT}.`:''}`);
+  addLabSavedEntry({id:labEntryId(),record,snapshotA:{params:a.params,metrics:a.metrics,model:a.model||null,fan:{xs:a.fan.xs,p25:a.fan.p25,p50:a.fan.p50,p75:a.fan.p75}}},
+    `Saved “${record.a.name} → ${record.b.name}” in this browser.`);
+});
+$('lab_import').addEventListener('click',()=>$('lab_import_file').click());
+$('lab_import_file').addEventListener('change',async()=>{
+  const file=$('lab_import_file').files?.[0];$('lab_import_file').value='';
+  if(!file)return;
+  if(file.size>262144){renderLabSaved('Not imported: the file is too large to be a Risk Lab comparison.');return;}
+  let parsed;
+  try{parsed=JSON.parse(await file.text());}catch{renderLabSaved('Not imported: the file is not valid JSON.');return;}
+  const checked=labValidateRecord(parsed);
+  if(checked.error){renderLabSaved(`Not imported: ${checked.error}`);return;}
+  const r=checked.record;
+  if((readLabSaved()||[]).some(entry=>JSON.stringify(entry.record)===JSON.stringify(r))){renderLabSaved('This comparison is already in the list.');return;}
+  addLabSavedEntry({id:labEntryId(),record:r,snapshotA:null,imported:true},`Imported “${r.a.name} → ${r.b.name}”. View saved results shows the numbers in the file; Recompute in Risk Lab runs the current model.`);
 });
 $('lab_saved_list').addEventListener('click',event=>{
-  const button=event.target.closest('button');if(!button)return;
-  const list=readLabSaved()||[],id=button.dataset.load||button.dataset.json||button.dataset.delete;
+  const button=event.target.closest('button');if(!button||button.disabled)return;
+  const list=readLabSaved()||[],id=button.dataset.view||button.dataset.load||button.dataset.json||button.dataset.delete;
   const entry=list.find(item=>item.id===id);if(!entry)return;
+  if(button.dataset.view){
+    if(labSavedOpen.has(id))labSavedOpen.delete(id);else labSavedOpen.add(id);
+    renderLabSaved();$('lab_saved_list').querySelector(`[data-view="${CSS.escape(id)}"]`)?.focus();return;
+  }
   if(button.dataset.json){downloadLabRecord(entry.record,'json');return;}
-  if(button.dataset.delete){writeLabSaved(list.filter(item=>item.id!==id));renderLabSaved(`Deleted “${entry.record.a.name} → ${entry.record.b.name}”.`);return;}
-  const r=entry.record,b=r.b.inputs;
-  setLabSavedA(structuredClone(entry.snapshotA),r.a.name);
-  $('lab_b_name').value=r.b.name;$('lab_b_name').dataset.edited='true';
-  $('lab_wr').value=b.winrate_bb100;$('lab_sd').value=b.std_bb100;$('lab_bank').value=b.bankroll_bi;$('lab_hn').value=b.hands;
-  document.querySelectorAll('.labpreset').forEach(x=>x.setAttribute('aria-pressed','false'));
-  document.querySelectorAll('.sdpreset').forEach(x=>x.setAttribute('aria-pressed',String(Number(x.dataset.sd)===b.std_bb100)));
-  labLoadCheck={name:`${r.a.name} → ${r.b.name}`,risk:r.b.results.risk_of_ruin,version:r.b.model?.version,inputs:b};
-  renderLabSaved(`Loading “${r.a.name} → ${r.b.name}”: A restored, recomputing B…`);
-  runLab(b.paths);
+  if(button.dataset.delete){writeLabSaved(list.filter(item=>item.id!==id));labSavedOpen.delete(id);renderLabSaved(`Deleted “${entry.record.a.name} → ${entry.record.b.name}”.`);return;}
+  loadLabEntry(entry);
 });
 renderLabSaved();
 function renderUncertaintyReference(){
@@ -1386,7 +1590,7 @@ function renderLab(result){
   $('lab_ci').textContent=`95% Monte Carlo interval: ${(lo*100).toFixed(1)}–${(hi*100).toFixed(1)}%`;
   $('lab_surv').textContent=(result.metrics.survival*100).toFixed(1)+'%';
   $('lab_dd').textContent=result.metrics.p95Drawdown.toFixed(1)+' BI';
-  $('lab_paths').textContent=p.paths.toLocaleString();
+  $('lab_paths').textContent=p.paths.toLocaleString();$('lab_seed').textContent=String(p.seed);
   const riskCount=Math.round(ror*100);
   $('lab_insight').className='lab-insight';
   $('lab_insight').textContent=`About ${riskCount} in 100 simulated bankrolls hit zero within ${Math.round(p.hands/1000)}k hands at these settings.`;
@@ -1398,14 +1602,13 @@ function renderLab(result){
   $('lab_save_a').disabled=false;
   renderLabComparison();
   renderLabGuide();
+  renderLabSaved();
   if(labLoadCheck){
     const check=labLoadCheck;labLoadCheck=null;
-    const same=check.inputs.winrate_bb100===p.wr&&check.inputs.std_bb100===p.sd&&check.inputs.bankroll_bi===p.bank/100&&check.inputs.hands===p.hands&&check.inputs.paths===p.paths;
-    if(same){
-      const pct=v=>(v*100).toFixed(2)+'%';
-      renderLabSaved(Math.abs(ror-check.risk)<1e-12
-        ?`Loaded “${check.name}”. B was recomputed from its saved inputs and seed and matches the saved result (${pct(ror)}).`
-        :`Loaded “${check.name}”. Recomputed B is ${pct(ror)}; the saved value was ${pct(check.risk)}. ${check.version!==result.model?.version?'The model version has changed since it was saved.':'The engine gave a different result for the same inputs.'}`);
+    const i=check.inputs;
+    // Only report on the run that used exactly the saved inputs and seed.
+    if(i.winrate_bb100===p.wr&&i.std_bb100===p.sd&&i.bankroll_bi===p.bank/100&&i.hands===p.hands&&i.paths===p.paths&&i.seed===p.seed){
+      renderLabSaved(labLoadMessage(check.name,check.checks.concat({side:'B',saved:check.saved,now:ror,savedVersion:check.savedVersion}),result.model?.version||'unknown'));
     }
   }
   $('lab_fan').setAttribute('aria-label',$('lab_insight').textContent+' Shaded bands show the middle 50 and 90 percent of stored paths; selected example paths and the median show how bankroll changes over time.');
@@ -1512,6 +1715,7 @@ async function runLab(paths,trigger=null){
   finally{if(request===labRequest){labController=null;labTrigger=null;if(trigger)setBusy(trigger,false);}}
 }
 document.querySelectorAll('.labpreset').forEach(button=>button.addEventListener('click',()=>{
+  labSeed=42;
   $('lab_wr').value=button.dataset.wr;$('lab_bank').value=button.dataset.bank;$('lab_sd').value=button.dataset.sd;$('lab_hn').value=button.dataset.hands;
   document.querySelectorAll('.labpreset').forEach(x=>x.setAttribute('aria-pressed',String(x===button)));
   document.querySelectorAll('.sdpreset').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.sd===button.dataset.sd)));runLab(LAB_QUICK_PATHS);
