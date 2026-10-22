@@ -1,5 +1,7 @@
 # Functional repair and acceptance — 2026-10-05
 
+> **Later change (2026-10-22):** the UI logic check moved to `standalone/test_ui_logic.js` and was rewritten when the Trainer switched to short practice sets with frequency questions and a review. The results below describe the 2026-10-05 version.
+
 ## Trainer repairs
 
 - Restore the active Trainer after asynchronous range loading finishes. A failed load disables the controls and offers Retry.

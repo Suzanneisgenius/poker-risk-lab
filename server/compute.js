@@ -21,6 +21,17 @@ const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const MAX_PATH_STEPS = 100000000;
 const CURVE_POINTS = 9;
 
+// Identifies the bankroll model in every bankroll result, so an exported
+// result can be traced to the engine that produced it. Change `version`
+// whenever the same inputs and seed would give different numbers.
+const BANKROLL_MODEL = Object.freeze({
+  name: "bankroll-monte-carlo",
+  version: "2026-10-21",
+  increments: "i.i.d. Normal per 100-hand step",
+  ruinMonitoring: "continuous (Brownian-bridge correction)",
+  randomNumbers: "sfc32 stream per path, seeded from (seed, path index)",
+});
+
 function number(value, label, min, max) {
   const parsed = Number(value);
   if (!Number.isFinite(parsed) || parsed < min || parsed > max) {
@@ -375,6 +386,7 @@ function computeBankroll(input) {
       ...bands(simulation.paths, divisor),
     },
     curve: riskCurve(params, divisor),
+    model: BANKROLL_MODEL,
   };
 }
 
@@ -411,6 +423,7 @@ function computeRiskLab(input) {
       ...bands(simulation.paths, divisor),
     },
     curve: input.includeCurve === false ? null : riskCurve(params, divisor),
+    model: BANKROLL_MODEL,
   };
 }
 
@@ -490,6 +503,7 @@ module.exports = {
   computeGto,
   estimateCost,
   simulateBankroll,
+  BANKROLL_MODEL,
   simulationPathSteps,
   brownFinite,
   logPhi,

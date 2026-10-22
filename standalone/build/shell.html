@@ -439,6 +439,40 @@
   /* Scenario comparisons and the saved uncertainty case. */
   [hidden]{display:none!important}
   .lab-save-row{display:flex;align-items:center;gap:16px;margin-top:14px}
+  .lab-save-row #lab_save_next,.lab-save-row #lab_view_compare{min-height:36px}
+  .lab-guide{margin:0 0 18px;padding:16px 18px;border:1px solid var(--glass-border);border-radius:16px;background:rgba(12,24,42,.6)}
+  .lab-guide[hidden],.lab-saved[hidden]{display:none}
+  .lab-guide-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+  .lab-guide-head h3{margin:0;font-size:15px}
+  .lab-guide-toggle{border:0;background:none;color:var(--accent);font-size:13px;cursor:pointer;padding:4px 0;text-decoration:underline;text-underline-offset:3px}
+  .lab-guide-show{display:block;margin:0 0 14px}.lab-guide-show[hidden]{display:none}
+  .lab-guide-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0;padding:0;list-style:none}
+  .lab-guide-steps li{display:flex;gap:10px;padding:11px 12px;border:1px solid rgba(148,190,222,.12);border-radius:12px;background:rgba(255,255,255,.02)}
+  .lab-guide-steps strong{display:block;font-size:13.5px;color:var(--text)}
+  .lab-guide-steps p{margin:3px 0 0;color:var(--muted);font-size:12.5px;line-height:1.45}
+  .lab-guide-steps .btn{width:auto;min-height:34px;margin:8px 0 0;padding:5px 12px;font-size:12.5px}
+  .lab-guide-steps li:not([data-status="current"]) .btn{display:none}
+  .lab-step-n{flex:none;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;border:1px solid var(--grid);color:var(--muted);font:700 12px ui-monospace,monospace}
+  .lab-guide-steps li[data-status="current"]{border-color:rgba(56,189,248,.55);background:rgba(56,189,248,.07)}
+  .lab-guide-steps li[data-status="current"] .lab-step-n{border-color:var(--accent);color:var(--accent)}
+  .lab-guide-steps li[data-status="done"] .lab-step-n{border-color:var(--pos);background:var(--pos);color:#08111f}
+  .lab-guide-steps li[data-status="done"] .lab-step-n::after{content:"✓"}.lab-guide-steps li[data-status="done"] .lab-step-n{font-size:0}.lab-guide-steps li[data-status="done"] .lab-step-n::after{font-size:12px}
+  .lab-terms{margin:10px 0 0;font-size:12.5px;color:var(--muted)}
+  .lab-terms summary{cursor:pointer;color:var(--accent)}
+  .lab-terms dl{margin:8px 0 0}.lab-terms dl div{margin:0 0 6px}.lab-terms dt{color:var(--text);font-weight:650}.lab-terms dd{margin:1px 0 0}
+  .lab-compare-names{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px 14px;margin:12px 0 4px}
+  .lab-compare-names input{width:100%}
+  .lab-compare-keep{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px}
+  .lab-compare-keep .btn,.lab-saved-actions .btn{width:auto;min-height:36px;margin:0;padding:5px 12px;font-size:12.5px}
+  .lab-saved{margin:18px 0;padding:16px 18px;border:1px solid var(--glass-border);border-radius:16px;background:rgba(12,24,42,.5)}
+  .lab-saved h3{margin:0 0 4px;font-size:15px}
+  .lab-saved-status{min-height:1em;margin:6px 0;color:var(--accent);font-size:13px}
+  .lab-saved-list{margin:0;padding:0;list-style:none}
+  .lab-saved-list li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid rgba(111,128,151,.18)}
+  .lab-saved-list strong{display:block;font-size:13.5px;overflow-wrap:anywhere}.lab-saved-list span{display:block;color:var(--muted);font-size:12px}
+  .lab-saved-actions{display:flex;flex-wrap:wrap;gap:6px;flex:none}
+  @media(max-width:900px){.lab-guide-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:600px){.lab-guide{padding:14px}.lab-guide-steps{grid-template-columns:1fr;gap:6px}.lab-guide-steps li{padding:8px 10px}.lab-guide-steps li:not([data-status="current"]) p{display:none}.lab-compare-names{grid-template-columns:1fr}.lab-saved-list li{flex-direction:column;align-items:flex-start}}
   .lab-save-row .btn,.lab-compare-head .btn{width:auto;white-space:nowrap;min-height:42px;margin:0;font-size:13px}
   .lab-save-row p{color:var(--muted);font-size:13px;margin:0}
   .lab-compare{border:1px solid rgba(56,189,248,.25);border-radius:16px;padding:22px;margin:0 0 28px;background:rgba(17,28,47,.45)}
@@ -511,15 +545,54 @@
   .ev-test-controls .btn{width:auto;font-size:12px;min-height:38px;padding:8px 12px;white-space:nowrap;margin:0}
   .ev-sensitivity>.cap{margin:10px 0 0;font-size:12px;line-height:1.55}
   #ev_expl{font-size:12px;line-height:1.6;margin:0;border-top:1px solid var(--grid);padding-top:12px}
-  .ev-results[data-state="pending"] .ev-primary-row,.ev-results[data-state="pending"] .ev-sensitivity{opacity:.5}
+  /* Shared result states (see setResultState in app.js). The text label carries
+     the meaning; dimming only reinforces it. */
+  .result-state{margin:0 0 12px;padding:8px 12px;border-left:3px solid var(--pos);border-radius:8px;background:rgba(74,222,128,.06);color:var(--muted);font-size:13px;line-height:1.45}
+  .result-state strong{display:block;color:var(--pos);font-size:11px;font-weight:750;letter-spacing:.08em;text-transform:uppercase}
+  .result-state span{display:block;overflow-wrap:anywhere}
+  .result-state[data-state="pending"]{border-left-color:var(--accent);background:rgba(56,189,248,.07)}.result-state[data-state="pending"] strong{color:var(--accent)}
+  .result-state[data-state="stale"]{border-left-color:var(--median);background:rgba(251,191,36,.08)}.result-state[data-state="stale"] strong{color:var(--median)}
+  .result-state[data-state="error"]{border-left-color:var(--ruin);background:rgba(248,113,113,.08)}.result-state[data-state="error"] strong{color:var(--ruin)}
+  .result-state[data-state="empty"]{border-left-color:var(--dim);background:rgba(255,255,255,.025)}.result-state[data-state="empty"] strong{color:var(--muted)}
+  [data-result-state="pending"] .result-dim,[data-result-state="stale"] .result-dim,[data-result-state="error"] .result-dim{opacity:.6;transition:opacity .15s}
+  .ev-result-head .result-state{max-width:440px;margin:0;text-align:left}
   @media(max-width:1000px){.lab-compare-grid,.lab-uncertainty-grid{grid-template-columns:1fr}#risklab .lab-reference-grid{grid-template-columns:1fr}#lab_u_posterior{height:250px}}
   @media(max-width:600px){.lab-save-row{align-items:start;flex-direction:column;gap:8px}.lab-compare,.lab-uncertainty{padding:18px 14px}.lab-compare-head{flex-direction:column;gap:12px}.lab-uncertainty-head h3{font-size:20px}.lab-u-source{padding:0 8px 12px}.lab-u-source dl{grid-template-columns:1fr}.lab-u-source dd{margin-bottom:6px}.ev-primary-row{grid-template-columns:1fr;gap:14px}.ev-gap-box{border-left:none;padding:0}#ev_main_value{font-size:48px}.ev-equity-context{gap:22px}.ev-test-controls>div{align-items:start;flex-direction:column}.ev-test-controls .btn{white-space:normal}#ev_sensitivity_chart{height:230px}}
   @media(max-width:600px){.lab-uncertainty-values span{min-height:36px}}
   html{scroll-padding-top:100px}
   .pf-action-button{scroll-margin-top:110px}
   .pf-decision-actions{grid-template-columns:repeat(var(--pf-choice-count,4),minmax(0,1fr))}
-  .pf-trainer-setup{max-width:620px;margin-bottom:14px}
+  .pf-trainer-setup{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(150px,1fr);gap:12px;max-width:620px;margin-bottom:6px}
   .pf-trainer-setup select{width:100%}
+  .pf-set-note{margin:0 0 10px;color:var(--muted);font-size:12.5px}
+  .pf-start-set{width:auto;margin:0 0 12px}
+  .pf-question-count{margin:4px 0 6px;color:var(--accent);font:650 12px ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase}
+  .pf-decision-actions[hidden],.pf-frequency-options[hidden],.pf-review[hidden],#pf_question[hidden]{display:none}
+  .pf-frequency-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0 15px}
+  .pf-frequency-option{min-height:52px;border:1px solid var(--grid);border-radius:11px;background:rgba(23,36,58,.72);color:var(--text);font:650 15px ui-monospace,monospace;cursor:pointer}
+  .pf-frequency-option:hover:not(:disabled){border-color:var(--accent)}
+  .pf-frequency-option:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .pf-frequency-option.is-chosen{border-color:var(--median);box-shadow:inset 0 0 0 1px var(--median)}
+  .pf-frequency-option:disabled{cursor:default}
+  .pf-feedback.is-miss{border-left-color:var(--ruin);background:rgba(248,113,113,.07)}.pf-feedback.is-miss strong{color:var(--ruin)}
+  .pf-review h3{margin:6px 0 6px;font-size:20px}.pf-review h3:focus{outline:none}
+  .pf-review-summary{color:var(--text);margin:0 0 12px}
+  .pf-review-wrap{overflow-x:auto;border:1px solid var(--glass-border);border-radius:12px}
+  .pf-review-table{width:100%;border-collapse:collapse;font-size:13px;min-width:560px}
+  .pf-review-table th,.pf-review-table td{padding:8px 10px;text-align:left;border-bottom:1px solid rgba(111,128,151,.18)}
+  .pf-review-table thead th{color:var(--muted);font-weight:600;font-size:12px}
+  .pf-review-table tbody th{font-family:ui-monospace,monospace}
+  .pf-review-table tr[data-ok="false"] td:last-child{color:var(--ruin);font-weight:650}
+  .pf-review-table tr[data-ok="true"] td:last-child{color:var(--pos)}
+  @media(max-width:600px){.pf-trainer-setup{grid-template-columns:1fr}.pf-frequency-options{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  .pf-find{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:0 0 12px}.pf-find[hidden]{display:none}
+  .pf-find label{color:var(--muted);font-size:13px}
+  .pf-find input{width:9.5em;min-height:38px;padding:6px 10px;border:1px solid var(--grid);border-radius:9px;background:rgba(8,17,31,.7);color:var(--text);font:600 14px ui-monospace,monospace}
+  .pf-find .btn{width:auto;min-height:38px;margin:0;padding:6px 14px}
+  .pf-find-status{color:var(--accent);font-size:13px}
+  .pf-matrix-hint{flex-basis:100%;margin:0;color:var(--dim);font-size:12px}
+  .pf-cell:focus-visible{outline:2px solid #fff;outline-offset:-3px;z-index:5}
+  @media(max-width:900px){.pf-library>.pf-side{order:0}.pf-library>.pf-detail{order:1}.pf-library>.pf-main{order:2}}
   #pf_retry{width:auto;margin:0 0 14px}
   #preflop[aria-busy="true"] .pf-view{opacity:.65}
   @media(max-width:900px){.pf-decision-actions{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -552,6 +625,17 @@
       <p class="labled">I test how assumptions and numerical choices change bankroll risk.</p>
     </div>
 
+    <section class="lab-guide" id="lab_guide" aria-labelledby="lab_guide_title">
+      <div class="lab-guide-head"><h3 id="lab_guide_title">First time here? Try one comparison</h3><button type="button" class="lab-guide-toggle" id="lab_guide_hide">Hide guide</button></div>
+      <ol class="lab-guide-steps">
+        <li id="lab_step_save" data-status="current"><span class="lab-step-n" aria-hidden="true">1</span><div><strong>Save the default as A</strong><p>Keeps the current result as your baseline.</p><button type="button" class="btn ghost" id="lab_guide_save" disabled>Save as A</button></div></li>
+        <li id="lab_step_change" data-status="todo"><span class="lab-step-n" aria-hidden="true">2</span><div><strong>Change one assumption</strong><p>For example, move the win rate from 0 to +3 bb/100.</p><button type="button" class="btn ghost" id="lab_guide_change">Open assumptions</button></div></li>
+        <li id="lab_step_compare" data-status="todo"><span class="lab-step-n" aria-hidden="true">3</span><div><strong>Compare with B</strong><p>B is the simulation for the changed assumption.</p><button type="button" class="btn ghost" id="lab_guide_compare">Go to comparison</button></div></li>
+        <li id="lab_step_read" data-status="todo"><span class="lab-step-n" aria-hidden="true">4</span><div><strong>Read the difference</strong><p id="lab_guide_result" tabindex="-1" aria-live="polite">B − A shows how much the model’s risk moves when one assumption changes.</p></div></li>
+      </ol>
+    </section>
+    <button type="button" class="lab-guide-toggle lab-guide-show" id="lab_guide_show" hidden>Show the 4-step comparison guide</button>
+
     <div class="lab-scenarios">
       <span class="lab-section-label">Try a scenario</span>
       <div class="presetgroup scenario-cards" role="group" aria-label="Risk Lab starting assumptions">
@@ -574,6 +658,11 @@
             <div><dt>Survival rate</dt><dd id="lab_surv">—</dd></div>
             <div><dt title="The peak-to-trough fall exceeded by 5% of simulated paths">P95 max drawdown</dt><dd id="lab_dd">—</dd></div>
           </dl>
+          <details class="lab-terms"><summary>What do BI, bb/100 and P95 mean?</summary><dl>
+            <div><dt>BI (buy-in)</dt><dd>100 big blinds. 30 BI is 3,000 big blinds.</dd></div>
+            <div><dt>bb/100</dt><dd>Big blinds won or lost per 100 hands. The win rate is the average; the swings are the standard deviation of results per 100 hands.</dd></div>
+            <div><dt>P95 max drawdown</dt><dd>The deepest fall from a previous peak that 95% of simulated paths stay within; 5% fall further.</dd></div>
+          </dl></details>
           <p class="lab-limit">Conditional model estimate. Ruin is monitored continuously: a Brownian-bridge correction also counts dips to zero between 100-hand steps. The interval describes simulation error; it does not include uncertainty in the assumptions.</p>
         </div>
         <div class="lab-visual-panel">
@@ -586,7 +675,7 @@
         </div>
       </div>
       <div class="lab-run-footer"><span><span id="lab_paths">—</span> paths · seed 42</span><span id="lab_status" role="status" aria-live="polite">Calculating…</span></div>
-      <div class="lab-save-row"><button type="button" class="btn ghost" id="lab_save_a" disabled>Save current as A</button><p>Save a baseline, then change the assumptions to compare it with B.</p></div>
+      <div class="lab-save-row"><button type="button" class="btn ghost" id="lab_save_a" disabled>Save current as A</button><p id="lab_save_hint" role="status" aria-live="polite">Save a baseline, then change the assumptions to compare it with B.</p><button type="button" class="btn ghost" id="lab_save_next" hidden>Change an assumption</button><button type="button" class="btn ghost" id="lab_view_compare" hidden>View comparison</button></div>
     </div>
 
     <details class="lab-adjust" id="lab_adjust">
@@ -601,8 +690,8 @@
           <button type="button" class="preset sdpreset" data-sd="150" aria-pressed="false"><strong>Extremely wild</strong><small>Huge or multiway all-in pots are common</small><span class="swing-value">Model setting · 150 bb/100</span></button>
         </div>
         <p class="quicklabel">Fine-tune the assumptions</p>
-        <div class="ctl"><label for="lab_wr">Expected win rate <b id="lab_wr_v">0.0 bb/100</b></label><p class="ctlhelp" id="lab_wr_help">Use a tracker over a meaningful sample; if unsure, keep 0 and test both −2 and +3.</p><input id="lab_wr" aria-describedby="lab_wr_help" type="range" min="-5" max="10" step="0.5" value="0"></div>
-        <div class="ctl"><label for="lab_bank">Bankroll <b id="lab_bank_v">30 buy-ins</b></label><input id="lab_bank" type="range" min="5" max="60" step="1" value="30"></div>
+        <div class="ctl"><label for="lab_wr">Expected win rate <b id="lab_wr_v">0.0 bb/100</b></label><p class="ctlhelp" id="lab_wr_help">bb/100 = big blinds won per 100 hands. Use a tracker over a meaningful sample; if unsure, keep 0 and test both −2 and +3.</p><input id="lab_wr" aria-describedby="lab_wr_help" type="range" min="-5" max="10" step="0.5" value="0"></div>
+        <div class="ctl"><label for="lab_bank">Bankroll <b id="lab_bank_v">30 buy-ins</b></label><p class="ctlhelp" id="lab_bank_help">1 buy-in (BI) = 100 big blinds.</p><input id="lab_bank" aria-describedby="lab_bank_help" type="range" min="5" max="60" step="1" value="30"></div>
         <div class="ctl"><label for="lab_sd">Game swings <b id="lab_sd_v">90 bb/100</b></label><p class="ctlhelp" id="lab_sd_help">The cards above set this for you. Only adjust it manually if your tracking software reports standard deviation.</p><input id="lab_sd" aria-describedby="lab_sd_help" type="range" min="60" max="160" step="5" value="90"></div>
         <div class="ctl"><label for="lab_hn">Planning horizon <b id="lab_hn_v">100k hands</b></label><input id="lab_hn" type="range" min="20000" max="300000" step="20000" value="100000"></div>
         <button class="btn primary" id="lab_hp">Detailed run (16k paths)</button>
@@ -611,6 +700,11 @@
 
     <section class="lab-compare" id="lab_compare" aria-labelledby="lab_compare_title" hidden>
       <div class="lab-compare-head"><div><h3 id="lab_compare_title">What changed between A and B?</h3><p id="lab_compare_state" role="status" aria-live="polite">A is saved. B follows the current simulation.</p></div><div class="lab-compare-actions"><button type="button" class="btn ghost" id="lab_edit_b">Adjust B</button><button type="button" class="btn ghost" id="lab_clear_a">Clear comparison</button></div></div>
+      <div class="lab-compare-names">
+        <div class="fld"><label for="lab_a_name">Name for A</label><input id="lab_a_name" type="text" maxlength="80" autocomplete="off"></div>
+        <div class="fld"><label for="lab_b_name">Name for B</label><input id="lab_b_name" type="text" maxlength="80" autocomplete="off"></div>
+        <div class="lab-compare-keep"><button type="button" class="btn ghost" id="lab_save_comparison" disabled>Save comparison</button><button type="button" class="btn ghost" id="lab_export_json" disabled>Download JSON</button><button type="button" class="btn ghost" id="lab_export_csv" disabled>Download CSV</button></div>
+      </div>
       <div class="lab-compare-grid">
         <div>
           <div class="lab-compare-values"><div><span>Saved A · risk</span><strong id="lab_a_risk">—</strong><small id="lab_a_ci"></small></div><div><span>Current B · risk</span><strong id="lab_b_risk">—</strong><small id="lab_b_ci"></small></div></div>
@@ -620,7 +714,14 @@
         </div>
         <div><h4>Bankroll paths · A vs B</h4><div id="lab_compare_chart" role="img" aria-label="Saved and current scenario median bankroll paths"></div><p class="cap">Lines and middle-50% bands summarise the stored example paths. Risk uses all runs. Each scenario ends at its own horizon.</p></div>
       </div>
-      <p class="lab-limit">Intervals describe Monte Carlo error only. The difference uses unrounded point estimates; no interval or significance test for the difference is shown. Reloading clears the saved comparison.</p>
+      <p class="lab-limit">Intervals describe Monte Carlo error only. The difference uses unrounded point estimates; no interval or significance test for the difference is shown. A and B stay on this page until you reload. Save comparison keeps a copy in this browser; the downloads contain the inputs, results, seed and model version.</p>
+    </section>
+
+    <section class="lab-saved" id="lab_saved" aria-labelledby="lab_saved_title" hidden>
+      <h3 id="lab_saved_title">Saved comparisons</h3>
+      <p class="cap">Kept in this browser only: reloading keeps them, clearing site data removes them. Load restores A and recomputes B from its saved inputs and seed.</p>
+      <p class="lab-saved-status" id="lab_saved_status" role="status" aria-live="polite"></p>
+      <ul class="lab-saved-list" id="lab_saved_list"></ul>
     </section>
 
     <div class="lab-curve-section">
@@ -716,16 +817,17 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
         <div class="hint">Known cards are never reused. Unknown opponents receive random legal hands on every trial. One fixed opponent may use exact enumeration; multiway spots use seeded Monte Carlo.</div>
         <div id="eq_err" role="alert" style="color:var(--ruin);font-size:13px;margin-top:8px"></div>
       </div>
-      <div id="eq_results">
-        <div class="spin" id="eq_spin" role="status" aria-live="polite">Simulating…</div>
-        <div class="result-insight" id="eq_verdict" role="status" aria-live="polite" style="display:none"></div>
-        <div class="kgrid k3" id="eq_kpis"></div>
-        <div class="card"><div style="padding:8px 12px">
+      <div id="eq_results" data-result-state="empty">
+        <p class="result-state" id="eq_result_state" data-state="empty" role="status" aria-live="polite"><strong>No result yet</strong></p>
+        <div class="spin" id="eq_spin">Simulating…</div>
+        <div class="result-insight result-dim" id="eq_verdict" role="status" aria-live="polite" style="display:none"></div>
+        <div class="kgrid k3 result-dim" id="eq_kpis"></div>
+        <div class="card result-dim"><div style="padding:8px 12px">
           <div class="neutral" id="eq_method"></div>
           <div class="bars" id="eq_bars" role="img" aria-label="Equity result: calculation not run yet"></div>
           <div class="neutral" id="eq_legend"></div>
         </div></div>
-        <div class="neutral" id="eq_note" style="margin-top:8px"></div>
+        <div class="neutral result-dim" id="eq_note" style="margin-top:8px"></div>
         <button class="btn ghost" id="eq_toev" style="max-width:280px;margin-top:10px">Send equity → Pot Odds &amp; EV →</button>
       </div>
     </div>
@@ -742,7 +844,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
         <div class="fld"><label for="ev_pot">Pot before your call (bb)</label><input id="ev_pot" type="number" min="0" step="1" value="10"><p class="hint">Include the opponent’s bet; exclude your pending call.</p></div>
         <div class="fld"><label for="ev_bet">Amount to call (bb)</label><input id="ev_bet" type="number" min="0.01" step="1" value="5"></div>
         <div class="equity-source" aria-live="polite">
-          <div><span class="quicklabel">Current equity</span><strong id="ev_eq_display">Calculating…</strong><p id="ev_eq_context">Using the current Hand Equity matchup.</p></div>
+          <div><span class="quicklabel">Equity input</span><strong id="ev_eq_display">Calculating…</strong><p id="ev_eq_context">Using the current Hand Equity matchup.</p></div>
           <button type="button" class="btn ghost" id="ev_choose_hand">Choose or change cards</button>
         </div>
         <details class="advanced" id="ev_manual"><summary>I already know my equity — enter it manually</summary>
@@ -752,15 +854,15 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
         <div class="hint">Results update automatically as the numbers change. Cards are sent securely to the private calculation service for this request and are not stored by the application.</div>
         <div id="ev_err" role="alert" style="color:var(--ruin);font-size:13px;margin-top:8px"></div>
       </div>
-      <div class="ev-results" id="ev_results">
-        <div class="ev-result-head"><div><span class="eyebrow">CURRENT ASSUMPTIONS</span><h2>EV of calling</h2></div><p id="ev_result_state" role="status" aria-live="polite">Calculating…</p></div>
-        <div class="ev-primary-row"><div><output id="ev_main_value">—</output><p id="ev_verdict"></p></div><div class="ev-gap-box"><span>Equity margin</span><strong id="ev_gap">—</strong><small id="ev_gap_note">Distance from break-even</small></div></div>
-        <dl class="ev-equity-context"><div><dt>Current equity</dt><dd id="ev_current_pct">—</dd></div><div><dt>Break-even equity</dt><dd id="ev_threshold_pct">—</dd></div></dl>
-        <div class="ev-sensitivity"><h3>How EV changes with equity</h3><div id="ev_sensitivity_chart" role="img" aria-label="Expected value of calling as a function of assumed equity"></div><div class="ev-chart-key"><span><i></i>Current equity</span><span><i class="ev-key-threshold"></i>Break-even</span><span><i class="ev-key-test"></i>Test assumption</span></div>
+      <div class="ev-results" id="ev_results" data-result-state="empty">
+        <div class="ev-result-head"><h2>EV of calling</h2><p class="result-state" id="ev_result_state" data-state="empty" role="status" aria-live="polite"><strong>No result yet</strong></p></div>
+        <div class="ev-primary-row result-dim"><div><output id="ev_main_value">—</output><p id="ev_verdict"></p></div><div class="ev-gap-box"><span>Equity margin</span><strong id="ev_gap">—</strong><small id="ev_gap_note">Distance from break-even</small></div></div>
+        <dl class="ev-equity-context result-dim"><div><dt>Equity used</dt><dd id="ev_current_pct">—</dd></div><div><dt>Break-even equity</dt><dd id="ev_threshold_pct">—</dd></div></dl>
+        <div class="ev-sensitivity result-dim"><h3>How EV changes with equity</h3><div id="ev_sensitivity_chart" role="img" aria-label="Expected value of calling as a function of assumed equity"></div><div class="ev-chart-key"><span><i></i>Current equity</span><span><i class="ev-key-threshold"></i>Break-even</span><span><i class="ev-key-test"></i>Test assumption</span></div>
           <div class="ev-test-controls"><label for="ev_test_equity">Try an equity assumption <output id="ev_test_pct">—</output></label><input id="ev_test_equity" type="range" min="0" max="100" step="0.1" value="45" disabled><div><p id="ev_test_result" aria-live="polite"></p><button type="button" class="btn ghost" id="ev_reset_test" disabled>Reset to current equity</button></div></div>
           <p class="cap" id="ev_sensitivity_note"></p>
         </div>
-        <p class="neutral decision-copy" id="ev_expl"></p>
+        <p class="neutral decision-copy result-dim" id="ev_expl"></p>
       </div>
     </div>
   </section>
@@ -805,13 +907,13 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
         <p class="hint" id="bk_budget_note" role="status" aria-live="polite" hidden></p>
         <div class="hint">The simulation runs on the private calculation service. Ruin is monitored continuously, including dips between 100-hand steps (Brownian-bridge correction). Paths and seed affect numerical precision and reproducibility, not your poker assumptions. The shaded band on the risk curve is a pointwise 95% interval.</div>
       </div>
-      <div>
-        <p class="result-insight" id="bk_insight" role="status" aria-live="polite">Calculating a plain-language summary…</p>
-        <p class="cap" id="bk_result_state" role="status">No completed simulation yet.</p>
-        <div class="kgrid k3" id="bk_kpis"></div>
-        <div class="card"><div id="bk_fan" style="height:320px"></div></div>
+      <div id="bk_results" data-result-state="empty">
+        <p class="result-state" id="bk_result_state" data-state="empty" role="status" aria-live="polite"><strong>No result yet</strong></p>
+        <p class="result-insight result-dim" id="bk_insight" role="status" aria-live="polite">Run the simulation to see a plain-language summary.</p>
+        <div class="kgrid k3 result-dim" id="bk_kpis"></div>
+        <div class="card result-dim"><div id="bk_fan" style="height:320px"></div></div>
         <p class="cap">Sampled subset of paths (cyan = surviving, red = ruined); band = P5–P95; amber = median.</p>
-        <div class="card"><div id="bk_curve" style="height:300px"></div></div>
+        <div class="card result-dim"><div id="bk_curve" style="height:300px"></div></div>
         <p class="cap">Risk of ruin vs bankroll: Monte Carlo (cyan, the same simulated swings at every bankroll) with its pointwise 95% interval (shaded) and the finite-horizon Brownian reference (dashed).</p>
       </div>
     </div>
@@ -827,6 +929,13 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
     </div>
     <p class="pf-status" id="pf_status" role="status" aria-live="polite">Choose Preflop to load the demonstration range library.</p>
     <button type="button" class="btn ghost" id="pf_retry" hidden>Retry loading ranges</button>
+    <form class="pf-find" id="pf_find_form" role="search" aria-label="Find a starting hand">
+      <label for="pf_find">Find a hand</label>
+      <input id="pf_find" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="8" placeholder="A5s, AKo, 77" aria-describedby="pf_find_status">
+      <button type="submit" class="btn ghost">Show</button>
+      <span class="pf-find-status" id="pf_find_status" role="status" aria-live="polite"></span>
+      <p class="pf-matrix-hint" id="pf_matrix_hint">In the matrix, arrow keys move between hands and Enter selects.</p>
+    </form>
 
     <div class="pf-view" id="pf-view-library" role="tabpanel" aria-labelledby="pf-mode-library">
       <div class="pf-library">
@@ -843,7 +952,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
         </aside>
         <div class="pf-main">
           <div class="pf-head"><h2 id="pf_title">Loading preflop range…</h2><span class="pf-demo-badge">Demo strategy dataset</span></div>
-          <div class="pf-matrix-wrap"><div class="pf-matrix" id="pf_matrix" role="grid" aria-label="Preflop starting hand range"></div></div>
+          <div class="pf-matrix-wrap"><div class="pf-matrix" id="pf_matrix" role="group" aria-label="Preflop starting hand range" aria-describedby="pf_matrix_hint"></div></div>
           <div class="pf-legend" aria-label="Strategy colors">
             <span><i class="pf-swatch raise"></i>Raise</span><span><i class="pf-swatch call"></i>Call</span><span><i class="pf-swatch jam"></i>Jam</span><span><i class="pf-swatch fold"></i>Fold</span><span><i class="pf-mixed-key"></i>Mixed</span>
           </div>
@@ -873,8 +982,8 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
         <div class="fld"><label for="pf_compare_b">Range B</label><select id="pf_compare_b"></select></div>
       </div>
       <div class="pf-compare-grid">
-        <div class="pf-compare-panel"><h3 id="pf_compare_title_a">Range A</h3><div class="pf-matrix-wrap"><div class="pf-matrix" id="pf_matrix_a" role="grid" aria-label="Preflop comparison range A"></div></div></div>
-        <div class="pf-compare-panel"><h3 id="pf_compare_title_b">Range B</h3><div class="pf-matrix-wrap"><div class="pf-matrix" id="pf_matrix_b" role="grid" aria-label="Preflop comparison range B"></div></div></div>
+        <div class="pf-compare-panel"><h3 id="pf_compare_title_a">Range A</h3><div class="pf-matrix-wrap"><div class="pf-matrix" id="pf_matrix_a" role="group" aria-label="Preflop comparison range A" aria-describedby="pf_matrix_hint"></div></div></div>
+        <div class="pf-compare-panel"><h3 id="pf_compare_title_b">Range B</h3><div class="pf-matrix-wrap"><div class="pf-matrix" id="pf_matrix_b" role="group" aria-label="Preflop comparison range B" aria-describedby="pf_matrix_hint"></div></div></div>
       </div>
       <div class="pf-delta" id="pf_delta"></div>
     </div>
@@ -882,32 +991,53 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
     <div class="pf-view" id="pf-view-trainer" role="tabpanel" aria-labelledby="pf-mode-trainer" hidden>
       <div class="pf-trainer">
         <div class="pf-trainer-main">
-          <div class="fld pf-trainer-setup"><label for="pf_trainer_select">Training scenario</label><select id="pf_trainer_select"></select></div>
+          <div class="pf-trainer-setup">
+            <div class="fld"><label for="pf_trainer_select">Training scenario</label><select id="pf_trainer_select"></select></div>
+            <div class="fld"><label for="pf_set_size">Practice set</label><select id="pf_set_size"><option value="10">10 questions</option><option value="20" selected>20 questions</option><option value="169">All 169 hands</option></select></div>
+          </div>
+          <p class="pf-set-note" id="pf_set_note" role="note">Each scenario keeps its own set until you reload the page.</p>
+          <button type="button" class="btn ghost pf-start-set" id="pf_start_set" hidden>Start a new set now</button>
           <div class="pf-trainer-scenario" id="pf_trainer_scenario">Loading training spot…</div>
           <div class="pf-context-note" id="pf_trainer_context" role="note"></div>
-          <div class="pf-trainer-hand"><div class="pf-cards" id="pf_trainer_cards"></div><div><p class="quicklabel">Your hand</p><h2 id="pf_trainer_hand">A5s</h2></div></div>
-          <h3>What is your decision?</h3>
-          <div class="pf-decision-actions" id="pf_decision_actions">
-            <button type="button" class="pf-action-button" data-action="raise" aria-describedby="pf_trainer_context">Raise</button>
-            <button type="button" class="pf-action-button" data-action="call" aria-describedby="pf_trainer_context">Call</button>
-            <button type="button" class="pf-action-button" data-action="jam" aria-describedby="pf_trainer_context">Jam</button>
-            <button type="button" class="pf-action-button" data-action="fold" aria-describedby="pf_trainer_context">Fold</button>
+          <div id="pf_question">
+            <p class="pf-question-count" id="pf_question_count">Question 1</p>
+            <div class="pf-trainer-hand"><div class="pf-cards" id="pf_trainer_cards"></div><div><p class="quicklabel">Your hand</p><h2 id="pf_trainer_hand">A5s</h2></div></div>
+            <h3 id="pf_question_prompt">What is your decision?</h3>
+            <div class="pf-decision-actions" id="pf_decision_actions">
+              <button type="button" class="pf-action-button" data-action="raise" aria-describedby="pf_trainer_context">Raise</button>
+              <button type="button" class="pf-action-button" data-action="call" aria-describedby="pf_trainer_context">Call</button>
+              <button type="button" class="pf-action-button" data-action="jam" aria-describedby="pf_trainer_context">Jam</button>
+              <button type="button" class="pf-action-button" data-action="fold" aria-describedby="pf_trainer_context">Fold</button>
+            </div>
+            <div class="pf-frequency-options" id="pf_frequency_options" role="group" aria-labelledby="pf_question_prompt" hidden></div>
+            <div class="pf-feedback" id="pf_feedback" role="status" aria-live="polite"></div>
+            <div class="pf-frequency-bar" id="pf_trainer_bar" role="img" aria-label="Strategy frequencies" hidden></div>
+            <p class="pf-guidance" id="pf_trainer_guidance">Choose an action to reveal the demonstration frequencies.</p>
+            <div class="pf-trainer-actions">
+              <button type="button" class="btn primary" id="pf_next_hand" disabled>Choose an answer first</button>
+              <button type="button" class="btn ghost" id="pf_view_range">View full range</button>
+            </div>
           </div>
-          <div class="pf-feedback" id="pf_feedback" role="status" aria-live="polite"></div>
-          <div class="pf-frequency-bar" id="pf_trainer_bar" aria-label="Strategy frequencies" hidden></div>
-          <p class="pf-guidance" id="pf_trainer_guidance">Choose an action to reveal the demonstration frequencies.</p>
-          <div class="pf-trainer-actions">
-            <button type="button" class="btn primary" id="pf_next_hand" disabled>Choose an action first</button>
-            <button type="button" class="btn ghost" id="pf_view_range">View full range</button>
+          <div class="pf-review" id="pf_review" hidden>
+            <h3 id="pf_review_title" tabindex="-1">Set complete</h3>
+            <p class="pf-review-summary" id="pf_review_summary"></p>
+            <div class="pf-review-wrap"><table class="pf-review-table"><caption class="sr-only">Your answers in this set</caption>
+              <thead><tr><th scope="col">#</th><th scope="col">Hand</th><th scope="col">Question</th><th scope="col">Your answer</th><th scope="col">Demo range</th><th scope="col">Result</th></tr></thead>
+              <tbody id="pf_review_rows"></tbody></table></div>
+            <p class="pf-disclaimer">Missed means an action the demo range never uses, or a frequency that does not match. Retrying asks only those questions again.</p>
+            <div class="pf-trainer-actions">
+              <button type="button" class="btn primary" id="pf_retry_missed">Retry missed</button>
+              <button type="button" class="btn ghost" id="pf_new_set">New set</button>
+            </div>
           </div>
         </div>
         <aside class="pf-trainer-side">
-          <h2>Session progress</h2>
-          <div class="pf-stat"><span>Unique hands answered</span><strong id="pf_stat_hands">0 / 169</strong></div>
-          <div class="pf-stat"><span>Accepted choices</span><strong class="accent" id="pf_stat_accuracy">—</strong></div>
-          <div class="pf-stat"><span>Mixed decisions</span><strong class="mixed" id="pf_stat_mixed">0</strong></div>
-          <div class="pf-stat"><span>Current streak</span><strong id="pf_stat_streak">0</strong></div>
-          <p class="pf-disclaimer">Each of the 169 hand classes counts once per session. An accepted choice has a non-zero frequency in this demo range; this score does not measure real-game skill. Changing the scenario starts a new session.</p>
+          <h2>This set</h2>
+          <div class="pf-stat"><span>Answered</span><strong id="pf_stat_progress">0 / 20</strong></div>
+          <div class="pf-stat"><span>Action choices in range</span><strong class="accent" id="pf_stat_inrange">—</strong></div>
+          <div class="pf-stat"><span>Frequency questions correct</span><strong class="mixed" id="pf_stat_frequency">—</strong></div>
+          <div class="pf-stat"><span>Mixed-strategy hands seen</span><strong id="pf_stat_mixed">0</strong></div>
+          <p class="pf-disclaimer">An action choice is “in range” when the demo range uses it at all (frequency above 0%). On a mixed hand that is easy to get without knowing the mix: Raise 60% / Fold 40% means raising about 6 times in 10, not every time. Frequency questions check that part. Frequencies come from the demonstration dataset, not solver output, so these numbers do not measure real-game skill or EV.</p>
         </aside>
       </div>
     </div>
