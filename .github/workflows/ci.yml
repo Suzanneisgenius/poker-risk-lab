@@ -30,6 +30,9 @@ jobs:
         run: git diff --exit-code -- index.html site/index.html standalone/poker-analytics-suite.html
       - name: Test engines, server units, and API
         run: npm test
+      # The figures quoted in CHANGELOG.md must still come out of the engine.
+      - name: Check the archived calculation-change figures
+        run: npm run check:calc-change
 
   python:
     name: Python ${{ matrix.python-version }} (pytest)

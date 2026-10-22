@@ -7,7 +7,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
-const { computePreflop, computeEquity } = require("../server/compute.js");
+const { computePreflop, computeEquity, compute } = require("../server/compute.js");
 const { strToCard } = require("./engines/equity.js");
 const source = fs.readFileSync(path.join(__dirname, "build", "app.js"), "utf8");
 function slice(start, end) {
@@ -211,7 +211,8 @@ async function main(){
 
   // --- The report's case: retry, then add a hand from the Library -------------------------
   {
-    const t=trainerFor(scenarios[0],10);
+    const store=new Map(),storage={getItem:k=>store.has(k)?store.get(k):null,setItem:(k,v)=>store.set(k,String(v)),removeItem:k=>store.delete(k)};
+    const t=trainerFor(scenarios[0],10,storage);
     let misses=0;
     while(session(t).index<session(t).items.length){
       const s=session(t),item=s.items[s.index],hand=currentHand(t);
@@ -231,6 +232,28 @@ async function main(){
     assert.ok(t.get("pf_set_note").textContent.startsWith(`Retrying ${misses} missed question${misses===1?"":"s"} + 1 added from the Library (${extra}).`),t.get("pf_set_note").textContent);
     assert.equal(session(t).items.filter(item=>item.origin==="missed").length,misses,"added questions do not change the missed count");
     assert.equal(t.get("pf_trainer_hand").textContent,extra);
+    // The added question is saved at once, before anything else is answered.
+    const early=harness(storage);early.ctx.scenario=scenarios[0];
+    early.run("loadPfProgress();pfScenario=scenario;renderPfTrainer()");
+    assert.equal(early.get("pf_trainer_hand").textContent,extra,"the added question survives an immediate reload");
+    // Then switch scenario, answer there, reload and come back: origins, progress,
+    // position and the previous review all hold, and each scenario keeps its own set.
+    t.ctx.other=scenarios[3];t.run("pfScenario=other;renderPfTrainer()");
+    {const s=session(t),item=s.items[s.index],hand=currentHand(t);
+     t.ctx.answer=item.kind==="frequency"?item.options[0]:["raise","call","jam","fold"].find(a=>hand.actions[a]>0);t.run("answerPfTrainer(answer)");}
+    const back=harness(storage);back.ctx.scenario=scenarios[0];
+    back.run("loadPfProgress();pfScenario=scenario;renderPfTrainer()");
+    assert.equal(back.get("pf_stat_progress").textContent,`1 / ${misses+1}`,"the retry answer survives");
+    assert.ok(back.get("pf_set_note").textContent.startsWith(`Retrying ${misses} missed question${misses===1?"":"s"} + 1 added from the Library (${extra}).`),back.get("pf_set_note").textContent);
+    assert.equal(session(back).items.filter(item=>item.origin==="missed").length,misses,"missed origins survive");
+    assert.deepEqual(JSON.parse(JSON.stringify(session(back).items.filter(item=>item.origin==="added").map(item=>item.hand))),[extra],"the added origin survives");
+    assert.equal(back.get("pf_trainer_hand").textContent,extra,"the position survives");
+    assert.equal(back.get("pf_previous").hidden,false,"the first set's review is still offered");
+    back.run("pfViewingPrevious=true;renderPfTrainer()");
+    assert.equal((back.get("pf_review_rows").innerHTML.match(/<tr /g)||[]).length,10,"the previous review lists the first set");
+    back.ctx.other=scenarios[3];back.run("pfViewingPrevious=false;pfScenario=other;renderPfTrainer()");
+    assert.match(back.get("pf_stat_progress").textContent,/^1 \/ /,"the other scenario keeps its own answer");
+    assert.equal(session(back).retry,false,"the other scenario's set is not a retry");
   }
 
   // --- Progress survives a reload; the previous review stays available ------------------------
@@ -360,13 +383,40 @@ async function main(){
     assert.match(problem({...ok,ruin_threshold_bi:1}),/threshold/);assert.match(problem({...ok,winrate_bb100:0.3}),/win rate/);
     assert.match(problem({...ok,hands:25000}),/horizon/);assert.match(problem({...ok,bankroll_bi:61}),/bankroll/);
     assert.match(problem({...ok,seed:1.5}),/seed/);
-    // Load messages say what was recomputed and under which model.
+    // Load messages say what was recomputed and under which calculation engine.
     const message=(checks,current)=>{h.ctx.checks=checks;h.ctx.current=current;return h.run("labLoadMessage('A → B',checks,current)");};
-    assert.equal(message([{side:"B",saved:0.0635,now:0.0635,savedVersion:"2026-10-21"}],"2026-10-21"),"Loaded “A → B”. Recomputed with model 2026-10-21: B matches the saved 6.35%.");
+    assert.equal(message([{side:"B",saved:0.0635,now:0.0635,savedVersion:"2026-10-21"}],"2026-10-21"),"Loaded “A → B”. Recomputed with calculation engine 2026-10-21: B matches the saved 6.35%.");
     const older=message([{side:"A",saved:0.2775,now:0.289,savedVersion:"2026-10-05"},{side:"B",saved:0.0785,now:0.0635,savedVersion:"2026-10-05"}],"2026-10-21");
     assert.match(older,/A is 28\.90% now \(saved 27\.75%\); B is 6\.35% now \(saved 7\.85%\)\./);
-    assert.match(older,/saved with model 2026-10-05, so differences reflect the model change/);
-    assert.match(message([{side:"B",saved:0.2,now:0.198,savedVersion:"2026-10-21"}],"2026-10-21"),/may have been edited/,"same model, different numbers is flagged");
+    assert.match(older,/saved with calculation engine 2026-10-05\. The engine has been updated since \(2026-10-21: ruin monitoring and random-number streams changed\), so the numbers can differ although no input changed\./);
+    assert.doesNotMatch(older,/edited|model/,"an engine update is not blamed on the file or called a model change");
+    const unknown=message([{side:"B",saved:0.0785,now:0.0635}],"2026-10-21");
+    assert.match(unknown,/does not say which calculation engine produced it\. The engine has been updated since \(2026-10-21:/);
+    const newer=message([{side:"B",saved:0.0785,now:0.0635,savedVersion:"2027-01-01"}],"2026-10-21");
+    assert.match(newer,/saved with calculation engine 2027-01-01\. With a different engine version, the numbers can differ/);
+    assert.doesNotMatch(newer,/updated since/,"no update is listed for a file from a newer engine");
+    // Same engine and seeds but different numbers: ask for a check first; editing is one possible cause.
+    const mismatch=message([{side:"B",saved:0.2,now:0.198,savedVersion:"2026-10-21"}],"2026-10-21");
+    assert.match(mismatch,/B is 19\.80% now \(saved 20\.00%\)\. The recomputed values do not match the saved record, although the engine version and seeds are the same\. Check the inputs, engine version and file contents; one possible cause/);
+    assert.ok(mismatch.indexOf("Check the inputs")<mismatch.indexOf("edited"),"the check comes before the possible cause");
+    // The files for the user-testing plan (docs/user-testing-files) still behave as the plan says.
+    {
+      const dir=path.join(__dirname,"..","docs","user-testing-files");
+      const parse=name=>{try{return JSON.parse(fs.readFileSync(path.join(dir,name),"utf8"));}catch{return undefined;}};
+      assert.equal(parse("4-broken.json"),undefined,"the broken file is not valid JSON");
+      const loadMessage=name=>{
+        h.ctx.file=parse(name);const r=JSON.parse(JSON.stringify(h.run("labValidateRecord(file)"))).record;
+        assert.ok(r,`${name} validates`);
+        let version;
+        const checks=["a","b"].map(key=>{const i=r[key].inputs;
+          const fresh=compute("risk-lab",{wr:i.winrate_bb100,sd:i.std_bb100,bank:i.bankroll_bi*100,hands:i.hands,paths:i.paths,seed:i.seed,includeCurve:false});
+          version=fresh.model.version;return {side:key.toUpperCase(),saved:r[key].results.risk_of_ruin,now:fresh.metrics.risk,savedVersion:r[key].model?.version};});
+        return message(checks,version);
+      };
+      assert.match(loadMessage("1-earlier-engine.json"),/A is 28\.90% now \(saved 27\.75%\); B is 6\.35% now \(saved 7\.85%\)\. It was saved with calculation engine 2026-10-05\. The engine has been updated since/);
+      assert.equal(loadMessage("2-seed-7.json"),"Loaded “A → B”. Recomputed with calculation engine 2026-10-21: A matches the saved 29.75%; B matches the saved 6.80%.");
+      assert.match(loadMessage("3-edited-by-hand.json"),/A matches the saved 28\.90%; B is 6\.35% now \(saved 5\.35%\)\. The recomputed values do not match the saved record/);
+    }
   }
 
   // --- Shared result states ---------------------------------------------------------

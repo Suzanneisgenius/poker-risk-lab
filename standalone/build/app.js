@@ -963,7 +963,7 @@ async function renderPfCompare(){
     const deltas=PF_ACTIONS.map(action=>({action,value:handB.actions[action]-handA.actions[action]}));
     const largest=[...deltas].sort((a,b)=>Math.abs(b.value)-Math.abs(a.value))[0];
     const direction=largest.value===0?'is unchanged':`${largest.value>0?'increases':'decreases'} ${Math.abs(largest.value)} pp`;
-    $('pf_delta').innerHTML=`<h3>${pfCompareHand}: ${PF_LABELS[largest.action]} ${direction}</h3><p>Range B minus Range A. Frequencies are from the demonstration dataset.</p><div class="pf-delta-grid">`+
+    $('pf_delta').innerHTML=`<h3 tabindex="-1">${pfCompareHand}: ${PF_LABELS[largest.action]} ${direction}</h3><p>Range B minus Range A. Frequencies are from the demonstration dataset.</p><div class="pf-delta-grid">`+
       deltas.map(delta=>`<div class="pf-delta-item"><span>${PF_LABELS[delta.action]}</span><strong style="color:${PF_COLORS[delta.action]}">${delta.value>0?'+':''}${delta.value} pp</strong></div>`).join('')+'</div>';
     if(pfMode==='compare')$('pf_status').textContent='Comparison ready · select any hand in either matrix';
   }catch(error){if(request===pfCompareRequest&&pfMode==='compare')$('pf_status').textContent=errorMessage(error);}
@@ -1174,7 +1174,8 @@ $('pf_find_form').addEventListener('submit',event=>{
 $('pf_find_details').addEventListener('click',()=>{
   const target=pfMode==='compare'?$('pf_delta'):document.querySelector('.pf-detail');
   target?.scrollIntoView({behavior:reducedMotion()?'auto':'smooth',block:'start'});
-  if(pfMode!=='compare')$('pf_hand_name').focus({preventScroll:true});
+  // Move focus with the view, so keyboard and screen-reader users land on the details too.
+  (pfMode==='compare'?$('pf_delta').querySelector('h3'):$('pf_hand_name'))?.focus({preventScroll:true});
 });
 $('pf_find_locate').addEventListener('click',()=>{
   const hand=$('pf_find_result').dataset.hand;
@@ -1182,6 +1183,19 @@ $('pf_find_locate').addEventListener('click',()=>{
 });
 // On phones the long scenario description starts folded.
 if(typeof matchMedia==='function'&&matchMedia('(max-width:600px)').matches)$('pf_meta_details').open=false;
+// In the one-column layout the hand details sit above the matrix. Move the element
+// itself rather than using CSS order, so Tab and screen-reader order match the screen.
+function placePfDetail(narrow){
+  const library=document.querySelector('.pf-library'),detail=library?.querySelector(':scope>.pf-detail'),main=library?.querySelector(':scope>.pf-main');
+  if(!detail||!main)return;
+  const active=detail.contains(document.activeElement)?document.activeElement:null;
+  if(narrow)library.insertBefore(detail,main);else main.after(detail);
+  active?.focus({preventScroll:true});
+}
+if(typeof matchMedia==='function'){
+  const oneColumn=matchMedia('(max-width:900px)');
+  placePfDetail(oneColumn.matches);oneColumn.addEventListener('change',event=>placePfDetail(event.matches));
+}
 $('pf_compare_hand').addEventListener('click',()=>{pfCompareHand=pfSelectedHand;activatePfMode('compare');});
 $('pf_change_hand').addEventListener('click',()=>{
   cardState.pf0=null;cardState.pf1=null;renderPfHandSlots();
@@ -1249,7 +1263,7 @@ function labScenarioRecord(name,result){
     results:{risk_of_ruin:m.risk,ci95_low:m.confidenceInterval[0],ci95_high:m.confidenceInterval[1],survival:m.survival,p95_max_drawdown_bi:m.p95Drawdown},
     model:result.model||null};
 }
-// Everything needed to understand a comparison later: inputs, results, seed and model version.
+// Everything needed to understand a comparison later: inputs, results, seed and engine version.
 function labComparisonRecord(nameA,a,nameB,b,savedAt){
   return {type:'poker-analytics/risk-lab-comparison',schema_version:1,saved_at:savedAt,
     a:labScenarioRecord(nameA,a),b:labScenarioRecord(nameB,b),
@@ -1309,16 +1323,28 @@ function labValidateRecord(value){
     difference:{risk_b_minus_a_pp:(sides.b.results.risk_of_ruin-sides.a.results.risk_of_ruin)*100,changed_inputs:changed,
       note:'Difference of point estimates. Intervals describe Monte Carlo error only; no interval or significance test is given for the difference.'}}};
 }
-// After a load: what was recomputed, how it compares with the saved values, and under which model.
+// Calculation engine versions (result.model.version from the server) after which the
+// same inputs and seed give different numbers, and what changed in each.
+const ENGINE_UPDATES=[{version:'2026-10-21',change:'ruin monitoring and random-number streams changed'}];
+// After a load: what was recomputed, how it compares with the saved values, and under
+// which calculation engine. "Engine", not "model": the model is the user's assumptions.
 function labLoadMessage(name,checks,currentVersion){
   const pct=v=>(v*100).toFixed(2)+'%';
   const parts=checks.map(c=>Math.abs(c.now-c.saved)<1e-12?`${c.side} matches the saved ${pct(c.saved)}`:`${c.side} is ${pct(c.now)} now (saved ${pct(c.saved)})`);
   const versions=[...new Set(checks.map(c=>c.savedVersion||'unknown'))];
+  const known=versions.filter(v=>v!=='unknown');
   const older=versions.some(v=>v!==currentVersion);
   const differs=checks.some(c=>Math.abs(c.now-c.saved)>=1e-12);
-  return `Loaded “${name}”. Recomputed with model ${currentVersion}: ${parts.join('; ')}.`+
-    (older?` It was saved with model ${versions.join(' / ')}, so differences reflect the model change; the saved values stay under View saved results.`
-      :differs?' The model and seeds are the same, so these saved values did not come from this calculation; the file may have been edited.':'');
+  let note='';
+  if(older){
+    const updates=ENGINE_UPDATES.filter(u=>u.version<=currentVersion&&(known.length<versions.length||known.some(v=>u.version>v)));
+    note=(known.length?` It was saved with calculation engine ${versions.join(' / ')}.`:' The file does not say which calculation engine produced it.')+
+      (updates.length?` The engine has been updated since (${updates.map(u=>`${u.version}: ${u.change}`).join('; ')}), so`:' With a different engine version,')+
+      ' the numbers can differ although no input changed. The saved values stay under View saved results.';
+  }else if(differs){
+    note=' The recomputed values do not match the saved record, although the engine version and seeds are the same. Check the inputs, engine version and file contents; one possible cause is that the file was edited after saving.';
+  }
+  return `Loaded “${name}”. Recomputed with calculation engine ${currentVersion}: ${parts.join('; ')}.`+note;
 }
 const labSlug=text=>String(text).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)||'scenario';
 function renderLabComparison(){
@@ -1429,12 +1455,12 @@ function labSavedDetail(entry){
   const rows=[['Win rate (bb/100)',x=>x.inputs.winrate_bb100],['Swings (bb/100)',x=>x.inputs.std_bb100],['Bankroll (BI)',x=>x.inputs.bankroll_bi],
     ['Horizon (hands)',x=>x.inputs.hands.toLocaleString()],['Paths · seed',x=>`${x.inputs.paths.toLocaleString()} · ${x.inputs.seed}`],
     ['Risk of ruin',x=>pct(x.results.risk_of_ruin)],['95% MC interval',x=>`${pct(x.results.ci95_low)}–${pct(x.results.ci95_high)}`],
-    ['Survival',x=>pct(x.results.survival)],['P95 max drawdown',x=>`${x.results.p95_max_drawdown_bi.toFixed(1)} BI`],['Model version',x=>x.model?.version||'unknown']];
+    ['Survival',x=>pct(x.results.survival)],['P95 max drawdown',x=>`${x.results.p95_max_drawdown_bi.toFixed(1)} BI`],['Calculation engine',x=>x.model?.version||'unknown']];
   const problem=labInputsProblem(r.a.inputs)||labInputsProblem(r.b.inputs);
   return `<table class="lab-saved-table"><caption>Values as saved${r.saved_at?` on ${escapeHtml(r.saved_at.slice(0,16).replace('T',' '))} UTC`:''}</caption>`+
     `<thead><tr><th scope="col"></th><th scope="col">A · ${escapeHtml(r.a.name)}</th><th scope="col">B · ${escapeHtml(r.b.name)}</th></tr></thead><tbody>`+
     rows.map(([label,get])=>`<tr><th scope="row">${label}</th><td>${escapeHtml(get(r.a))}</td><td>${escapeHtml(get(r.b))}</td></tr>`).join('')+
-    `</tbody></table><p class="cap">These are the saved numbers; they are not recalculated. Recompute in Risk Lab runs the current model.${problem?` This comparison cannot be loaded into the controls: ${escapeHtml(problem)}`:''}</p>`;
+    `</tbody></table><p class="cap">These are the saved numbers; they are not recalculated. Recompute in Risk Lab runs the current calculation engine.${problem?` This comparison cannot be loaded into the controls: ${escapeHtml(problem)}`:''}</p>`;
 }
 function renderLabSaved(message=null){
   const list=readLabSaved();
@@ -1449,7 +1475,7 @@ function renderLabSaved(message=null){
     const problem=labInputsProblem(r.a.inputs)||labInputsProblem(r.b.inputs);
     return `<li><div class="lab-saved-head"><div><strong>${escapeHtml(r.a.name)} → ${escapeHtml(r.b.name)}</strong>`+
       `<span>Risk ${pct(r.a.results.risk_of_ruin)} → ${pct(r.b.results.risk_of_ruin)} (${escapeHtml(signedValue(r.difference.risk_b_minus_a_pp))} pp)${r.saved_at?` · saved ${escapeHtml(r.saved_at.slice(0,16).replace('T',' '))} UTC`:''}${entry.imported?' · imported':''}</span>`+
-      `<span>Model A ${escapeHtml(versions[0]||'unknown')} · B ${escapeHtml(versions[1]||'unknown')}${older?` · older than the current model ${escapeHtml(current)}`:''}</span></div>`+
+      `<span>Calculation engine A ${escapeHtml(versions[0]||'unknown')} · B ${escapeHtml(versions[1]||'unknown')}${older?` · not the current engine ${escapeHtml(current)}`:''}</span></div>`+
       `<div class="lab-saved-actions"><button type="button" class="btn ghost" data-view="${id}" aria-expanded="${open}" aria-controls="lab_saved_detail_${id}">View saved results</button>`+
       `<button type="button" class="btn ghost" data-load="${id}"${problem?` disabled title="${escapeHtml(problem)}"`:''}>Recompute in Risk Lab</button>`+
       `<button type="button" class="btn ghost" data-json="${id}">JSON</button><button type="button" class="btn ghost" data-delete="${id}">Delete</button></div></div>`+
@@ -1466,7 +1492,7 @@ function addLabSavedEntry(entry,message){
   return true;
 }
 const labEntryId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-// Restore A (from its snapshot when it was saved under the current model, otherwise
+// Restore A (from its snapshot when it was saved under the current engine, otherwise
 // recomputed from its own inputs and seed), then recompute B with its saved seed.
 async function loadLabEntry(entry){
   const r=entry.record,a=r.a.inputs,b=r.b.inputs,name=`${r.a.name} → ${r.b.name}`;
@@ -1475,7 +1501,7 @@ async function loadLabEntry(entry){
   const currentVersion=labCurrentResult?.model?.version,checks=[];
   if(entry.snapshotA&&currentVersion&&r.a.model?.version===currentVersion)setLabSavedA(structuredClone(entry.snapshotA),r.a.name);
   else{
-    renderLabSaved(`Loading “${name}”: recomputing A with the current model…`);
+    renderLabSaved(`Loading “${name}”: recomputing A with the current calculation engine…`);
     try{
       const fresh=await apiJSON('/api/risk-lab',{wr:a.winrate_bb100,sd:a.std_bb100,bank:a.bankroll_bi*100,thr:0,hands:a.hands,paths:a.paths,seed:a.seed,includeCurve:false},70000);
       setLabSavedA(fresh,r.a.name);
@@ -1516,7 +1542,7 @@ $('lab_import_file').addEventListener('change',async()=>{
   if(checked.error){renderLabSaved(`Not imported: ${checked.error}`);return;}
   const r=checked.record;
   if((readLabSaved()||[]).some(entry=>JSON.stringify(entry.record)===JSON.stringify(r))){renderLabSaved('This comparison is already in the list.');return;}
-  addLabSavedEntry({id:labEntryId(),record:r,snapshotA:null,imported:true},`Imported “${r.a.name} → ${r.b.name}”. View saved results shows the numbers in the file; Recompute in Risk Lab runs the current model.`);
+  addLabSavedEntry({id:labEntryId(),record:r,snapshotA:null,imported:true},`Imported “${r.a.name} → ${r.b.name}”. View saved results shows the numbers in the file; Recompute in Risk Lab runs the current calculation engine.`);
 });
 $('lab_saved_list').addEventListener('click',event=>{
   const button=event.target.closest('button');if(!button||button.disabled)return;

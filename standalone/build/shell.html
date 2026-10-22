@@ -605,17 +605,12 @@
   .calc-change{margin:12px 0 0;padding:9px 12px;border:1px solid rgba(251,191,36,.35);border-radius:10px;background:rgba(251,191,36,.05);font-size:12.5px;color:var(--muted);line-height:1.5}
   .calc-change summary{cursor:pointer;color:var(--median);font-weight:650}
   .calc-change p{margin:8px 0 0}
-  .calc-change-table{margin:8px 0 0;border-collapse:collapse;font-size:12.5px}
-  .calc-change-table caption{text-align:left;padding:0 0 4px;color:var(--muted)}
-  .calc-change-table th,.calc-change-table td{padding:3px 10px 3px 0;text-align:left;color:var(--text)}
-  .calc-change-table thead th{color:var(--muted);font-weight:600}
   .pf-find-result{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:-4px 0 14px;padding:10px 12px;border:1px solid rgba(56,189,248,.35);border-radius:12px;background:rgba(56,189,248,.06)}
   .pf-find-result p{flex-basis:100%;margin:0;color:var(--text);font:600 14px ui-monospace,monospace}
   .pf-find-result .btn{width:auto;min-height:36px;margin:0;padding:5px 12px;font-size:13px}
   .pf-meta-details summary{cursor:pointer;color:var(--muted);font-size:12.5px;margin:6px 0}
   .pf-hand-name:focus{outline:none}
   .pf-cell:focus-visible{outline:2px solid #fff;outline-offset:-3px;z-index:5}
-  @media(max-width:900px){.pf-library>.pf-side{order:0}.pf-library>.pf-detail{order:1}.pf-library>.pf-main{order:2}}
   #pf_retry{width:auto;margin:0 0 14px}
   #preflop[aria-busy="true"] .pf-view{opacity:.65}
   @media(max-width:900px){.pf-decision-actions{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -698,10 +693,9 @@
         </div>
       </div>
       <div class="lab-run-footer"><span><span id="lab_paths">—</span> paths · seed <span id="lab_seed">42</span></span><span id="lab_status" role="status" aria-live="polite">Calculating…</span></div>
-      <details class="calc-change" id="lab_calc_change"><summary>Calculation update · model 2026-10-21: numbers differ from earlier versions</summary>
-          <p>Two things changed at the same time. The simulator now also counts dips to zero <em>between</em> its 100-hand checkpoints (a Brownian-bridge correction), and every simulated path now has its own random-number stream (sfc32). The same settings and seed therefore give different numbers than earlier versions.</p>
-          <table class="calc-change-table"><caption>30 BI · 90 bb/100 swings · 100,000 hands · 2,000 paths · seed 42</caption><thead><tr><th scope="col">Win rate</th><th scope="col">Before</th><th scope="col">Model 2026-10-21</th></tr></thead><tbody><tr><th scope="row">0 bb/100</th><td>27.75%</td><td>28.90%</td></tr><tr><th scope="row">+3 bb/100</th><td>7.85%</td><td>6.35%</td></tr></tbody></table>
-          <p>Most of the +3 bb/100 drop comes from the different random sample (−1.85 points); the bridge correction on its own added +0.35 points. With 2,000 paths each run has a 95% interval of roughly ±1 point, so a new sample alone can move a result by a point or two. Averaged over many seeds the correction raises risk slightly (+0.4 to +0.8 points here) and brings it in line with the analytical benchmark. Neither change reflects anything you did, and neither is a change in real-world risk. A and B in one comparison always use the same model; exports record the model version.</p>
+      <details class="calc-change" id="lab_calc_change"><summary>Calculation engine update (2026-10-21): ruin monitoring and random-number streams changed</summary>
+          <p>Results now also count dips to zero <em>between</em> the 100-hand checkpoints (a Brownian-bridge correction), and each simulated path has its own random-number stream. The same settings and seed therefore give different numbers than before. For example, at 30 BI and +3 bb/100 with 2,000 paths and seed 42, risk moved from 7.85% to 6.35%.</p>
+          <p>That difference comes from the engine update, mostly from the new random sample; the correction itself raises risk slightly. It is not a change in real-world risk, and nothing you entered caused it. A and B in one comparison always use the same engine, and exports record its version.</p>
       </details>
       <div class="lab-save-row"><button type="button" class="btn ghost" id="lab_save_a" disabled>Save current as A</button><p id="lab_save_hint" role="status" aria-live="polite">Save a baseline, then change the assumptions to compare it with B.</p><button type="button" class="btn ghost" id="lab_save_next" hidden>Change an assumption</button><button type="button" class="btn ghost" id="lab_view_compare" hidden>View comparison</button></div>
     </div>
@@ -742,12 +736,12 @@
         </div>
         <div><h4>Bankroll paths · A vs B</h4><div id="lab_compare_chart" role="img" aria-label="Saved and current scenario median bankroll paths"></div><p class="cap">Lines and middle-50% bands summarise the stored example paths. Risk uses all runs. Each scenario ends at its own horizon.</p></div>
       </div>
-      <p class="lab-limit">Intervals describe Monte Carlo error only. The difference uses unrounded point estimates; no interval or significance test for the difference is shown. A and B stay on this page until you reload. Save comparison keeps a copy in this browser; the downloads contain the inputs, results, seed and model version.</p>
+      <p class="lab-limit">Intervals describe Monte Carlo error only. The difference uses unrounded point estimates; no interval or significance test for the difference is shown. A and B stay on this page until you reload. Save comparison keeps a copy in this browser; the downloads contain the inputs, results, seed and calculation engine version.</p>
     </section>
 
     <section class="lab-saved" id="lab_saved" aria-labelledby="lab_saved_title">
       <div class="lab-saved-top"><h3 id="lab_saved_title">Saved comparisons</h3><button type="button" class="btn ghost" id="lab_import">Import JSON</button><input type="file" id="lab_import_file" accept="application/json,.json" hidden></div>
-      <p class="cap">Kept in this browser only: reloading keeps them, clearing site data removes them. View saved results shows the numbers as saved; Recompute in Risk Lab runs them again with the current model and the saved seeds.</p>
+      <p class="cap">Kept in this browser only: reloading keeps them, clearing site data removes them. View saved results shows the numbers as saved; Recompute in Risk Lab runs them again with the current calculation engine and the saved seeds.</p>
       <p class="lab-saved-status" id="lab_saved_status" role="status" aria-live="polite"></p>
       <p class="cap" id="lab_saved_empty">No saved comparisons in this browser yet.</p>
       <ul class="lab-saved-list" id="lab_saved_list"></ul>
@@ -934,10 +928,9 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
         </div></details>
         <button class="btn primary" id="bk_run">Run simulation</button>
         <p class="hint" id="bk_budget_note" role="status" aria-live="polite" hidden></p>
-        <details class="calc-change" id="bk_calc_change"><summary>Calculation update · model 2026-10-21: numbers differ from earlier versions</summary>
-          <p>Two things changed at the same time. The simulator now also counts dips to zero <em>between</em> its 100-hand checkpoints (a Brownian-bridge correction), and every simulated path now has its own random-number stream (sfc32). The same settings and seed therefore give different numbers than earlier versions.</p>
-          <table class="calc-change-table"><caption>30 BI · 90 bb/100 swings · 100,000 hands · 2,000 paths · seed 42</caption><thead><tr><th scope="col">Win rate</th><th scope="col">Before</th><th scope="col">Model 2026-10-21</th></tr></thead><tbody><tr><th scope="row">0 bb/100</th><td>27.75%</td><td>28.90%</td></tr><tr><th scope="row">+3 bb/100</th><td>7.85%</td><td>6.35%</td></tr></tbody></table>
-          <p>Most of the +3 bb/100 drop comes from the different random sample (−1.85 points); the bridge correction on its own added +0.35 points. With 2,000 paths each run has a 95% interval of roughly ±1 point, so a new sample alone can move a result by a point or two. Averaged over many seeds the correction raises risk slightly (+0.4 to +0.8 points here) and brings it in line with the analytical benchmark. Neither change reflects anything you did, and neither is a change in real-world risk. A and B in one comparison always use the same model; exports record the model version.</p>
+        <details class="calc-change" id="bk_calc_change"><summary>Calculation engine update (2026-10-21): ruin monitoring and random-number streams changed</summary>
+          <p>Results now also count dips to zero <em>between</em> the 100-hand checkpoints (a Brownian-bridge correction), and each simulated path has its own random-number stream. The same settings and seed therefore give different numbers than before. For example, at 30 BI and +3 bb/100 with 2,000 paths and seed 42, risk moved from 7.85% to 6.35%.</p>
+          <p>That difference comes from the engine update, mostly from the new random sample; the correction itself raises risk slightly. It is not a change in real-world risk, and nothing you entered caused it. A and B in one comparison always use the same engine, and exports record its version.</p>
         </details>
         <div class="hint">The simulation runs on the private calculation service. Ruin is monitored continuously, including dips between 100-hand steps (Brownian-bridge correction). Paths and seed affect numerical precision and reproducibility, not your poker assumptions. The shaded band on the risk curve is a pointwise 95% interval.</div>
       </div>

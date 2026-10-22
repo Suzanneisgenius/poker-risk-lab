@@ -22,11 +22,13 @@ parameter uncertainty, (3) numerical/computational validation, and
 > Research and educational tool. Results depend on simplified model assumptions
 > and are **not** financial or gambling advice.
 
-> **Calculation change (model 2026-10-21):** bankroll results now count dips to
-> the ruin threshold between 100-hand checkpoints and use new random-number
+> **Calculation engine update (2026-10-21):** bankroll results now count dips
+> to the ruin threshold between 100-hand checkpoints and use new random-number
 > streams, so the same settings and seed give different numbers than earlier
 > versions. See [`CHANGELOG.md`](CHANGELOG.md) for the before/after figures and
-> what they do and do not mean.
+> what they do and do not mean, and
+> [`checks/calculation-change-2026-10-21/`](checks/calculation-change-2026-10-21/README.md)
+> for the script and saved output that reproduce them.
 
 ---
 

@@ -1,43 +1,56 @@
 # Changelog
 
-## Read this first: the bankroll numbers changed (model 2026-10-21)
+## Read this first: the bankroll numbers changed (calculation engine 2026-10-21)
 
-Two things changed in the bankroll simulator at the same time, so the same
-settings and seed now give different numbers than earlier versions:
+The calculation engine changed two things at once, so the same settings and
+seed now give different numbers than earlier versions. Nothing the user
+entered changed.
 
-1. **Ruin is monitored continuously.** A Brownian-bridge correction also counts
-   paths that touch the ruin threshold *between* the 100-hand checkpoints.
-2. **New random-number streams.** The web engine gives every simulated path its
-   own sfc32 stream, seeded from (seed, path index). It previously drew all paths
-   from one mulberry32 stream.
+1. **Ruin monitoring.** A Brownian-bridge correction also counts paths that
+   touch the ruin threshold *between* the 100-hand checkpoints.
+2. **Random-number streams.** The web engine gives every simulated path its
+   own sfc32 stream, seeded from (seed, path index). It previously drew all
+   paths from one mulberry32 stream.
 
-Same inputs in both versions, called directly through the calculation function
-(30 BI, 90 bb/100 swings, 100,000 hands, 2,000 paths, seed 42):
+Same inputs in both versions (30 BI, threshold 0, 90 bb/100 swings, 100,000
+hands, 2,000 paths, seed 42), called directly through the calculation function:
 
-| Win rate | functional-fix (2026-10-05) | Model 2026-10-21 | Change |
+| Win rate | functional-fix (2026-10-05) | Engine 2026-10-21 | Change |
 |---|---:|---:|---:|
 | 0 bb/100 | 27.75% | 28.90% | +1.15 pp |
 | +3 bb/100 | 7.85% | 6.35% | −1.50 pp |
 
-How the +3 bb/100 change splits up, measured at the same seed:
+How each change splits up at the same seed:
 
-| Step | Risk | Change |
-|---|---:|---:|
-| functional-fix engine | 7.85% | |
-| new random streams, ruin still checked only at step ends | 6.00% | −1.85 pp (different random sample) |
-| new random streams + bridge correction | 6.35% | +0.35 pp (bridge) |
+| Win rate | functional-fix | new streams, ruin checked only at step ends | + bridge correction |
+|---|---:|---:|---:|
+| 0 bb/100 | 27.75% | 28.00% (+0.25 pp) | 28.90% (+0.90 pp) |
+| +3 bb/100 | 7.85% | 6.00% (−1.85 pp) | 6.35% (+0.35 pp) |
 
-- Most of this particular drop is sampling: with 2,000 paths a single run has a
-  95% Monte Carlo interval of roughly ±1 percentage point. Over 40 seeds at the
-  same settings the bridge correction *raises* risk on average (+0.36 pp at
-  +3 bb/100, +0.84 pp at 0 bb/100) and brings the average in line with the
-  finite-horizon Brownian benchmark (7.14% vs 7.17%; 29.21% vs 29.18%).
+- **Do not read 7.85% → 6.35% as lower risk.** The drop comes from the
+  different random sample, not from the bridge correction, which raised the
+  number. With 2,000 paths a single run at this level has a 95% Monte Carlo
+  interval of about ±1 percentage point (±2 at 0 bb/100), and one run with a
+  different stream cannot show that either stream is more accurate.
+- **Over 40 seeds (0–39, 2,000 paths each)** the bridge correction raised
+  risk for every seed: on average +0.355 pp at +3 bb/100 (7.11625%, analytical
+  7.16915%) and +0.790 pp at 0 bb/100 (29.20875%, analytical 29.18406%).
+  Agreement with the analytical value checks the simulation against its own
+  model; it does not show that the model describes real games.
 - Neither the difference between versions nor its parts are a change in
   real-world risk or an effect of anything a user did. A/B comparisons inside
-  the page always use one model.
+  the page always use one engine version.
+- Settings, seeds, the run command and every seed's output are archived in
+  [`checks/calculation-change-2026-10-21/`](checks/calculation-change-2026-10-21/README.md);
+  `node checks/calculation-change-2026-10-21/run.js --check` reproduces them.
+  An earlier version of this note quoted 7.14%, +0.36 pp and +0.84 pp without a
+  seed list; those came from seeds 7919 × 1–40 and are reproducible too (see
+  that README).
 - Every bankroll result now carries `model.version` (currently `2026-10-21`),
-  and saved or exported comparisons record it. Bump it whenever the same inputs
-  and seed would give different numbers.
+  and saved or exported comparisons record it; the page calls it the
+  calculation engine version. Bump it whenever the same inputs and seed would
+  give different numbers, and add a line to `ENGINE_UPDATES` in
+  `standalone/build/app.js` saying what changed.
 - The Python engine (`src/simulation.py`) applies the same correction by default
   (`bridge=True`); `bridge=False` reproduces its earlier results exactly.
 - The saved research outputs in `reports/` were **not** regenerated. The Monte
