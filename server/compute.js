@@ -64,6 +64,7 @@ function computeEquity(input) {
     const deterministic = board.length === 5 && opponents.every(Boolean);
     const actualTrials = deterministic ? 1 : trials;
     result = equityMultiwayMC(hero, opponents, board, actualTrials, seed);
+    if (deterministic) result.method = "exact";
     methodText = deterministic
       ? `Exact showdown against ${opponents.length} opponents.`
       : `Multiway Monte Carlo against ${opponents.length} opponent${opponents.length === 1 ? "" : "s"}, ${actualTrials.toLocaleString("en-US")} trials.`;

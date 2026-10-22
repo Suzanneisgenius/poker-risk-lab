@@ -11,6 +11,7 @@
     "start": "node server/app.js",
     "test:engines": "node standalone/engines/test_engines.js",
     "test:api": "node server/test_api.js",
-    "test": "node standalone/engines/test_engines.js && node server/test_api.js"
+    "test:ui": "node checks/functionality-2026-10-05/check_ui_logic.js",
+    "test": "node standalone/engines/test_engines.js && node server/test_api.js && npm run test:ui"
   }
 }
