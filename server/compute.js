@@ -107,18 +107,30 @@ function computeEv(input) {
   return { pot, call, equity, potOdds, requiredEquity: potOdds, evCall, profitable: equity >= potOdds };
 }
 
-function mulberry32(seed) {
-  let value = seed | 0;
-  return function random() {
-    value = (value + 0x6d2b79f5) | 0;
-    let t = Math.imul(value ^ (value >>> 15), 1 | value);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+// sfc32: 128-bit state, passes PractRand. Bankroll paths each start their own
+// generator from a hashed seed; with mulberry32 (32-bit state) seeded that way
+// the bridge-corrected ruin rate came out ~0.09 pp low over 4M paths (about
+// 4 standard errors), and sfc32 removed that bias.
+function sfc32(seed) {
+  let a = seed | 0;
+  let b = mix32(seed + 1) | 0;
+  let c = mix32(seed + 2) | 0;
+  let d = 1;
+  const random = function random() {
+    const t = (((a + b) | 0) + d) | 0;
+    d = (d + 1) | 0;
+    a = b ^ (b >>> 9);
+    b = (c + (c << 3)) | 0;
+    c = (c << 21) | (c >>> 11);
+    c = (c + t) | 0;
+    return (t >>> 0) / 4294967296;
   };
+  for (let warmup = 0; warmup < 12; warmup += 1) random();
+  return random;
 }
 
 function gaussFactory(seed) {
-  const random = mulberry32(seed >>> 0);
+  const random = sfc32(seed);
   let spare = null;
   return function gaussian() {
     if (spare !== null) {
@@ -170,14 +182,42 @@ function brownFinite(winRate, standardDeviation, bankroll, threshold, hands) {
   return clamp(probability, 0, 1);
 }
 
-function simulateBankroll(params, pathCount, storeCount) {
+// murmur3's 32-bit finalizer: a cheap, well-mixed integer hash.
+function mix32(value) {
+  let h = value | 0;
+  h = Math.imul(h ^ (h >>> 16), 0x85ebca6b);
+  h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35);
+  return (h ^ (h >>> 16)) >>> 0;
+}
+
+// Every path gets its own seed derived from (seed, path index), and its bridge
+// uniforms are a hash of (path seed, step). A path's random numbers therefore do
+// not depend on how many numbers earlier paths used (they stop early once
+// ruined), which is what lets the risk curve reuse the same randomness at every
+// bankroll level (common random numbers).
+const pathSeed = (seed, index) => mix32(seed ^ Math.imul(index + 1, 0x9e3779b9));
+const bridgeUniform = (key, step) => mix32(key ^ Math.imul(step, 0x9e3779b1)) / 4294967296;
+// Below this exponent the intrastep crossing probability is under 4e-18 and
+// is skipped; the bias is far below Monte Carlo error for any accepted request.
+const BRIDGE_MIN_EXPONENT = -40;
+
+// Simulate bankroll paths in 100-hand steps with absorbing ruin.
+//
+// With `bridge` on (the default), ruin is monitored continuously: when a step
+// starts and ends above the threshold, the path is still ruined with the
+// Brownian-bridge probability exp(-2 a0 a1 / variance) that it dipped to the
+// threshold in between (a0, a1 = distances above the threshold). Without it,
+// ruin is only detected at step ends, which underestimates first-passage risk.
+// This mirrors src/experiments/barrier_resolution.py.
+function simulateBankroll(params, pathCount, storeCount, { bridge = true } = {}) {
   const steps = Math.ceil(params.hands / params.step);
   const finalStep = params.hands - (steps - 1) * params.step;
   const regularDrift = (params.wr * params.step) / 100;
   const regularSwing = params.sd * Math.sqrt(params.step / 100);
   const finalDrift = (params.wr * finalStep) / 100;
   const finalSwing = params.sd * Math.sqrt(finalStep / 100);
-  const gaussian = gaussFactory(params.seed);
+  const regularVariance = regularSwing * regularSwing;
+  const finalVariance = finalSwing * finalSwing;
   const terminals = new Float64Array(pathCount);
   const drawdowns = new Float64Array(pathCount);
   const plotStep = Math.max(1, Math.floor(steps / 100));
@@ -190,6 +230,9 @@ function simulateBankroll(params, pathCount, storeCount) {
   let ruinedCount = 0;
   let profitCount = 0;
   for (let index = 0; index < pathCount; index += 1) {
+    const seed = pathSeed(params.seed, index);
+    const gaussian = gaussFactory(seed);
+    const bridgeKey = seed ^ 0x5bd1e995;
     let bankroll = params.bank;
     let peak = params.bank;
     let maxDrawdown = 0;
@@ -199,10 +242,17 @@ function simulateBankroll(params, pathCount, storeCount) {
     for (let step = 1; step <= steps; step += 1) {
       if (!ruined) {
         const isFinalStep = step === steps;
+        const start = bankroll;
         bankroll += (isFinalStep ? finalDrift : regularDrift) + (isFinalStep ? finalSwing : regularSwing) * gaussian();
         if (bankroll <= params.thr) {
           bankroll = params.thr;
           ruined = true;
+        } else if (bridge) {
+          const exponent = (-2 * (start - params.thr) * (bankroll - params.thr)) / (isFinalStep ? finalVariance : regularVariance);
+          if (exponent > BRIDGE_MIN_EXPONENT && bridgeUniform(bridgeKey, step) < Math.exp(exponent)) {
+            bankroll = params.thr;
+            ruined = true;
+          }
         }
         if (bankroll > peak) peak = bankroll;
         const drawdown = peak - bankroll;
@@ -285,16 +335,23 @@ function riskCurve(params, divisor) {
   const pathsPerPoint = curvePathsPerPoint(params);
   const xs = [];
   const monteCarlo = [];
+  const lower = [];
+  const upper = [];
   const analytical = [];
   for (let index = 0; index < CURVE_POINTS; index += 1) {
     const bank = low + ((params.bank * 2 - low) * index) / (CURVE_POINTS - 1);
-    const scenario = { ...params, bank, seed: params.seed + index * 7919 };
-    const simulation = simulateBankroll(scenario, pathsPerPoint, 0);
+    // Same seed at every point (common random numbers): each path sees the same
+    // swings at every bankroll level, so the curve is smooth and never rises
+    // with a larger bankroll.
+    const simulation = simulateBankroll({ ...params, bank }, pathsPerPoint, 0);
+    const [low95, high95] = wilsonInterval(simulation.ruinedCount, simulation.pathCount);
     xs.push(bank / divisor);
     monteCarlo.push(simulation.ruinedCount / simulation.pathCount);
+    lower.push(low95);
+    upper.push(high95);
     analytical.push(brownFinite(params.wr, params.sd, bank, params.thr, params.hands));
   }
-  return { xs, monteCarlo, analytical, pathsPerPoint };
+  return { xs, monteCarlo, lower, upper, analytical, pathsPerPoint };
 }
 
 function computeBankroll(input) {
@@ -432,6 +489,7 @@ module.exports = {
   computePreflop,
   computeGto,
   estimateCost,
+  simulateBankroll,
   simulationPathSteps,
   brownFinite,
   logPhi,

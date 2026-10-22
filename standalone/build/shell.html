@@ -574,7 +574,7 @@
             <div><dt>Survival rate</dt><dd id="lab_surv">—</dd></div>
             <div><dt title="The peak-to-trough fall exceeded by 5% of simulated paths">P95 max drawdown</dt><dd id="lab_dd">—</dd></div>
           </dl>
-          <p class="lab-limit">Conditional model estimate. The interval describes simulation error; it does not include uncertainty in the assumptions.</p>
+          <p class="lab-limit">Conditional model estimate. Ruin is monitored continuously: a Brownian-bridge correction also counts dips to zero between 100-hand steps. The interval describes simulation error; it does not include uncertainty in the assumptions.</p>
         </div>
         <div class="lab-visual-panel">
           <div class="lab-chart-head"><div><h3>Bankroll paths</h3><p id="lab_chart_meta">Loading simulation…</p></div></div>
@@ -803,7 +803,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
         </div></details>
         <button class="btn primary" id="bk_run">Run simulation</button>
         <p class="hint" id="bk_budget_note" role="status" aria-live="polite" hidden></p>
-        <div class="hint">The simulation runs on the private calculation service. Paths and seed affect numerical precision and reproducibility, not your poker assumptions.</div>
+        <div class="hint">The simulation runs on the private calculation service. Ruin is monitored continuously, including dips between 100-hand steps (Brownian-bridge correction). Paths and seed affect numerical precision and reproducibility, not your poker assumptions. The shaded band on the risk curve is a pointwise 95% interval.</div>
       </div>
       <div>
         <p class="result-insight" id="bk_insight" role="status" aria-live="polite">Calculating a plain-language summary…</p>
@@ -812,7 +812,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
         <div class="card"><div id="bk_fan" style="height:320px"></div></div>
         <p class="cap">Sampled subset of paths (cyan = surviving, red = ruined); band = P5–P95; amber = median.</p>
         <div class="card"><div id="bk_curve" style="height:300px"></div></div>
-        <p class="cap">Risk of ruin vs bankroll: Monte Carlo (cyan) with the finite-horizon Brownian reference (dashed).</p>
+        <p class="cap">Risk of ruin vs bankroll: Monte Carlo (cyan, the same simulated swings at every bankroll) with its pointwise 95% interval (shaded) and the finite-horizon Brownian reference (dashed).</p>
       </div>
     </div>
   </section>

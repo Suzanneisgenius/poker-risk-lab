@@ -12,6 +12,7 @@ const {
   computeEquity,
   computeGto,
   estimateCost,
+  simulateBankroll,
   simulationPathSteps,
   brownFinite,
   logPhi,
@@ -67,6 +68,51 @@ for (const value of overflowCase.curve.analytical) assert.ok(value >= 0 && value
 const tinyRisk = brownFinite(100, 5, 10, 0, 1000000);
 assert.ok(tinyRisk > 0 && tinyRisk < 1e-30, `expected a tiny positive risk, got ${tinyRisk}`);
 closeRelative(brownFinite(-100, 10, 100, 0, 1000000), 1, 1e-12, "certain ruin");
+
+// --- Brownian-bridge correction -----------------------------------------------
+// Endpoint-only monitoring misses dips to the threshold inside a 100-hand step
+// and underestimates first-passage risk; the bridge correction removes that
+// bias. Short-bankroll case: 3 BI, 0 bb/100, 20k hands.
+{
+  const scenario = { wr: 0, sd: 90, bank: 300, thr: 0, hands: 20000, step: 100, seed: 11 };
+  const paths = 40000;
+  const benchmark = brownFinite(scenario.wr, scenario.sd, scenario.bank, scenario.thr, scenario.hands);
+  const se = Math.sqrt(benchmark * (1 - benchmark) / paths);
+  const bridged = simulateBankroll(scenario, paths, 0).ruinedCount / paths;
+  const endpoint = simulateBankroll(scenario, paths, 0, { bridge: false }).ruinedCount / paths;
+  assert.ok(Math.abs(bridged - benchmark) < 4 * se, `bridge-corrected ${bridged} should match the continuous benchmark ${benchmark}`);
+  assert.ok(endpoint < benchmark - 10 * se, `endpoint-only ${endpoint} should be clearly below ${benchmark}`);
+  // Same paths, same swings: the bridge can only add ruins, never remove them.
+  for (const seed of [1, 2, 3]) {
+    const params = { wr: 2, sd: 100, bank: 2000, thr: 500, hands: 50000, step: 100, seed };
+    assert.ok(simulateBankroll(params, 2000, 0).ruinedCount >= simulateBankroll(params, 2000, 0, { bridge: false }).ruinedCount);
+  }
+  // Reproducible for a seed, different across seeds; zero variance stays finite.
+  const again = simulateBankroll(scenario, 2000, 0);
+  assert.equal(again.ruinedCount, simulateBankroll(scenario, 2000, 0).ruinedCount);
+  assert.notEqual(again.ruinedCount, simulateBankroll({ ...scenario, seed: 12 }, 2000, 0).ruinedCount);
+  const flat = simulateBankroll({ wr: -10, sd: 0, bank: 500, thr: 0, hands: 10000, step: 100, seed: 1 }, 100, 0);
+  assert.equal(flat.ruinedCount, 100, "a deterministic losing path is always ruined");
+  assert.ok(Array.from(flat.terminals).every(Number.isFinite));
+}
+
+// --- Risk curve: common random numbers and pointwise intervals --------------------
+for (const input of [
+  { wr: 0, sd: 90, bank: 3000, thr: 0, hands: 100000, paths: 2000, seed: 42 },
+  { wr: 3, sd: 90, bank: 1500, thr: 0, hands: 50000, paths: 6000, seed: 7 },
+  { wr: -1, sd: 120, bank: 4000, thr: 1000, hands: 200000, paths: 100, seed: 0 },
+]) {
+  const { curve } = computeBankroll(input);
+  assert.equal(curve.xs.length, 9);
+  for (const key of ["monteCarlo", "lower", "upper", "analytical"]) assert.equal(curve[key].length, 9, `curve.${key}`);
+  for (let i = 0; i < 9; i++) {
+    assert.ok(curve.lower[i] <= curve.monteCarlo[i] && curve.monteCarlo[i] <= curve.upper[i], `point ${i} lies inside its interval`);
+    if (i > 0) {
+      assert.ok(curve.xs[i] > curve.xs[i - 1]);
+      assert.ok(curve.monteCarlo[i] <= curve.monteCarlo[i - 1], `risk must not rise with a larger bankroll (${JSON.stringify(input)}, point ${i})`);
+    }
+  }
+}
 
 // --- Client IP resolution --------------------------------------------------
 const fakeRequest = (forwarded) => ({

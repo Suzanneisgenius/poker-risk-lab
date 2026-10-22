@@ -479,8 +479,7 @@ async function runBankroll(){
   Plotly.react('bk_fan',tr,lay,CFG);
   const lay2=layout('Risk of ruin vs bankroll','Bankroll (BI)','Risk of ruin',{yaxis:{tickformat:'.0%',gridcolor:C.grid}});
   lay2.shapes=[{type:'line',x0:p.bank/BI,x1:p.bank/BI,yref:'paper',y0:0,y1:1,line:{color:C.median,dash:'dot',width:1.3}}];
-  Plotly.react('bk_curve',[{x:curve.xs,y:curve.monteCarlo,mode:'lines+markers',line:{color:C.accent,width:2.2},name:'Monte Carlo'},
-    {x:curve.xs,y:curve.analytical,mode:'lines',line:{color:C.muted,dash:'dash',width:1.5},name:'Brownian (finite)'}],lay2,CFG);
+  Plotly.react('bk_curve',riskCurveTraces(curve),lay2,CFG);
   }catch(error){if(request===bankrollRequest)$('bk_insight').textContent=errorMessage(error);}
   finally{if(request===bankrollRequest){bankrollController=null;setBusy($('bk_run'),false);}}
 }
@@ -1052,17 +1051,29 @@ function renderLab(result){
   ];
   Plotly.react('lab_fan',tr,lay,CFG);
 }
+// Risk-versus-bankroll traces: the pointwise 95% Wilson band, the Monte Carlo
+// estimate (the same simulated swings at every bankroll, so it cannot rise with
+// a larger bankroll) and the finite-horizon Brownian benchmark.
+function riskCurveTraces(curve){
+  const traces=[];
+  if(curve.lower&&curve.upper)traces.push({x:curve.xs.concat(curve.xs.slice().reverse()),y:curve.upper.concat(curve.lower.slice().reverse()),fill:'toself',fillcolor:C.band,line:{color:'rgba(0,0,0,0)'},hoverinfo:'skip',name:'95% interval'});
+  traces.push({x:curve.xs,y:curve.monteCarlo,customdata:curve.lower?curve.xs.map((_,i)=>[curve.lower[i],curve.upper[i]]):undefined,
+    hovertemplate:curve.lower?'%{y:.1%} (95%: %{customdata[0]:.1%}–%{customdata[1]:.1%})<extra>Monte Carlo</extra>':undefined,
+    mode:'lines+markers',line:{color:C.accent,width:2.2},name:'Monte Carlo'});
+  traces.push({x:curve.xs,y:curve.analytical,mode:'lines',line:{color:C.muted,dash:'dash',width:1.5},name:'Brownian (finite)'});
+  return traces;
+}
 function renderLabCurve(p,curve){
-  $('lab_curve_context').textContent=`Current assumptions · ${curve.pathsPerPoint} Monte Carlo paths per point · finite-horizon Brownian comparison.`;
+  $('lab_curve_context').textContent=`Current assumptions · ${curve.pathsPerPoint} Monte Carlo paths per point, with the same simulated swings at every bankroll · shaded band = pointwise 95% interval · finite-horizon Brownian comparison.`;
   if(!plotlyReady()){chartUnavailable('lab_curve');return;}
   const div=100;
   const compact=$('lab_curve').clientWidth<620;
   const lay=layout('','Bankroll (buy-ins)','Risk of ruin',{yaxis:{tickformat:'.0%',gridcolor:C.grid}});
-  lay.margin=compact?{l:48,r:12,t:14,b:100}:{l:62,r:22,t:18,b:76};
-  lay.legend={orientation:'h',x:0,y:compact?-.4:-.25,xanchor:'left',yanchor:'top',font:{color:C.muted,size:compact?11:12}};
+  // The legend sits below the x-axis title; three entries need the extra room.
+  lay.margin=compact?{l:48,r:12,t:14,b:120}:{l:62,r:22,t:18,b:92};
+  lay.legend={orientation:'h',x:0,y:compact?-.5:-.34,xanchor:'left',yanchor:'top',font:{color:C.muted,size:compact?11:12}};
   lay.shapes=[{type:'line',x0:p.bank/div,x1:p.bank/div,yref:'paper',y0:0,y1:1,line:{color:C.median,dash:'dot',width:1.3}}];
-  Plotly.react('lab_curve',[{x:curve.xs,y:curve.monteCarlo,mode:'lines+markers',line:{color:C.accent,width:2.2},name:'Monte Carlo'},
-    {x:curve.xs,y:curve.analytical,mode:'lines',line:{color:C.muted,dash:'dash',width:1.5},name:'Brownian (finite)'}],lay,CFG);
+  Plotly.react('lab_curve',riskCurveTraces(curve),lay,CFG);
 }
 let _labT=null;
 let labRequest=0;

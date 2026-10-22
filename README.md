@@ -137,7 +137,11 @@ The suite provides five tools behind one dark UI:
 - **Pot Odds & EV** — turns the latest card-derived equity into a call/fold
   decision with EV in big blinds; manual equity remains an advanced option.
 - **Bankroll Risk** — the Monte Carlo risk-of-ruin engine with a finite-horizon
-  Brownian reference line.
+  Brownian reference line. Unlike the Python research engine, which detects
+  ruin only at step ends, the web engine monitors ruin continuously with a
+  Brownian-bridge correction (the method from `barrier_resolution.py`), and its
+  risk-versus-bankroll curve reuses the same simulated swings at every bankroll
+  (common random numbers) with pointwise 95% Wilson intervals.
 - **Preflop** — browse, compare, and practise five 169-hand demonstration
   ranges. These illustrative frequencies validate the complete product workflow
   but are not solver-verified; the private API is ready for licensed solver
