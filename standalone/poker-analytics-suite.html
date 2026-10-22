@@ -350,6 +350,179 @@
     .lab-chart-key{gap:8px 13px}.lab-chart-key span{white-space:normal}
   }
   @media(prefers-reduced-motion:reduce){body::after{display:none}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+
+  /* Risk Lab: one current result, then independent reference experiments. */
+  body.risklab-active header{padding-top:14px;padding-bottom:12px}
+  body.risklab-active h1{font-size:22px}
+  body.risklab-active header .sub{display:none}
+  body.risklab-active .trust span:not(:last-child){display:none}
+  body.risklab-active .disc{font-size:12px;margin-top:4px}
+  #risklab .labhead{margin-bottom:18px}
+  #risklab .labtitle{font-family:inherit;font-size:28px;text-transform:none;letter-spacing:-.035em;color:var(--text);background:none;margin:0 0 4px}
+  #risklab .labled{font-size:14px;margin:0;max-width:none}
+  #risklab .lab-scenarios{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:14px}
+  #risklab .lab-section-label{color:var(--accent2);font-size:13px;font-weight:650;white-space:nowrap}
+  #risklab .lab-scenarios .presetgroup{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0;max-width:590px;width:100%}
+  #risklab .lab-scenarios .preset{min-width:0;min-height:48px;padding:8px 12px;font-size:12px}
+  #risklab .lab-scenarios .preset small{color:var(--muted);font-size:11px}
+  #risklab .lab-live{border:1px solid rgba(125,211,252,.24);border-radius:18px;padding:24px;background:linear-gradient(120deg,rgba(56,189,248,.08),rgba(17,28,47,.65) 45%);box-shadow:0 18px 48px rgba(0,7,18,.2)}
+  #risklab .lab-current-grid{display:grid;grid-template-columns:minmax(240px,.75fr) minmax(0,1.6fr);gap:30px;align-items:start}
+  #risklab .lab-risk-summary{min-width:0;padding:3px 0}
+  #risklab .lab-risk-summary h3{font-size:14px;color:var(--muted);font-weight:500;margin:12px 0 0}
+  #risklab .lab-run-state{color:var(--accent2);font-size:12px;font-weight:600;min-height:18px}
+  #risklab .lab-main-value{font-size:clamp(48px,4.4vw,68px);line-height:1.15;font-weight:750;letter-spacing:-.055em;color:var(--text);font-variant-numeric:tabular-nums;margin:4px 0}
+  #risklab .lab-interval{font-size:13px;color:var(--accent2);margin:0 0 15px}
+  #risklab .lab-insight{font-size:14px;line-height:1.5;color:var(--text);margin:0 0 12px}
+  #risklab .lab-active-scenario{font-size:12px;color:var(--muted);line-height:1.65;margin:0;padding:0 0 16px;border-bottom:1px solid var(--grid)}
+  #risklab .lab-supporting{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+  #risklab .lab-supporting dt{font-size:12px;color:var(--muted)}
+  #risklab .lab-supporting dd{margin:3px 0 0;font-size:20px;font-weight:650;font-variant-numeric:tabular-nums}
+  #risklab .lab-limit{font-size:12px;color:var(--muted);line-height:1.5;margin:0}
+  #risklab .lab-live[data-state="pending"] .lab-main-value,#risklab .lab-live[data-state="pending"] #lab_fan{opacity:.55}
+  #risklab .lab-live[data-state="pending"] .lab-run-state,#risklab .lab-live[data-state="error"] .lab-run-state{color:var(--median)}
+  #risklab .lab-visual-panel #lab_fan{width:100%;height:340px;min-height:0}
+  #risklab .lab-chart-head{padding:0 0 10px}
+  #risklab .lab-chart-head h3{font-size:18px}
+  #risklab .lab-chart-head p{font-size:12px}
+  #risklab .lab-chart-key{padding:10px 0 6px;font-size:11px;gap:8px 14px}
+  #risklab .lab-visual-panel .cap{font-size:12px;color:var(--muted);margin:0}
+  #risklab .lab-run-footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:5px 16px;border-top:1px solid var(--grid);margin-top:18px;padding-top:10px;color:var(--muted);font-size:12px}
+  #risklab .lab-adjust{margin:14px 0 28px;border:1px solid var(--glass-border);border-radius:12px;background:rgba(17,28,47,.5)}
+  #risklab summary{cursor:pointer;min-height:48px;padding:13px 16px;color:var(--text);font-size:14px}
+  #risklab summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+  #risklab .lab-adjust summary span{float:right;color:var(--muted);font-size:12px}
+  #risklab .lab-controls-inner{padding:0 18px 18px;max-width:1000px}
+  #risklab .lab-control-help{font-size:13px;color:var(--muted);margin:0 0 16px;line-height:1.5}
+  #risklab .lab-controls-inner .swing-cards{grid-template-columns:repeat(4,minmax(0,1fr))}
+  #risklab .lab-controls-inner .ctl{display:inline-block;vertical-align:top;width:calc(50% - 12px);margin-right:10px}
+  #risklab .lab-controls-inner .btn{width:auto;display:block;padding-left:22px;padding-right:22px}
+  #risklab .lab-curve-section{margin-bottom:34px}
+  #risklab .lab-curve-section>h3{font-size:18px;margin:0 0 4px}
+  #risklab .lab-curve-section>.cap{margin:0 0 12px}
+  #risklab .lab-reference{border-top:1px solid rgba(196,181,253,.3);padding-top:24px}
+  #risklab .lab-reference-head{display:flex;align-items:center;justify-content:space-between;gap:16px}
+  #risklab .lab-reference-tag{font-size:12px;color:#C4B5FD}
+  #risklab .lab-reference-head h3{font-size:22px;margin:3px 0 0}
+  #risklab .lab-fixed-badge{color:#C4B5FD;font-size:12px;background:rgba(196,181,253,.07);border:1px solid rgba(196,181,253,.2);border-radius:8px;padding:7px 10px}
+  #risklab .lab-reference-intro{font-size:14px;color:var(--muted);max-width:850px;line-height:1.55;margin:12px 0 18px}
+  #risklab .lab-reference-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:18px}
+  #risklab .strand{background:rgba(17,28,47,.4);box-shadow:none;padding:18px}
+  #risklab .strand::after{display:none}
+  #risklab .strand .se{color:#C4B5FD;font-size:11px}
+  #risklab .strand h3{font-family:inherit;font-size:17px}
+  #risklab .strand p{font-size:14px}
+  #risklab .strand .big{color:var(--text)}
+  #risklab .lab-reference-detail{border:1px solid var(--glass-border);border-radius:10px;margin:10px 0;background:rgba(17,28,47,.3)}
+  #risklab .lab-reference-detail .panel{background:none;box-shadow:none;border:none;border-radius:0;padding:0 14px 14px}
+  #risklab .lab-reference-detail .repro{margin:0 14px}
+  #risklab .lab-reference-detail .labnote{margin:10px 14px 14px}
+  @media(max-width:900px){#risklab .lab-current-grid{grid-template-columns:250px minmax(0,1fr);gap:20px}#risklab .lab-live{padding:20px}#risklab .lab-scenarios{gap:12px}}
+  @media(max-width:760px){#risklab .lab-current-grid{grid-template-columns:1fr;gap:24px}#risklab .lab-main-value{font-size:56px}#risklab .lab-scenarios{display:block}#risklab .lab-section-label{display:block;margin-bottom:8px}#risklab .lab-scenarios .presetgroup{max-width:none}#risklab .lab-visual-panel #lab_fan{height:280px}#risklab .lab-reference-head{align-items:flex-start;flex-direction:column}#risklab .lab-reference-grid{grid-template-columns:1fr}#risklab .lab-controls-inner .swing-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:480px){body.risklab-active .brandrow{display:flex;align-items:center;gap:10px}body.risklab-active .trust{margin:0}body.risklab-active .trust span{font-size:10px;padding:4px 7px}body.risklab-active h1{font-size:19px}#risklab .lab-live{padding:18px 14px}#risklab .labtitle{font-size:25px}#risklab .lab-scenarios .preset{padding:8px 6px;font-size:11px}#risklab .lab-scenarios .preset small{font-size:10px}#risklab .lab-controls-inner .ctl{display:block;width:100%;margin-right:0}#risklab .lab-adjust summary span{display:none}#risklab .lab-controls-inner .btn{width:100%}#risklab .lab-visual-panel #lab_fan{height:260px}#risklab .lab-supporting dd{font-size:19px}}
+
+  /* Secondary learning material, below the Preflop workspace. */
+  .pf-learning{margin-top:32px;border-top:1px solid var(--grid);color:var(--muted)}
+  .pf-learning>summary{cursor:pointer;min-height:48px;padding:16px 0;font-size:13px}
+  .pf-learning>summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+  .pf-learning-content{padding:8px 0 18px;min-width:0;overflow-x:auto}
+  .pf-learning .grid2{grid-template-columns:minmax(260px,320px) minmax(0,1fr);gap:20px}
+  .pf-learning .panel{padding:16px;background:rgba(17,28,47,.45);box-shadow:none}
+  .pf-learning .kuhn-title{font-size:15px;margin:0 0 10px;color:var(--muted)}
+  .pf-learning .neutral{font-size:13px}
+  .pf-learning .kpi{padding:10px 12px;background:rgba(17,28,47,.4);box-shadow:none}
+  .pf-learning .kv{font-size:20px}
+  .pf-learning .card{background:none;box-shadow:none}
+  .pf-learning table{font-size:12px}
+  .pf-learning .hint{line-height:1.5}
+  @media(max-width:860px){.pf-learning .grid2{grid-template-columns:1fr}}
+  @media(max-width:640px){.pf-learning .kgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.pf-learning .row2{grid-template-columns:repeat(2,minmax(0,1fr))}.pf-learning .grid2>div{min-width:0}}
+  /* Scenario comparisons and the saved uncertainty case. */
+  [hidden]{display:none!important}
+  .lab-save-row{display:flex;align-items:center;gap:16px;margin-top:14px}
+  .lab-save-row .btn,.lab-compare-head .btn{width:auto;white-space:nowrap;min-height:42px;margin:0;font-size:13px}
+  .lab-save-row p{color:var(--muted);font-size:13px;margin:0}
+  .lab-compare{border:1px solid rgba(56,189,248,.25);border-radius:16px;padding:22px;margin:0 0 28px;background:rgba(17,28,47,.45)}
+  .lab-compare-head{display:flex;justify-content:space-between;gap:20px;align-items:start;margin-bottom:20px}
+  .lab-compare-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .lab-compare,.lab-adjust{scroll-margin-top:90px}
+  .lab-compare h3{margin:0 0 6px;font-size:20px}.lab-compare-head p{font-size:13px;color:var(--muted);margin:0}
+  .lab-compare h4,.lab-uncertainty h4{font-size:15px;margin:0 0 5px;font-weight:600}
+  .lab-compare-grid{display:grid;grid-template-columns:minmax(260px,.85fr) minmax(0,1.3fr);gap:26px}
+  .lab-compare-grid>div,.lab-uncertainty-grid>div{min-width:0}
+  .lab-compare-values,.lab-uncertainty-values{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .lab-compare-values span,.lab-uncertainty-values span{font-size:12px;color:var(--muted);display:block}
+  .lab-compare-values strong{display:block;font-size:34px;font-variant-numeric:tabular-nums;color:var(--accent2);margin-top:3px}
+  .lab-compare-values>div:first-child strong{color:var(--median)}
+  .lab-compare-values small,.lab-uncertainty-values small{display:block;font-size:11px;color:var(--muted);line-height:1.5}
+  .lab-compare-delta{font-size:15px;line-height:1.5;margin:14px 0}
+  .lab-compare-table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:12px}
+  .lab-compare-table caption{position:absolute;clip-path:inset(50%);width:1px;height:1px;overflow:hidden}
+  .lab-compare-table th,.lab-compare-table td{padding:8px 6px;text-align:left;overflow-wrap:anywhere}
+  .lab-compare-table th:first-child{width:42%}
+  .lab-compare-table tr[data-changed="true"]{background:rgba(56,189,248,.075)}
+  .lab-compare-table tr[data-changed="true"] td:last-child{color:var(--accent2);font-weight:650}
+  #lab_compare_chart{height:300px;width:100%}
+  .lab-compare .lab-limit{border-top:1px solid var(--grid);margin-top:20px;padding-top:12px}
+  .lab-compare[data-state="pending"] .lab-compare-grid{opacity:.6}
+  #risklab .lab-reference-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .lab-uncertainty{border:1px solid rgba(196,181,253,.25);border-radius:16px;padding:24px;margin:20px 0;background:rgba(196,181,253,.035)}
+  .lab-uncertainty-head>span{font-size:12px;color:#C4B5FD}
+  .lab-uncertainty-head h3{font-size:22px;line-height:1.3;letter-spacing:-.025em;margin:8px 0}
+  .lab-uncertainty-head p{font-size:14px;color:var(--muted);margin:0 0 24px;line-height:1.55}
+  .lab-uncertainty-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px}
+  .lab-uncertainty-values strong{display:block;font-size:38px;line-height:1.4;font-variant-numeric:tabular-nums;color:var(--median)}
+  .lab-uncertainty-values>div:last-child strong{color:#C4B5FD}
+  .lab-u-insight{font-size:14px;line-height:1.5;margin:12px 0 0}
+  #lab_u_risk_chart{height:170px;width:100%}
+  #lab_u_posterior{height:260px;width:100%}
+  .lab-u-interval{border-left:2px solid #C4B5FD;padding-left:12px}
+  .lab-u-interval strong{font-size:13px;color:var(--text)}
+  .lab-u-interval p,.lab-u-posterior-note{font-size:13px;color:var(--muted);line-height:1.55;margin:5px 0}
+  .lab-u-settings{font-size:12px;color:#C4B5FD;border-top:1px solid var(--grid);padding-top:14px;margin:20px 0 12px;line-height:1.65}
+  .lab-u-source{padding:0 16px 16px;font-size:13px;line-height:1.6;color:var(--muted);overflow-wrap:anywhere}
+  .lab-u-source dl{display:grid;grid-template-columns:minmax(110px,.55fr) 1fr;gap:6px 14px}
+  .lab-u-source dt{color:var(--text)}.lab-u-source dd{margin:0}
+  .lab-u-source code{font-size:12px;white-space:normal}
+  /* A single EV estimate leads; the chart tests equity assumptions. */
+  .ev-results{grid-template-rows:none;gap:16px;align-content:start;overflow:clip}
+  .ev-input-panel{overflow:clip}
+  .ev-result-head h2{font-size:24px}
+  .ev-primary-row{display:grid;grid-template-columns:1.15fr 1fr;gap:20px;align-items:center}
+  #ev_main_value{font-size:clamp(38px,3.8vw,56px);line-height:1.2;font-weight:750;letter-spacing:-.04em;white-space:nowrap;font-variant-numeric:tabular-nums}
+  #ev_verdict{font-size:13px;color:var(--muted);margin:5px 0 0}
+  .ev-gap-box{border-left:1px solid var(--grid);padding-left:20px}
+  .ev-gap-box span,.ev-gap-box small{display:block;font-size:12px;color:var(--muted)}
+  .ev-gap-box strong{display:block;font-size:28px;font-variant-numeric:tabular-nums;margin:3px 0}
+  .ev-equity-context{display:flex;gap:28px;margin:0;padding-bottom:16px;border-bottom:1px solid var(--grid)}
+  .ev-equity-context dt{font-size:12px;color:var(--muted)}.ev-equity-context dd{font-size:18px;margin:4px 0 0}
+  .ev-sensitivity h3{font-size:16px;margin:0}
+  #ev_sensitivity_chart{width:100%;height:245px}
+  .ev-chart-key{display:flex;flex-wrap:wrap;gap:7px 16px;font-size:11px;color:var(--muted);margin:0 0 12px}
+  .ev-chart-key span{display:inline-flex;align-items:center;gap:5px}
+  .ev-chart-key i{width:8px;height:8px;border-radius:50%;background:var(--accent2)}
+  .ev-chart-key .ev-key-threshold{width:15px;height:0;border-top:2px dashed var(--muted);background:none;border-radius:0}
+  .ev-chart-key .ev-key-test{background:var(--median)}
+  .ev-test-controls{border:1px solid var(--grid);border-radius:10px;padding:12px}
+  .ev-test-controls label{display:flex;justify-content:space-between;gap:12px;font-size:13px}
+  .ev-test-controls output{font-weight:650;color:var(--median)}
+  .ev-test-controls input{width:100%;margin:12px 0;accent-color:var(--median)}
+  .ev-test-controls>div{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .ev-test-controls p{font-size:13px;line-height:1.5;margin:0}
+  .ev-test-controls .btn{width:auto;font-size:12px;min-height:38px;padding:8px 12px;white-space:nowrap;margin:0}
+  .ev-sensitivity>.cap{margin:10px 0 0;font-size:12px;line-height:1.55}
+  #ev_expl{font-size:12px;line-height:1.6;margin:0;border-top:1px solid var(--grid);padding-top:12px}
+  .ev-results[data-state="pending"] .ev-primary-row,.ev-results[data-state="pending"] .ev-sensitivity{opacity:.5}
+  @media(max-width:1000px){.lab-compare-grid,.lab-uncertainty-grid{grid-template-columns:1fr}#risklab .lab-reference-grid{grid-template-columns:1fr}#lab_u_posterior{height:250px}}
+  @media(max-width:600px){.lab-save-row{align-items:start;flex-direction:column;gap:8px}.lab-compare,.lab-uncertainty{padding:18px 14px}.lab-compare-head{flex-direction:column;gap:12px}.lab-uncertainty-head h3{font-size:20px}.lab-u-source{padding:0 8px 12px}.lab-u-source dl{grid-template-columns:1fr}.lab-u-source dd{margin-bottom:6px}.ev-primary-row{grid-template-columns:1fr;gap:14px}.ev-gap-box{border-left:none;padding:0}#ev_main_value{font-size:48px}.ev-equity-context{gap:22px}.ev-test-controls>div{align-items:start;flex-direction:column}.ev-test-controls .btn{white-space:normal}#ev_sensitivity_chart{height:230px}}
+  @media(max-width:600px){.lab-uncertainty-values span{min-height:36px}}
+  html{scroll-padding-top:100px}
+  .pf-action-button{scroll-margin-top:110px}
+  .pf-decision-actions{grid-template-columns:repeat(var(--pf-choice-count,4),minmax(0,1fr))}
+  .pf-trainer-setup{max-width:620px;margin-bottom:14px}
+  .pf-trainer-setup select{width:100%}
+  #pf_retry{width:auto;margin:0 0 14px}
+  #preflop[aria-busy="true"] .pf-view{opacity:.65}
+  @media(max-width:900px){.pf-decision-actions{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -368,7 +541,6 @@
   <button type="button" class="t" id="tab-ev" data-mod="ev" role="tab" aria-controls="ev" aria-selected="false" tabindex="-1">Pot Odds &amp; EV</button>
   <button type="button" class="t" id="tab-bankroll" data-mod="bankroll" role="tab" aria-controls="bankroll" aria-selected="false" tabindex="-1">Bankroll Risk</button>
   <button type="button" class="t" id="tab-preflop" data-mod="preflop" role="tab" aria-controls="preflop" aria-selected="false" tabindex="-1">Preflop</button>
-  <button type="button" class="t" id="tab-gto" data-mod="gto" role="tab" aria-controls="gto" aria-selected="false" tabindex="-1">GTO Trainer</button>
   <button type="button" class="t" id="tab-about" data-mod="about" role="tab" aria-controls="about" aria-selected="false" tabindex="-1">About</button>
 </nav>
 <main id="main-content">
@@ -376,63 +548,116 @@
   <!-- ===================== RISK LAB (research dashboard) ===================== -->
   <section class="mod on" id="risklab" role="tabpanel" aria-labelledby="tab-risklab">
     <div class="labhead">
-      <div class="eyebrow">RESEARCH DASHBOARD · COMPUTATIONAL STATISTICS</div>
       <h2 class="labtitle">Bankroll Risk Lab</h2>
-      <p class="q">How reliable is a risk estimate when the model, the data, and the numerics are all imperfect?</p>
-      <p class="labled">A study of ruin probability under an absorbing boundary — how much a headline risk number moves once barrier resolution, Monte Carlo error, parameter uncertainty, and model misspecification are each taken seriously. The simulation runs on the private calculation service and returns only chart-ready results.</p>
-      <div class="stamp">seed 42 · reproducible · private compute API</div>
+      <p class="labled">I test how assumptions and numerical choices change bankroll risk.</p>
     </div>
 
-    <div class="labsec">// Live simulation</div>
-    <div class="labhero">
-      <div class="panel lab-visual-panel">
-        <div class="lab-chart-head">
-          <div><h3>Bankroll paths</h3><p id="lab_chart_meta">Loading simulation context…</p></div>
-          <div class="lab-risk-badge" id="lab_chart_risk_badge"><span>Risk of ruin</span><strong id="lab_chart_risk">—</strong></div>
-        </div>
-        <div id="lab_fan"></div>
-        <div class="lab-chart-key" aria-label="Chart legend">
-          <span><i class="key-50"></i>Middle 50%</span><span><i></i>Middle 90%</span><span><i class="key-median"></i>Median</span><span><i class="key-ruin"></i>Ruin</span>
-        </div>
-        <p class="cap">Bands use every simulation; example paths add context without changing the result. Release a slider to recompute.</p>
+    <div class="lab-scenarios">
+      <span class="lab-section-label">Try a scenario</span>
+      <div class="presetgroup scenario-cards" role="group" aria-label="Risk Lab starting assumptions">
+        <button type="button" class="preset labpreset" data-wr="0" data-bank="30" data-sd="90" data-hands="100000" aria-pressed="true"><strong>I’m not sure</strong><small>0 bb/100 · 30 BI</small></button>
+        <button type="button" class="preset labpreset" data-wr="-2" data-bank="15" data-sd="90" data-hands="100000" aria-pressed="false"><strong>Stress test</strong><small>−2 bb/100 · 15 BI</small></button>
+        <button type="button" class="preset labpreset" data-wr="3" data-bank="30" data-sd="90" data-hands="100000" aria-pressed="false"><strong>Positive edge</strong><small>+3 bb/100 · 30 BI</small></button>
       </div>
-      <div class="panel">
-        <div class="parameter-help" role="note"><strong>You do not need to calculate everything yourself.</strong>Bankroll and horizon are choices you know. Win rate and standard deviation normally come from tracking software; without enough history, use a starting assumption below and compare several scenarios.</div>
-        <p class="quicklabel">1 · Choose a starting assumption</p>
-        <div class="presetgroup scenario-cards" role="group" aria-label="Risk Lab starting assumptions">
-          <button type="button" class="preset labpreset" data-wr="0" data-bank="30" data-sd="90" data-hands="100000" aria-pressed="true"><strong>I’m not sure</strong><small>0 bb/100 · 30 BI</small></button>
-          <button type="button" class="preset labpreset" data-wr="-2" data-bank="15" data-sd="90" data-hands="100000" aria-pressed="false"><strong>Conservative stress test</strong><small>−2 bb/100 · 15 BI</small></button>
-          <button type="button" class="preset labpreset" data-wr="3" data-bank="30" data-sd="90" data-hands="100000" aria-pressed="false"><strong>Winning estimate</strong><small>+3 bb/100 · 30 BI</small></button>
+    </div>
+
+    <div class="lab-live" id="lab_live" data-state="loading" aria-busy="true">
+      <div class="lab-current-grid">
+        <div class="lab-risk-summary">
+          <div class="lab-run-state" id="lab_run_state" role="status" aria-live="polite">Calculating current simulation…</div>
+          <h3>Risk of hitting zero</h3>
+          <div class="lab-main-value" id="lab_ror">—</div>
+          <p class="lab-interval" id="lab_ci">95% Monte Carlo interval</p>
+          <p class="lab-insight" id="lab_insight">Calculating the risk under these assumptions…</p>
+          <p class="lab-active-scenario" id="lab_active_scenario">30 buy-ins · 0 bb/100 edge · 90 bb/100 swings · 100k hands</p>
+          <dl class="lab-supporting">
+            <div><dt>Survival rate</dt><dd id="lab_surv">—</dd></div>
+            <div><dt title="The peak-to-trough fall exceeded by 5% of simulated paths">P95 max drawdown</dt><dd id="lab_dd">—</dd></div>
+          </dl>
+          <p class="lab-limit">Conditional model estimate. The interval describes simulation error; it does not include uncertainty in the assumptions.</p>
         </div>
-        <div class="swing-question" id="lab_swing_help"><p class="assumption-label">Which description sounds most like your usual sessions?</p><p class="swing-help">No calculation needed — choose the closest match. If you are unsure, use “Normal ups and downs.”</p></div>
+        <div class="lab-visual-panel">
+          <div class="lab-chart-head"><div><h3>Bankroll paths</h3><p id="lab_chart_meta">Loading simulation…</p></div></div>
+          <div id="lab_fan" role="img" aria-label="Bankroll simulation is loading"></div>
+          <div class="lab-chart-key" aria-label="Chart legend">
+            <span><i class="key-50"></i>Middle 50%</span><span><i></i>Middle 90%</span><span><i class="key-median"></i>Median</span><span><i class="key-ruin"></i>Ruin</span>
+          </div>
+          <p class="cap" id="lab_fan_note">Bands summarise the stored example paths; risk uses the full simulation.</p>
+        </div>
+      </div>
+      <div class="lab-run-footer"><span><span id="lab_paths">—</span> paths · seed 42</span><span id="lab_status" role="status" aria-live="polite">Calculating…</span></div>
+      <div class="lab-save-row"><button type="button" class="btn ghost" id="lab_save_a" disabled>Save current as A</button><p>Save a baseline, then change the assumptions to compare it with B.</p></div>
+    </div>
+
+    <details class="lab-adjust" id="lab_adjust">
+      <summary>Adjust assumptions <span id="lab_input_context">30 BI · 100k hands</span></summary>
+      <div class="lab-controls-inner">
+        <p class="lab-control-help">I use these inputs to explore scenarios. Without tracker statistics, compare the presets rather than treating the edge as known. Release a slider to update.</p>
+        <div class="swing-question" id="lab_swing_help"><p class="assumption-label">Choose the size of the swings</p><p class="swing-help">These are starting assumptions. Tracker statistics can replace them below.</p></div>
         <div class="presetgroup swing-cards" role="group" aria-label="Choose how much your game usually swings" aria-describedby="lab_swing_help">
           <button type="button" class="preset sdpreset" data-sd="70" aria-pressed="false"><strong>Mostly steady</strong><small>Smaller pots; all-ins are uncommon</small><span class="swing-value">Model setting · 70 bb/100</span></button>
           <button type="button" class="preset sdpreset" data-sd="90" aria-pressed="true"><strong>Normal ups and downs <span class="swing-tag">Recommended</span></strong><small>A mix of regular and occasional big pots</small><span class="swing-value">Model setting · 90 bb/100</span></button>
           <button type="button" class="preset sdpreset" data-sd="120" aria-pressed="false"><strong>Action-heavy</strong><small>Large pots and all-ins happen often</small><span class="swing-value">Model setting · 120 bb/100</span></button>
           <button type="button" class="preset sdpreset" data-sd="150" aria-pressed="false"><strong>Extremely wild</strong><small>Huge or multiway all-in pots are common</small><span class="swing-value">Model setting · 150 bb/100</span></button>
         </div>
-        <p class="quicklabel">2 · Fine-tune if you know your numbers</p>
+        <p class="quicklabel">Fine-tune the assumptions</p>
         <div class="ctl"><label for="lab_wr">Expected win rate <b id="lab_wr_v">0.0 bb/100</b></label><p class="ctlhelp" id="lab_wr_help">Use a tracker over a meaningful sample; if unsure, keep 0 and test both −2 and +3.</p><input id="lab_wr" aria-describedby="lab_wr_help" type="range" min="-5" max="10" step="0.5" value="0"></div>
         <div class="ctl"><label for="lab_bank">Bankroll <b id="lab_bank_v">30 buy-ins</b></label><input id="lab_bank" type="range" min="5" max="60" step="1" value="30"></div>
         <div class="ctl"><label for="lab_sd">Game swings <b id="lab_sd_v">90 bb/100</b></label><p class="ctlhelp" id="lab_sd_help">The cards above set this for you. Only adjust it manually if your tracking software reports standard deviation.</p><input id="lab_sd" aria-describedby="lab_sd_help" type="range" min="60" max="160" step="5" value="90"></div>
         <div class="ctl"><label for="lab_hn">Planning horizon <b id="lab_hn_v">100k hands</b></label><input id="lab_hn" type="range" min="20000" max="300000" step="20000" value="100000"></div>
         <button class="btn primary" id="lab_hp">Detailed run (16k paths)</button>
-        <div class="cap" id="lab_status" role="status" aria-live="polite">2,000 paths · seed 42</div>
       </div>
-    </div>
-    <div class="kgrid k4">
-      <div class="kpi hot"><div class="kl">Risk of ruin</div><div class="kv" id="lab_ror">—</div><div class="ks" id="lab_ci">95% CI</div></div>
-      <div class="kpi"><div class="kl">Survival rate</div><div class="kv" id="lab_surv">—</div><div class="ks">never hit the barrier</div></div>
-      <div class="kpi hot"><div class="kl">P95 max drawdown</div><div class="kv" id="lab_dd">—</div><div class="ks">worst 5% peak-to-trough</div></div>
-      <div class="kpi"><div class="kl">Paths simulated</div><div class="kv" id="lab_paths">—</div><div class="ks">this run</div></div>
-    </div>
-    <p class="result-insight" id="lab_insight" role="status" aria-live="polite">Calculating a plain-language summary…</p>
+    </details>
 
-    <div class="labsec">// Risk of ruin vs bankroll</div>
-    <div class="panel"><div id="lab_curve" style="height:300px"></div></div>
-    <p class="cap">Live Monte Carlo (cyan) with the analytical finite-horizon Brownian benchmark (dashed); vertical marker = current bankroll.</p>
+    <section class="lab-compare" id="lab_compare" aria-labelledby="lab_compare_title" hidden>
+      <div class="lab-compare-head"><div><h3 id="lab_compare_title">What changed between A and B?</h3><p id="lab_compare_state" role="status" aria-live="polite">A is saved. B follows the current simulation.</p></div><div class="lab-compare-actions"><button type="button" class="btn ghost" id="lab_edit_b">Adjust B</button><button type="button" class="btn ghost" id="lab_clear_a">Clear comparison</button></div></div>
+      <div class="lab-compare-grid">
+        <div>
+          <div class="lab-compare-values"><div><span>Saved A · risk</span><strong id="lab_a_risk">—</strong><small id="lab_a_ci"></small></div><div><span>Current B · risk</span><strong id="lab_b_risk">—</strong><small id="lab_b_ci"></small></div></div>
+          <p class="lab-compare-delta" id="lab_compare_delta"></p>
+          <table class="lab-compare-table"><caption>Scenario assumptions</caption><thead><tr><th scope="col">Input</th><th scope="col">A</th><th scope="col">B</th></tr></thead><tbody id="lab_compare_inputs"></tbody></table>
+          <p class="cap" id="lab_compare_precision"></p>
+        </div>
+        <div><h4>Bankroll paths · A vs B</h4><div id="lab_compare_chart" role="img" aria-label="Saved and current scenario median bankroll paths"></div><p class="cap">Lines and middle-50% bands summarise the stored example paths. Risk uses all runs. Each scenario ends at its own horizon.</p></div>
+      </div>
+      <p class="lab-limit">Intervals describe Monte Carlo error only. The difference uses unrounded point estimates; no interval or significance test for the difference is shown. Reloading clears the saved comparison.</p>
+    </section>
 
-    <div class="labsec">// Cross-validation</div>
+    <div class="lab-curve-section">
+      <h3>How risk changes with bankroll</h3>
+      <p class="cap" id="lab_curve_context">Current assumptions · Monte Carlo with a finite-horizon Brownian comparison.</p>
+      <div class="panel"><div id="lab_curve" role="img" aria-label="Risk of ruin by starting bankroll" style="height:280px"></div></div>
+    </div>
+
+    <section class="lab-reference" aria-labelledby="lab_reference_title">
+      <div class="lab-reference-head"><div><span class="lab-reference-tag">Saved experiments</span><h3 id="lab_reference_title">Fixed reference results</h3></div><span class="lab-fixed-badge">Independent of the controls above</span></div>
+      <p class="lab-reference-intro">I use these saved experiments to examine numerical error, parameter uncertainty and model assumptions. Each experiment has its own settings; these numbers do not update with the current simulation.</p>
+      <article class="lab-uncertainty" aria-labelledby="lab_uncertainty_title">
+        <div class="lab-uncertainty-head"><span>Parameter uncertainty · synthetic history</span><h3 id="lab_uncertainty_title">How much does an uncertain win rate change risk?</h3><p>I estimate a win rate from 50,000 synthetic hands, then carry its uncertainty through the risk model.</p></div>
+        <div class="lab-uncertainty-grid">
+          <div>
+            <div class="lab-uncertainty-values"><div><span>Use one win-rate estimate</span><strong id="lab_u_plugin">—</strong><small>Conditional risk at the point estimate</small></div><div><span>Account for win-rate uncertainty</span><strong id="lab_u_integrated">—</strong><small>Average risk over the posterior</small></div></div>
+            <p id="lab_u_delta" class="lab-u-insight"></p>
+            <div id="lab_u_risk_chart" role="img" aria-label="Point estimate risk compared with uncertainty-integrated mean risk"></div>
+            <div class="lab-u-interval"><strong id="lab_u_interval">—</strong><p>This is the posterior range of model risk, conditional on the prior and model. It describes parameter uncertainty, rather than Monte Carlo error.</p></div>
+          </div>
+          <div><h4>What win rates remain plausible?</h4><div id="lab_u_posterior" role="img" aria-label="Normal posterior density for the win rate"></div><p class="lab-u-posterior-note" id="lab_u_posterior_note"></p><p class="cap">The curve is the fitted Normal posterior density. It is not a histogram of observed results.</p></div>
+        </div>
+        <p class="lab-u-settings" id="lab_u_settings"></p>
+        <details class="lab-reference-detail"><summary>Data, assumptions and reproducibility</summary><div class="lab-u-source"><dl id="lab_u_source"></dl><p>I hold the estimated volatility, bankroll and horizon fixed while varying the win rate over its posterior. This case does not include uncertainty in volatility or model choice. A different dataset or prior can change the size and direction of the comparison.</p><code>python -m src.experiments.uncertainty_risk --config configs/uncertainty_risk.yaml --tag demo</code><p>Saved result: <code>reports/tables/uncertainty_risk_demo.json</code><br>Settings: <code>reports/tables/uncertainty_risk_demo.provenance.json</code></p></div></details>
+      </article>
+    <div class="lab-reference-grid">
+      <div class="strand"><div class="se">STRAND 01 · NUMERICS</div><h3>Barrier resolution &amp; the Brownian-bridge correction</h3>
+        <p>A discrete step lets a path cross the ruin boundary and recover between observations, biasing risk downward. At a 500-hand step the estimate understates ruin by <span class="big">8.2%</span>; a Brownian-bridge correction cuts the discretization error to <span class="big">&lt;1%</span>.</p></div>
+      <div class="strand"><div class="se">STRAND 02 · MONTE CARLO ERROR</div><h3>Convergence &amp; interval coverage</h3>
+        <p>Estimator error scales with the fitted log-log slope <span class="big">−0.55 ± 0.03</span>, matching the <span class="big">O(N⁻¹ᐟ²)</span> rate. Wilson intervals are checked for empirical coverage rather than assumed.</p></div>
+      <div class="strand"><div class="se">STRAND 04 · ROBUSTNESS</div><h3>Model-misspecification stress tests</h3>
+        <p>Breaking the i.i.d.-Normal assumption at a fixed edge and variance: serial dependence AR(1) inflates ruin <span class="big">×1.44</span> and regime switching <span class="big">×1.20</span>; variance-matched heavy tails and shocks are roughly neutral.</p></div>
+    </div>
+
+
+      <details class="lab-reference-detail">
+        <summary>Compare methods · fixed reference scenario</summary>
     <div class="panel"><table>
       <thead><tr><th>Method</th><th style="text-align:right">Ruin probability</th></tr></thead>
       <tbody>
@@ -444,24 +669,16 @@
       <p class="cap">Canonical scenario (3 bb/100, std 90, 30 buy-ins, 100k hands). Agreement bounds <i>numerical</i> error — it does not prove the model is right.</p>
     </div>
 
-    <div class="labsec">// Research strands</div>
-    <div class="grid2">
-      <div class="strand"><div class="se">STRAND 01 · NUMERICS</div><h3>Barrier resolution &amp; the Brownian-bridge correction</h3>
-        <p>A discrete step lets a path cross the ruin boundary and recover between observations, biasing risk downward. At a 500-hand step the estimate understates ruin by <span class="big">8.2%</span>; a Brownian-bridge correction cuts the discretization error to <span class="big">&lt;1%</span>.</p></div>
-      <div class="strand"><div class="se">STRAND 02 · MONTE CARLO ERROR</div><h3>Convergence &amp; interval coverage</h3>
-        <p>Estimator error scales with the fitted log-log slope <span class="big">−0.55 ± 0.03</span>, matching the <span class="big">O(N⁻¹ᐟ²)</span> rate. Wilson intervals are checked for empirical coverage rather than assumed.</p></div>
-      <div class="strand"><div class="se">STRAND 03 · UNCERTAINTY</div><h3>Bayesian propagation of parameter uncertainty</h3>
-        <p>The win rate is estimated, not known. Plugging in a point estimate reports <span class="big">27.3%</span> ruin; integrating over the posterior raises it to <span class="big">37.4%</span> — a factor of <span class="big">×1.37</span>.</p></div>
-      <div class="strand"><div class="se">STRAND 04 · ROBUSTNESS</div><h3>Model-misspecification stress tests</h3>
-        <p>Breaking the i.i.d.-Normal assumption at a fixed edge and variance: serial dependence AR(1) inflates ruin <span class="big">×1.44</span> and regime switching <span class="big">×1.20</span>; variance-matched heavy tails and shocks are roughly neutral.</p></div>
-    </div>
-
-    <div class="labsec">// Reproduce</div>
+      </details>
+      <details class="lab-reference-detail">
+        <summary>Reproduce the reference experiments</summary>
     <div class="repro">python -m src.experiments.barrier_resolution --config configs/barrier_resolution.yaml<br>
 python -m src.experiments.monte_carlo_convergence --config configs/monte_carlo_convergence.yaml<br>
 python -m src.experiments.uncertainty_risk --config configs/uncertainty_risk.yaml<br>
 python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
     <p class="labnote">Numbers here are from the seeded reference runs; regenerate with the high-precision configs to lock exact decimals.</p>
+      </details>
+    </section>
   </section>
 
   <!-- ===================== EQUITY ===================== -->
@@ -516,38 +733,34 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
 
   <!-- ===================== EV ===================== -->
   <section class="mod" id="ev" role="tabpanel" aria-labelledby="tab-ev">
-    <div class="explainer"><b>See whether a call is profitable on average.</b> Enter only the pot and call size. Your win chance is calculated from the cards in Hand Equity and carried here automatically.
+    <div class="explainer"><b>See how equity changes the value of a call.</b> Enter the pot and call size. Equity is the expected share of the pot, including ties; the current Hand Equity result carries here automatically.
       <details class="learnmore"><summary>What “expected value” means</summary><p>Positive EV means the call earns chips on average over many similar decisions. It does not guarantee the outcome of this hand and does not include future betting.</p></details>
     </div>
     <div class="grid2 ev-layout">
       <div class="panel ev-input-panel">
         <h2>Pot odds &amp; EV of a call</h2>
-        <div class="fld"><label>Pot before your call (bb)</label><input id="ev_pot" type="number" min="0" step="1" value="10"></div>
-        <div class="fld"><label>Amount to call (bb)</label><input id="ev_bet" type="number" min="0.01" step="1" value="5"></div>
+        <div class="fld"><label for="ev_pot">Pot before your call (bb)</label><input id="ev_pot" type="number" min="0" step="1" value="10"><p class="hint">Include the opponent’s bet; exclude your pending call.</p></div>
+        <div class="fld"><label for="ev_bet">Amount to call (bb)</label><input id="ev_bet" type="number" min="0.01" step="1" value="5"></div>
         <div class="equity-source" aria-live="polite">
-          <div><span class="quicklabel">Win chance calculated from your cards</span><strong id="ev_eq_display">Calculating…</strong><p id="ev_eq_context">Using the current Hand Equity matchup.</p></div>
+          <div><span class="quicklabel">Current equity</span><strong id="ev_eq_display">Calculating…</strong><p id="ev_eq_context">Using the current Hand Equity matchup.</p></div>
           <button type="button" class="btn ghost" id="ev_choose_hand">Choose or change cards</button>
         </div>
         <details class="advanced" id="ev_manual"><summary>I already know my equity — enter it manually</summary>
-          <div class="manual-equity-actions"><div class="fld"><label>Your equity (%)</label><input id="ev_eq" type="number" min="0" max="100" step="1" value="45"></div><button type="button" class="btn ghost" id="ev_use_cards">Use card calculation</button></div>
+          <div class="manual-equity-actions"><div class="fld"><label for="ev_eq">Your equity (%)</label><input id="ev_eq" type="number" min="0" max="100" step="0.1" value="45"></div><button type="button" class="btn ghost" id="ev_use_cards">Use card calculation</button></div>
         </details>
         <button class="btn primary" id="ev_run">Evaluate call</button>
         <div class="hint">Results update automatically as the numbers change. Cards are sent securely to the private calculation service for this request and are not stored by the application.</div>
         <div id="ev_err" role="alert" style="color:var(--ruin);font-size:13px;margin-top:8px"></div>
       </div>
       <div class="ev-results" id="ev_results">
-        <div class="ev-result-head">
-          <div><span class="eyebrow">LIVE DECISION · CALL OR FOLD</span><h2>Your decision at a glance</h2></div>
-          <p>The card matchup supplies your equity. Pot size and call size determine the break-even line.</p>
+        <div class="ev-result-head"><div><span class="eyebrow">CURRENT ASSUMPTIONS</span><h2>EV of calling</h2></div><p id="ev_result_state" role="status" aria-live="polite">Calculating…</p></div>
+        <div class="ev-primary-row"><div><output id="ev_main_value">—</output><p id="ev_verdict"></p></div><div class="ev-gap-box"><span>Equity margin</span><strong id="ev_gap">—</strong><small id="ev_gap_note">Distance from break-even</small></div></div>
+        <dl class="ev-equity-context"><div><dt>Current equity</dt><dd id="ev_current_pct">—</dd></div><div><dt>Break-even equity</dt><dd id="ev_threshold_pct">—</dd></div></dl>
+        <div class="ev-sensitivity"><h3>How EV changes with equity</h3><div id="ev_sensitivity_chart" role="img" aria-label="Expected value of calling as a function of assumed equity"></div><div class="ev-chart-key"><span><i></i>Current equity</span><span><i class="ev-key-threshold"></i>Break-even</span><span><i class="ev-key-test"></i>Test assumption</span></div>
+          <div class="ev-test-controls"><label for="ev_test_equity">Try an equity assumption <output id="ev_test_pct">—</output></label><input id="ev_test_equity" type="range" min="0" max="100" step="0.1" value="45" disabled><div><p id="ev_test_result" aria-live="polite"></p><button type="button" class="btn ghost" id="ev_reset_test" disabled>Reset to current equity</button></div></div>
+          <p class="cap" id="ev_sensitivity_note"></p>
         </div>
-        <div class="kgrid ev-kgrid" id="ev_kpis"></div>
-        <div class="ev-comparison" id="ev_comparison" role="img" aria-label="Required equity and current card equity comparison">
-          <div class="ev-comparison-head"><strong>Equity vs break-even line</strong><span>Higher card equity is better</span></div>
-          <div class="meter-row"><label>Required to call</label><div class="meter-track"><span id="ev_required_bar"></span></div><output id="ev_required_value">—</output></div>
-          <div class="meter-row"><label>Your card equity</label><div class="meter-track"><span id="ev_equity_bar"></span></div><output id="ev_equity_value">—</output></div>
-        </div>
-        <div class="card decision-card"><div style="padding:14px 16px" id="ev_verdict"></div></div>
-        <div class="neutral decision-copy" id="ev_expl"></div>
+        <p class="neutral decision-copy" id="ev_expl"></p>
       </div>
     </div>
   </section>
@@ -594,6 +807,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
       </div>
       <div>
         <p class="result-insight" id="bk_insight" role="status" aria-live="polite">Calculating a plain-language summary…</p>
+        <p class="cap" id="bk_result_state" role="status">No completed simulation yet.</p>
         <div class="kgrid k3" id="bk_kpis"></div>
         <div class="card"><div id="bk_fan" style="height:320px"></div></div>
         <p class="cap">Sampled subset of paths (cyan = surviving, red = ruined); band = P5–P95; amber = median.</p>
@@ -612,6 +826,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
       <button type="button" class="pf-mode" id="pf-mode-trainer" data-pf-mode="trainer" role="tab" aria-controls="pf-view-trainer" aria-selected="false">Trainer</button>
     </div>
     <p class="pf-status" id="pf_status" role="status" aria-live="polite">Choose Preflop to load the demonstration range library.</p>
+    <button type="button" class="btn ghost" id="pf_retry" hidden>Retry loading ranges</button>
 
     <div class="pf-view" id="pf-view-library" role="tabpanel" aria-labelledby="pf-mode-library">
       <div class="pf-library">
@@ -667,6 +882,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
     <div class="pf-view" id="pf-view-trainer" role="tabpanel" aria-labelledby="pf-mode-trainer" hidden>
       <div class="pf-trainer">
         <div class="pf-trainer-main">
+          <div class="fld pf-trainer-setup"><label for="pf_trainer_select">Training scenario</label><select id="pf_trainer_select"></select></div>
           <div class="pf-trainer-scenario" id="pf_trainer_scenario">Loading training spot…</div>
           <div class="pf-context-note" id="pf_trainer_context" role="note"></div>
           <div class="pf-trainer-hand"><div class="pf-cards" id="pf_trainer_cards"></div><div><p class="quicklabel">Your hand</p><h2 id="pf_trainer_hand">A5s</h2></div></div>
@@ -678,51 +894,49 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
             <button type="button" class="pf-action-button" data-action="fold" aria-describedby="pf_trainer_context">Fold</button>
           </div>
           <div class="pf-feedback" id="pf_feedback" role="status" aria-live="polite"></div>
-          <div class="pf-frequency-bar" id="pf_trainer_bar" aria-label="Strategy frequencies"></div>
+          <div class="pf-frequency-bar" id="pf_trainer_bar" aria-label="Strategy frequencies" hidden></div>
           <p class="pf-guidance" id="pf_trainer_guidance">Choose an action to reveal the demonstration frequencies.</p>
           <div class="pf-trainer-actions">
-            <button type="button" class="btn primary" id="pf_next_hand">Next hand</button>
+            <button type="button" class="btn primary" id="pf_next_hand" disabled>Choose an action first</button>
             <button type="button" class="btn ghost" id="pf_view_range">View full range</button>
           </div>
         </div>
         <aside class="pf-trainer-side">
           <h2>Session progress</h2>
-          <div class="pf-stat"><span>Hands practised</span><strong id="pf_stat_hands">0 / 169</strong></div>
-          <div class="pf-stat"><span>Accuracy</span><strong class="accent" id="pf_stat_accuracy">—</strong></div>
+          <div class="pf-stat"><span>Unique hands answered</span><strong id="pf_stat_hands">0 / 169</strong></div>
+          <div class="pf-stat"><span>Accepted choices</span><strong class="accent" id="pf_stat_accuracy">—</strong></div>
           <div class="pf-stat"><span>Mixed decisions</span><strong class="mixed" id="pf_stat_mixed">0</strong></div>
           <div class="pf-stat"><span>Current streak</span><strong id="pf_stat_streak">0</strong></div>
-          <p class="pf-disclaimer">The session covers all 169 starting-hand classes in a reproducible shuffled order. A choice counts as acceptable when the demonstration range assigns it a non-zero frequency.</p>
+          <p class="pf-disclaimer">Each of the 169 hand classes counts once per session. An accepted choice has a non-zero frequency in this demo range; this score does not measure real-game skill. Changing the scenario starts a new session.</p>
         </aside>
       </div>
     </div>
-  </section>
-
-  <!-- ===================== GTO ===================== -->
-  <section class="mod" id="gto" role="tabpanel" aria-labelledby="tab-gto">
-    <div class="explainer"><b>Watch a poker strategy learn toward equilibrium.</b> This teaching demo uses tiny three-card Kuhn poker so the known mathematical answer can verify the training.
-      <details class="learnmore"><summary>What GTO means here</summary><p>A game-theory-optimal strategy cannot be exploited by an opponent. The concept transfers to larger poker games, but these specific frequencies do not.</p></details>
-    </div>
+    <details class="pf-learning" id="gto">
+      <summary>Optional: Kuhn poker learning demo</summary>
+      <div class="pf-learning-content">
     <div class="grid2">
       <div class="panel">
-        <h2>GTO trainer — Kuhn poker (CFR)</h2>
-        <p class="neutral">Kuhn poker: a 3-card deck (J&lt;Q&lt;K), one card each, one betting round. Counterfactual Regret Minimization converges to a Nash equilibrium. The known game value to player 1 is <code>-1/18 ≈ -0.0556</code>.</p>
+        <h3 class="kuhn-title">Kuhn poker · CFR</h3>
+        <p class="neutral">I use a three-card game (J&lt;Q&lt;K), one card each and one betting round, to demonstrate strategy learning. I compare the learned game value with the known benchmark: <code>-1/18 ≈ -0.0556</code>.</p>
         <div class="row2">
-          <div class="fld"><label>Training iterations</label><input id="gto_iters" type="number" min="10000" max="500000" step="50000" value="300000"></div>
-          <div class="fld"><label>Seed</label><input id="gto_seed" type="number" value="42"></div>
+          <div class="fld"><label for="gto_iters">Training iterations</label><input id="gto_iters" type="number" min="10000" max="500000" step="50000" value="300000"></div>
+          <div class="fld"><label for="gto_seed">Seed</label><input id="gto_seed" type="number" value="42"></div>
         </div>
-        <button class="btn primary" id="gto_run">Train CFR</button>
+        <button class="btn ghost" id="gto_run">Run learning demo</button>
         <div class="spin" id="gto_spin" role="status" aria-live="polite">Training…</div>
-        <div class="hint">The seed makes repeated runs reproducible. Real No-Limit Hold'em GTO is a research-scale compute problem; Kuhn/Leduc are the right teaching scope and still show the full idea.</div>
+        <div class="hint">I keep the seed fixed for repeatable runs. These strategies apply only to this simplified game.</div>
       </div>
       <div>
         <div class="kgrid" id="gto_kpis"></div>
         <div class="card"><div id="gto_conv" style="height:280px"></div></div>
-        <p class="cap">Running game value converging toward the theoretical −1/18.</p>
-        <h3>Equilibrium strategy (bet / call frequency)</h3>
+        <p class="cap">Learning curve and the theoretical −1/18 benchmark.</p>
+        <h3>Learned action frequencies</h3>
         <table id="gto_table"><thead><tr><th>Info set</th><th>Bet / Call</th><th>Check / Fold</th></tr></thead><tbody></tbody></table>
         <p class="neutral" id="gto_check" style="margin-top:8px"></p>
       </div>
     </div>
+      </div>
+    </details>
   </section>
 
   <!-- ===================== ABOUT ===================== -->
@@ -732,8 +946,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
       <li><b>Hand Equity</b> — expected pot share against up to five fixed or random opponent hands and an optional board. Heads-up spots can use exact enumeration; multiway spots use seeded Monte Carlo.</li>
       <li><b>Pot Odds &amp; EV</b> — uses the latest card-derived equity for a call/fold decision with expected value in big blinds; manual equity is optional.</li>
       <li><b>Bankroll Risk</b> — Monte Carlo risk of ruin with a finite-horizon Brownian cross-check (the full Python engine adds a Markov-chain check and file export).</li>
-      <li><b>Preflop</b> — browse, compare, and practise 169-hand strategy matrices. The current ranges are an illustrative demonstration dataset, not solver-verified output.</li>
-      <li><b>GTO Trainer</b> — CFR on Kuhn poker, validated against the known game value and equilibrium constraints.</li>
+      <li><b>Preflop</b> — browse, compare, and practise 169-hand strategy matrices, with an optional Kuhn poker learning demo. The current ranges are an illustrative demonstration dataset, not solver-verified output.</li>
     </ul>
     <h3>The through-line: reproducibility and validation</h3>
     <ul class="doc">
@@ -756,7 +969,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
       <li>Equity supports up to five fixed or uniformly random opponent hands. It does not yet model weighted opponent ranges or betting-action-based ranges.</li>
       <li>Bankroll assumes i.i.d. Normal results and a stationary win rate; real poker violates both.</li>
       <li>Preflop frequencies are illustrative demo data for evaluating the interface. They should not be treated as Nash-equilibrium or optimal play until licensed solver exports replace them.</li>
-      <li>GTO here is a toy game — the concepts transfer, the specific numbers do not scale to full Hold'em.</li>
+      <li>The optional Kuhn demo uses a toy game; its specific strategies do not apply to full Hold'em.</li>
       <li>All outputs are conditional model estimates, not guarantees.</li>
     </ul>
   </section>
@@ -781,6 +994,7 @@ const RANKS="23456789TJQKA";
 const C={bg:'#0B1220',grid:'#243247',accent:'#38BDF8',ruin:'#F87171',pos:'#4ADE80',
   median:'#FBBF24',text:'#E6EDF3',muted:'#94A3B8',band:'rgba(56,189,248,0.16)'};
 const CFG={displayModeBar:false,responsive:true};
+const UNCERTAINTY_REFERENCE={"result":{"estimate":{"n_blocks":50,"total_hands":50000,"winrate_bb100":1.8591110172663603,"std_bb100":89.00761957929048,"se_winrate":3.9805417578946947,"ci_low":-6.916169275739292,"ci_high":10.634391310272012,"confidence_level":0.95,"lag1_autocorr":0.09233365855463238,"effective_n_blocks":41.54711952419304,"se_winrate_adjusted":4.366733890263048},"prior":{"mean":0,"std":10,"name":"weakly-informative"},"posterior":{"mean":1.5613811605807952,"std":4.001829044403866,"prob_positive":0.6517934254259009},"risk":{"plug_in_risk":0.2729433774673369,"plug_in_winrate":1.8591110172663603,"expected_risk":0.3743235322735789,"median_risk":0.30441712457857373,"risk_std":0.3008012081851002,"credible_intervals":{"ci_50":[0.10270592979424292,0.6110673032551631],"ci_80":[0.03383424423946822,0.8496529767819727],"ci_90":[0.016686821032322722,0.9341663140220829],"ci_95":[0.008805418570584604,0.973128111721021]},"threshold_exceedance":{"p_risk_gt_5pct":0.85905,"p_risk_gt_10pct":0.75465,"p_risk_gt_25pct":0.5525},"n_draws":20000,"understatement_factor":1.3714329167718098}},"provenance":{"timestamp_utc":"2026-07-13T15:26:41+00:00","git_commit":null,"platform":"Linux-6.8.0-124-generic-aarch64-with-glibc2.35","packages":{"python":"3.10.12","numpy":"2.2.6","scipy":"1.15.3","pandas":"2.3.3","matplotlib":"3.10.9"},"parameters":{"experiment":"uncertainty_risk","config":{"data":{"csv":null,"true_winrate":3,"true_std":100,"block_hands":1000,"n_blocks":50,"seed":1},"prior":{"kind":"weakly-informative","std":10},"risk":{"bankroll_bb":2000,"n_hands":100000,"ruin_threshold_bb":0},"n_draws":20000,"seed":0,"confidence_level":0.95}}},"sources":[{"file":"reports/tables/uncertainty_risk_demo.json","sha256":"5d99004a3c22103fb7509ed36cee922b6d5cc0f78999408ba1c21e6f0e362494"},{"file":"reports/tables/uncertainty_risk_demo.provenance.json","sha256":"62db03502804d54176a648bc00e3995a9c9c9bd4f25cd4266f5611ba64e5e167"}]};
 function layout(title,xt,yt,extra){return Object.assign({title:{text:title,font:{color:C.text,size:16}},
   paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:C.muted,size:13},
   margin:{l:62,r:18,t:44,b:48},xaxis:{title:xt,gridcolor:C.grid,zerolinecolor:C.grid},
@@ -831,6 +1045,7 @@ function rollNumber(el,finalText){
 function rollKpis(containerId){requestAnimationFrame(()=>document.querySelectorAll(`#${containerId} .kv`).forEach(el=>rollNumber(el,el.textContent)));}
 function animateResultBar(el){if(!el||reducedMotion()||typeof el.animate!=='function')return;el.animate([{transform:'scaleX(.04)'},{transform:'scaleX(1)'}],{duration:520,easing:'cubic-bezier(.2,.75,.25,1)'});}
 const clamp=(value,min,max)=>Math.min(max,Math.max(min,value));
+function integerInput(id,fallback){const value=Number.parseInt($(id).value,10);return Number.isFinite(value)?value:fallback;}
 async function apiJSON(path,payload,timeoutMs=60000,externalSignal=null){
   const controller=new AbortController();
   let timedOut=false;
@@ -875,6 +1090,7 @@ document.querySelectorAll('.fld').forEach(field=>{
 /* ================= NAVIGATION ================= */
 const tabs=[...document.querySelectorAll('.nav .t')];
 function activateTab(t,updateHash=true){
+  document.body.classList.toggle('risklab-active',t.dataset.mod==='risklab');
   tabs.forEach(x=>{const active=x===t;x.classList.toggle('on',active);x.setAttribute('aria-selected',String(active));x.tabIndex=active?0:-1;});
   document.querySelectorAll('.mod').forEach(x=>{const active=x.id===t.dataset.mod;x.classList.toggle('on',active);x.setAttribute('aria-hidden',String(!active));});
   t.scrollIntoView({block:'nearest',inline:'center'});
@@ -890,8 +1106,15 @@ tabs.forEach((t,index)=>{
     tabs[next].focus();activateTab(tabs[next]);initializeModule(tabs[next].dataset.mod);
   });
 });
-const initialTab=tabs.find(t=>'#'+t.dataset.mod===location.hash)||tabs[0];
+const requestedHash=location.hash==='#gto'?'#preflop':location.hash;
+if(location.hash==='#gto'&&history.replaceState)history.replaceState(null,'','#preflop');
+const initialTab=tabs.find(t=>'#'+t.dataset.mod===requestedHash)||tabs[0];
 activateTab(initialTab,false);
+window.addEventListener('hashchange',()=>{
+  const hash=location.hash==='#gto'?'#preflop':location.hash;
+  const tab=tabs.find(t=>'#'+t.dataset.mod===hash);
+  if(tab){activateTab(tab,false);initializeModule(tab.dataset.mod);if(location.hash==='#gto')history.replaceState(null,'','#preflop');}
+});
 
 /* ================= 1. HAND EQUITY (visual card picker) ================= */
 const SUIT_SYM=['♣','♦','♥','♠'];   // c d h s  (index = suit)
@@ -928,7 +1151,19 @@ function renderOpponents(){
   $('eq_opp_count').textContent=activeOpponents.length+' of 5';$('eq_add_opp').disabled=activeOpponents.length>=5;
 }
 function renderSlots(){renderGroup('hero');renderGroup('board');renderOpponents();}
-function markEquityDirty(){const verdict=$('eq_verdict');if(verdict.style.display!=='none'){verdict.className='result-insight caution';verdict.textContent='Cards or opponents changed — compute equity to refresh this result.';}}
+function markEquityDirty(){
+  ++equityRequest;equityController?.abort();equityController=null;
+  $('eq_spin').style.display='none';setBusy($('eq_run'),false);
+  window.__lastEquity=null;window.__lastEquityContext=null;$('eq_toev').disabled=true;
+  const verdict=$('eq_verdict');verdict.style.display='block';verdict.className='result-insight caution';
+  verdict.textContent='Cards or opponents changed — compute equity to refresh this result.';
+  if(window.__equityMode!=='manual'){
+    ++evRequest;evController?.abort();evController=null;
+    $('ev_eq_display').textContent='Needs calculation';$('ev_eq_context').textContent='Cards changed. Calculate their equity before evaluating the call.';
+    $('ev_results').dataset.state='pending';$('ev_result_state').textContent=evCurrentResult?'Previous result · card equity changed':'Calculate card equity first';
+    $('ev_test_equity').disabled=true;$('ev_reset_test').disabled=true;
+  }
+}
 function openPicker(slotId){
   activeSlot=slotId;
   pickerReturnFocus=document.activeElement;
@@ -982,7 +1217,8 @@ $('pgrid').addEventListener('click',e=>{const c=e.target.closest('.pcard');
 $('pickclose').addEventListener('click',closePicker);
 $('picker').addEventListener('click',e=>{if(e.target.id==='picker')closePicker();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('picker').classList.contains('on'))closePicker();});
-$('eq_clear').addEventListener('click',()=>{Object.keys(cardState).forEach(k=>cardState[k]=null);activeOpponents=[0];randomOpponents.fill(false);renderSlots();markEquityDirty();});
+function clearEquityCards(){Object.keys(cardState).filter(k=>groupOf(k)!=='preflop').forEach(k=>cardState[k]=null);}
+$('eq_clear').addEventListener('click',()=>{clearEquityCards();activeOpponents=[0];randomOpponents.fill(false);renderSlots();markEquityDirty();});
 // one-click example matchups (beginner friendly)
 const EXAMPLES={
   aakk:{hero:[51,38],vill:[50,24],random:false},   // A♠A♥ vs K♠K♦
@@ -991,7 +1227,7 @@ const EXAMPLES={
 };
 document.querySelectorAll('.exbtn').forEach(b=>b.addEventListener('click',()=>{
   const ex=EXAMPLES[b.dataset.ex]; if(!ex) return;
-  Object.keys(cardState).forEach(k=>cardState[k]=null);
+  clearEquityCards();markEquityDirty();
   activeOpponents=[0];randomOpponents.fill(false);
   cardState.hero0=ex.hero[0]; cardState.hero1=ex.hero[1];
   if(ex.vill){cardState.opp0a=ex.vill[0]; cardState.opp0b=ex.vill[1];}
@@ -1001,23 +1237,27 @@ document.querySelectorAll('.exbtn').forEach(b=>b.addEventListener('click',()=>{
 
 let equityRequest=0;
 let equityController=null;
+function showEquityError(message){
+  $('eq_err').textContent=message;
+  if(window.__equityMode!=='manual'){$('ev_err').textContent=message;$('ev_result_state').textContent=evCurrentResult?'Previous result · card calculation unavailable':'Card calculation unavailable';}
+}
 async function runEquity(showResult=false){
   $('eq_err').textContent='';
   const hero=SLOTS.hero.map(s=>cardState[s]).filter(v=>v!=null);
-  if(hero.length!==2){$('eq_err').textContent='Pick 2 cards for your hand.';return;}
+  if(hero.length!==2){showEquityError('Pick 2 cards for your hand.');return;}
   const board=SLOTS.board.map(s=>cardState[s]).filter(v=>v!=null);
   const opponents=[];
   for(let position=0;position<activeOpponents.length;position++){
     const idx=activeOpponents[position];
     if(randomOpponents[idx]){opponents.push(null);continue;}
     const hand=opponentSlots(idx).map(s=>cardState[s]).filter(v=>v!=null);
-    if(hand.length!==2){$('eq_err').textContent=`Pick 2 cards for opponent ${position+1}, or mark that hand as unknown / random.`;return;}
+    if(hand.length!==2){showEquityError(`Pick 2 cards for opponent ${position+1}, or mark that hand as unknown / random.`);return;}
     opponents.push(hand);
   }
 
-  const trials=clamp(parseInt($('eq_trials').value)||30000,1000,150000);
+  const trials=clamp(integerInput('eq_trials',30000),1000,150000);
   $('eq_trials').value=trials;
-  const seed=parseInt($('eq_seed').value)||42;
+  const seed=integerInput('eq_seed',42);
   equityController?.abort();
   $('eq_spin').style.display='block';
   setBusy($('eq_run'),true,'Calculating…');
@@ -1044,15 +1284,16 @@ async function runEquity(showResult=false){
     $('eq_legend').innerHTML=`<span style="color:${C.pos}">■ win</span>&nbsp;&nbsp;<span style="color:${C.muted}">■ tie</span>&nbsp;&nbsp;<span style="color:${C.ruin}">■ lose</span>`;
     $('eq_note').innerHTML=res.method==='exact'
       ?'Exact result — no simulation noise.'
-      :'Monte Carlo estimate; standard error ≈ '+(Math.sqrt(res.equity*(1-res.equity)/res.trials)*100).toFixed(2)+' pts.';
+      :'Monte Carlo estimate; conservative approximate standard error ≈ '+(Math.sqrt(res.equity*(1-res.equity)/res.trials)*100).toFixed(2)+' pp (allows for fractional split pots).';
     window.__lastEquity=eqp;
+    $('eq_toev').disabled=false;
     const cardText=i=>RANKS[i%13]+SUIT_SYM[Math.floor(i/13)];
     const opponentText=opponents.map((hand,index)=>hand?hand.map(cardText).join(' '):`Opponent ${index+1} random`).join(' · ');
     window.__lastEquityContext=hero.map(cardText).join(' ')+' vs '+opponentText+(board.length?' · board '+board.map(cardText).join(' '):'');
     if(window.__equityMode!=='manual')useCardEquity(true);
     if(showResult&&matchMedia('(max-width:860px)').matches)$('eq_results').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'start'});
   }catch(error){
-    if(request===equityRequest)$('eq_err').textContent=errorMessage(error);
+    if(request===equityRequest)showEquityError(errorMessage(error));
   }finally{
     if(request===equityRequest){equityController=null;$('eq_spin').style.display='none';setBusy($('eq_run'),false);}
   }
@@ -1077,43 +1318,87 @@ function useCardEquity(recalculate=true){
 }
 let evRequest=0;
 let evController=null;
+let evCurrentResult=null;
+let evTestPct=null;
+const signedValue=(value,digits=1)=>`${value<0?'−':value>0?'+':''}${Math.abs(value).toFixed(digits)}`;
+function evAmount(value){
+  const amount=Math.abs(value)>=10000?Math.abs(value).toLocaleString('en-US',{notation:'compact',maximumFractionDigits:2}):Math.abs(value).toFixed(2);
+  return `${value<0?'−':value>0?'+':''}${amount} bb`;
+}
+function renderEVSensitivity(){
+  if(!evCurrentResult)return;
+  const r=evCurrentResult,current=r.equity*100,test=evTestPct??current,q=test/100;
+  const testEV=q*r.pot-(1-q)*r.call;
+  $('ev_test_pct').textContent=test.toFixed(1)+'%';
+  $('ev_test_result').textContent=`At ${test.toFixed(1)}% equity: ${evAmount(testEV)} EV per call.`;
+  $('ev_sensitivity_note').textContent=`Pot ${r.pot.toLocaleString()} bb · call ${r.call.toLocaleString()} bb held fixed. Each +1 percentage point of equity adds ${((r.pot+r.call)/100).toLocaleString('en-US',{maximumFractionDigits:4})} bb to EV. The slider tests an assumption; it does not recalculate the cards.`;
+  $('ev_sensitivity_chart').setAttribute('aria-label',`EV increases linearly with equity at pot ${r.pot} bb and call ${r.call} bb. Break-even ${(r.requiredEquity*100).toFixed(1)} percent. Current EV ${r.evCall.toFixed(2)} bb; test EV ${testEV.toFixed(2)} bb.`);
+  if(!plotlyReady()){chartUnavailable('ev_sensitivity_chart');return;}
+  const threshold=r.requiredEquity*100;
+  const traces=[
+    {x:[0,threshold],y:[-r.call,0],mode:'lines',line:{color:C.ruin,width:2.4},hovertemplate:'Equity %{x:.1f}%<br>EV %{y:.2f} bb<extra></extra>'},
+    {x:[threshold,100],y:[0,r.pot],mode:'lines',line:{color:C.pos,width:2.4},hovertemplate:'Equity %{x:.1f}%<br>EV %{y:.2f} bb<extra></extra>'},
+    {x:[current],y:[r.evCall],mode:'markers',marker:{size:11,color:C.accent,line:{color:C.text,width:1.5}},hovertemplate:'Current equity %{x:.1f}%<br>EV %{y:.2f} bb<extra></extra>'},
+  ];
+  if(Math.abs(test-current)>.049)traces.push({x:[test],y:[testEV],mode:'markers',marker:{size:11,color:C.median,symbol:'diamond'},hovertemplate:'Test equity %{x:.1f}%<br>EV %{y:.2f} bb<extra></extra>'});
+  const narrow=$('ev_sensitivity_chart').clientWidth<450;
+  const lay=layout('','Equity (%)','Call EV (bb)');
+  lay.showlegend=false;lay.margin={l:narrow?52:60,r:12,t:12,b:48};
+  lay.xaxis.range=[0,100];lay.xaxis.dtick=25;lay.xaxis.fixedrange=true;
+  lay.yaxis.range=[-r.call-(r.pot+r.call)*.08,r.pot+(r.pot+r.call)*.08];lay.yaxis.automargin=true;lay.yaxis.fixedrange=true;
+  lay.shapes=[{type:'line',xref:'paper',x0:0,x1:1,y0:0,y1:0,line:{color:C.muted,width:1,dash:'dot'}},
+    {type:'line',x0:threshold,x1:threshold,yref:'paper',y0:0,y1:1,line:{color:C.muted,width:1,dash:'dash'}}];
+  Plotly.react('ev_sensitivity_chart',traces,lay,CFG);
+}
+function renderEV(result){
+  evCurrentResult=result;
+  const gap=(result.equity-result.requiredEquity)*100,zero=Math.abs(result.evCall)<1e-9;
+  $('ev_main_value').textContent=evAmount(zero?0:result.evCall);
+  $('ev_gap').textContent=signedValue(Math.abs(gap)<1e-9?0:gap)+' pp';
+  $('ev_gap_note').textContent=Math.abs(gap)<1e-9?'At break-even':gap>0?'Above break-even':'Below break-even';
+  $('ev_current_pct').textContent=(result.equity*100).toFixed(1)+'%';
+  $('ev_threshold_pct').textContent=(result.requiredEquity*100).toFixed(1)+'%';
+  $('ev_verdict').textContent=zero?'Break-even in this model':result.evCall>0?'Positive EV relative to folding (0 bb)':'Negative EV relative to folding (0 bb)';
+  $('ev_results').classList.toggle('is-positive',!zero&&result.evCall>0);
+  $('ev_results').classList.toggle('is-negative',!zero&&result.evCall<0);
+  $('ev_results').dataset.state='current';
+  $('ev_result_state').textContent=`${window.__equityMode==='manual'?'Manual':'Card'} equity · pot and call held fixed`;
+  $('ev_test_equity').disabled=false;$('ev_reset_test').disabled=false;
+  evTestPct=result.equity*100;
+  $('ev_test_equity').value=(result.equity*100).toFixed(1);
+  $('ev_expl').textContent=`EV = equity × ${result.pot} − (1 − equity) × ${result.call} bb. Equity uses a 0–1 fraction. This assumes a fixed eligible pot and no future betting, rake or side pots. The curve explores equity assumptions; it is not a confidence interval.`;
+  renderEVSensitivity();
+}
 async function runEV(){
-  const pot=parseFloat($('ev_pot').value),bet=parseFloat($('ev_bet').value),equityPct=parseFloat($('ev_eq').value);
-  $('ev_err').textContent='';
-  if(!Number.isFinite(pot)||!Number.isFinite(bet)||!Number.isFinite(equityPct)||pot<0||bet<=0||equityPct<0||equityPct>100){
-    $('ev_err').textContent='Enter a non-negative pot, a call above 0, and equity from 0% to 100%.';return;
+  if(window.__equityMode!=='manual'&&window.__lastEquity==null){
+    $('ev_result_state').textContent='Calculating card equity first…';
+    if(!equityController)runEquity();
+    return;
   }
+  const pot=parseFloat($('ev_pot').value),bet=parseFloat($('ev_bet').value),equityPct=parseFloat($('ev_eq').value);
   const request=++evRequest;
-  evController?.abort();const controller=new AbortController();evController=controller;
+  evController?.abort();evController=null;
+  $('ev_err').textContent='';
+  $('ev_results').dataset.state='pending';
+  $('ev_test_equity').disabled=true;$('ev_reset_test').disabled=true;
+  if(!Number.isFinite(pot)||!Number.isFinite(bet)||!Number.isFinite(equityPct)||pot<0||bet<=0||equityPct<0||equityPct>100){
+    $('ev_err').textContent='Enter a non-negative pot, a call above 0, and equity from 0% to 100%.';
+    $('ev_result_state').textContent=evCurrentResult?'Previous result · check inputs':'Check inputs';return;
+  }
+  $('ev_result_state').textContent=evCurrentResult?'Previous result · updating…':'Calculating…';
+  const controller=new AbortController();evController=controller;
   try{
   const result=await apiJSON('/api/ev',{pot,call:bet,equityPct},15000,controller.signal);
   if(request!==evRequest)return;
-  const eq=result.equity,potOdds=result.potOdds,reqEq=result.requiredEquity,evCall=result.evCall,good=result.profitable;
-  $('ev_kpis').innerHTML=
-    kpiCard('Pot odds', (potOdds*100).toFixed(1)+'%','call / (pot+call)')+
-    kpiCard('Required equity',(reqEq*100).toFixed(1)+'%','to break even')+
-    kpiCard('Your equity',(eq*100).toFixed(1)+'%','')+
-    kpiCard('EV of calling', (evCall>=0?'+':'')+evCall.toFixed(2)+' bb','vs folding (0 bb)');
-  rollKpis('ev_kpis');
-  const requiredPct=(reqEq*100).toFixed(1),equityValue=(eq*100).toFixed(1);
-  $('ev_required_value').textContent=requiredPct+'%';
-  $('ev_equity_value').textContent=equityValue+'%';
-  $('ev_required_bar').style.width=Math.min(100,Math.max(0,reqEq*100))+'%';
-  $('ev_equity_bar').style.width=Math.min(100,Math.max(0,eq*100))+'%';
-  animateResultBar($('ev_required_bar'));animateResultBar($('ev_equity_bar'));
-  $('ev_comparison').setAttribute('aria-label',`Required equity ${requiredPct} percent; your card equity ${equityValue} percent.`);
-  $('ev_results').classList.toggle('is-positive',good);
-  $('ev_results').classList.toggle('is-negative',!good);
-  $('ev_verdict').innerHTML=`<span class="pill" style="background:${good?'rgba(74,222,128,.16)':'rgba(248,113,113,.16)'};color:${good?C.pos:C.ruin}">`+
-    (good?'Call is +EV':'Fold — call is −EV')+`</span> <span class="neutral">at these pot odds you need ${(reqEq*100).toFixed(1)}% equity; you have ${(eq*100).toFixed(1)}%.</span>`;
-  $('ev_expl').innerHTML=`Calling ${bet} bb into a ${pot} bb pot means you risk ${bet} to win ${(pot+bet).toFixed(0)}. `+
-    `Break-even equity is ${(reqEq*100).toFixed(1)}%. This ignores future betting (implied/reverse-implied odds).`;
-  }catch(error){if(request===evRequest)$('ev_err').textContent=errorMessage(error);}
+  renderEV(result);
+  }catch(error){if(request===evRequest){$('ev_err').textContent=errorMessage(error);$('ev_result_state').textContent=evCurrentResult?'Update failed · previous result':'Calculation unavailable';}}
   finally{if(request===evRequest)evController=null;}
 }
 $('ev_run').addEventListener('click',runEV);
 $('ev_choose_hand').addEventListener('click',()=>document.querySelector('.nav .t[data-mod="equity"]').click());
 $('ev_use_cards').addEventListener('click',()=>useCardEquity(true));
+$('ev_test_equity').addEventListener('input',()=>{evTestPct=+$('ev_test_equity').value;renderEVSensitivity();});
+$('ev_reset_test').addEventListener('click',()=>{if(evCurrentResult){evTestPct=evCurrentResult.equity*100;$('ev_test_equity').value=evTestPct.toFixed(1);renderEVSensitivity();}});
 $('ev_eq').addEventListener('input',()=>{window.__equityMode='manual';updateEVEquitySource();runEV();});
 let _evT=null;
 ['ev_pot','ev_bet'].forEach(id=>$(id).addEventListener('input',()=>{clearTimeout(_evT);_evT=setTimeout(runEV,100);}));
@@ -1121,12 +1406,24 @@ let _evT=null;
 /* ================= 3. BANKROLL RISK ================= */
 let bankrollRequest=0;
 let bankrollController=null;
+function markBankrollDirty(message='Inputs changed — run the simulation to update the previous result.'){
+  ++bankrollRequest;bankrollController?.abort();bankrollController=null;setBusy($('bk_run'),false);
+  $('bk_insight').textContent=message;$('bk_insight').className='result-insight caution';
+  $('bk_result_state').textContent=$('bk_kpis').children.length?'Previous simulation — the numbers below do not represent the edited inputs.':'No completed simulation yet.';
+  $('bk_kpis').style.opacity='.5';
+  $('bk_fan').style.opacity='.5';$('bk_curve').style.opacity='.5';
+}
 // Mirrors the server's work ceiling (MAX_PATH_STEPS in server/compute.js): the main fan plus nine curve runs of clamp(10% of paths, 200, 500) paths, each over ceil(hands/100) steps.
 const BK_MAX_PATH_STEPS=100000000;
 function bankrollPathSteps(hands,paths){return Math.ceil(hands/100)*(paths+9*clamp(Math.round(paths*0.1),200,500));}
 function maxBankrollPaths(hands){let paths=20000;while(paths>100&&bankrollPathSteps(hands,paths)>BK_MAX_PATH_STEPS)paths-=100;return paths;}
 async function runBankroll(){
   const BI=100;
+  markBankrollDirty('Calculating the current assumptions…');
+  const fields=['bk_wr','bk_sd','bk_bank','bk_thr','bk_hands','bk_paths','bk_seed'];
+  if(fields.some(id=>$(id).value.trim()===''||!Number.isFinite(Number($(id).value)))){
+    $('bk_insight').textContent='Fill in all numeric inputs before running the simulation.';return;
+  }
   const p={wr:+$('bk_wr').value,sd:Math.max(0,+$('bk_sd').value),bank:+$('bk_bank').value*BI,thr:+$('bk_thr').value*BI,
     hands:clamp(Math.round(+$('bk_hands').value)||100000,100,1000000),paths:clamp(Math.round(+$('bk_paths').value)||6000,100,20000),
     seed:Math.round(+$('bk_seed').value)};
@@ -1136,7 +1433,7 @@ async function runBankroll(){
   $('bk_budget_note').hidden=!pathsReduced;
   $('bk_budget_note').textContent=pathsReduced?`Simulation paths lowered to ${maxPaths.toLocaleString()} so ${p.hands.toLocaleString()} hands fit in one calculation.`:'';
   $('bk_hands').value=p.hands;$('bk_paths').value=p.paths;
-  if(p.bank<=p.thr){$('bk_kpis').innerHTML=kpiCard('Error','—','bankroll must exceed threshold');return;}
+  if(p.bank<=p.thr||+$('bk_sd').value<0){$('bk_insight').textContent='Bankroll must exceed the threshold; game swings must be non-negative.';return;}
   const request=++bankrollRequest;
   bankrollController?.abort();const controller=new AbortController();bankrollController=controller;
   setBusy($('bk_run'),true,'Simulating…');
@@ -1144,6 +1441,8 @@ async function runBankroll(){
   const result=await apiJSON('/api/bankroll',p,60000,controller.signal);
   if(request!==bankrollRequest)return;
   const r=result.fan,curve=result.curve,metrics=result.metrics;
+  $('bk_fan').style.opacity='1';$('bk_curve').style.opacity='1';
+  $('bk_kpis').style.opacity='1';$('bk_result_state').textContent='Current simulation · '+p.paths.toLocaleString()+' paths · seed '+p.seed;
   const ror=metrics.risk,med=metrics.medianTerminal,p95=metrics.p95Drawdown,pp=metrics.profitProbability;
   const rorCount=Math.round(ror*100),riskTone=ror<0.05?'positive':ror<0.2?'caution':'negative';
   $('bk_insight').className='result-insight '+riskTone;
@@ -1168,7 +1467,7 @@ async function runBankroll(){
   lay2.shapes=[{type:'line',x0:p.bank/BI,x1:p.bank/BI,yref:'paper',y0:0,y1:1,line:{color:C.median,dash:'dot',width:1.3}}];
   Plotly.react('bk_curve',[{x:curve.xs,y:curve.monteCarlo,mode:'lines+markers',line:{color:C.accent,width:2.2},name:'Monte Carlo'},
     {x:curve.xs,y:curve.analytical,mode:'lines',line:{color:C.muted,dash:'dash',width:1.5},name:'Brownian (finite)'}],lay2,CFG);
-  }catch(error){if(request===bankrollRequest)$('bk_kpis').innerHTML=kpiCard('Service error','—',errorMessage(error));}
+  }catch(error){if(request===bankrollRequest)$('bk_insight').textContent=errorMessage(error);}
   finally{if(request===bankrollRequest){bankrollController=null;setBusy($('bk_run'),false);}}
 }
 $('bk_run').addEventListener('click',runBankroll);
@@ -1182,6 +1481,7 @@ document.querySelectorAll('.bksdpreset').forEach(button=>button.addEventListener
   document.querySelectorAll('.bkpreset').forEach(x=>x.setAttribute('aria-pressed','false'));runBankroll();
 }));
 ['bk_wr','bk_sd','bk_bank','bk_hands'].forEach(id=>$(id).addEventListener('input',()=>{document.querySelectorAll('.bkpreset').forEach(x=>x.setAttribute('aria-pressed','false'));if(id==='bk_sd')document.querySelectorAll('.bksdpreset').forEach(x=>x.setAttribute('aria-pressed','false'));}));
+['bk_wr','bk_sd','bk_bank','bk_thr','bk_hands','bk_paths','bk_seed'].forEach(id=>$(id).addEventListener('input',()=>markBankrollDirty()));
 
 /* ================= 4. GTO TRAINER ================= */
 const KUHN_LABELS={J:'J (bet/check first)',Q:'Q (bet/check first)',K:'K (bet/check first)',
@@ -1192,7 +1492,7 @@ let gtoRequest=0;
 let gtoController=null;
 async function runGTO(){
   const iters=clamp(parseInt($('gto_iters').value)||300000,10000,500000);
-  const seed=parseInt($('gto_seed').value)||42;
+  const seed=integerInput('gto_seed',42);
   $('gto_iters').value=iters;$('gto_seed').value=seed;
   $('gto_spin').style.display='block';
   setBusy($('gto_run'),true,'Training…');
@@ -1217,11 +1517,12 @@ async function runGTO(){
     $('gto_table').querySelector('tbody').innerHTML=rows;
     const bJ=r.strategy.J?r.strategy.J[1]:0, bK=r.strategy.K?r.strategy.K[1]:0, bQ=r.strategy.Q?r.strategy.Q[1]:0;
     const ratio=r.checks.kingJackRatio==null?'—':r.checks.kingJackRatio.toFixed(2);
-    $('gto_check').innerHTML=`Equilibrium checks: value ≈ −1/18 ✓ · bluff-bet K/J ratio = ${ratio} (theory ≈ 3) · Q rarely bets first (${(bQ*100).toFixed(1)}%). These match the known Kuhn solution.`;
+    $('gto_check').textContent=`Reference checks: value ${exact.toFixed(4)} (theory −1/18 ≈ −0.0556) · bet K/J ratio ${ratio} (theory ≈ 3) · first Q bet ${(bQ*100).toFixed(1)}% (theory ≈ 0%). Compare the measured values with the references; these are convergence checks.`;
   }catch(error){if(request===gtoRequest)$('gto_check').textContent=errorMessage(error);}
   finally{if(request===gtoRequest){gtoController=null;$('gto_spin').style.display='none';setBusy($('gto_run'),false);}}
 }
 $('gto_run').addEventListener('click',runGTO);
+$('gto').addEventListener('toggle',()=>{if($('gto').open)window.dispatchEvent(new Event('resize'));});
 
 /* ================= 5. PREFLOP RANGE LIBRARY ================= */
 const PF_ACTIONS=['raise','call','jam','fold'];
@@ -1234,8 +1535,12 @@ let pfSelectedHand='A5s';
 let pfCompareHand='A5s';
 let pfMode='library';
 let pfRequest=0;
+let pfCompareRequest=0;
+let pfLoading=false;
+let pfFailed=false;
+let pfRequestedScenario='cash-6max-100-btn-rfi-25';
 const pfCache=new Map();
-const pfTrainer={position:0,hand:'A5s',answered:false,attempts:0,correct:0,mixed:0,streak:0,scenarioId:null,order:[]};
+const pfTrainer={position:0,hand:'A5s',answered:false,attempts:0,correct:0,mixed:0,streak:0,scenarioId:null,order:[],answers:new Map()};
 
 function pfHandMap(scenario){return new Map((scenario?.hands||[]).map(hand=>[hand.hand,hand]));}
 function pfHand(scenario,name){return (scenario?.hands||[]).find(hand=>hand.hand===name)||scenario?.hands?.[0]||null;}
@@ -1256,6 +1561,7 @@ function resetPfTrainer(scenario,preferredHand='A5s'){
   pfTrainer.position=Math.max(0,pfTrainer.order.indexOf(preferredHand));
   pfTrainer.hand=pfTrainer.order[pfTrainer.position];
   pfTrainer.answered=false;pfTrainer.attempts=0;pfTrainer.correct=0;pfTrainer.mixed=0;pfTrainer.streak=0;
+  pfTrainer.answers.clear();
 }
 function ensurePfTrainer(scenario){
   if(pfTrainer.scenarioId!==scenario.id||pfTrainer.order.length!==scenario.hands.length)resetPfTrainer(scenario,pfTrainer.hand);
@@ -1381,8 +1687,9 @@ function renderPfHandDetail(hand){
 }
 function fillPfScenarioSelects(){
   const options=pfScenarios.map(s=>`<option value="${s.id}">${s.title}</option>`).join('');
-  ['pf_scenario','pf_compare_a','pf_compare_b'].forEach(id=>{const el=$(id);if(el)el.innerHTML=options;});
+  ['pf_scenario','pf_trainer_select','pf_compare_a','pf_compare_b'].forEach(id=>{const el=$(id);if(el)el.innerHTML=options;});
   $('pf_scenario').value=pfScenario.id;
+  $('pf_trainer_select').value=pfScenario.id;
   $('pf_compare_a').value=pfScenario.id;
   const counterpart=pfScenarios.find(s=>s.hero===pfScenario.hero&&s.situation===pfScenario.situation&&s.stack!==pfScenario.stack)||pfScenarios[1]||pfScenarios[0];
   $('pf_compare_b').value=counterpart.id;
@@ -1406,16 +1713,25 @@ async function getPfScenario(id){
 }
 async function loadPreflop(scenarioId){
   const request=++pfRequest;
+  ++pfCompareRequest;pfLoading=true;pfFailed=false;
+  pfRequestedScenario=scenarioId||pfRequestedScenario;
+  $('preflop').setAttribute('aria-busy','true');$('pf_retry').hidden=true;
+  document.querySelectorAll('.pf-cell,.pf-action-button').forEach(button=>button.disabled=true);
+  $('pf_next_hand').disabled=true;
   $('pf_status').textContent='Loading demonstration range…';
   try{
-    const scenario=await getPfScenario(scenarioId||'cash-6max-100-btn-rfi-25');
+    const scenario=await getPfScenario(pfRequestedScenario);
     if(request!==pfRequest)return;
+    pfLoading=false;
     pfScenario=scenario;
     if(pfTrainer.scenarioId!==scenario.id)resetPfTrainer(scenario);
     fillPfScenarioSelects();
     renderPfLibrary();
-    $('pf_status').textContent=`${pfScenarios.length} demo scenarios · 169 starting hands · private range API`;
-  }catch(error){if(request===pfRequest)$('pf_status').textContent=errorMessage(error);}
+    if(pfMode==='trainer')renderPfTrainer();
+    else if(pfMode==='compare')renderPfCompare();
+    else $('pf_status').textContent=`${pfScenarios.length} demo scenarios · 169 starting hands`;
+  }catch(error){if(request===pfRequest){pfLoading=false;pfFailed=true;$('pf_status').textContent=errorMessage(error);$('pf_retry').hidden=false;if(pfMode==='trainer')renderPfTrainer();}}
+  finally{if(request===pfRequest)$('preflop').setAttribute('aria-busy','false');}
 }
 function activatePfMode(mode){
   pfMode=mode;
@@ -1427,12 +1743,15 @@ function activatePfMode(mode){
   document.querySelectorAll('.pf-view').forEach(view=>{view.hidden=view.id!==`pf-view-${mode}`;});
   if(mode==='compare')renderPfCompare();
   if(mode==='trainer')renderPfTrainer();
+  if(mode==='library'&&pfScenario&&!pfLoading&&!pfFailed){renderPfLibrary();$('pf_status').textContent='Library ready · select a hand or change the scenario';}
 }
 async function renderPfCompare(){
-  if(!pfScenarios.length)return;
+  if(!pfScenarios.length||pfLoading||pfFailed)return;
+  const request=++pfCompareRequest;
   $('pf_status').textContent='Loading compared ranges…';
   try{
     const [scenarioA,scenarioB]=await Promise.all([getPfScenario($('pf_compare_a').value),getPfScenario($('pf_compare_b').value)]);
+    if(request!==pfCompareRequest)return;
     $('pf_compare_title_a').textContent=scenarioA.title;
     $('pf_compare_title_b').textContent=scenarioB.title;
     renderPfMatrix('pf_matrix_a',scenarioA,pfCompareHand);
@@ -1443,15 +1762,23 @@ async function renderPfCompare(){
     const direction=largest.value===0?'is unchanged':`${largest.value>0?'increases':'decreases'} ${Math.abs(largest.value)} pp`;
     $('pf_delta').innerHTML=`<h3>${pfCompareHand}: ${PF_LABELS[largest.action]} ${direction}</h3><p>Range B minus Range A. Frequencies are from the demonstration dataset.</p><div class="pf-delta-grid">`+
       deltas.map(delta=>`<div class="pf-delta-item"><span>${PF_LABELS[delta.action]}</span><strong style="color:${PF_COLORS[delta.action]}">${delta.value>0?'+':''}${delta.value} pp</strong></div>`).join('')+'</div>';
-    $('pf_status').textContent='Comparison ready · select any hand in either matrix';
-  }catch(error){$('pf_status').textContent=errorMessage(error);}
+    if(pfMode==='compare')$('pf_status').textContent='Comparison ready · select any hand in either matrix';
+  }catch(error){if(request===pfCompareRequest&&pfMode==='compare')$('pf_status').textContent=errorMessage(error);}
 }
 function trainerScenario(){return pfScenario||pfCache.values().next().value;}
 function renderPfTrainer(){
-  const scenario=trainerScenario();if(!scenario)return;
+  const scenario=trainerScenario();
+  if(!scenario||pfLoading||pfFailed){
+    document.querySelectorAll('.pf-action-button').forEach(button=>button.disabled=true);
+    $('pf_next_hand').disabled=true;$('pf_next_hand').textContent='Choose an action first';
+    $('pf_trainer_guidance').textContent=pfFailed?'Range unavailable. Retry loading above.':'Loading the training scenario…';
+    return;
+  }
   ensurePfTrainer(scenario);
   const hand=pfHand(scenario,pfTrainer.hand)||pfHand(scenario,pfTrainer.order[pfTrainer.position]);
   pfTrainer.hand=hand.hand;
+  const saved=pfTrainer.answers.get(hand.hand);
+  pfTrainer.answered=Boolean(saved);
   $('pf_trainer_scenario').textContent=scenario.title+' · Demo strategy dataset';
   renderPfContext(scenario,'pf_trainer_context');
   $('pf_trainer_cards').innerHTML=pfCardHtml(hand.hand);
@@ -1459,47 +1786,53 @@ function renderPfTrainer(){
   $('pf_trainer_guidance').textContent=pfTrainer.answered?hand.guidance:'Choose an action to reveal the demonstration frequencies.';
   $('pf_trainer_bar').innerHTML=PF_ACTIONS.filter(action=>hand.actions[action]>0).map(action=>`<span style="width:${hand.actions[action]}%;background:${PF_COLORS[action]}"></span>`).join('');
   $('pf_trainer_bar').setAttribute('aria-label',pfActionAria(hand));
+  $('pf_trainer_bar').hidden=!saved;
   const availability=pfScenarioAvailability(scenario);
   document.querySelectorAll('.pf-action-button').forEach(button=>{
     const unavailable=!availability[button.dataset.action];
     button.disabled=pfTrainer.answered||unavailable;
-    button.classList.remove('is-chosen');
+    button.hidden=unavailable;
+    button.classList.toggle('is-chosen',saved?.action===button.dataset.action);
     button.classList.toggle('is-unavailable',unavailable);
     button.title=unavailable?'This action is not available in the selected scenario.':'';
   });
-  if(!pfTrainer.answered){$('pf_feedback').className='pf-feedback';$('pf_feedback').innerHTML='';}
+  $('pf_decision_actions').style.setProperty('--pf-choice-count',PF_ACTIONS.filter(action=>availability[action]).length);
+  if(saved){
+    const title=saved.acceptable?(saved.mixed?'Accepted choice · mixed demo strategy':'Accepted choice in this demo range'):'This choice has zero frequency in the demo range';
+    $('pf_feedback').className='pf-feedback is-visible';
+    $('pf_feedback').innerHTML=`<strong>${title}</strong><p>${PF_LABELS[saved.action]}: ${hand.actions[saved.action]}%. ${pfActionAria(hand)}.</p>`;
+  }else{$('pf_feedback').className='pf-feedback';$('pf_feedback').innerHTML='';}
+  $('pf_next_hand').disabled=!saved;
+  $('pf_next_hand').textContent=pfTrainer.answers.size>=pfTrainer.order.length?'Start new session':saved?'Next hand':'Choose an action first';
   $('pf_stat_hands').textContent=`${Math.min(pfTrainer.attempts,pfTrainer.order.length)} / ${pfTrainer.order.length}`;
   $('pf_stat_accuracy').textContent=pfTrainer.attempts?Math.round(100*pfTrainer.correct/pfTrainer.attempts)+'%':'—';
   $('pf_stat_mixed').textContent=pfTrainer.mixed;
   $('pf_stat_streak').textContent=pfTrainer.streak;
-  $('pf_status').textContent=`Trainer ready · all ${pfTrainer.order.length} starting hands included`;
+  $('pf_status').textContent=saved?'Answer recorded · choose Next hand':`Trainer ready · choose an action · ${pfTrainer.order.length} hand classes`;
 }
 function answerPfTrainer(action,button){
-  if(pfTrainer.answered)return;
-  const hand=pfHand(trainerScenario(),pfTrainer.hand);if(!hand)return;
+  if(pfTrainer.answered||pfLoading||pfFailed||!PF_ACTIONS.includes(action))return;
+  const scenario=trainerScenario(),hand=pfHand(scenario,pfTrainer.hand);if(!hand||!pfScenarioAvailability(scenario)[action])return;
+  if(pfTrainer.answers.has(hand.hand))return;
   pfTrainer.answered=true;pfTrainer.attempts+=1;
   const acceptable=hand.actions[action]>0;
   const mixed=PF_ACTIONS.filter(name=>hand.actions[name]>0).length>1;
   if(acceptable){pfTrainer.correct+=1;pfTrainer.streak+=1;}else pfTrainer.streak=0;
   if(mixed)pfTrainer.mixed+=1;
-  button.classList.add('is-chosen');
-  document.querySelectorAll('.pf-action-button').forEach(item=>item.disabled=true);
-  const title=acceptable?(mixed?'Good decision — mixed strategy':'Good decision for this demo range'):'Not included in this demo mix';
-  $('pf_feedback').className='pf-feedback is-visible';
-  $('pf_feedback').innerHTML=`<strong>${title}</strong><p>${PF_LABELS[action]} appears ${hand.actions[action]}% of the time. ${pfActionAria(hand)}.</p>`;
-  $('pf_trainer_guidance').textContent=hand.guidance;
-  $('pf_stat_hands').textContent=`${Math.min(pfTrainer.attempts,pfTrainer.order.length)} / ${pfTrainer.order.length}`;
-  $('pf_stat_accuracy').textContent=Math.round(100*pfTrainer.correct/pfTrainer.attempts)+'%';
-  $('pf_stat_mixed').textContent=pfTrainer.mixed;$('pf_stat_streak').textContent=pfTrainer.streak;
+  pfTrainer.answers.set(hand.hand,{action,acceptable,mixed});
+  renderPfTrainer();
 }
 function nextPfTrainerHand(){
-  const scenario=trainerScenario();if(!scenario)return;
+  const scenario=trainerScenario();if(!scenario||pfLoading||pfFailed)return;
   ensurePfTrainer(scenario);
+  if(!pfTrainer.answered)return;
   if(pfTrainer.attempts>=pfTrainer.order.length){
     resetPfTrainer(scenario);
   }else{
-    pfTrainer.position=(pfTrainer.position+1)%pfTrainer.order.length;
-    pfTrainer.hand=pfTrainer.order[pfTrainer.position];
+    for(let offset=1;offset<=pfTrainer.order.length;offset++){
+      const position=(pfTrainer.position+offset)%pfTrainer.order.length;
+      if(!pfTrainer.answers.has(pfTrainer.order[position])){pfTrainer.position=position;pfTrainer.hand=pfTrainer.order[position];break;}
+    }
   }
   pfTrainer.answered=false;
   renderPfTrainer();
@@ -1512,14 +1845,21 @@ function selectPfHand(name,sourceId){
   else renderPfCompare();
 }
 
-document.querySelectorAll('.pf-mode').forEach(button=>button.addEventListener('click',()=>activatePfMode(button.dataset.pfMode)));
-$('pf_scenario').addEventListener('change',async()=>{
-  const scenario=await getPfScenario($('pf_scenario').value);
-  pfScenario=scenario;resetPfTrainer(scenario);renderPfLibrary();$('pf_status').textContent='Range loaded · select a hand for its exact mix';
+const pfModeButtons=[...document.querySelectorAll('.pf-mode')];
+pfModeButtons.forEach((button,index)=>{
+  button.addEventListener('click',()=>activatePfMode(button.dataset.pfMode));
+  button.addEventListener('keydown',event=>{
+    if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+    event.preventDefault();
+    const next=event.key==='Home'?0:event.key==='End'?pfModeButtons.length-1:(index+(event.key==='ArrowRight'?1:-1)+pfModeButtons.length)%pfModeButtons.length;
+    pfModeButtons[next].focus();activatePfMode(pfModeButtons[next].dataset.pfMode);
+  });
 });
+['pf_scenario','pf_trainer_select'].forEach(id=>$(id).addEventListener('change',()=>loadPreflop($(id).value)));
+$('pf_retry').addEventListener('click',()=>loadPreflop(pfRequestedScenario));
 ['pf_compare_a','pf_compare_b'].forEach(id=>$(id).addEventListener('change',renderPfCompare));
 $('pf_swap').addEventListener('click',()=>{const a=$('pf_compare_a').value;$('pf_compare_a').value=$('pf_compare_b').value;$('pf_compare_b').value=a;renderPfCompare();});
-['pf_matrix','pf_matrix_a','pf_matrix_b'].forEach(id=>$(id).addEventListener('click',event=>{const cell=event.target.closest('[data-pf-hand]');if(cell)selectPfHand(cell.dataset.pfHand,id);}));
+['pf_matrix','pf_matrix_a','pf_matrix_b'].forEach(id=>$(id).addEventListener('click',event=>{const cell=event.target.closest('[data-pf-hand]');if(cell&&!pfLoading&&!pfFailed)selectPfHand(cell.dataset.pfHand,id);}));
 $('pf_compare_hand').addEventListener('click',()=>{pfCompareHand=pfSelectedHand;activatePfMode('compare');});
 $('pf_change_hand').addEventListener('click',()=>{
   cardState.pf0=null;cardState.pf1=null;renderPfHandSlots();
@@ -1541,24 +1881,119 @@ const LAB_QUICK_PATHS=2000;
 const LAB_DETAILED_PATHS=16000;
 function labParams(paths,includeCurve=true){return {wr:+$('lab_wr').value,sd:+$('lab_sd').value,bank:(+$('lab_bank').value)*100,thr:0,
   hands:Math.round(+$('lab_hn').value),paths:paths,seed:42,includeCurve};}
+let labHasResult=false;
+let labCurrentResult=null;
+let labSavedA=null;
+function renderLabComparison(){
+  if(!labSavedA||!labCurrentResult){$('lab_compare').hidden=true;return;}
+  const a=labSavedA,b=labCurrentResult;
+  $('lab_compare').hidden=false;
+  $('lab_compare').dataset.state='current';
+  $('lab_compare').setAttribute('aria-busy','false');
+  $('lab_compare_state').textContent='A is saved. B follows the current simulation.';
+  $('lab_a_risk').textContent=(a.metrics.risk*100).toFixed(1)+'%';
+  $('lab_b_risk').textContent=(b.metrics.risk*100).toFixed(1)+'%';
+  const interval=r=>`95% MC: ${r.metrics.confidenceInterval.map(v=>(v*100).toFixed(1)).join('–')}%`;
+  $('lab_a_ci').textContent=interval(a);$('lab_b_ci').textContent=interval(b);
+  const rows=[['Win rate (bb/100)','wr',v=>v.toFixed(1)],['Bankroll (BI)','bank',v=>(v/100).toFixed(0)],
+    ['Swings (bb/100)','sd',v=>v.toFixed(0)],['Horizon (hands)','hands',v=>v.toLocaleString()]];
+  const changes=rows.filter(([,key])=>a.params[key]!==b.params[key]);
+  $('lab_compare_inputs').innerHTML=rows.map(([label,key,format])=>`<tr data-changed="${a.params[key]!==b.params[key]}"><th scope="row">${label}</th><td>${format(a.params[key])}</td><td>${format(b.params[key])}</td></tr>`).join('');
+  const delta=(b.metrics.risk-a.metrics.risk)*100;
+  const changedText=changes.length?`Changed: ${changes.map(row=>row[0].replace(/ \(.*/, '')).join(', ')}.`:'The scenario assumptions are identical.';
+  $('lab_compare_delta').textContent=`B − A risk: ${signedValue(delta)} percentage points. ${changedText}`;
+  $('lab_compare_precision').textContent=`A: ${a.params.paths.toLocaleString()} paths, seed ${a.params.seed} · B: ${b.params.paths.toLocaleString()} paths, seed ${b.params.seed}. ${changes.length>1?'Several inputs changed; this comparison cannot isolate one driver.':'Change one input at a time to examine its sensitivity.'}`;
+  if(!plotlyReady()){chartUnavailable('lab_compare_chart');return;}
+  const traces=[];
+  [[a,C.median,'Saved A','rgba(251,191,36,.10)'],[b,C.accent,'Current B','rgba(56,189,248,.12)']].forEach(([r,color,name,fill])=>{
+    const f=r.fan;
+    traces.push({x:f.xs.concat(f.xs.slice().reverse()),y:f.p75.concat(f.p25.slice().reverse()),fill:'toself',fillcolor:fill,line:{color:'transparent'},hoverinfo:'skip',showlegend:false});
+    traces.push({x:f.xs,y:f.p50,mode:'lines',name,line:{color,width:2.5},hovertemplate:`${name} median<br>%{x:,} hands<br>%{y:.1f} BI<extra></extra>`});
+  });
+  const lay=layout('','Hands played','Bankroll (BI)');
+  lay.margin={l:52,r:12,t:38,b:48};lay.legend={orientation:'h',x:0,y:1.16,font:{color:C.muted,size:12}};
+  lay.xaxis.tickformat='~s';lay.xaxis.fixedrange=true;lay.yaxis.fixedrange=true;lay.yaxis.rangemode='tozero';
+  $('lab_compare_chart').setAttribute('aria-label',`Saved A risk ${(a.metrics.risk*100).toFixed(1)} percent; current B risk ${(b.metrics.risk*100).toFixed(1)} percent. ${changedText} Lines show median paths with middle 50 percent bands.`);
+  Plotly.react('lab_compare_chart',traces,lay,CFG);
+}
+$('lab_save_a').addEventListener('click',()=>{
+  if(!labCurrentResult||$('lab_live').dataset.state!=='current')return;
+  const firstSave=!labSavedA;
+  labSavedA=structuredClone(labCurrentResult);
+  $('lab_save_a').textContent='Replace A with current';renderLabComparison();
+  if(firstSave)$('lab_compare').scrollIntoView({behavior:reducedMotion()?'auto':'smooth',block:'start'});
+});
+$('lab_clear_a').addEventListener('click',()=>{labSavedA=null;$('lab_compare').hidden=true;$('lab_save_a').textContent='Save current as A';$('lab_save_a').focus();});
+$('lab_edit_b').addEventListener('click',()=>{$('lab_adjust').open=true;$('lab_wr').focus();$('lab_adjust').scrollIntoView({behavior:reducedMotion()?'auto':'smooth',block:'start'});});
+function renderUncertaintyReference(){
+  const {result:r,provenance}=UNCERTAINTY_REFERENCE;
+  const cfg=provenance.parameters.config,estimate=r.estimate,post=r.posterior,risk=r.risk;
+  const pct=v=>(v*100).toFixed(1)+'%';
+  $('lab_u_plugin').textContent=pct(risk.plug_in_risk);
+  $('lab_u_integrated').textContent=pct(risk.expected_risk);
+  $('lab_u_delta').textContent=`In this saved case, average model risk is ${((risk.expected_risk-risk.plug_in_risk)*100).toFixed(1)} percentage points higher when I account for win-rate uncertainty.`;
+  const ci=risk.credible_intervals.ci_95;
+  $('lab_u_interval').textContent=`95% posterior interval for model risk: ${pct(ci[0])}–${pct(ci[1])}`;
+  $('lab_u_posterior_note').textContent=`Posterior mean ${post.mean.toFixed(2)} bb/100 · posterior SD ${post.std.toFixed(2)} bb/100. Probability that the win rate is above zero: ${pct(post.prob_positive)}. The dashed line marks break-even at 0 bb/100.`;
+  $('lab_u_settings').textContent=`Fixed case · ${estimate.total_hands.toLocaleString()} synthetic hands · ${cfg.risk.bankroll_bb/100} BI · ${cfg.risk.n_hands.toLocaleString()}-hand horizon · ${risk.n_draws.toLocaleString()} posterior draws · independent of the live controls`;
+  const sources=[
+    ['Synthetic history',`${cfg.data.n_blocks} blocks × ${cfg.data.block_hands.toLocaleString()} hands; generating win rate ${cfg.data.true_winrate} and SD ${cfg.data.true_std} bb/100; seed ${cfg.data.seed}.`],
+    ['Observed estimate',`${estimate.winrate_bb100.toFixed(2)} bb/100; estimated SD ${estimate.std_bb100.toFixed(2)} bb/100.`],
+    ['Estimation uncertainty',`Autocorrelation-adjusted SE ${estimate.se_winrate_adjusted.toFixed(2)} bb/100; effective blocks ${estimate.effective_n_blocks.toFixed(1)}. This SE enters the posterior.`],
+    ['Prior',`Normal with mean ${r.prior.mean} and SD ${r.prior.std} bb/100.`],
+    ['Risk calculation',`Finite-horizon Brownian first-passage model; threshold ${cfg.risk.ruin_threshold_bb} bb; estimated volatility held fixed; posterior draw seed ${cfg.seed}.`],
+    ['Saved output',`${provenance.timestamp_utc.slice(0,10)} UTC. The page reads the existing result and settings; this presentation update does not rerun the analysis.`],
+  ];
+  $('lab_u_source').innerHTML=sources.map(([key,value])=>`<dt>${key}</dt><dd>${value}</dd>`).join('');
+  if(!plotlyReady()){chartUnavailable('lab_u_risk_chart');chartUnavailable('lab_u_posterior');return;}
+  const riskLay=layout('','Risk of hitting zero (%)','');
+  riskLay.margin={l:15,r:30,t:12,b:44};riskLay.showlegend=false;
+  riskLay.xaxis.range=[0,100];riskLay.xaxis.dtick=25;riskLay.xaxis.fixedrange=true;
+  riskLay.yaxis={showticklabels:false,showgrid:false,zeroline:false,fixedrange:true};
+  Plotly.react('lab_u_risk_chart',[{type:'bar',orientation:'h',x:[risk.expected_risk*100,risk.plug_in_risk*100],y:['With uncertainty','One estimate'],marker:{color:['#C4B5FD',C.median]},text:[pct(risk.expected_risk),pct(risk.plug_in_risk)],textposition:'outside',textfont:{color:C.text,size:13},cliponaxis:false,hovertemplate:'%{y}<br>Risk %{x:.1f}%<extra></extra>'}],riskLay,CFG);
+  const start=post.mean-4*post.std,end=post.mean+4*post.std;
+  const xs=Array.from({length:241},(_,i)=>start+(end-start)*i/240);
+  const density=xs.map(x=>Math.exp(-.5*((x-post.mean)/post.std)**2)/(post.std*Math.sqrt(2*Math.PI)));
+  const postLay=layout('','Win rate (bb/100)','Density');
+  postLay.margin={l:50,r:12,t:12,b:49};postLay.showlegend=false;postLay.xaxis.fixedrange=true;postLay.yaxis.fixedrange=true;postLay.yaxis.rangemode='tozero';
+  postLay.shapes=[{type:'line',x0:0,x1:0,yref:'paper',y0:0,y1:1,line:{color:C.muted,dash:'dash',width:1.5}}];
+  Plotly.react('lab_u_posterior',[{x:xs,y:density,mode:'lines',fill:'tozeroy',fillcolor:'rgba(196,181,253,.12)',line:{color:'#C4B5FD',width:2.4},hovertemplate:'Win rate %{x:.2f} bb/100<br>Density %{y:.3f}<extra></extra>'},
+    {x:[post.mean],y:[1/(post.std*Math.sqrt(2*Math.PI))],mode:'markers',marker:{color:'#C4B5FD',size:7},hovertemplate:'Posterior mean %{x:.2f} bb/100<extra></extra>'}],postLay,CFG);
+}
+function markLabPending(message,busy=true){
+  $('lab_live').dataset.state=labHasResult?'pending':'loading';
+  $('lab_live').setAttribute('aria-busy',String(busy));
+  $('lab_run_state').textContent=(labHasResult?'Previous result · ':'')+message;
+  $('lab_save_a').disabled=true;
+  if(labHasCurve)$('lab_curve_context').textContent='Previous curve · waiting for the updated assumptions.';
+  if(labSavedA){$('lab_compare').dataset.state='pending';$('lab_compare').setAttribute('aria-busy',String(busy));$('lab_compare_state').textContent='A stays saved. B shows the previous result until the update completes.';}
+}
 function updateLabLabels(){
   $('lab_wr_v').textContent=(+$('lab_wr').value).toFixed(1)+' bb/100';
   $('lab_bank_v').textContent=(+$('lab_bank').value)+' buy-ins';
   $('lab_sd_v').textContent=(+$('lab_sd').value)+' bb/100';
   $('lab_hn_v').textContent=(Math.round(+$('lab_hn').value/1000))+'k hands';
+  $('lab_input_context').textContent=`${$('lab_bank').value} BI · ${$('lab_wr').value} bb/100 · ${Math.round(+$('lab_hn').value/1000)}k hands`;
 }
 function renderLab(result){
+  labCurrentResult=result;
   const div=100,p=result.params,r=result.fan,ror=result.metrics.risk,[lo,hi]=result.metrics.confidenceInterval;
-  rollNumber($('lab_ror'),(ror*100).toFixed(1)+'%');
-  $('lab_ci').textContent=`95% CI ${(lo*100).toFixed(1)}–${(hi*100).toFixed(1)}%`;
-  rollNumber($('lab_surv'),(result.metrics.survival*100).toFixed(1)+'%');
-  rollNumber($('lab_dd'),result.metrics.p95Drawdown.toFixed(1)+' BI');
-  rollNumber($('lab_paths'),p.paths.toLocaleString());
-  const riskCount=Math.round(ror*100),riskTone=ror<0.05?'positive':ror<0.2?'caution':'negative';
-  $('lab_insight').className='result-insight '+riskTone;
+  $('lab_fan_note').textContent=`Bands summarise ${r.paths.length} stored example paths. Risk uses all ${p.paths.toLocaleString()} simulated runs.`;
+  $('lab_ror').textContent=(ror*100).toFixed(1)+'%';
+  $('lab_ci').textContent=`95% Monte Carlo interval: ${(lo*100).toFixed(1)}–${(hi*100).toFixed(1)}%`;
+  $('lab_surv').textContent=(result.metrics.survival*100).toFixed(1)+'%';
+  $('lab_dd').textContent=result.metrics.p95Drawdown.toFixed(1)+' BI';
+  $('lab_paths').textContent=p.paths.toLocaleString();
+  const riskCount=Math.round(ror*100);
+  $('lab_insight').className='lab-insight';
   $('lab_insight').textContent=`About ${riskCount} in 100 simulated bankrolls hit zero within ${Math.round(p.hands/1000)}k hands at these settings.`;
-  rollNumber($('lab_chart_risk'),`${riskCount}%`);
-  $('lab_chart_risk_badge').className='lab-risk-badge '+riskTone;
+  $('lab_active_scenario').textContent=`${p.bank/100} buy-ins · ${p.wr} bb/100 edge · ${p.sd} bb/100 swings · ${Math.round(p.hands/1000)}k hands`;
+  labHasResult=true;
+  $('lab_live').dataset.state='current';
+  $('lab_live').setAttribute('aria-busy','false');
+  $('lab_run_state').textContent='Current simulation';
+  $('lab_save_a').disabled=false;
+  renderLabComparison();
   $('lab_fan').setAttribute('aria-label',$('lab_insight').textContent+' Shaded bands show the middle 50 and 90 percent of stored paths; selected example paths and the median show how bankroll changes over time.');
   if(!plotlyReady()){chartUnavailable('lab_fan');return;}
   const tr=[],L=r.xs.length,p05=r.p05,p25=r.p25,p50=r.p50,p75=r.p75,p95=r.p95;
@@ -1579,7 +2014,7 @@ function renderLab(result){
     return Array.from({length:count},(_,i)=>pool[Math.round(i*(pool.length-1)/(count-1))]);
   };
   const displayIndices=pickEven(ruinedPool,ruinedShown).concat(pickEven(safePool,target-ruinedShown)).sort((a,b)=>a-b),shown=displayIndices.length;
-  $('lab_chart_meta').textContent=`${p.paths.toLocaleString()} simulations · ${shown} examples shown · ${Math.round(p.hands/1000)}k hands`;
+  $('lab_chart_meta').textContent=`${shown} example paths · ${Math.round(p.hands/1000)}k hands`;
   displayIndices.forEach((pathIndex,displayIndex)=>{
     const ruined=r.ruinFlags[pathIndex];
     tr.push({x:r.xs,y:r.paths[pathIndex],mode:'lines',
@@ -1604,9 +2039,13 @@ function renderLab(result){
   Plotly.react('lab_fan',tr,lay,CFG);
 }
 function renderLabCurve(p,curve){
+  $('lab_curve_context').textContent=`Current assumptions · ${curve.pathsPerPoint} Monte Carlo paths per point · finite-horizon Brownian comparison.`;
   if(!plotlyReady()){chartUnavailable('lab_curve');return;}
   const div=100;
-  const lay=layout('Risk of ruin vs bankroll','Bankroll (buy-ins)','Risk of ruin',{yaxis:{tickformat:'.0%',gridcolor:C.grid}});
+  const compact=$('lab_curve').clientWidth<620;
+  const lay=layout('','Bankroll (buy-ins)','Risk of ruin',{yaxis:{tickformat:'.0%',gridcolor:C.grid}});
+  lay.margin=compact?{l:48,r:12,t:14,b:100}:{l:62,r:22,t:18,b:76};
+  lay.legend={orientation:'h',x:0,y:compact?-.4:-.25,xanchor:'left',yanchor:'top',font:{color:C.muted,size:compact?11:12}};
   lay.shapes=[{type:'line',x0:p.bank/div,x1:p.bank/div,yref:'paper',y0:0,y1:1,line:{color:C.median,dash:'dot',width:1.3}}];
   Plotly.react('lab_curve',[{x:curve.xs,y:curve.monteCarlo,mode:'lines+markers',line:{color:C.accent,width:2.2},name:'Monte Carlo'},
     {x:curve.xs,y:curve.analytical,mode:'lines',line:{color:C.muted,dash:'dash',width:1.5},name:'Brownian (finite)'}],lay,CFG);
@@ -1616,23 +2055,33 @@ let labRequest=0;
 let labController=null;
 let labTrigger=null;
 let labHasCurve=false;
+let labCurveKey=null;
 async function runLab(paths,trigger=null){
-  const reuseCurve=Boolean(trigger&&labHasCurve);
-  const p=labParams(paths||LAB_QUICK_PATHS,!reuseCurve);
+  const p=labParams(paths||LAB_QUICK_PATHS);
+  const key=[p.wr,p.sd,p.bank,p.hands].join('|');
+  p.includeCurve=!(trigger&&labHasCurve&&labCurveKey===key);
   updateLabLabels();
+  markLabPending('updating simulation…');
   labController?.abort();
   if(labTrigger)setBusy(labTrigger,false);
   const controller=new AbortController();labController=controller;labTrigger=trigger;
-  $('lab_status').textContent=p.paths.toLocaleString()+' paths · seed 42 · simulating…';
+  $('lab_status').textContent='Running '+p.paths.toLocaleString()+' paths…';
   if(trigger)setBusy(trigger,true,`Running ${Math.round(p.paths/1000)}k paths…`);
   const request=++labRequest;
   try{
     const result=await apiJSON('/api/risk-lab',p,70000,controller.signal);
     if(request!==labRequest)return;
     renderLab(result);
-    if(result.curve){renderLabCurve(result.params,result.curve);labHasCurve=true;}
-    $('lab_status').textContent=p.paths.toLocaleString()+' paths · seed 42 · private server';
-  }catch(error){if(request===labRequest){$('lab_status').textContent=errorMessage(error);$('lab_insight').className='result-insight negative';$('lab_insight').textContent=errorMessage(error);}}
+    if(result.curve){renderLabCurve(result.params,result.curve);labHasCurve=true;labCurveKey=key;}
+    else if(labCurveKey===key)$('lab_curve_context').textContent='Current assumptions · retained Monte Carlo curve · finite-horizon Brownian comparison.';
+    $('lab_status').textContent=p.paths===LAB_DETAILED_PATHS?'Detailed run complete':'Quick run complete';
+  }catch(error){if(request===labRequest){
+    $('lab_status').textContent=errorMessage(error);
+    $('lab_live').dataset.state='error';$('lab_live').setAttribute('aria-busy','false');
+    $('lab_run_state').textContent=labHasResult?'Update failed · previous result':'Simulation unavailable';
+    if(labSavedA){$('lab_compare').setAttribute('aria-busy','false');$('lab_compare_state').textContent='Update failed. A stays saved; B is the previous result.';}
+    if(!labHasResult)$('lab_insight').textContent=errorMessage(error);
+  }}
   finally{if(request===labRequest){labController=null;labTrigger=null;if(trigger)setBusy(trigger,false);}}
 }
 document.querySelectorAll('.labpreset').forEach(button=>button.addEventListener('click',()=>{
@@ -1649,7 +2098,12 @@ document.querySelectorAll('.sdpreset').forEach(button=>button.addEventListener('
   input.addEventListener('input',()=>{
     document.querySelectorAll('.labpreset').forEach(x=>x.setAttribute('aria-pressed','false'));
     if(id==='lab_sd')document.querySelectorAll('.sdpreset').forEach(x=>x.setAttribute('aria-pressed','false'));
-    updateLabLabels();clearTimeout(_labT);$('lab_status').textContent='Release the slider to update the simulation.';
+    updateLabLabels();clearTimeout(_labT);
+    // Discard an in-flight response for inputs that have since changed.
+    ++labRequest;labController?.abort();labController=null;
+    if(labTrigger){setBusy(labTrigger,false);labTrigger=null;}
+    markLabPending('release slider to update',false);
+    $('lab_status').textContent='Release the slider to update the simulation.';
   });
   input.addEventListener('change',()=>{clearTimeout(_labT);_labT=setTimeout(()=>runLab(LAB_QUICK_PATHS),80);});
 });
@@ -1668,9 +2122,9 @@ const initializedModules=new Set();
 function initializeModule(id){
   if(initializedModules.has(id))return;
   initializedModules.add(id);
-  if(id==='risklab')runLab(LAB_QUICK_PATHS);
+  if(id==='risklab'){renderUncertaintyReference();runLab(LAB_QUICK_PATHS);}
   else if(id==='equity')runEquity();
-  else if(id==='ev')runEV();
+  else if(id==='ev'){if(window.__lastEquity==null)runEquity();else runEV();}
   else if(id==='bankroll')runBankroll();
   else if(id==='preflop')loadPreflop();
 }

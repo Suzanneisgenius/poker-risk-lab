@@ -140,7 +140,8 @@ const inputMax = (id) => {
   return Number(match[1]);
 };
 const clampMax = (id) => {
-  const match = page.match(new RegExp(`clamp\\(parseInt\\(\\$\\('${id}'\\)\\.value\\)\\|\\|\\d+,\\d+,(\\d+)\\)`));
+  // Accepts both `clamp(parseInt($('id').value)||d,min,max)` and `clamp(integerInput('id',d),min,max)`.
+  const match = page.match(new RegExp(`clamp\\((?:parseInt\\(\\$\\('${id}'\\)\\.value\\)\\|\\|\\d+|integerInput\\('${id}',\\d+\\)),\\d+,(\\d+)\\)`));
   assert.ok(match, `#${id} should be clamped before it is sent`);
   return Number(match[1]);
 };

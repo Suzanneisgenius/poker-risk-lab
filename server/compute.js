@@ -93,7 +93,7 @@ function computeEquity(input) {
       };
     case "showdown":
       return {
-        result: equityMultiwayMC(hero, opponents, board, 1, seed),
+        result: { ...equityMultiwayMC(hero, opponents, board, 1, seed), method: "exact" },
         methodText: `Exact showdown against ${opponents.length} opponents.`,
       };
     default: {
