@@ -11,6 +11,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const { assertSnapshot } = require("../compare_snapshot.js");
 const S = require("../../standalone/shared/sessions.js");
 
 // Selections: which sessions are summarized (all of them unless filtered).
@@ -56,10 +57,7 @@ const out = files.map((name) => {
 const text = JSON.stringify(clean({ files: out }), null, 1) + "\n";
 const file = path.join(__dirname, "web.json");
 if (process.argv.includes("--check")) {
-  if (fs.readFileSync(file, "utf8") !== text) {
-    console.error("Session import results differ from checks/session-import-python/web.json. If intended, run with --write and re-run run.py.");
-    process.exit(1);
-  }
+  assertSnapshot(clean({ files: out }), JSON.parse(fs.readFileSync(file, "utf8")), "Session import web.json");
   console.log(`PASS: ${out.length} session files match web.json.`);
 } else if (process.argv.includes("--write")) {
   fs.writeFileSync(file, text);
