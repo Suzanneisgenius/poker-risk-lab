@@ -1,305 +1,189 @@
 # Poker Risk Lab: Understanding Uncertainty in Simulation
 
-**How much should we trust a simulated risk estimate?** An interactive study of
-how numerical error, uncertain inputs and modelling assumptions affect a
-bankroll-risk estimate. Poker is the setting; the methods apply to any
-simulated risk with an absorbing boundary.
+**How much should we trust a simulated risk estimate?**
 
-![One risk estimate, three sources of uncertainty: simulation noise, an uncertain win rate and model assumptions, on one risk axis](reports/case-study/overview.png)
+A computational statistics project investigating numerical error, uncertain win
+rates, and assumptions about how returns evolve. Poker bankrolls provide the
+case study; a Python research engine and an interactive web app make the
+experiments reproducible and explorable.
 
-**Main finding.** For one scenario (30 buy-ins, +3 bb/100, 90 bb/100 swings,
-100,000 hands; exact model risk 7.17%), a single simulation at the default
-2,000 paths lands within about ±1.13 points of the exact value. Not knowing the
-win rate after 50,000 hands leaves anything from 0.1% to 83.3% plausible, and
-five models of how results arrive give 6.4% to 20.3%. More computing only fixes
-the first.
+[Research write-up](docs/case_study_imperfect_information.md) ·
+[Validation records](checks/README.md) ·
+[Run the app](#run-locally) ·
+[Reproduce the research](#reproduce-and-check)
 
-**How a misleading result was checked.** After an engine update the same seed
-gave a lower risk (7.85% → 6.35%); switching the two changes on separately and
-rerunning 40 seeds showed the drop was sampling, and the corrected engine
-averages 7.12% against the exact 7.17% (6.76% without the correction).
+![Three views of uncertainty in one bankroll scenario: simulation noise, uncertainty in the win rate, and sensitivity to model assumptions.](reports/case-study/overview.png)
 
-| | |
-|---|---|
-| **Case study** | [`case-study/index.html`](case-study/index.html): three questions, one at a time, plus how a misleading result was checked. Static page: open the file directly, or `/case-study/` on the running app. |
-| **Validation** | [`case-study/validation.html`](case-study/validation.html): PokerKit cross-checks (hands, equity, ranges), exact-value checks, interval coverage, engine agreement, the bankroll-from-results page and the session import against the Python research code, a simulation of unequal session lengths, and benchmark conditions. A failed check is shown as failed and stops the build. |
-| **Demo** | `npm start`, then <http://localhost:4174>. No public deployment URL yet. |
-| **Reproduce** | `pip install -r requirements-research.txt`, `python -m src.experiments.case_study --case all`, then `npm run build`. Every check in [`checks/`](checks/README.md) has its own command and saved output. |
-| **Limits** | Conditional model estimates, not advice. The alternative models are stress tests, not descriptions of real games. The Preflop ranges are demonstration data. |
+*Reference setting: 30 buy-ins, a +3 bb/100 win rate, volatility of 90 bb/100,
+and 100,000 future hands. The figure compares a repeated-simulation range, a
+posterior interval, and a range across stress-test models. These have different
+meanings; their widths do not establish a general ranking of uncertainty.*
+
+## A result that needed investigation
+
+With seed 42, an engine update moved the risk estimate from **7.85% to 6.35%**
+for the same inputs.
+Two things had changed together: the random-number streams and the detection
+of ruin between 100-hand checkpoints. I separated them to investigate what
+caused the difference.
+
+Checking only the bankroll at each checkpoint can miss a path that crosses
+the ruin threshold and recovers before the next check. A Brownian-bridge
+correction accounts for these crossings under the baseline model. Across
+40 seeds, with 2,000 paths per seed, the paired comparison gave:
+
+| Method | Estimated ruin risk |
+|---|---:|
+| Check only at 100-hand endpoints | 6.76% |
+| Include the Brownian-bridge correction | 7.12% |
+| Analytical finite-horizon Brownian benchmark | 7.17% |
+
+The standard error of the mean bridge estimate across the 40 seeds was
+**0.08 percentage points**. The correction raised risk in every paired run.
+A lower result after an engine update therefore needed to be separated from
+the effect of changing the random sample.
+
+Settings: 3,000 bb (30 buy-ins of 100 bb), +3 bb/100, volatility 90 bb/100,
+100,000 future hands, and a ruin threshold of 0 bb.
+[Script, settings and saved results](checks/calculation-change-2026-10-21/README.md).
+
+## What the experiments show
+
+- **More simulation paths reduce Monte Carlo error.** They cannot resolve
+  uncertainty about the player's true win rate or whether the model fits the data.
+- **An estimated win rate changes the risk question.** The project propagates a
+  posterior for the win rate through the risk calculation. The effect on average
+  risk can be positive or negative, depending on the posterior and model settings.
+- **Assumptions about returns matter.** Heavy tails, shocks, serial dependence
+  and changing regimes are tested separately. These are controlled stress tests;
+  they do not establish how real poker results behave.
+
+The [interactive case study](case-study/index.html) presents these questions
+with adjustable examples. Open it directly as a static file, or visit
+`/case-study/` on the running app. The [methodology](docs/methodology.md)
+documents the models and their limitations.
 
 ## Authorship and AI assistance
 
+My work focused on evaluating the reliability of simulated bankroll-risk
+estimates. I investigated threshold crossings missed by 100-hand checkpoints,
+incorporated a Brownian-bridge correction, and compared the estimates with an
+analytical finite-horizon first-passage benchmark. When an engine update changed
+results for the same inputs and seed, I separated the effects of changes to
+random-number generation from those of the correction. Across 40 seeds with
+2,000 paths per seed, I examined Monte Carlo variation and systematic changes
+in how ruin was detected.
 
+I also investigated win-rate uncertainty and alternative assumptions about
+bankroll returns. My validation work included Markov-chain absorption
+calculations and comparisons between the Python research engine and the web
+implementation. I documented settings, seeds, versions, and limitations to make
+these comparisons reproducible. These experiments helped me distinguish what
+additional simulation can resolve—sampling error—from questions that require
+further investigation of the estimated inputs and model assumptions.
 
-## Research framing
+AI tools assisted with reviewing code and tests and checking calculations.
 
-**Research question:** *How reliable are finite-horizon ruin-risk estimates when
-the stochastic model, the estimated edge, the barrier-monitoring frequency, and
-the simulation budget are all imperfect?*
+## Explore the app
 
-A reproducible computational-statistics framework for estimating finite-horizon
-ruin risk under **parameter uncertainty, model misspecification, and discrete
-barrier monitoring**. Poker bankroll management is the concrete case study; the
-methods apply to any stochastic process with an absorbing lower boundary —
-capital depletion, insurance reserves, inventory exhaustion, reliability
-thresholds. The current experiments are calibrated to bankroll processes; the
-software architecture is extensible, and we do not overclaim domain generality.
-
-The intellectual contribution is framed generally as *uncertainty-aware risk
-estimation for stochastic systems with absorbing boundaries*, demonstrated
-through four strands: (1) mathematical modeling, (2) statistical inference under
-parameter uncertainty, (3) numerical/computational validation, and
-(4) reproducible scientific software. See [`docs/methodology.md`](docs/methodology.md).
-The quick-run figures in `reports/figures/` predate the bridge correction and
-show no intervals; the case study uses the regenerated results in
-`reports/case-study/`.
-
-> Research and educational tool. Results depend on simplified model assumptions
-> and are **not** financial or gambling advice.
-
-> **Calculation engine update (2026-10-21):** bankroll results now count dips
-> to the ruin threshold between 100-hand checkpoints and use new random-number
-> streams, so the same settings and seed give different numbers than earlier
-> versions. See [`CHANGELOG.md`](CHANGELOG.md) for the before/after figures and
-> what they do and do not mean, and
-> [`checks/calculation-change-2026-10-21/`](checks/calculation-change-2026-10-21/README.md)
-> for the script and saved output that reproduce them.
-
----
-
-*The section below documents the original decision-support tool, which remains
-the product layer over the research engine.*
-
-## Poker Bankroll Risk Simulator (product layer)
-
----
-
-## Product questions this supports
-
-- How likely am I to reach the ruin threshold under my current bankroll and edge?
-- How much drawdown should I realistically prepare for (P75 / P90 / P95 / P99)?
-- How sensitive is bankroll survival to uncertainty in my win rate?
-- How different are mean outcomes from median outcomes on a skewed distribution?
-- When does the finite-horizon estimate diverge from the classic infinite-horizon
-  gambler's-ruin formula, and why?
-
-This models **cash-game bankroll variance only** — not tournaments or ICM.
-
----
-
-## Methodology
-
-**Bankroll process.** The bankroll is measured in big blinds (bb) and evolves in
-discrete steps of `step_hands` hands. Each step applies an i.i.d. Normal increment:
-
-```
-increment ~ Normal(mean = winrate_bb100 * step_hands / 100,
-                    std  = std_bb100 * sqrt(step_hands / 100))
-```
-
-**Absorbing ruin.** A path is ruined the first time its bankroll is `<=`
-`ruin_threshold_bb`. Ruin is absorbing: the path is clipped to the threshold for
-all subsequent steps and can never recover. Terminal bankroll is defined
-consistently for survivors and ruined paths.
-
-**Continuous monitoring.** By default (`bridge=True`) ruin is also detected
-*between* step ends: when a step starts and ends above the threshold, the path
-is ruined with the Brownian-bridge probability `exp(-2 a0 a1 / s2)` that it
-touched the threshold in between. Endpoint-only monitoring (`bridge=False`)
-underestimates first-passage risk; on 200k-path checks it ran 5–36 standard
-errors below the finite-horizon Brownian benchmark, while the bridge-corrected
-estimate stayed within 1 standard error. The web engine (`server/compute.js`)
-uses the same correction.
-
-**Monte Carlo estimation.** The engine is fully vectorized (`np.random.default_rng`,
-no per-path Python loops, optional path-chunking with a memory guard). Risk of ruin
-is the fraction of ruined paths, with a path-level **bootstrap** confidence interval
-(or a fast **Wilson** binomial interval for large path counts).
-
-**Drawdown.** Maximum drawdown is measured from each path's prior running peak on the
-absorbed path; percentage drawdown uses a safe denominator. Ruined paths are never
-silently treated as recovered.
-
----
-
-## Validation
-
-Three methods are reported side by side because they answer *slightly different
-questions*:
-
-| Method | Question it answers |
+| Tool | What you can investigate |
 |---|---|
-| **Monte Carlo, finite horizon** | Simulated ruin rate over exactly `n_hands`. |
-| **Brownian, finite horizon** | First-passage probability of hitting the barrier by time `T = n_hands`. Most directly comparable to Monte Carlo. |
-| **Brownian, infinite horizon** | Classic gambler's ruin `exp(-2 mu b / sigma^2)`; assumes unbounded time, so tends to 1 for zero/negative drift. |
-| **Markov chain, finite step** | Absorption probability on a discretized bankroll grid, iterated for the same number of steps. |
+| **Risk Lab** | Compare scenarios, inspect simulated paths, and save or export A/B comparisons with their settings, seeds and engine versions. |
+| **Bankroll Risk** | Enter hands and net win rate, or import session results. Examine win-rate uncertainty, risk intervals, required bankroll under a stated posterior criterion, and sensitivity to the assumptions. |
+| **Hand Equity** | Compare a hand with fixed cards, random opponents, or a weighted heads-up range; account for known cards and inspect the breakdown. |
+| **Pot Odds & EV** | Use the equity from Hand Equity to examine the EV of calling at a given pot and call size. |
 
-Differences are expected. The infinite-horizon estimate is an **upper bound** on the
-finite-horizon result and is *not* a validation failure when it comes out higher.
-Consistency is judged with neutral language ("consistent within simulation
-uncertainty", "directionally consistent", or "difference likely reflects
-finite-horizon or discretization assumptions"). Actual numbers appear only after
-running `scripts/run_validation.py` — none are hard-coded here.
+Risk Lab is the default view. Preflop and About are secondary tabs; Preflop
+includes illustrative range practice and an optional Kuhn poker CFR demo.
 
-Unit conventions (per hand): `mu = winrate_bb100 / 100`,
-`sigma^2 = std_bb100^2 / 100`, `b = bankroll_bb - ruin_threshold_bb`, `T = n_hands`.
+Two routes connect inputs, results and interpretation:
 
----
+- **From your results:** load an example or your session data in Bankroll Risk,
+  then change one assumption and compare the required bankroll.
+- **From an opponent's range:** calculate equity in Hand Equity, pass it into
+  Pot Odds & EV, then change the range or the price of calling.
 
-## Assumptions and limitations
+The **What changed** panel in Bankroll Risk and Pot Odds & EV compares the
+result shown before editing with the new calculation. It lists changed inputs,
+shows before-and-after values, and explains their effect within the model.
+When several assumptions change together, it avoids attributing the difference
+to a single cause.
 
-- Results are i.i.d.; the model ignores autocorrelation and session dependence.
-- The win rate is stationary — it ignores learning, fatigue, tilt, opponent
-  adaptation, and game selection.
-- The Normal increment may understate heavy tails.
-- The estimated win rate itself carries sampling uncertainty (see the optional
-  win-rate-uncertainty extension).
-- Rake and changing game quality can make assumptions optimistic.
-- Deposits, withdrawals, bet sizing, and moving between stakes are excluded unless
-  explicitly modeled.
-- This is cash-game variance, not tournament ICM.
-- Outputs are conditional **model estimates**, not guarantees.
+## Run locally
 
----
-
-## Reproducibility
-
-Every result is a deterministic function of the parameters and the seed:
-
-```bash
-python scripts/run_validation.py \
-  --winrate 3.0 --std 90 --bankroll 3000 \
-  --hands 100000 --paths 50000 --seed 42
-```
-
-## Poker Analytics Suite (private compute API)
-
-The public page is a no-install interface backed by a private Node calculation
-service. Visitors can inspect the normal HTML/CSS/UI JavaScript that their
-browser receives, but the Equity evaluator, EV formulas, bankroll Monte Carlo,
-and CFR implementation remain in the private server repository and are never
-included in the public bundle. See [SECURE_DEPLOY.md](SECURE_DEPLOY.md) for the
-deployment flow.
-
-The main tabs are Risk Lab, Bankroll Risk, Hand Equity and Pot Odds & EV;
-Preflop and About sit to the right as secondary tabs. Two routes run end to
-end: *from your results* (Bankroll Risk) and *from an opponent's range* (Hand
-Equity, then Pot Odds & EV). On both, a "What changed" box compares a new
-result with the one shown before the edit and says why the answer moved.
-
-- **Bankroll Risk** — starts from your own results: hands, net win rate and a
-  volatility from your tracker or a labelled assumption, or a CSV of sessions
-  (`hands`, `profit_bb`, optional stake, game and date) read in the browser,
-  weighted by hands, filtered and compared by stake, game and period, with
-  checks of whether the sessions fit the model. It gives the win
-  rate's posterior interval, the average risk of ruin over it and the risk's
-  posterior interval, and the bankroll for “risk below X% with Y% posterior
-  probability” over the hands you plan to play, next to the average-risk and
-  fixed-win-rate answers. Tables show how the answer changes with volatility,
-  prior and sample size, plus a sample-size estimate for a given precision.
-  These are exact for the model (closed form, no simulation;
-  `server/bankroll_posterior.js`). The second mode is the Monte Carlo
-  risk-of-ruin engine with a finite-horizon
-  Brownian reference line. Like the Python engine, it monitors ruin
-  continuously with a Brownian-bridge correction (the method from
-  `barrier_resolution.py`), and its risk-versus-bankroll curve reuses the same
-  simulated swings at every bankroll (common random numbers) with pointwise 95%
-  Wilson intervals.
-- **Hand Equity** — expected pot share against up to five fixed or random
-  opponent hands, or one opponent's weighted range (`TT+, AQs+, AKo`, chart
-  or top X%), and an optional board. Fixed heads-up spots and ranges from the
-  flop on use exact enumeration; multiway and preflop range spots use seeded
-  Monte Carlo. Range results show equity against each hand in the range.
-- **Pot Odds & EV** — turns the latest card-derived equity into a call/fold
-  decision with EV in big blinds; manual equity remains an advanced option.
-- **Preflop** — browse, compare, and practise five 169-hand demonstration
-  ranges. These illustrative frequencies validate the complete product workflow
-  but are not solver-verified; the private API is ready for licensed solver
-  exports to replace them later. An optional Kuhn poker demo runs CFR with a
-  live convergence curve to the known game value (−1/18) and the equilibrium
-  strategy table.
-
-The private compute engines live in `standalone/engines/` and `server/compute.js`.
-The server adds strict input limits, same-origin API enforcement, a bounded worker
-queue, request-size limits, and in-memory rate limiting. Run all JavaScript checks with:
-
-```bash
-npm test
-```
-
-After editing the public shell or UI code, rebuild the public copies without
-embedding the engines:
+From the repository root, with **Node.js 20 or later**:
 
 ```bash
 npm run build
+npm start
 ```
 
-This validates the evaluator/equity against published matchups (AA vs KK 82.6%,
-72o vs AA 12%, MC ≈ exact) and CFR against the Kuhn equilibrium (value −1/18,
-K bets 3× as often as J, Q checks first, K always calls).
+Open <http://localhost:4174> for the app, `/case-study/` for the research story,
+and `/case-study/validation.html` for the validation page. The web suite needs
+the Node server; opening its main HTML file directly will not run the tools.
+Plotly charts require an internet connection.
 
-## Two ways to use the bankroll tool
+**Demo access:** local setup is documented here; no public demo URL is currently
+listed. The full app requires a Node service; uploading `site/index.html` alone
+to a static host does not provide its calculation API. See
+[deployment instructions](SECURE_DEPLOY.md) for serving the app while keeping
+the source repository private.
 
-**A. Public web suite (no install).** Start it locally with `npm start`, or deploy
-the private repository to Render. The server returns only result and chart data;
-the public page cannot work correctly when opened directly as a `file://` URL or
-deployed to static-only GitHub Pages. Internet is also used to load Plotly.
+The case study and Validation page can be read offline or hosted as static
+pages. If shared separately, their **Open the Risk Lab** link needs to point
+to the deployed app. See [sharing options](site/DEPLOY.md).
 
-**B. Streamlit app (full engine).** Adds the Markov-chain validation, scenario
-comparison, and file export on top of the exact Python engine that the tests
-verify.
+## Reproduce and check
 
-## Run the Streamlit app
+The Python research code requires **Python 3.11 or later**. In a virtual
+environment, install the research dependencies and regenerate the case-study
+results and pages:
 
 ```bash
-pip install -r requirements.txt
-streamlit run app.py
+python -m pip install -r requirements-research.txt
+python -m src.experiments.case_study --case all
+npm run build
 ```
 
-Expensive simulations run only when you click **Run simulation**; changing inputs
-afterwards shows a "results are stale" banner until the next run. Results are
-cached by their exact parameter tuple, so repeated runs are instant and
-reproducible. Tabs: **Overview** (executive summary, six KPIs, path fan chart,
-drawdown and terminal distributions, plain-language interpretation),
-**Sensitivity** (risk-of-ruin curve with an x-axis toggle, win-rate uncertainty
-sweep, required-bankroll solver, 2-D risk heatmap), **Scenario Comparison** (save
-up to three scenarios), **Validation** (the four-method comparison table), and
-**Methodology** (assumptions plus JSON / CSV / Markdown export).
+Configurations are in [`configs/case_study/`](configs/case_study/); outputs and
+provenance are in [`reports/case-study/`](reports/case-study/). The older
+`reports/figures/` outputs predate the bridge correction and are not the current
+case-study results.
 
-Display units switch between buy-ins and big blinds; set the big-blind size to
-show dollars. All amounts read in poker-player terms (buy-ins, bb/100) while the
-engine works in big blinds internally.
-
-## Testing
+Run the automated checks:
 
 ```bash
-pip install -r requirements.txt
-pytest
+npm test
+npm run check:calc-change
+python -m pytest
 ```
 
-## Project structure
+CI checks the web build and JavaScript tests on Node 22, and Python tests on
+Python 3.11 and 3.12. Python comparisons check the web calculations against the
+research implementation; PokerKit provides separate checks of hand evaluation
+and equity. PokerKit checks run separately and require their own dependencies;
+commands and saved evidence are in the [checks index](checks/README.md).
 
-```
-poker-bankroll-risk/
-├── app.py              # Streamlit decision-support app (5 tabs)
-├── .streamlit/config.toml   # dark quantitative theme
-├── src/
-│   ├── simulation.py   # vectorized Monte Carlo engine + SimulationConfig
-│   ├── analytics.py    # risk of ruin, drawdown, growth, time-to-ruin
-│   ├── validation.py   # Brownian (finite/infinite) + Markov cross-checks
-│   ├── scenarios.py    # labelled illustrative presets
-│   ├── sensitivity.py  # parameter sweeps + required-bankroll solver
-│   ├── recommendations.py   # neutral risk classification + drivers
-│   ├── plotting.py     # Plotly figures (dark theme)
-│   └── formatting.py   # bb / buy-in / dollar formatting
-├── scripts/
-│   └── run_validation.py
-├── tests/              # pytest: simulation, analytics, validation,
-│                       #         sensitivity, edge cases (60 tests)
-├── requirements.txt
-└── pyproject.toml
-```
+Results are reproducible with the recorded inputs, seeds, code and dependency
+versions. The saved-result checks (`--check`) require the JavaScript output to
+match the saved file exactly; comparisons between the web and Python
+implementations allow documented tolerances. Model agreement checks assess
+numerical implementation, not whether a model predicts real games accurately.
 
-Modules keep simulation, analytics, validation, plotting, and interpretation fully
-separate — no plotting or global RNG inside the analytical functions. The app is a
-thin, cached UI layer over these primitives.
+The optional Python interface is available with `streamlit run app.py` after
+installing the dependencies above.
+
+## Scope and limitations
+
+The baseline risk model assumes a constant win rate and independent Normal
+increments; its analytical benchmark and bridge correction apply to that model.
+Alternative return models are examined through separate experiments. The
+posterior bankroll calculation conditions on the chosen volatility; estimating
+volatility from sessions does not integrate all of its uncertainty into the
+posterior risk calculation.
+
+The examples and stress tests do not establish performance on real player
+histories. Preflop frequencies are demonstration data, and Kuhn poker is a
+simplified game. This project studies cash-game bankroll risk, not tournaments
+or ICM. Outputs are conditional model estimates for research and education,
+not guarantees or financial or gambling advice.

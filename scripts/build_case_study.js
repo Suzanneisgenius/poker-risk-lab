@@ -294,10 +294,12 @@ function main() {
     console.log(`wrote case-study/${name}.html`);
   }
 
-  // The README's main finding quotes the same numbers; fail the build if they drift.
+  // The README's investigation section quotes the same check; fail the build
+  // if its numbers drift from the saved results.
   const readme = fs.readFileSync(path.join(ROOT, "README.md"), "utf8");
-  for (const quoted of [`exact model risk ${facts.exact}`, `${facts.n2000_half} points`, `${facts.u50_lo} to ${facts.u50_hi}`, `${facts.a_min} to ${facts.a_max}`]) {
-    if (!readme.includes(quoted)) throw new Error(`README.md main finding is out of date: expected "${quoted}"`);
+  for (const quoted of [`${facts.c_before} to ${facts.c_after}`, `${facts.c_seeds} seeds, with ${facts.c_paths} paths per seed`,
+    `| ${facts.c_endpoint} |`, `| ${facts.c_mean} |`, `| ${facts.exact} |`, `${facts.c_se} percentage points`]) {
+    if (!readme.includes(quoted)) throw new Error(`README.md investigation section is out of date: expected "${quoted}"`);
   }
 
   // A failed check is written to the page as a failure, and the release build

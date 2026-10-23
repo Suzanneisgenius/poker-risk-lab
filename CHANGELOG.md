@@ -57,6 +57,23 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-10-23 — README rewritten
+
+- The README is the author's rewrite: the investigation of the 7.85% → 6.35%
+  result comes first, then the findings, authorship, the app, how to run it,
+  how to reproduce and check, and limits. One sentence was corrected before
+  committing: the saved-result checks (`--check`) require an exact match with
+  the saved file; only the web-against-Python comparisons allow tolerances.
+- The build compared the README's old "main finding" paragraph with the saved
+  results. The new README quotes the calculation-change check instead, so
+  `scripts/build_case_study.js` now checks those numbers (7.85% to 6.35%, 40
+  seeds of 2,000 paths, 6.76%, 7.12%, 7.17%, s.e. 0.08 points) and stops the
+  build if they drift. The old paragraph's numbers remain on the case study
+  page under "The short answer".
+- No longer in the README: the research-framing section, the Python
+  command-line examples, the suite's security architecture (see
+  `SECURE_DEPLOY.md`) and the Streamlit tab list.
+
 ## 2026-10-23 — two routes, and the investigation up front
 
 - **Case study.** A short preview of "Checking a misleading result" now sits
