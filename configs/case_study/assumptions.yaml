@@ -1,8 +1,10 @@
 # Case 3 — If results are not independent or not Normal, is the estimate still reliable?
 # Same scenario and the same edge in every model; each model also keeps the
-# per-step standard deviation where it can (see src/models.py). Ruin is checked
-# at 100-hand step ends for every model, so all levels are understated alike
-# (the bridge correction is exact only for Normal increments).
+# per-step standard deviation where it can (see src/models.py). All five models
+# are compared using ruin observed at 100-hand checkpoints (the bridge
+# correction is exact only for Normal increments). This holds the observation
+# grid fixed; it does not establish equal monitoring bias across models or give
+# their continuously monitored ruin probabilities.
 scenario:
   winrate_bb100: 3.0
   std_bb100: 90.0

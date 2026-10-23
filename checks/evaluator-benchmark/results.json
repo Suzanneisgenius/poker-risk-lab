@@ -1,5 +1,5 @@
 {
-  "purpose": "Same hands, same process: earlier seven-card evaluator (commit 097c6a3) against the current bitmask scorer.",
+  "purpose": "Same hands, same process: earlier seven-card evaluator (commit 890d39a) against the current bitmask scorer.",
   "command": "node checks/evaluator-benchmark/run.js --write",
   "conditions": {
     "cpu": "Apple M4 Max",

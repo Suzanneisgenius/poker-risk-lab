@@ -17,32 +17,31 @@ the first.
 | | |
 |---|---|
 | **Case study** | [`case-study/index.html`](case-study/index.html): three questions, one at a time, plus how a misleading result was checked. Static page: open the file directly, or `/case-study/` on the running app. |
-| **Validation** | [`case-study/validation.html`](case-study/validation.html): PokerKit cross-check, exact-value checks, interval coverage, engine agreement and benchmark conditions. |
+| **Validation** | [`case-study/validation.html`](case-study/validation.html): PokerKit cross-checks (hands, equity, ranges), exact-value checks, interval coverage, engine agreement, the bankroll-from-results page and the session import against the Python research code, a simulation of unequal session lengths, and benchmark conditions. A failed check is shown as failed and stops the build. |
 | **Demo** | `npm start`, then <http://localhost:4174>. No public deployment URL yet. |
 | **Reproduce** | `pip install -r requirements-research.txt`, `python -m src.experiments.case_study --case all`, then `npm run build`. Every check in [`checks/`](checks/README.md) has its own command and saved output. |
 | **Limits** | Conditional model estimates, not advice. The alternative models are stress tests, not descriptions of real games. The Preflop ranges are demonstration data. |
 
 ## Authorship and AI assistance
 
-My work focused on assessing the reliability of simulated bankroll-risk estimates.
-I investigated threshold crossings missed by 100-hand checkpoints, incorporated a
-Brownian-bridge correction, and compared the estimates with an analytical
-finite-horizon first-passage benchmark. When an engine update changed results for
-the same inputs and seed, I isolated changes to random-number generation from
-changes to ruin detection. Across 40 seeds with 2,000 paths per seed, I examined
-Monte Carlo variation alongside the systematic effect of the correction.
+My work focused on evaluating the reliability of simulated bankroll-risk
+estimates. I investigated threshold crossings missed by 100-hand checkpoints,
+incorporated a Brownian-bridge correction, and compared the estimates with an
+analytical finite-horizon first-passage benchmark. When an engine update changed
+results for the same inputs and seed, I separated the effects of changes to
+random-number generation from those of the correction. Across 40 seeds with
+2,000 paths per seed, I examined Monte Carlo variation and systematic changes
+in how ruin was detected.
 
-I also investigated win-rate uncertainty and alternative models of bankroll
-returns. Validation included Markov-chain absorption calculations and comparisons
-between the Python research engine and the web implementation. I documented
-settings, seeds, versions, and limitations to make these comparisons reproducible.
-This work informed a central distinction in the project: increasing the simulation
-budget reduces Monte Carlo error, while parameter uncertainty and model
-assumptions require separate investigation.
+I also investigated win-rate uncertainty and alternative assumptions about
+bankroll returns. My validation work included Markov-chain absorption
+calculations and comparisons between the Python research engine and the web
+implementation. I documented settings, seeds, versions, and limitations to make
+these comparisons reproducible. These experiments helped me distinguish what
+additional simulation can resolve—sampling error—from questions that require
+further investigation of the estimated inputs and model assumptions.
 
-AI tools were used primarily to assist with code review, check calculations and
-written explanations, and identify potential errors. Their feedback supported my
-review and revision process.
+AI tools assisted with reviewing code and tests and checking calculations.
 
 ## Research framing
 
@@ -197,11 +196,25 @@ deployment flow.
 The suite provides five tools behind one dark UI:
 
 - **Hand Equity** — expected pot share against up to five fixed or random
-  opponent hands and an optional board. Heads-up spots use exact enumeration
-  when the runout is small; multiway spots use seeded Monte Carlo.
+  opponent hands, or one opponent's weighted range (`TT+, AQs+, AKo`, chart
+  or top X%), and an optional board. Fixed heads-up spots and ranges from the
+  flop on use exact enumeration; multiway and preflop range spots use seeded
+  Monte Carlo. Range results show equity against each hand in the range.
 - **Pot Odds & EV** — turns the latest card-derived equity into a call/fold
   decision with EV in big blinds; manual equity remains an advanced option.
-- **Bankroll Risk** — the Monte Carlo risk-of-ruin engine with a finite-horizon
+- **Bankroll Risk** — starts from your own results: hands, net win rate and a
+  volatility from your tracker or a labelled assumption, or a CSV of sessions
+  (`hands`, `profit_bb`, optional stake, game and date) read in the browser,
+  weighted by hands, filtered and compared by stake, game and period, with
+  checks of whether the sessions fit the model. It gives the win
+  rate's posterior interval, the average risk of ruin over it and the risk's
+  posterior interval, and the bankroll for “risk below X% with Y% posterior
+  probability” over the hands you plan to play, next to the average-risk and
+  fixed-win-rate answers. Tables show how the answer changes with volatility,
+  prior and sample size, plus a sample-size estimate for a given precision.
+  These are exact for the model (closed form, no simulation;
+  `server/bankroll_posterior.js`). The second mode is the Monte Carlo
+  risk-of-ruin engine with a finite-horizon
   Brownian reference line. Like the Python engine, it monitors ruin
   continuously with a Brownian-bridge correction (the method from
   `barrier_resolution.py`), and its risk-versus-bankroll curve reuses the same

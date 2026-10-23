@@ -19,7 +19,7 @@ const REPEATS = 7;
 const SEED = 20261022;
 
 // --- earlier evaluator --------------------------------------------------------
-// Copied from standalone/engines/equity.js at commit 097c6a3 (rank5, C7, best7):
+// Copied from standalone/engines/equity.js at commit 890d39a (rank5, C7, best7):
 // ranks all 21 five-card subsets and allocates arrays for each.
 function rank5(cs){
   const rs = cs.map(c=>c%13).sort((a,b)=>b-a);
@@ -111,7 +111,7 @@ const old = time(() => { let s = 0; for (let n = 0; n < HANDS; n += 1) s += oldB
 const current = time(() => { let s = 0; for (let n = 0; n < HANDS; n += 1) s += scoreHand(asBuffers[n], 7); return s; });
 
 const result = {
-  purpose: "Same hands, same process: earlier seven-card evaluator (commit 097c6a3) against the current bitmask scorer.",
+  purpose: "Same hands, same process: earlier seven-card evaluator (commit 890d39a) against the current bitmask scorer.",
   command: "node checks/evaluator-benchmark/run.js --write",
   conditions: {
     cpu: os.cpus()[0]?.model || "unknown", cores: os.cpus().length, platform: `${os.platform()} ${os.release()}`,

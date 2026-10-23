@@ -2,9 +2,12 @@
 
 import numpy as np
 import pytest
+from scipy import integrate, stats
 
 from src.bayes import (
+    Posterior,
     Prior,
+    conditional_ruin_risk,
     empirical_prior,
     normal_normal_posterior,
     posterior_risk,
@@ -50,13 +53,30 @@ def test_credible_interval_contains_mean():
 
 
 def test_posterior_integrated_risk_exceeds_plug_in():
-    # Convex, decreasing risk in mu -> Jensen: E[risk] >= risk(E[mu]).
+    # In this scenario risk is low and averaging over the posterior raises it.
+    # Not a general rule: see the next test.
     post = normal_normal_posterior(1.5, 2.0, empirical_prior())
     out = posterior_risk(post, std_bb100=100.0, bankroll_bb=2000.0,
                          n_hands=100_000, plug_in_winrate=post.mean,
                          n_draws=8000, seed=1)
     assert out["expected_risk"] >= out["plug_in_risk"] - 1e-6
     assert out["understatement_factor"] >= 1.0 - 1e-6
+
+
+def test_posterior_integrated_risk_can_fall_below_plug_in():
+    # Finite-horizon risk is not convex in the win rate everywhere. Where risk
+    # is already high, averaging over the posterior lowers it.
+    mean, sd, args = -3.0, 2.0, (90.0, 3000.0, 100_000)
+    post = Posterior(mean, sd, weakly_informative_prior(),
+                     float(stats.norm.sf(0.0, mean, sd)))
+    exact, _ = integrate.quad(
+        lambda m: conditional_ruin_risk(m, *args) * stats.norm.pdf(m, mean, sd),
+        mean - 12 * sd, mean + 12 * sd)
+    out = posterior_risk(post, *args, n_draws=20_000, seed=0)
+    assert out["plug_in_risk"] == pytest.approx(0.661556, abs=1e-6)
+    assert exact == pytest.approx(0.637913, abs=1e-6)
+    assert out["expected_risk"] == pytest.approx(exact, abs=0.005)
+    assert out["expected_risk"] < out["plug_in_risk"] - 0.015
 
 
 def test_posterior_risk_outputs_valid_ranges():

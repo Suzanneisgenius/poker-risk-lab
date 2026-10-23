@@ -14,6 +14,9 @@
     "test:ui": "node standalone/test_ui_logic.js",
     "test:unit": "node server/test_unit.js",
     "check:calc-change": "node checks/calculation-change-2026-10-21/run.js --check",
-    "test": "node standalone/engines/test_engines.js && node server/test_unit.js && node server/test_api.js && npm run test:ui"
+    "test:range": "node standalone/shared/test_range.js",
+    "test": "node standalone/engines/test_engines.js && node standalone/shared/test_range.js && node standalone/shared/test_sessions.js && node server/test_unit.js && node server/test_api.js && npm run check:posterior && npm run check:sessions && node scripts/test_case_study_build.js && npm run test:ui",
+    "check:posterior": "node checks/bankroll-posterior-python/ours.js --check",
+    "check:sessions": "node checks/session-import-python/ours.js --check && node checks/session-lengths/run.js --check"
   }
 }

@@ -12,6 +12,16 @@ two very different quantities:
 A 3 bb/100 observed edge over 100k hands with volatility 100 bb/100 has a
 standard error near 3.2 bb/100 — i.e. it is not clearly distinguishable from
 break-even. Conflating SD with SE is the classic mistake this module avoids.
+
+The standard error assumes one win rate throughout. A stability check (the one
+the web page's session import uses, standalone/shared/sessions.js) cuts the
+blocks, in the order given, into up to 10 consecutive groups and compares their
+win rates with an F test; when they differ by more than chance, the SE is
+widened to the between-group one. It replaced a lag-1 autocorrelation
+adjustment on 2026-10-22: in checks/session-lengths/ that rarely noticed a
+drifting win rate and widening by it did not restore the interval's coverage.
+A check that does not flag has not shown the win rate is steady; a slow drift
+is often missed.
 """
 
 from __future__ import annotations
@@ -34,9 +44,16 @@ class EdgeEstimate:
     ci_low: float                 # frequentist CI for the win rate
     ci_high: float
     confidence_level: float
-    lag1_autocorr: float
-    effective_n_blocks: float
-    se_winrate_adjusted: float    # SE inflated for autocorrelation
+    # Stability check: 0 groups (and None below) when not run, which needs at
+    # least 20 blocks and some spread.
+    stability_groups: int
+    stability_f: float | None     # between / within groups, F(groups - 1, n_blocks - groups)
+    stability_p: float | None
+    stability_flag: bool          # p < 0.05
+    se_between_groups: float | None
+    stability_multiplier: float | None  # se_between_groups / se_winrate, within [1, 10]
+    se_multiplier: float          # applied to se_winrate: 1, or stability_multiplier
+    se_winrate_adjusted: float    # se_winrate * se_multiplier
     warnings: list[str] = field(default_factory=list)
 
     def as_dict(self) -> dict[str, Any]:
@@ -58,8 +75,7 @@ def _validate(hands: np.ndarray, profit: np.ndarray) -> list[str]:
     msgs: list[str] = []
     total = float(hands.sum())
     if hands.size < 5:
-        msgs.append(f"Only {hands.size} blocks: variance and autocorrelation "
-                    "estimates are rough.")
+        msgs.append(f"Only {hands.size} blocks: the volatility estimate is rough.")
     if total < 10_000:
         msgs.append(f"Only {total:,.0f} hands: the win-rate estimate is very "
                     "imprecise (wide confidence interval).")
@@ -70,16 +86,57 @@ def _validate(hands: np.ndarray, profit: np.ndarray) -> list[str]:
     return msgs
 
 
+STABILITY_MIN_BLOCKS = 20
+STABILITY_MAX_GROUPS = 10
+
+
+def stability_check(hands: np.ndarray, profit: np.ndarray, mu_hat: float,
+                    sigma: float, se: float) -> dict[str, Any] | None:
+    """Is the win rate the same throughout? Blocks in time order.
+
+    The blocks are cut into ``G = min(10, n // 5)`` consecutive groups of equal
+    count. With ``W_g`` the group's hands / 100 and ``mu_g`` its win rate, the
+    weighted residuals split exactly into ``B = sum(W_g (mu_g - mu_hat)^2)``
+    between the groups and ``E = sum(w_i (r_i - mu_g)^2)`` within them. With
+    one win rate throughout, ``F = (B / (G - 1)) / (E / (n - G))`` has an
+    ``F(G - 1, n - G)`` distribution exactly (normal blocks, sigma unknown).
+    Until 2026-10-23 ``B / sigma_hat^2`` was read as chi-square(G - 1), which
+    treats sigma as known and flags too rarely with few blocks. The
+    between-group standard error of ``mu_hat`` is
+    ``sqrt(G / (G - 1) * sum((W_g / W)^2 (mu_g - mu_hat)^2))``.
+    """
+    n = hands.size
+    w, r = hands / 100.0, 100.0 * profit / hands
+    if n < STABILITY_MIN_BLOCKS or not sigma > 0:
+        return None
+    g = min(STABILITY_MAX_GROUPS, n // 5)
+    edges = [(k * n) // g for k in range(g + 1)]
+    parts = [slice(a, b) for a, b in zip(edges[:-1], edges[1:])]
+    gw = np.array([w[k].sum() for k in parts])
+    rate = np.array([100.0 * profit[k].sum() / hands[k].sum() for k in parts])
+    between = float(np.sum(gw * (rate - mu_hat) ** 2))
+    within = float(sum(np.sum(w[k] * (r[k] - m) ** 2) for k, m in zip(parts, rate)))
+    f = between / (g - 1) / (within / (n - g)) if within > 0 else float("inf")
+    se_between = float(np.sqrt(g / (g - 1) * np.sum((gw / gw.sum()) ** 2 * (rate - mu_hat) ** 2)))
+    return {"groups": g, "f": f, "p": float(stats.f.sf(f, g - 1, n - g)) if within > 0 else 0.0,
+            "se_between": se_between, "multiplier": min(10.0, max(1.0, se_between / se))}
+
+
 def estimate_edge(
     block_hands: np.ndarray | list[float],
     profit_bb: np.ndarray | list[float],
     confidence_level: float = 0.95,
+    widen: bool | None = None,
 ) -> EdgeEstimate:
     """Hands-weighted win-rate estimate with volatility, SE, and CI.
 
     Model: block ``i`` profit ``p_i ~ N(mu * h_i/100, sigma^2 * h_i/100)``.
     Then the block win rate ``r_i = 100 p_i / h_i`` has mean ``mu`` and variance
     ``sigma^2 / w_i`` with weight ``w_i = h_i/100``.
+
+    Blocks are taken to be in time order. ``widen`` decides whether the SE is
+    widened by the stability check: ``None`` (default) when it flags, as the web
+    page does; ``True`` always (it never narrows); ``False`` never.
     """
     hands = np.asarray(block_hands, dtype=np.float64)
     profit = np.asarray(profit_bb, dtype=np.float64)
@@ -98,24 +155,24 @@ def estimate_edge(
     # SE of the mean win rate: Var(mu_hat) = sigma^2 / sum(w) = 100 sigma^2 / N.
     se = float(sigma / np.sqrt(total_hands / 100.0)) if total_hands > 0 else float("inf")
 
-    # Lag-1 autocorrelation of block win rates -> effective sample size.
-    if n >= 3 and np.std(r) > 0:
-        rho = float(np.corrcoef(r[:-1], r[1:])[0, 1])
-    else:
-        rho = 0.0
-    rho = 0.0 if not np.isfinite(rho) else rho
-    raw_factor = (1 + rho) / (1 - rho) if abs(rho) < 1 else np.inf
-    # Conservative: only ever *penalize* for positive autocorrelation; negative
-    # autocorrelation is not credited (so effective_n <= n_blocks always).
-    factor = min(max(raw_factor, 1.0), 1e6)
-    eff_n = float(n / factor)
-    se_adj = float(se * np.sqrt(factor))
-    if rho > 0.2:
-        msgs.append(f"Lag-1 autocorrelation {rho:+.2f} detected; the effective "
-                    "sample is smaller than the block count and the SE is "
-                    "widened accordingly.")
+    check = stability_check(hands, profit, mu_hat, sigma, se)
+    flag = bool(check is not None and check["p"] < 0.05)
+    apply = check is not None and (flag if widen is None else widen)
+    multiplier = check["multiplier"] if apply else 1.0
+    se_adj = float(se * multiplier)
+    if check is None:
+        msgs.append(f"Fewer than {STABILITY_MIN_BLOCKS} blocks (or no spread): the "
+                    "stability check is not run, so the SE assumes one win rate "
+                    "throughout.")
+    elif flag:
+        msgs.append(f"The win rate differs between {check['groups']} consecutive "
+                    f"groups of blocks more than chance allows (p = {check['p']:.2g}). "
+                    + (f"The SE is widened ×{multiplier:.2f}, which only partly "
+                       "corrects for a changing win rate." if multiplier > 1 else
+                       "The SE is not widened."))
 
     # Frequentist CI using Student-t with n-1 df (proper for estimated sigma).
+    # When widened, the SE comes from only the groups, so this is optimistic.
     tcrit = float(stats.t.ppf(0.5 + confidence_level / 2, df=n - 1))
     lo, hi = mu_hat - tcrit * se_adj, mu_hat + tcrit * se_adj
 
@@ -126,8 +183,14 @@ def estimate_edge(
     return EdgeEstimate(
         n_blocks=n, total_hands=int(total_hands), winrate_bb100=mu_hat,
         std_bb100=sigma, se_winrate=se, ci_low=lo, ci_high=hi,
-        confidence_level=confidence_level, lag1_autocorr=rho,
-        effective_n_blocks=eff_n, se_winrate_adjusted=se_adj, warnings=msgs,
+        confidence_level=confidence_level,
+        stability_groups=check["groups"] if check else 0,
+        stability_f=check["f"] if check else None,
+        stability_p=check["p"] if check else None,
+        stability_flag=flag,
+        se_between_groups=check["se_between"] if check else None,
+        stability_multiplier=check["multiplier"] if check else None,
+        se_multiplier=float(multiplier), se_winrate_adjusted=se_adj, warnings=msgs,
     )
 
 

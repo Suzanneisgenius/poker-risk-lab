@@ -67,7 +67,8 @@ current engine recomputes as 28.90% and 6.35% instead of 27.75% and 7.85%.
 
 Repeat with `2-seed-7.json` (current engine, seed 7: recomputing matches),
 `4-broken.json` (cut off part-way) and `3-edited-by-hand.json` (current engine,
-B's risk changed from 6.35% to 5.35% after saving).
+B's risk changed from 6.35% to 5.35% after saving, with its interval and
+survival changed to match, so only recomputing shows the edit).
 
 **Pass:** they point to the saved and the recalculated values correctly and
 attribute an engine-version difference to the calculator, not to their inputs.

@@ -1,13 +1,14 @@
 {
-  "timestamp_utc": "2026-07-13T15:26:41+00:00",
-  "git_commit": null,
-  "platform": "Linux-6.8.0-124-generic-aarch64-with-glibc2.35",
+  "timestamp_utc": "2026-10-23T05:38:37+00:00",
+  "git_commit": "53aad41",
+  "code_changed_since_commit": false,
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
   "packages": {
-    "python": "3.10.12",
-    "numpy": "2.2.6",
-    "scipy": "1.15.3",
-    "pandas": "2.3.3",
-    "matplotlib": "3.10.9"
+    "python": "3.12.14",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "pandas": "3.0.6",
+    "matplotlib": "3.11.2"
   },
   "parameters": {
     "experiment": "uncertainty_risk",

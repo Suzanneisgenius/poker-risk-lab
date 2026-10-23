@@ -146,7 +146,7 @@ real value from §10. Suit→metric mapping is intentional; label it once.
   for eyebrows, numbers, and annotations to give a lab-log feel.
 - A real terminal-style **"Reproduce"** block:
   `python -m src.experiments.barrier_resolution --config configs/barrier_resolution.yaml`
-- A small provenance stamp: `seed 42 · reproducible · 108 tests passing`.
+- A small provenance stamp: `seed 42 · reproducible · 131 Python tests + JS checks`.
 - Restraint: one accent, red only for ruin, generous spacing, no gradients that
   hurt contrast, no emoji, no casino imagery.
 
@@ -158,15 +158,22 @@ Canonical hero scenario: **win rate 3 bb/100, std 90 bb/100, bankroll 3,000 bb
 - Risk of ruin: **7.2%**, 95% CI **[6.6%, 7.7%]**.
 - Cross-validation: MC **0.072** · Brownian finite **0.072** · Brownian infinite
   **0.108** · Markov **0.068**.
-- Barrier: endpoint monitoring understates ruin by **8.2%** at a 500-hand step;
-  Brownian-bridge correction cuts the error to **< 1%**; endpoint → analytical as
-  step → 1.
-- Monte Carlo convergence: fitted log-log slope **−0.55 ± 0.03** (≈ O(N^-1/2)).
+- Barrier (canonical scenario, 100-hand steps, 40 seeds × 2,000 paths;
+  `checks/calculation-change-2026-10-21/`): endpoint-only monitoring **6.76%**,
+  Brownian-bridge corrected **7.12%** (s.e. 0.08 points), analytical **7.17%**.
+- Monte Carlo convergence: describe the study (error against path count on
+  log-log axes, slope fitted rather than assumed) without quoting a slope; the
+  only saved fit is an earlier quick run.
 - Bayesian (edge 1.86 bb/100 over 50k hands; SE 3.98; 95% CI includes 0;
-  P(edge > 0) ≈ **65%**): plug-in ruin **27.3%** → uncertainty-integrated
-  **37.4%** (**×1.37**); P(true risk > 25%) ≈ **55%**.
-- Model risk (same edge & variance): AR(1) dependence **×1.44**, regime switching
-  **×1.20**; variance-matched heavy tails / shocks ≈ neutral.
+  P(edge > 0) ≈ **67%**): plug-in ruin **27.3%** → uncertainty-integrated
+  **36.5%** (**×1.34**); P(true risk > 25%) ≈ **55%**. This is one scenario,
+  not a rule: where risk is already high, averaging can lower it (66.2% →
+  63.8% in `tests/test_bayes.py`).
+- Model risk (same +3 bb/100 edge, 30 BI, 100k hands, ruin observed at 100-hand
+  checkpoints; `reports/case-study/assumptions.json`): AR(1) dependence **×2.87**
+  (same spread per step, wider total); regime switching **×1.65**, but with wider
+  steps (SD ≈ 101 vs 90), so not variance-matched; heavy tails / shocks at the
+  same spread per step ≈ neutral.
 
 > Regenerate all of the above with the high-precision configs before publishing,
 > and update any decimal that changes. Mark anything not yet regenerated as a
@@ -174,7 +181,7 @@ Canonical hero scenario: **win rate 3 bb/100, std 90 bb/100, bankroll 3,000 bb
 
 ## 11. Honesty rules
 
-- No fabricated numbers. Every figure traces to a `reports/` artifact.
+- No fabricated numbers. Every figure traces to a saved result in `reports/` or `checks/`, or to a test.
 - The moving-number device must satisfy the §5 honesty requirement.
 - State one limitation prominently (i.i.d.-Normal, stationary edge are
   assumptions the project exists to stress-test).

@@ -17,7 +17,7 @@ The run is deterministic and takes about 7 seconds (Node 24). CI runs `--check`.
 100,000 hands in 100-hand steps, 2,000 paths, win rates 0 and +3 bb/100.
 
 - **Single seed:** seed 42, three ways: the functional-fix engine (its random
-  stream and ruin check are copied into `run.js` from commit `a176da7`), the
+  stream and ruin check are copied into `run.js` from commit `6c9a151`), the
   current engine with the bridge correction off, and the current engine as
   shipped.
 - **Many seeds:** seeds 0–39 (`--first 0 --count 40 --stride 1`), 2,000 paths
