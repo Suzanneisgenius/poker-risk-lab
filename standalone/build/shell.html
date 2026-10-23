@@ -87,7 +87,7 @@
   ul.doc{background:var(--surface);border:1px solid var(--grid);border-radius:12px;padding:12px 22px;line-height:1.55}
   ul.doc li{margin:7px 0}
   .link{color:var(--accent);cursor:pointer;text-decoration:underline;font-size:13px}
-  @media(max-width:860px){.grid2{grid-template-columns:1fr}.kgrid.k3{grid-template-columns:1fr 1fr}}
+  @media(max-width:860px){.grid2{grid-template-columns:minmax(0,1fr)}.kgrid.k3{grid-template-columns:1fr 1fr}}
   /* ---- visual card picker ---- */
   .slotgroup{margin-bottom:12px}
   .slotgroup .gl{font-size:13px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
@@ -129,6 +129,7 @@
   .range-table thead th{position:sticky;top:0;background:var(--surface2);color:var(--muted);font-weight:600;font-size:12px}
   .range-table tbody th{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
   .range-table .dim{color:var(--dim);font-size:12px;margin-left:4px}
+  .range-table td:last-child{white-space:normal}
   /* Bankroll Risk: from your results. */
   #bp_view>*{min-width:0}
   .bk-mode{margin:0 0 14px}
@@ -209,7 +210,7 @@
   .bp-groups-head select{background:var(--surface2);border:1px solid var(--grid);color:var(--text);border-radius:8px;padding:5px 8px;font:inherit;font-size:13px}
   @media(max-width:600px){.bp-source{grid-template-columns:1fr auto}.bp-source-track{grid-column:1/-1;grid-row:2}.bp-need strong{font-size:32px}.bk-mode{display:flex}.bk-mode label{flex:1}.bk-mode span{width:100%;text-align:center}}
   .range-eq{display:inline-block;width:64px;height:7px;border-radius:4px;background:var(--surface3);margin-right:8px;vertical-align:middle;overflow:hidden}
-  .range-eq span{display:block;height:100%}.range-eq.ahead span{background:var(--pos)}.range-eq.behind span{background:var(--ruin)}.range-eq.even span,.range-eq.close span{background:var(--muted)}.range-eq.mixed span{background:var(--median)}
+  .range-eq span{display:block;height:100%}.range-eq.ahead span{background:var(--pos)}.range-eq.behind span{background:var(--ruin)}.range-eq.even span,.range-eq.unclear span{background:var(--muted)}.range-eq.mixed span{background:var(--median)}
   .cardslot{width:46px;height:64px;border-radius:8px;border:1px dashed var(--grid);background:var(--surface2);
     display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;
     transition:transform .15s,border-color .15s,box-shadow .15s;user-select:none;color:var(--muted);font-weight:700}
@@ -1151,10 +1152,10 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
           <p class="hint" id="bp_readings_note"></p>
         </section>
         <section class="bp-block result-dim" aria-labelledby="bp_sources_title">
-          <h3 id="bp_sources_title">What moves the risk most in your numbers</h3>
+          <h3 id="bp_sources_title">How the risk range changes under these settings</h3>
           <p class="bp-sources-text" id="bp_sources_text"></p>
           <div class="bp-sources" id="bp_sources"></div>
-          <p class="hint">Uncertain win rate: 95% posterior interval of model risk. Volatility and prior: lowest to highest average risk across the choices in the tables below. Heavy tails and dependent results are not included; the <a href="case-study/">case study</a> tests those separately.</p>
+          <p class="hint">Uncertain win rate: 95% posterior interval of model risk. Volatility and prior: lowest to highest average risk across the choices in the tables below, so their width depends on which choices are listed. These are different kinds of range: the widest is not a ranking of what is most uncertain in your real game, nor a split of the risk's variance. Heavy tails and dependent results are not included; the <a href="case-study/">case study</a> tests those separately.</p>
         </section>
         <section class="bp-block result-dim" aria-labelledby="bp_sens_title">
           <h3 id="bp_sens_title">How the answer changes</h3>
@@ -1169,7 +1170,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
         <section class="bp-block result-dim" aria-labelledby="bp_sample_title">
           <h3 id="bp_sample_title">How many hands to pin down your win rate</h3>
           <p id="bp_sample_text"></p>
-          <p class="hint">A sample-size estimate under these assumptions: the volatility shown, independent results and a win rate that does not change. Real samples drift (games, stakes and your play change), so treat it as a lower bound.</p>
+          <p class="hint">A sample-size benchmark under idealized assumptions: the volatility shown, independent results and a win rate that does not change. Real win rates drift as games, stakes and your play change; then the quantity being measured itself moves, and more old hands do not necessarily pin down today's win rate.</p>
         </section>
         <details class="learnmore bp-model"><summary>Model and reproducibility</summary><p id="bp_model_text"></p></details>
       </div>

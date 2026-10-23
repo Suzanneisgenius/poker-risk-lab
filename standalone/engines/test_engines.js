@@ -187,10 +187,46 @@ const preMC = E.equityVsRange(ak, small, [], { trials: 150000, seed: 11 });
 const preExact = byCombo(ak, small, []);
 expectTrue("preflop range of several combos uses Monte Carlo", preMC.method === "monte-carlo" && preMC.standardError > 0);
 check("preflop stratified MC ≈ exact (4 SE)", preMC.equity, preExact, 4 * preMC.standardError);
-expectTrue("Monte Carlo decides hand by hand, with a close-call bucket",
-  preMC.split.basis === "hand" && preMC.split.even === 0 && Math.abs(preMC.split.ahead + preMC.split.close + preMC.split.behind - 1) < 1e-12
-  && preMC.groups.every((g) => ["ahead", "close", "behind"].includes(g.call)
-    && (g.call === "close") === (Math.abs(g.equity - 0.5) <= 1.96 * g.standardError)));
+expectTrue("Monte Carlo decides hand by hand from each hand's 95% interval",
+  preMC.split.basis === "hand" && preMC.split.even === 0 && Math.abs(preMC.split.ahead + preMC.split.unclear + preMC.split.behind - 1) < 1e-12
+  && preMC.groups.every((g) => g.interval[0] <= g.equity && g.equity <= g.interval[1]
+    && g.call === (g.interval[0] > 0.5 ? "ahead" : g.interval[1] < 0.5 ? "behind" : "unclear")));
+// A hand with a sliver of the weight gets a few runs, and runs that all win or
+// all lose have no spread: they must not decide it. AdKs against 22 is 47.35%
+// exactly; with 22 at weight 0.0001 it gets 3 of 30,000 runs (seed 7: three
+// losses, seed 10: three wins).
+const tiny = rangeOf("QQ, 22:0.0001"), adks = [C("Ad"), C("Ks")];
+const exact22 = byCombo(adks, tiny.filter((c) => c.group === "22"), []);
+for (const seed of [7, 10]) {
+  const g = E.equityVsRange(adks, tiny, [], { trials: 30000, seed }).groups.find((x) => x.group === "22");
+  expectTrue(`seed ${seed}: 22 gets ${g.trials} runs at ${(g.equity * 100).toFixed(0)}%, called "${g.call}", interval ${g.interval.map((v) => (v * 100).toFixed(0)).join("-")}% holds the exact ${(exact22 * 100).toFixed(2)}%`,
+    g.trials === 3 && (g.equity === 0 || g.equity === 1) && g.call === "unclear" && g.interval[0] <= exact22 && exact22 <= g.interval[1]);
+}
+for (const n of [1, 2, 3, 4, 5]) {
+  expectTrue(`${n} run${n > 1 ? "s" : ""}, all won or all lost: not decided`,
+    E.scoreInterval(1, n)[0] < 0.5 && E.scoreInterval(0, n)[1] > 0.5);
+}
+expectTrue("6 runs all won: called ahead", E.scoreInterval(1, 6)[0] > 0.5 && E.scoreInterval(0, 6)[1] < 0.5);
+// Exactly, for a hand at 50%: how often is it called ahead? At most 2.5% for
+// every number of runs, wins and losses only or with ties.
+const logFact = [0];
+for (let i = 1; i <= 400; i++) logFact[i] = logFact[i - 1] + Math.log(i);
+let worstPlain = 0, worstTies = 0;
+for (let n = 1; n <= 400; n++) {
+  let p = 0;
+  for (let k = 0; k <= n; k++) if (E.scoreInterval(k / n, n)[0] > 0.5) p += Math.exp(logFact[n] - logFact[k] - logFact[n - k] - n * Math.LN2);
+  worstPlain = Math.max(worstPlain, p);
+}
+for (let n = 1; n <= 150; n++) {
+  let p = 0;  // win and loss 40% each, tie 20%
+  for (let w = 0; w <= n; w++) for (let t = 0; t <= n - w; t++) {
+    const l = n - w - t;
+    if (E.scoreInterval((w + t / 2) / n, n)[0] > 0.5) p += Math.exp(logFact[n] - logFact[w] - logFact[t] - logFact[l] + (w + l) * Math.log(0.4) + t * Math.log(0.2));
+  }
+  worstTies = Math.max(worstTies, p);
+}
+expectTrue(`a hand at exactly 50% is called ahead at most ${(worstPlain * 100).toFixed(2)}% of the time (1-400 runs), ${(worstTies * 100).toFixed(2)}% with ties (1-150 runs)`,
+  worstPlain <= 0.025 && worstTies <= 0.025);
 check("forced exact preflop = weighted mean of exact combos", E.equityVsRange(ak, small, [], { exactLimit: Infinity }).equity, preExact, 1e-12);
 expectTrue("same seed, same result", E.equityVsRange(ak, small, [], { trials: 5000, seed: 3 }).equity === E.equityVsRange(ak, small, [], { trials: 5000, seed: 3 }).equity);
 expectTrue("every hand in the range gets at least one trial",

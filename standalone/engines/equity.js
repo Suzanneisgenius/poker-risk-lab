@@ -267,6 +267,20 @@ function choose(n,k){
 
 const EXACT_RANGE_LIMIT = 2000000;
 
+// 95% interval for a hand's equity from n Monte Carlo runs scoring 1 (win),
+// 1/2 (tie) or 0: the Wilson score interval with continuity correction
+// (Newcombe 1998) at the mean score. It uses no estimate of the spread, which
+// is zero after a few runs that all win or all lose; it assumes the largest
+// spread a score between 0 and 1 can have at that mean, mu (1 - mu), so ties
+// only make it more cautious. Three wins out of three give 31-100%.
+const Z95 = 1.959963984540054;
+function scoreInterval(mean, n, z = Z95){
+  const z2 = z * z, d = 2 * (n + z2);
+  const lo = mean <= 0 ? 0 : (2 * n * mean + z2 - 1 - z * Math.sqrt(Math.max(0, z2 - 2 - 1 / n + 4 * mean * (n * (1 - mean) + 1)))) / d;
+  const hi = mean >= 1 ? 1 : (2 * n * mean + z2 + 1 + z * Math.sqrt(Math.max(0, z2 + 2 - 1 / n + 4 * mean * (n * (1 - mean) - 1)))) / d;
+  return [Math.max(0, lo), Math.min(1, hi)];
+}
+
 function equityVsRange(hero, range, board, {trials=30000, seed=42, exactLimit=EXACT_RANGE_LIMIT}={}){
   const known=new Set([...hero,...board]);
   if(hero.length!==2||known.size!==hero.length+board.length) throw new Error("hero needs 2 cards and no card can repeat");
@@ -288,9 +302,10 @@ function equityVsRange(hero, range, board, {trials=30000, seed=42, exactLimit=EX
   // Share of the range's weight hero is ahead of (equity above 50%), even
   // with, or behind. Exact runs decide this combo by combo. A Monte Carlo
   // run only has each hand's average over its combos, so it decides hand by
-  // hand and calls a hand "close" when its average is within 1.96 standard
-  // errors of 50%.
-  const split={basis:exact?"combo":"hand",ahead:0,even:0,close:0,behind:0};
+  // hand: ahead or behind when the hand's 95% interval (scoreInterval) lies
+  // above or below 50%, otherwise "unclear" (too close to call, or too few
+  // runs to tell).
+  const split={basis:exact?"combo":"hand",ahead:0,even:0,unclear:0,behind:0};
   const out=list.map((g,i)=>{
     const s=stats[i],share=g.weight/totalWeight,se=Math.sqrt(s.variance);
     equity+=share*s.equity; win+=share*s.win; tie+=share*s.tie; lose+=share*s.lose;
@@ -301,7 +316,8 @@ function equityVsRange(hero, range, board, {trials=30000, seed=42, exactLimit=EX
       row.comboEquity=[s.minEquity,s.maxEquity];
       for(const key of ["ahead","even","behind"]) split[key]+=s[key]/totalWeight;
     }else{
-      row.call=Math.abs(s.equity-0.5)<=1.96*se?"close":s.equity>0.5?"ahead":"behind";
+      row.interval=scoreInterval(s.equity,s.trials);
+      row.call=row.interval[0]>0.5?"ahead":row.interval[1]<0.5?"behind":"unclear";
       split[row.call]+=share;
     }
     return row;
@@ -388,4 +404,4 @@ function rangeMonteCarlo(hero, groups, board, deck, need, trials, seed, totalWei
 }
 
 if (typeof module!=="undefined") module.exports =
-  { cardToStr, strToCard, rank5, best7, scoreHand, equityMC, equityMultiwayMC, equityExact, equityVsRange, nRunouts, choose, EXACT_RANGE_LIMIT, RANKS, SUITS };
+  { cardToStr, strToCard, rank5, best7, scoreHand, equityMC, equityMultiwayMC, equityExact, equityVsRange, scoreInterval, nRunouts, choose, EXACT_RANGE_LIMIT, RANKS, SUITS };

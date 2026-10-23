@@ -57,6 +57,49 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-10-22 — review fixes: rare hands in ranges, bankroll rounding, wording
+
+- **Rare hands in a Monte Carlo range run are no longer called on a few
+  runs.** Each hand gets runs in proportion to its share, so a hand at weight
+  0.0001 may get 3 of 30,000; three wins or three losses have no spread, and
+  the old rule (average within 1.96 empirical standard errors of 50%) called
+  such a hand ahead or behind with certainty. Hero A♦K♠ against
+  `QQ, 22:0.0001` called 22 "ahead" (seed 10) or "behind" (seed 7); exactly,
+  hero has 47.35% against it. A hand is now ahead or behind only when its
+  95% Wilson score interval with continuity correction lies above or below
+  50%; otherwise it is "not clear". The interval assumes the largest spread a
+  score of 0, ½ or 1 can have, so it needs no estimate of the spread and ties
+  make it more cautious; six straight wins are the fewest that call a hand
+  ahead. Computed exactly, a hand at 50% is called ahead at most 2.49% of the
+  time for 1–400 runs (1.23% with 20% ties). Each row shows its runs and
+  interval, and says "too few runs to tell" when the interval is 20 points or
+  wider. Exact runs are unchanged (J2s still 2/3 ahead, combo by combo).
+  Two display fixes found while checking this case: a weighted count now
+  shows up to four decimals (22 at 0.0001 is "weighted 0.0006", not
+  "weighted 0"), and a share just under 100% shows two decimals (99.99%, not
+  100.0% beside 0.01%). The longer row text widened the page on tablets and
+  phones; the Hand Equity column now shrinks and the run note wraps.
+- **A bankroll needed is rounded up.** 40,000 hands at +3, volatility 90,
+  weak prior, 5% within 100,000 hands with 80% posterior probability needs
+  64.0167 buy-ins: the page showed 64, and a player with 64 read "about 0
+  more needed" and a probability of "80.0%" (it is 79.987%). Amounts needed
+  are now rounded up at the precision shown (0.1 buy-in below 100, whole
+  buy-ins above): 64.1, with 6,410 bb from the same amount, "0.1 more
+  needed", and 79.99%. The same applies to the three readings, the
+  sensitivity tables and the chart. Spare buy-ins round down. A probability
+  or risk shown beside its target gets more decimals only where rounding
+  would put it on or across the target. A test checks over 54 settings that
+  typing in the amount shown meets the target.
+- **Wording.** The panel comparing the win rate's interval with the volatility
+  and prior choices is now "How the risk range changes under these settings":
+  its three ranges are of different kinds, and the volatility and prior ones
+  depend on which values are listed, so the widest is not a ranking of real
+  uncertainty. The claim that a tracker's standard deviation "would remove
+  most of it" is gone: the model treats any volatility as fixed and does not
+  count its estimation error. The sample-size estimate is "a benchmark under
+  idealized assumptions", not a lower bound. The model note says the page
+  computes live and Python recomputed the fixed verification cases.
+
 ## 2026-10-22 — `src/inference.py`: the page's stability check instead of lag-1
 
 - **`estimate_edge` widens the standard error the way the page does.** The

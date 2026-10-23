@@ -445,9 +445,47 @@ async function main(){
     for(const s of ["current","pending","stale","error","empty"])assert.ok(h.run(`RESULT_STATE_LABELS['${s}']`));
   }
 
+  // --- Bankroll from results: amounts and probabilities shown against a target --------
+  {
+    const { computeBankrollPosterior } = require("../server/bankroll_posterior.js");
+    const ctx=vm.createContext({});
+    vm.runInContext(slice("const bpPct=","const bpRange=")+";this.f={bpPct,bpBI,bpUp,bpNeed,bpShort,bpSpare,bpPctAgainst};",ctx);
+    const f=ctx.f;
+    // A review's case: the root is 64.0167 buy-ins, which plain rounding showed as 64.
+    const input={hands:40000,winRate:3,sd:90,prior:"weak",bank:30,thr:0,bbPerBuyIn:100,horizon:100000,target:5,credibility:80};
+    const need=computeBankrollPosterior(input).bankroll.credible;
+    assert.ok(need.buyIns>64&&need.buyIns<64.02,`root ${need.buyIns}`);
+    assert.equal(f.bpNeed(need.buyIns),"64.1");
+    const at64=computeBankrollPosterior({...input,bank:64});
+    assert.equal(at64.bankroll.credible.met,false);
+    assert.equal(f.bpBI(f.bpShort(need.buyIns,64)),"0.1","shortfall is never shown as 0");
+    assert.equal(f.bpPctAgainst(at64.risk.probAtMostTarget,0.8),"79.99%","79.987% must not read as 80.0%");
+    const at641=computeBankrollPosterior({...input,bank:64.1});
+    assert.ok(at641.bankroll.credible.met&&at641.risk.probAtMostTarget>=0.8,"typing the amount shown meets the target");
+    assert.equal(f.bpSpare(need.buyIns,64.1),0,"spare rounds down");
+    // The default example: 56.85 and the fixed-win-rate 28.03 round up.
+    const def=computeBankrollPosterior({...input,winRate:4}).bankroll;
+    assert.equal(f.bpNeed(def.credible.buyIns),"56.9");assert.equal(f.bpNeed(def.plugIn.buyIns),"28.1");
+    // Over many settings, the amount shown is always enough, and from 100 up it is whole buy-ins.
+    let checked=0;
+    for(const hands of [5000,40000,640000])for(const winRate of [1,3,6])for(const target of [1,5])for(const credibility of [60,80,95]){
+      const b=computeBankrollPosterior({...input,hands,winRate,target,credibility}).bankroll.credible;
+      if(b.buyIns==null)continue;
+      const shown=f.bpUp(b.buyIns),again=computeBankrollPosterior({...input,hands,winRate,target,credibility,bank:shown});
+      assert.ok(again.bankroll.credible.met&&again.risk.probAtMostTarget>=credibility/100-1e-12,`${hands} ${winRate} ${target} ${credibility}: ${b.buyIns} shown ${shown}`);
+      assert.ok(shown>=b.buyIns&&shown-b.buyIns<=(b.buyIns<100?0.1:1)+1e-9);
+      checked++;
+    }
+    assert.ok(checked>=40,`${checked} settings`);
+    // Against a level: extra decimals only where rounding would land on or cross it.
+    assert.equal(f.bpPctAgainst(0.85,0.8),"85.0%");assert.equal(f.bpPctAgainst(0.80004,0.8),"80.004%");
+    assert.equal(f.bpPctAgainst(0.0500049,0.05),"5.0005%");assert.equal(f.bpPctAgainst(0.0499,0.05),"4.99%");
+    assert.equal(f.bpPctAgainst(0.8,0.8),"80.0%");
+  }
+
   const seed=harness();seed.get("seed").value="0";assert.equal(seed.run("integerInput('seed',42)"),0);
   const showdown=computeEquity({hero:["Ah","Kd"].map(strToCard),opponents:[["As","Kc"].map(strToCard),["Ad","Kh"].map(strToCard)],board:["2c","3d","4h","5s","6c"].map(strToCard),trials:1000,seed:0});
   assert.equal(showdown.result.method,"exact");assert.equal(showdown.result.trials,1);assert.equal(showdown.result.equity,1/3);
-  console.log("PASS: practice sets (10/20/169) in all 5 scenarios; retry + added origins; saved progress, resume, previous review, corrupt or blocked storage; frequency questions; answer gating, reveal, no double scoring; review and retry missed; per-scenario progress; set-size change; practice this spot; unavailable actions; loading, races, retry; hand search; matrix keys; Risk Lab guide; comparison JSON/CSV, import validation, load messages; result states; seed 0; exact multiway showdown.");
+  console.log("PASS: practice sets (10/20/169) in all 5 scenarios; retry + added origins; saved progress, resume, previous review, corrupt or blocked storage; frequency questions; answer gating, reveal, no double scoring; review and retry missed; per-scenario progress; set-size change; practice this spot; unavailable actions; loading, races, retry; hand search; matrix keys; Risk Lab guide; comparison JSON/CSV, import validation, load messages; result states; seed 0; exact multiway showdown; bankroll amounts rounded up and kept on the right side of the target.");
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});

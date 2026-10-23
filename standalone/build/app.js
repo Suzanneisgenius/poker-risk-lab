@@ -213,7 +213,8 @@ let eqRangeFocus=0;
 const comboCount=n=>(Number.isInteger(n)?n:+n.toFixed(2)).toLocaleString('en-US')+(n===1?' combo':' combos');
 // Combos are the two-card holdings; a weight below 1 makes a combo enter the
 // range less often, so the weighted count can differ from the number of combos.
-const weightedCount=n=>(Number.isInteger(n)?n:+n.toFixed(2)).toLocaleString('en-US');
+// Weights come in steps of 0.0001, so four decimals show a weighted count exactly.
+const weightedCount=n=>(+n.toFixed(4)).toLocaleString('en-US',{maximumFractionDigits:4});
 const comboLabel=(count,weight)=>comboCount(count)+(Math.abs(weight-count)>1e-9?`, weighted ${weightedCount(weight)}`:'');
 function equityKnownCards(){return [...SLOTS.hero,...SLOTS.board].map(s=>cardState[s]).filter(v=>v!=null);}
 function renderRangeEditor(){
@@ -373,22 +374,30 @@ function renderRangeBreakdown(res){
   const box=$('eq_breakdown');box.hidden=!res;if(!res)return;
   const rows=[...res.groups].sort((a,b)=>a.equity-b.equity||b.share-a.share);
   const split=res.split,byCombo=split.basis==='combo';
-  const pct=v=>(v*100).toFixed(v>0&&v<.001?2:1)+'%';
-  const parts=[split.ahead&&`ahead of ${pct(split.ahead)}`,split.behind&&`behind ${pct(split.behind)}`,split.even&&`even with ${pct(split.even)}`,split.close&&`too close to call against ${pct(split.close)}`].filter(Boolean);
+  // Two decimals near 0% and 100%, so a sliver of the range neither vanishes nor rounds the rest to 100%.
+  const pct=v=>(v*100).toFixed((v>0&&v<.001)||(v<1&&v>.999)?2:1)+'%';
+  const parts=[split.ahead&&`ahead of ${pct(split.ahead)}`,split.behind&&`behind ${pct(split.behind)}`,split.even&&`even with ${pct(split.even)}`,split.unclear&&`not clearly ahead or behind ${pct(split.unclear)}`].filter(Boolean);
   const list=parts.length>1?parts.slice(0,-1).join(', ')+' and '+parts.at(-1):parts[0];
   $('eq_breakdown_summary').textContent=byCombo?`Combo by combo, weighted: you're ${list} of this range.`:`Hand by hand, using each hand's average over its combos: you're ${list} of this range.`;
-  $('eq_breakdown_bar').innerHTML=`<span style="width:${split.ahead*100}%;background:${C.pos}"></span><span style="width:${(split.even+split.close)*100}%;background:${C.muted}"></span><span style="width:${split.behind*100}%;background:${C.ruin}"></span>`;
-  $('eq_breakdown_bar').setAttribute('aria-label',`Share of the range: ahead ${pct(split.ahead)}, ${byCombo?'even':'too close to call'} ${pct(split.even+split.close)}, behind ${pct(split.behind)}`);
+  const middle=byCombo?split.even:split.unclear;
+  $('eq_breakdown_bar').innerHTML=`<span style="width:${split.ahead*100}%;background:${C.pos}"></span><span style="width:${middle*100}%;background:${C.muted}"></span><span style="width:${split.behind*100}%;background:${C.ruin}"></span>`;
+  $('eq_breakdown_bar').setAttribute('aria-label',`Share of the range: ahead ${pct(split.ahead)}, ${byCombo?'even':'not clear'} ${pct(middle)}, behind ${pct(split.behind)}`);
   $('eq_breakdown_rows').innerHTML=rows.map(g=>{
     const e=g.equity*100;
     const tone=byCombo?(g.split.ahead===1?'ahead':g.split.behind===1?'behind':g.split.even===1?'even':'mixed'):g.call;
-    const spread=byCombo&&tone==='mixed'?` <span class="dim">combos ${(g.comboEquity[0]*100).toFixed(1)}–${(g.comboEquity[1]*100).toFixed(1)}%</span>`:'';
+    // Monte Carlo: the hand's own runs and 95% interval. A wide interval means
+    // too few runs to tell, whatever the average says.
+    let spread='';
+    if(byCombo){if(tone==='mixed')spread=` <span class="dim">combos ${(g.comboEquity[0]*100).toFixed(1)}–${(g.comboEquity[1]*100).toFixed(1)}%</span>`;}
+    else{
+      const [lo,hi]=g.interval,runs=`${g.trials.toLocaleString()} run${g.trials===1?'':'s'}, 95% interval ${(lo*100).toFixed(0)}–${(hi*100).toFixed(0)}%`;
+      spread=` <span class="dim">${tone!=='unclear'?runs:hi-lo>=0.2?`only ${runs}: too few runs to tell`:`${runs}: too close to call`}</span>`;
+    }
     return `<tr><th scope="row">${escapeHtml(g.group)}</th><td>${pct(g.share)} <span class="dim">${comboLabel(g.combos,g.weight)}</span></td><td><span class="range-eq ${tone}"><span style="width:${e}%"></span></span>${e.toFixed(1)}%${spread}</td></tr>`;
   }).join('');
-  const largestError=Math.max(...rows.map(g=>g.standardError))*100;
   $('eq_breakdown_note').textContent=byCombo
     ?'Ahead means more than 50% equity against that combo over every runout. A hand whose combos fall on both sides shows the range of its combos.'
-    :`Ahead means the hand's average equity is above 50% by more than 1.96 standard errors; too close to call means within that margin. Monte Carlo does not separate a hand's combos, which can sit on different sides of 50%. Standard errors reach ${largestError.toFixed(1)} pp for the smallest shares.`;
+    :`Ahead means the hand's 95% interval lies above 50%, behind that it lies below; otherwise it is not clear, either because the hand is close to 50% or because it got too few runs. Each hand gets runs in proportion to its share, so rare hands get few; the interval does not rely on their spread, which is zero when a few runs all win or all lose. Monte Carlo does not separate a hand's combos, which can sit on different sides of 50%.`;
 }
 
 let equityRequest=0;
@@ -681,6 +690,20 @@ const bpPct=v=>v<0.0005?'<0.1%':v>0.9995?'>99.9%':(v*100).toFixed(1)+'%';
 const bpSigned=v=>(v<0?'−':'+')+Math.abs(v).toFixed(1);
 const bpLevel=v=>`${Number((v*100).toFixed(1))}%`;
 const bpBI=v=>v==null?'—':v<100?String(Math.round(v*10)/10):Math.round(v).toLocaleString();
+// A bankroll needed is rounded up at the precision shown (0.1 buy-in below
+// 100, 1 above), so typing in the amount shown meets the target. Shortfalls
+// are worked out from that amount, and spare buy-ins round down.
+const bpUp=v=>v==null?null:v<100?Math.min(100,Math.ceil(v*10)/10):Math.ceil(v);
+const bpNeed=v=>bpBI(bpUp(v));
+const bpShort=(need,bank)=>{const d=bpUp(need)-bank;return d<100?Math.max(0.1,Math.ceil(d*10-1e-7)/10):Math.ceil(d-1e-7);};
+const bpSpare=(need,bank)=>{const d=bank-need;return d<100?Math.floor(d*10)/10:Math.floor(d);};
+// A probability or risk shown beside the level it is compared with: where
+// rounding would put it on, or across, that level, more decimals are shown.
+function bpPctAgainst(v,level){
+  if(v===level||Math.abs(v-level)>=0.001)return bpPct(v);
+  for(let d=2;d<=6;d++){const s=(v*100).toFixed(d);if(+s!==level*100&&(+s<level*100)===(v<level))return s+'%';}
+  return bpPct(v);
+}
 const bpRange=(lo,hi)=>`${bpPct(lo)} to ${bpPct(hi)}`;
 const bpHands=n=>n>=1e6?`${(n/1e6).toFixed(n>=1e7?1:2)} million`:Math.round(n).toLocaleString();
 function bpQuestionText(){
@@ -738,12 +761,12 @@ function renderBp(r,context=null){
   bpHasResult=true;setBpState('current');
 
   const need=b.credible;
-  $('bp_need').textContent=need.buyIns==null?'Too large to compute':`${bpBI(need.buyIns)} buy-ins`;
-  $('bp_need_bb').textContent=need.bb==null?'':`${Math.round(need.bb).toLocaleString()} bb`;
-  const atYours=`At your ${bpBI(i.bank)} buy-ins, the posterior probability that risk is below ${tgt} is ${bpPct(risk.probAtMostTarget)}; the question asks for ${q}.`;
+  $('bp_need').textContent=need.buyIns==null?'Too large to compute':`${bpNeed(need.buyIns)} buy-ins`;
+  $('bp_need_bb').textContent=need.bb==null?'':`${Math.ceil(bpUp(need.buyIns)*i.bbPerBuyIn-1e-7).toLocaleString()} bb`;
+  const atYours=`At your ${bpBI(i.bank)} buy-ins, the posterior probability that risk is below ${tgt} is ${bpPctAgainst(risk.probAtMostTarget,i.credibility)}; the question asks for ${q}.`;
   $('bp_gap').className='bp-gap '+(need.met?'is-met':'is-short');
   const gapHead=document.createElement('strong'),gapRest=document.createElement('span');
-  gapHead.textContent=need.met?`Your ${bpBI(i.bank)} buy-ins are enough.`:`You have ${bpBI(i.bank)}: about ${bpBI(need.moreBuyIns)} more needed.`;
+  gapHead.textContent=need.met?`Your ${bpBI(i.bank)} buy-ins are enough.`:`You have ${bpBI(i.bank)}: ${bpBI(bpShort(need.buyIns,i.bank))} more needed.`;
   gapRest.textContent=' '+atYours;
   $('bp_gap').replaceChildren(gapHead,gapRest);
   $('bp_definition').textContent=`Meaning: given these ${i.hands.toLocaleString()} hands and this model, there is at least a ${q} posterior probability that the chance of falling to ${thr} within the next ${horizon} is below ${tgt}. This is the ${q} posterior upper bound of model risk. It is not the average risk, and not a ${q} chance of avoiding ruin.`;
@@ -753,17 +776,21 @@ function renderBp(r,context=null){
     kpiCard('Chance the win rate is above 0',bpPct(w.probPositive),weight)+
     kpiCard('Average risk',bpPct(risk.average),'averaged over the win rate’s uncertainty')+
     kpiCard('Risk, 95% interval',bpRange(risk.interval[0],risk.interval[1]),'posterior interval of model risk')+
-    kpiCard(`Risk, ${q} upper bound`,bpPct(risk.upper),`at your bankroll · limit ${tgt}`)+
+    kpiCard(`Risk, ${q} upper bound`,bpPctAgainst(risk.upper,i.target),`at your bankroll · limit ${tgt}`)+
     kpiCard('Observed win rate as exact',bpPct(risk.plugIn),`if ${bpSigned(i.winRate)} bb/100 were certain`);
   rollKpis('bp_kpis');
 
   const answer='<span class="bp-tag">this answer</span>';
-  const compare=a=>a.buyIns==null?'—':a.met?`enough (${bpBI(i.bank-a.buyIns)} to spare)`:`${bpBI(a.moreBuyIns)} more`;
+  const compare=a=>{
+    if(a.buyIns==null)return '—';
+    if(!a.met)return `${bpBI(bpShort(a.buyIns,i.bank))} more`;
+    const spare=bpSpare(a.buyIns,i.bank);return spare>0?`enough (${bpBI(spare)} to spare)`:'just enough';
+  };
   $('bp_readings').innerHTML=[
     [`Risk below ${tgt} with ${q} posterior probability${answer}`,b.credible],
     [`Average risk below ${tgt}`,b.average],
     [`Risk below ${tgt} if ${bpSigned(i.winRate)} bb/100 were exact`,b.plugIn],
-  ].map(([label,a],k)=>`<tr${k===0?' class="is-current"':''}><th scope="row">${label}</th><td class="num">${bpBI(a.buyIns)} BI</td><td class="num">${compare(a)}</td></tr>`).join('');
+  ].map(([label,a],k)=>`<tr${k===0?' class="is-current"':''}><th scope="row">${label}</th><td class="num">${bpNeed(a.buyIns)} BI</td><td class="num">${compare(a)}</td></tr>`).join('');
   $('bp_readings_note').textContent=`The last row ignores that the win rate is uncertain; it is what a calculator with a fixed win rate (like the simulation mode) gives. “${q} sure that risk is below ${tgt}” is also different from “a ${q} chance of not going broke”, which is average risk below ${bpLevel(1-i.credibility)}.`;
 
   const labels={winRate:['Uncertain win rate','95% posterior interval'],volatility:['Volatility assumption',`${r.sources.items[1].values.join(', ')} bb/100`],prior:['Prior','none, weak, skeptical']};
@@ -772,11 +799,14 @@ function renderBp(r,context=null){
     return `<div class="bp-source${s.id===r.sources.widest?' is-widest':''}"><div class="bp-source-label">${labels[s.id][0]}<small>${labels[s.id][1]}</small></div><div class="bp-source-track" aria-hidden="true"><span class="bp-source-range" style="left:${left}%;width:${width}%"></span></div><div class="bp-source-value">${bpRange(lo,hi)}</div></div>`;
   }).join('');
   const widest=r.sources.items.find(s=>s.id===r.sources.widest),span=bpRange(widest.range[0],widest.range[1]);
+  const fixedSd=i.sdSource==='assumed'?' A standard deviation from your tracker or your sessions can replace the assumption; the model still treats that number as fixed and does not count its own estimation error.'
+    :i.sdSource==='sessions'?` The answer uses the volatility estimated from your sessions (${sd1(i.sd)}) as if it were exact; the rows for its 95% interval show what its estimation error could do.`
+    :` The answer uses your tracker’s (${sd1(i.sd)}) as if it were exact; the model does not count its estimation error.`;
   $('bp_sources_text').textContent=r.sources.widest==='winRate'
-    ?`In your numbers the uncertain win rate moves the risk most (${span}), as it did in the case study’s tested scenarios. More hands would narrow it; more simulation would not.`
+    ?`Among the settings listed here, the win rate’s 95% posterior interval gives the widest range of risk (${span}), as in the case study’s tested scenarios. More hands would narrow it; more simulation would not.`
     :r.sources.widest==='volatility'
-      ?`In your numbers the volatility assumption moves the average risk more (${span}) than the win rate’s own uncertainty.${i.sdSource==='assumed'?' A standard deviation from your tracker or your sessions would remove most of it.':` The answer uses ${i.sdSource==='sessions'?'the volatility estimated from your sessions':'your tracker’s'} (${sd1(i.sd)}); the range shows what 70 to 150 would give.`}`
-      :`In your numbers the choice of prior moves the average risk most (${span}): with this few hands the prior still carries real weight.`;
+      ?`Among the settings listed here, changing the volatility gives the widest range of average risk (${span}). That is a spread over chosen values, a different kind of range from the win rate’s posterior interval.${fixedSd}`
+      :`Among the settings listed here, changing the prior gives the widest range of average risk (${span}): with this few hands the prior still carries real weight.`;
 
   const head=cols=>`<tr>${cols.map((c,k)=>`<th scope="col"${k?' class="num"':''}>${c}</th>`).join('')}</tr>`;
   const mark=row=>row.current?'<span class="bp-tag">yours</span>':'';
@@ -784,15 +814,15 @@ function renderBp(r,context=null){
   const margin=`± ${i.margin} at ${bpLevel(i.sampleLevel)}`;
   $('bp_sens_sd_head').innerHTML=head(['Volatility (bb/100)','Win rate, 95% interval','Average risk',`Risk, ${q} bound`,'Bankroll needed',`Hands for ${margin}`]);
   const boundText={low:'low end of your estimate',high:'high end of your estimate'};
-  $('bp_sens_sd').innerHTML=r.sensitivity.volatility.map(row=>`<tr${row.current?' class="is-current"':''}><th scope="row">${sd1(row.sd)}${mark(row)}${row.bound?` <span class="dim">${boundText[row.bound]}</span>`:''}</th><td class="num">${interval(row)}</td><td class="num">${bpPct(row.averageRisk)}</td><td class="num">${bpPct(row.upperRisk)}</td><td class="num">${bpBI(row.requiredBuyIns)} BI</td><td class="num">${bpHands(row.handsForMargin)}</td></tr>`).join('');
+  $('bp_sens_sd').innerHTML=r.sensitivity.volatility.map(row=>`<tr${row.current?' class="is-current"':''}><th scope="row">${sd1(row.sd)}${mark(row)}${row.bound?` <span class="dim">${boundText[row.bound]}</span>`:''}</th><td class="num">${interval(row)}</td><td class="num">${bpPct(row.averageRisk)}</td><td class="num">${bpPctAgainst(row.upperRisk,i.target)}</td><td class="num">${bpNeed(row.requiredBuyIns)} BI</td><td class="num">${bpHands(row.handsForMargin)}</td></tr>`).join('');
   $('bp_sens_prior_head').innerHTML=head(['Prior','Weight of your results','Win rate, 95% interval','Above 0','Average risk','Bankroll needed']);
-  $('bp_sens_prior').innerHTML=r.sensitivity.prior.map(row=>`<tr${row.current?' class="is-current"':''}><th scope="row">${escapeHtml(row.label)}${mark(row)}</th><td class="num">${Math.round(row.dataWeight*100)}%</td><td class="num">${interval(row)}</td><td class="num">${bpPct(row.probPositive)}</td><td class="num">${bpPct(row.averageRisk)}</td><td class="num">${bpBI(row.requiredBuyIns)} BI</td></tr>`).join('');
+  $('bp_sens_prior').innerHTML=r.sensitivity.prior.map(row=>`<tr${row.current?' class="is-current"':''}><th scope="row">${escapeHtml(row.label)}${mark(row)}</th><td class="num">${Math.round(row.dataWeight*100)}%</td><td class="num">${interval(row)}</td><td class="num">${bpPct(row.probPositive)}</td><td class="num">${bpPct(row.averageRisk)}</td><td class="num">${bpNeed(row.requiredBuyIns)} BI</td></tr>`).join('');
   $('bp_sens_n_head').innerHTML=head(['Hands played','Win rate, 95% interval','Above 0','Average risk',`Risk, ${q} bound`,'Bankroll needed']);
-  $('bp_sens_n').innerHTML=r.sensitivity.sample.map(row=>`<tr${row.current?' class="is-current"':''}><th scope="row">${bpHands(row.hands)}${mark(row)}</th><td class="num">${interval(row)}</td><td class="num">${bpPct(row.probPositive)}</td><td class="num">${bpPct(row.averageRisk)}</td><td class="num">${bpPct(row.upperRisk)}</td><td class="num">${bpBI(row.requiredBuyIns)} BI</td></tr>`).join('');
+  $('bp_sens_n').innerHTML=r.sensitivity.sample.map(row=>`<tr${row.current?' class="is-current"':''}><th scope="row">${bpHands(row.hands)}${mark(row)}</th><td class="num">${interval(row)}</td><td class="num">${bpPct(row.probPositive)}</td><td class="num">${bpPct(row.averageRisk)}</td><td class="num">${bpPctAgainst(row.upperRisk,i.target)}</td><td class="num">${bpNeed(row.requiredBuyIns)} BI</td></tr>`).join('');
 
   const s=r.sampleSize;
   $('bp_sample_text').textContent=`With your ${i.hands.toLocaleString()} hands, a ${bpLevel(s.level)} interval for the win rate from the results alone is ± ${s.currentHalfWidth.toFixed(1)} bb/100. Narrowing it to ± ${s.margin} bb/100 takes about ${bpHands(s.totalHands)} hands in total${s.moreHands>0?`, ${bpHands(s.moreHands)} more than you have`:', which you already have'}. Volatility used: ${sdText}${i.seMultiplier>1?`; interval widened ×${i.seMultiplier.toFixed(2)} for changes over time`:''}.`;
-  $('bp_model_text').textContent=`${r.model.name}, version ${r.model.version}. Likelihood: ${r.model.likelihood}. Posterior: ${r.model.posterior}. Risk: ${r.model.risk}. Every number here is recomputed by the Python research code (src/bayes.py, src/validation.py) with scipy in checks/bankroll-posterior-python/.`;
+  $('bp_model_text').textContent=`${r.model.name}, version ${r.model.version}. Likelihood: ${r.model.likelihood}. Posterior: ${r.model.posterior}. Risk: ${r.model.risk}. This page computes it live in JavaScript; in the fixed verification cases of checks/bankroll-posterior-python/, every table and chart value was recomputed by the Python research code (src/bayes.py, src/validation.py) with scipy and agrees.`;
   $('bp_posterior_cap').textContent=`What the results and the ${BP_PRIOR_SHORT[i.prior]} say about your true win rate. Shaded: 95% interval. The answer uses the ${bpLevel(1-i.credibility)} point (${bpSigned(w.credible)} bb/100): risk at that win rate is the ${q} upper bound.`;
   renderBpCharts(r);
 }
@@ -820,7 +850,7 @@ function renderBpCharts(r){
   const crossings=[['plugIn',b.plugIn],['average',b.average],['upper',b.credible]].filter(([,a])=>a.buyIns!=null);
   traces.push({x:crossings.map(([,a])=>a.buyIns),y:crossings.map(()=>i.target),mode:'markers',showlegend:false,
     marker:{color:crossings.map(([k])=>BP_SERIES[k].color),size:10,line:{color:'#111c2f',width:2}},
-    customdata:crossings.map(([k])=>names[k]),hovertemplate:'%{customdata}: %{x:.1f} buy-ins<extra>needed</extra>'});
+    customdata:crossings.map(([k,a])=>`${names[k]}: ${bpNeed(a.buyIns)} buy-ins`),hovertemplate:'%{customdata}<extra>needed</extra>'});
   const lay=layout('','Bankroll (buy-ins)','Risk of ruin',{yaxis:{tickformat:'.0%',gridcolor:C.grid,range:[0,1.02],fixedrange:true},
     legend:{orientation:'h',x:0,y:1.02,yanchor:'bottom',font:{color:C.muted,size:compact?11:12}},margin:{l:56,r:14,t:compact?92:62,b:46}});
   lay.xaxis.fixedrange=true;lay.xaxis.rangemode='tozero';
@@ -829,7 +859,7 @@ function renderBpCharts(r){
   lay.annotations=[{x:i.bank,y:1,yref:'paper',text:`yours ${bpBI(i.bank)}`,showarrow:false,xanchor:'left',yanchor:'top',xshift:4,font:{color:C.text,size:11}},
     {xref:'paper',x:1,y:i.target,text:`limit ${bpLevel(i.target)}`,showarrow:false,xanchor:'right',yanchor:'bottom',font:{color:C.text,size:11}}];
   Plotly.react('bp_curve',traces,lay,CFG);
-  $('bp_curve').setAttribute('aria-label',`Risk against bankroll. Bankroll needed for risk below ${bpLevel(i.target)}: ${bpBI(b.credible.buyIns)} buy-ins with ${bpLevel(i.credibility)} posterior probability, ${bpBI(b.average.buyIns)} for average risk, ${bpBI(b.plugIn.buyIns)} with the observed win rate taken as exact. You have ${bpBI(i.bank)}.`);
+  $('bp_curve').setAttribute('aria-label',`Risk against bankroll. Bankroll needed for risk below ${bpLevel(i.target)}: ${bpNeed(b.credible.buyIns)} buy-ins with ${bpLevel(i.credibility)} posterior probability, ${bpNeed(b.average.buyIns)} for average risk, ${bpNeed(b.plugIn.buyIns)} with the observed win rate taken as exact. You have ${bpBI(i.bank)}.`);
 }
 function setBkMode(mode){
   $('bp_view').hidden=mode!=='results';$('bk_sim_view').hidden=mode==='results';
