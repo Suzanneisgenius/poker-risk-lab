@@ -38,8 +38,8 @@ line between "done and validated" and "next stage" falls.
 
 **Risk side (built and validated).** A vectorized Monte Carlo engine simulates
 bankroll trajectories with an absorbing ruin barrier and estimates finite-horizon
-risk of ruin, drawdown, and growth. I do not trust a single simulated number: I
-cross-check it against a closed-form Brownian first-passage probability and a
+risk of ruin, drawdown, and growth. I do not trust a single simulated number: for
+the baseline model I cross-check it against a closed-form Brownian first-passage probability and a
 sparse absorbing Markov chain, study its Monte Carlo convergence, correct its
 discrete-monitoring bias with a Brownian-bridge crossing model, and propagate
 **parameter uncertainty** in the win rate through a Bayesian posterior into the
@@ -61,16 +61,20 @@ strategy, and translating that strategy back to the full game in real time.
   independent methods agree — Monte Carlo **0.072**, Brownian finite-horizon
   **0.072**, gambler's-ruin infinite-horizon **0.108** (an upper bound), Markov
   chain **0.068**.
-- **Numerical honesty:** coarse barrier monitoring understates ruin by **8.2%**
-  at a 500-hand step; the Brownian-bridge estimate agrees with the analytical
-  value within simulation error at every step (relative error at most **1.1%**).
-  Monte Carlo error follows the expected rate (fitted log-log slope **−0.55 ≈
-  O(N⁻¹ᐟ²)**). Both come from earlier quick runs (12,000 paths; 10 seeds per
-  budget) in their own scenarios; regenerate them before quoting decimals.
+- **Numerical honesty:** checking for ruin only at the end of each 100-hand
+  step understates it: at +3 bb/100 (40 seeds × 2,000 paths), endpoint-only
+  monitoring gives **6.76%** against an analytical **7.17%**, and the
+  Brownian-bridge correction gives **7.12%** (s.e. 0.08 points;
+  `checks/calculation-change-2026-10-21/`). The tests check the corrected engine
+  against the continuous benchmark at 100-, 500- and 2,000-hand steps. A
+  convergence study fits the Monte Carlo error rate against path count instead
+  of assuming O(N⁻¹ᐟ²).
 - **Uncertainty matters:** with an observed 1.86 bb/100 edge over 50k hands, the
-  win rate's confidence interval still includes zero (P(edge > 0) ≈ **67%**);
-  propagating that uncertainty raises modeled ruin risk from **27.3%** (plug-in)
-  to **36.5%** (**×1.34**).
+  win rate's confidence interval still includes zero (P(edge > 0) ≈ **67%**).
+  In this scenario, propagating that uncertainty raises modeled ruin risk from
+  **27.3%** (plug-in) to **36.5%** (**×1.34**). The direction depends on the
+  posterior: where risk is already high, averaging can lower it (66.2% →
+  63.8% for a posterior centred on −3 bb/100; `tests/test_bayes.py`).
 - **Model risk:** at the same +3 bb/100 edge (30 buy-ins, 90 bb/100, 100k
   hands, ruin observed at 100-hand checkpoints; `reports/case-study/assumptions.json`),
   swings that carry over between steps raise ruin risk — AR(1) **×2.87**, with the

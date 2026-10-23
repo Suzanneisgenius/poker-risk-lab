@@ -1,8 +1,11 @@
 """Bayesian win-rate inference and posterior-integrated ruin risk.
 
 The observed win rate is an estimate, not the truth. Treating it as known (a
-"plug-in" estimate) ignores parameter uncertainty and, because ruin risk is
-convex and steeply increasing as the edge falls, tends to *understate* risk.
+"plug-in" estimate) ignores parameter uncertainty. Averaging the ruin risk over
+the posterior can move it either way, depending on the posterior and the model
+settings: in the reference scenario it raises modeled risk from 27.3% to 36.5%,
+but where risk is already high it can lower it (66.2% to 63.8% in
+tests/test_bayes.py).
 
 This module places a Normal prior on the true win rate mu, forms the conjugate
 Normal-Normal posterior given the estimated edge and its standard error (with a

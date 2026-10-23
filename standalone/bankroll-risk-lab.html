@@ -66,7 +66,7 @@
     <span class="tag">Python</span><span class="tag">NumPy</span><span class="tag">SciPy</span>
     <span class="tag">Monte Carlo</span><span class="tag">Bayesian inference</span><span class="tag">Numerical validation</span>
   </div>
-  <div class="stamp">seed 42 · reproducible · 108 tests passing</div>
+  <div class="stamp">seed 42 · reproducible · 131 Python tests + JS checks</div>
 
   <!-- LIVE SIMULATION -->
   <h2>// Live simulation</h2>
@@ -121,22 +121,22 @@
     <div class="strand">
       <div class="se">STRAND 01 · NUMERICS</div>
       <h3>Barrier resolution & the Brownian-bridge correction</h3>
-      <p>A discrete step lets a path cross the ruin boundary and recover between observations, biasing risk downward. At a 500-hand step the estimate understates ruin by <span class="big">8.2%</span>; a Brownian-bridge crossing correction cuts the discretization error to <span class="big">&lt;1%</span>.</p>
+      <p>A discrete step lets a path cross the ruin boundary and recover between observations, biasing risk downward. At +3 bb/100 with 100-hand steps, checking only at step ends gives <span class="big">6.76%</span> against an analytical <span class="big">7.17%</span>; with the Brownian-bridge correction the engine gives <span class="big">7.12%</span> (40 seeds, s.e. 0.08 points). The tests check it against the continuous value at 100-, 500- and 2,000-hand steps.</p>
     </div>
     <div class="strand">
       <div class="se">STRAND 02 · MONTE CARLO ERROR</div>
       <h3>Convergence & interval coverage</h3>
-      <p>Estimator error scales with the fitted log-log slope <span class="big">−0.55 ± 0.03</span>, matching the <span class="big">O(N⁻¹ᐟ²)</span> rate. Wilson intervals are checked for empirical coverage rather than assumed, with a reproducible sequential stopping rule.</p>
+      <p>A convergence study fits how estimator error shrinks with the number of paths, against the expected <span class="big">O(N⁻¹ᐟ²)</span> rate, rather than assuming it. Wilson intervals are checked for empirical coverage rather than assumed, with a reproducible sequential stopping rule.</p>
     </div>
     <div class="strand">
       <div class="se">STRAND 03 · UNCERTAINTY</div>
       <h3>Bayesian propagation of parameter uncertainty</h3>
-      <p>The win rate is estimated, not known. Plugging in a point estimate reports <span class="big">27.3%</span> ruin; integrating over the parameter posterior raises it to <span class="big">36.5%</span> — a factor of <span class="big">×1.34</span>. Ignoring estimation error makes the model look far safer than it is.</p>
+      <p>The win rate is estimated, not known. Plugging in a point estimate reports <span class="big">27.3%</span> ruin; integrating over the parameter posterior raises it to <span class="big">36.5%</span> — a factor of <span class="big">×1.34</span> in this scenario. The direction depends on the posterior: where risk is already high, averaging over it can lower risk.</p>
     </div>
     <div class="strand">
       <div class="se">STRAND 04 · ROBUSTNESS</div>
       <h3>Model-misspecification stress tests</h3>
-      <p>The i.i.d.-Normal assumption is deliberately broken at a fixed edge and variance. Serial dependence AR(1) inflates ruin <span class="big">×1.44</span> and regime-switching volatility <span class="big">×1.20</span>; variance-matched heavy tails and shocks are roughly neutral.</p>
+      <p>The i.i.d.-Normal assumption is deliberately broken at the same +3 bb/100 edge. AR(1) dependence with the same spread per step raises ruin <span class="big">×2.87</span>; regime switching <span class="big">×1.65</span>, but its steps are wider (SD about 101 instead of 90), so it does not hold the variance fixed. Heavy tails and shocks at the same spread per step are roughly neutral.</p>
     </div>
   </div>
 

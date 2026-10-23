@@ -195,11 +195,15 @@
   .bp-selection{font-size:13px;line-height:1.5;margin:4px 0 12px;padding:9px 11px;border-radius:9px;background:rgba(56,189,248,.06);border:1px solid rgba(56,189,248,.18)}
   .bp-selection strong{color:var(--text)}
   .bp-fit,.bp-groups{margin:0 0 12px}
+  .bp-inspect{margin:0 0 12px;border-top:1px solid var(--grid);padding-top:8px}
+  .bp-inspect>summary{cursor:pointer;font-weight:600;font-size:14px;color:var(--text);margin-bottom:8px}
+  .bp-inspect-status{font-weight:400;font-size:13px;color:var(--muted)}
+  .bp-inspect-status.flag{color:var(--median)}
   .bp-fit h3,.bp-groups h3{font-size:14px;margin:0 0 6px}
   .bp-checks{list-style:none;margin:0 0 8px;padding:0;display:grid;gap:7px}
   .bp-checks li{font-size:13px;line-height:1.45;padding-left:22px;position:relative;color:var(--text)}
   .bp-checks li::before{position:absolute;left:0;top:0;font-weight:700}
-  .bp-checks li.ok::before{content:"✓";color:var(--pos)}
+  .bp-checks li.none::before{content:"i";top:2px;width:14px;height:14px;box-sizing:border-box;border:1.5px solid var(--muted);border-radius:50%;color:var(--muted);font:italic 700 10px/11px Georgia,serif;text-align:center}
   .bp-checks li.flag::before{content:"!";color:var(--median)}
   .bp-checks li.na::before{content:"–";color:var(--dim)}
   .bp-checks li small{display:block;color:var(--muted)}
@@ -886,9 +890,9 @@
       </article>
     <div class="lab-reference-grid">
       <div class="strand"><div class="se">STRAND 01 · NUMERICS</div><h3>Barrier resolution &amp; the Brownian-bridge correction</h3>
-        <p>A discrete step lets a path cross the ruin boundary and recover between observations, biasing risk downward. At a 500-hand step the estimate understates ruin by <span class="big">8.2%</span>; a Brownian-bridge correction cuts the discretization error to <span class="big">&lt;1%</span>.</p></div>
+        <p>A discrete step lets a path cross the ruin boundary and recover between observations, biasing risk downward. At +3 bb/100 with 100-hand steps, checking only at step ends gives <span class="big">6.76%</span> against an analytical <span class="big">7.17%</span>; with the Brownian-bridge correction the engine gives <span class="big">7.12%</span> (40 seeds, s.e. 0.08 points). The tests check it against the continuous value at 100-, 500- and 2,000-hand steps.</p></div>
       <div class="strand"><div class="se">STRAND 02 · MONTE CARLO ERROR</div><h3>Convergence &amp; interval coverage</h3>
-        <p>Estimator error scales with the fitted log-log slope <span class="big">−0.55 ± 0.03</span>, matching the <span class="big">O(N⁻¹ᐟ²)</span> rate. Wilson intervals are checked for empirical coverage rather than assumed.</p></div>
+        <p>A convergence study fits how estimator error shrinks with the number of paths, against the expected <span class="big">O(N⁻¹ᐟ²)</span> rate, rather than assuming it. Wilson intervals are checked for empirical coverage rather than assumed.</p></div>
       <div class="strand"><div class="se">STRAND 04 · ROBUSTNESS</div><h3>Model-misspecification stress tests</h3>
         <!--__ASSUMPTIONS_SUMMARY__--></div>
     </div>
@@ -1094,6 +1098,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
               <p class="hint" id="bp_period_note"></p>
             </fieldset>
             <div class="bp-selection" id="bp_selection" role="status" aria-live="polite"></div>
+            <details class="bp-inspect" id="bp_inspect"><summary>Inspect assumptions <span class="bp-inspect-status" id="bp_inspect_status"></span></summary>
             <section class="bp-fit" aria-labelledby="bp_fit_title">
               <h3 id="bp_fit_title">Do the sessions fit the model?</h3>
               <p class="hint" id="bp_lengths"></p>
@@ -1110,6 +1115,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
                 <tbody id="bp_groups"></tbody></table></div>
               <p class="hint" id="bp_groups_test"></p>
             </section>
+            </details>
           </div>
         </div>
         <p class="quicklabel">2 · Your plan</p>
@@ -1164,9 +1170,9 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
           <div class="bp-sources" id="bp_sources"></div>
           <p class="hint">Uncertain win rate: 95% posterior interval of model risk. Volatility and prior: lowest to highest average risk across the choices in the tables below, so their width depends on which choices are listed. These are different kinds of range: the widest is not a ranking of what is most uncertain in your real game, nor a split of the risk's variance. Heavy tails and dependent results are not included; the <a href="case-study/">case study</a> tests those separately.</p>
         </section>
-        <section class="bp-block result-dim" aria-labelledby="bp_sens_title">
-          <h3 id="bp_sens_title">How the answer changes</h3>
-          <p class="hint">The same results under other assumptions. Your current choice is marked.</p>
+        <details class="bp-inspect result-dim" id="bp_inspect_sens"><summary id="bp_sens_title">Inspect assumptions: how the answer changes</summary>
+        <section class="bp-block" aria-labelledby="bp_sens_title">
+          <p class="hint">The same results under other volatilities, priors and sample sizes. Your current choice is marked.</p>
           <h4>Volatility assumption</h4>
           <div class="range-table-wrap"><table class="range-table bp-table"><caption class="sr-only">Answer under each volatility</caption><thead id="bp_sens_sd_head"></thead><tbody id="bp_sens_sd"></tbody></table></div>
           <h4>Prior</h4>
@@ -1174,6 +1180,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
           <h4>Same win rate over fewer or more hands</h4>
           <div class="range-table-wrap"><table class="range-table bp-table"><caption class="sr-only">Answer if the same win rate came from a different number of hands</caption><thead id="bp_sens_n_head"></thead><tbody id="bp_sens_n"></tbody></table></div>
         </section>
+        </details>
         <section class="bp-block result-dim" aria-labelledby="bp_sample_title">
           <h3 id="bp_sample_title">How many hands to pin down your win rate</h3>
           <p id="bp_sample_text"></p>

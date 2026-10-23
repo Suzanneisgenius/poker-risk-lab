@@ -57,6 +57,51 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-10-23 — findings stated within what was checked
+
+- **Uncertainty does not always raise risk.** `src/bayes.py`,
+  `docs/methodology.md` and the application summary said ruin risk is convex in
+  the win rate, so averaging over the posterior raises it. Finite-horizon risk
+  is not convex everywhere: for a posterior N(−3, 2²) bb/100 with 90 bb/100,
+  3,000 bb and 100,000 hands, the plug-in risk is 66.16% and the averaged risk
+  63.79% (quadrature; Gauss–Hermite agrees). A new test,
+  `test_posterior_integrated_risk_can_fall_below_plug_in`, checks both numbers
+  and the 20,000-draw estimate. The docs now give 27.3% → 36.5% as the
+  reference scenario's result and say the direction and size depend on the
+  posterior and model settings. No calculation changed.
+- **Benchmarks scoped to the baseline model.** "Every Monte Carlo result is
+  cross-checked against analytical and Markov-chain benchmarks" now reads that
+  the baseline simulator was checked against them and that separate
+  experiments examined heavy tails, shocks, regime switching and dependence.
+- **Quick-run numbers out of the summaries.** The 8.2% endpoint bias, the
+  "< 1%" bridge error and the −0.55 slope came from 2026-07 quick runs. The
+  application summary, the case-study and portfolio-prompt docs, the Risk Lab
+  research view and `standalone/bankroll-risk-lab.html` now quote the
+  CI-checked result instead: at +3 bb/100 with 100-hand steps, endpoint-only
+  6.76%, bridge-corrected 7.12% (s.e. 0.08 points), analytical 7.17%
+  (`checks/calculation-change-2026-10-21/`). They also say that
+  `tests/test_bridge.py` checks the bridge at 100-, 500- and 2,000-hand steps.
+  The convergence study is described without a slope. The quick runs remain
+  in the summary's source table as research records. The legacy page also
+  still quoted AR(1) ×1.44 and regimes ×1.20 "at a fixed edge and variance"
+  and 108 tests; it now matches the case study (×2.87, ×1.65 with wider steps)
+  and 131 Python tests.
+- **Bankroll page: assumptions folded.** The session checks and group
+  comparison sit under "Inspect assumptions", whose summary says how many
+  checks flag a problem; it opens by itself when one starts flagging. The
+  detailed sensitivity tables fold the same way. Inputs, the bankroll needed,
+  its definition, the three readings and the risk ranges stay open.
+- **"No change detected" is no longer a green tick.** Checks that find nothing
+  show a neutral "i", and the Risk Lab's stability line now says no change was
+  detected, which is no evidence the win rate was steady. Previously it said
+  the win rate "does not differ".
+- **Smaller fixes.** The volatility list in "How the risk range changes" showed
+  an estimated volatility unrounded (101.75964230597266); it shows 101.8. The
+  equity engine's comment on ties now says what the variance envelope implies
+  and that the wrong-call rate is checked at 0%, 0.1% and 20% ties rather than
+  assumed to fall as ties rise. The 2026-10-23 entry's tiny-share example is
+  `QQ+, 22:0.0001` (0.005%); `QQ, 22:0.0001` gives 0.0100%.
+
 ## 2026-10-23 — review fixes: undated sessions, an F test, range evidence
 
 - **Sessions without a date are no longer dropped.** As soon as a file had
@@ -108,7 +153,7 @@ How each change splits up at the same seed:
   hand: the page note now says the interval is approximate and that across
   many hands one may land on the wrong side by chance.
 - **A sliver of a range shows as "<0.01%".** 22 at weight 0.0001 is
-  0.005% of `QQ, 22:0.0001` and showed as 0.00%; shares below 0.01% now
+  0.005% of `QQ+, 22:0.0001` against AdKs and showed as 0.00%; shares below 0.01% now
   read "<0.01%" and above 99.99% read ">99.99%".
 - **Application summary matched to its sources.** It still said 108 tests
   (now 130 Python tests plus the JavaScript checks) and that AR(1) and

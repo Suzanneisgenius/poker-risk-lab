@@ -188,7 +188,7 @@ def main(argv: list[str] | None = None) -> None:
     print(f"Plug-in ruin risk           : {out['plug_in_risk']:.1%}")
     print(f"Uncertainty-integrated risk : {out['expected_risk']:.1%} "
           f"(median {out['median_risk']:.1%})")
-    print(f"Understatement factor       : x{out['understatement_factor']:.2f}")
+    print(f"Integrated / plug-in risk   : x{out['understatement_factor']:.2f}")
     for k, v in out["threshold_exceedance"].items():
         print(f"  P(risk > {k.split('_')[-1]:>4}) : {v:.1%}")
     print("Saved figures:", *[os.path.basename(p) for p in figs])

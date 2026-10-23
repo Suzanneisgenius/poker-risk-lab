@@ -271,8 +271,12 @@ const EXACT_RANGE_LIMIT = 2000000;
 // 1/2 (tie) or 0: the Wilson score interval with continuity correction
 // (Newcombe 1998) at the mean score. It uses no estimate of the spread, which
 // is zero after a few runs that all win or all lose; it assumes the largest
-// spread a score between 0 and 1 can have at that mean, mu (1 - mu), so ties
-// only make it more cautious. Three wins out of three give 31-100%.
+// spread a score between 0 and 1 can have at that mean, mu (1 - mu), as if
+// every run were a win or a loss. Ties make the real spread smaller, never
+// larger, so this envelope is never narrower than the spread it stands for.
+// That does not make the chance of a wrong call fall steadily as ties become
+// more common; test_engines.js checks it at 0%, 0.1% and 20% ties. Three wins
+// out of three give 31-100%.
 const Z95 = 1.959963984540054;
 function scoreInterval(mean, n, z = Z95){
   const z2 = z * z, d = 2 * (n + z2);

@@ -182,9 +182,14 @@ barrier-option discretization bias and bridge corrections.
 ## 6. Parameter uncertainty and Bayesian propagation
 
 The observed win rate $\hat\mu$ is an estimate with sampling error, not the true
-$\mu$. Treating $\hat\mu$ as known (a **plug-in** estimate) ignores this and can
-materially understate risk, because ruin risk is convex and increasing as $\mu$
-falls.
+$\mu$. Treating $\hat\mu$ as known (a **plug-in** estimate) ignores this.
+Averaging the conditional ruin risk over the posterior can raise or lower it:
+finite-horizon risk is not convex in $\mu$ everywhere. In the reference
+scenario it raises modeled risk from 27.3% to 36.5%; for a posterior
+$\mathcal{N}(-3, 2^2)$ bb/100 with 90 bb/100, 3,000 bb and 100,000 hands, where
+risk is already high, it lowers it from 66.2% to 63.8% (`tests/test_bayes.py`).
+The direction and size of the difference depend on the posterior and the model
+settings.
 
 We place a Normal prior on the win rate, $\mu \sim \mathcal{N}(\mu_0, \tau_0^2)$,
 and condition on observed block returns with (for the first version) a plug-in

@@ -794,7 +794,7 @@ function renderBp(r,context=null){
   ].map(([label,a],k)=>`<tr${k===0?' class="is-current"':''}><th scope="row">${label}</th><td class="num">${bpNeed(a.buyIns)} BI</td><td class="num">${compare(a)}</td></tr>`).join('');
   $('bp_readings_note').textContent=`The last row ignores that the win rate is uncertain; it is what a calculator with a fixed win rate (like the simulation mode) gives. “${q} sure that risk is below ${tgt}” is also different from “a ${q} chance of not going broke”, which is average risk below ${bpLevel(1-i.credibility)}.`;
 
-  const labels={winRate:['Uncertain win rate','95% posterior interval'],volatility:['Volatility assumption',`${r.sources.items[1].values.join(', ')} bb/100`],prior:['Prior','none, weak, skeptical']};
+  const labels={winRate:['Uncertain win rate','95% posterior interval'],volatility:['Volatility assumption',`${r.sources.items[1].values.map(v=>+v.toFixed(1)).join(', ')} bb/100`],prior:['Prior','none, weak, skeptical']};
   $('bp_sources').innerHTML=r.sources.items.map(s=>{
     const [lo,hi]=s.range,left=(lo*100).toFixed(2),width=Math.max(0,(hi-lo)*100).toFixed(2);
     return `<div class="bp-source${s.id===r.sources.widest?' is-widest':''}"><div class="bp-source-label">${labels[s.id][0]}<small>${labels[s.id][1]}</small></div><div class="bp-source-track" aria-hidden="true"><span class="bp-source-range" style="left:${left}%;width:${width}%"></span></div><div class="bp-source-value">${bpRange(lo,hi)}</div></div>`;
@@ -926,7 +926,7 @@ function bpLoadSessions(name,text,example=false){
   // sessions without a date, and the note below says how many.
   const months=[...new Set(read.sessions.map(s=>s.date?.slice(0,7)).filter(Boolean))].sort();
   $('bp_period_box').hidden=!months.length;
-  $('bp_period_on').checked=false;$('bp_period_range').hidden=true;
+  $('bp_period_on').checked=false;$('bp_period_range').hidden=true;bpInspectFlags=0;
   for(const [id,selected] of [['bp_from',months[0]],['bp_to',months.at(-1)]]){
     $(id).replaceChildren(...months.map(m=>Object.assign(document.createElement('option'),{value:m,textContent:m,selected:m===selected})));
   }
@@ -965,12 +965,22 @@ function bpSelectionDescription(){
     return !boxes.length||on.length===boxes.length?`all ${word}`:on.map(b=>bpKeyLabel(b.value)).join(', ');};
   return [part('bp_stake','stakes'),part('bp_game','games'),bpPeriodActive()?`${$('bp_from').value} to ${$('bp_to').value}`:''].filter(Boolean).join(' · ');
 }
+// The session checks sit folded under "Inspect assumptions"; the summary says
+// how many flag, and the section opens by itself when one starts flagging.
+let bpInspectFlags=0;
+function bpInspectStatus(checks){
+  const flags=checks.filter(li=>li.className==='flag').length,run=checks.filter(li=>li.className!=='na').length,status=$('bp_inspect_status');
+  status.textContent=!checks.length?'':flags?`· ${flags} ${flags===1?'check flags':'checks flag'} a problem`:run?`· ${run} ${run===1?'check':'checks'}, no problem detected`:'· checks not run';
+  status.className='bp-inspect-status'+(flags?' flag':'');
+  if(flags&&!bpInspectFlags)$('bp_inspect').open=true;
+  bpInspectFlags=flags;
+}
 function bpRenderSelection(){
   const chosen=bpSelectedSessions(),total=bpSessionData.sessions.length;
   bpWidenChoice=null;bpPeriodNote();
   if(chosen.length<2){
     bpSelection=null;$('bp_selection').textContent=`${chosen.length} of ${total.toLocaleString()} sessions selected: select at least two.`;
-    $('bp_lengths').textContent='';$('bp_checks').replaceChildren();$('bp_widen_box').hidden=true;$('bp_groups').replaceChildren();$('bp_groups_test').textContent='';
+    $('bp_lengths').textContent='';$('bp_checks').replaceChildren();bpInspectStatus([]);$('bp_widen_box').hidden=true;$('bp_groups').replaceChildren();$('bp_groups_test').textContent='';
     scheduleBp();return;
   }
   const s=PokerSessions.summarize(chosen);
@@ -984,16 +994,16 @@ function bpRenderSelection(){
   const checks=[];
   const sc=s.scaling;
   if(!sc)checks.push(item('na','Spread against length: not checked.',L.min===L.max?'All sessions are the same length.':'It needs at least 20 sessions.'));
-  else if(!sc.flag)checks.push(item('ok',`No difference detected in how much short and long sessions swing per 100 hands: ${sc.short.sd.toFixed(0)} and ${sc.long.sd.toFixed(0)} bb/100.`,`Shorter half up to ${sc.short.maxHands.toLocaleString()} hands, longer half from ${sc.long.minHands.toLocaleString()}; ${bpP(sc.p)}. It flags below p = 0.01 when the two differ by more than about 12%; with few sessions or a small difference, it can miss one.`));
+  else if(!sc.flag)checks.push(item('none',`No difference detected in how much short and long sessions swing per 100 hands: ${sc.short.sd.toFixed(0)} and ${sc.long.sd.toFixed(0)} bb/100.`,`Shorter half up to ${sc.short.maxHands.toLocaleString()} hands, longer half from ${sc.long.minHands.toLocaleString()}; ${bpP(sc.p)}. It flags below p = 0.01 when the two differ by more than about 12%; with few sessions or a small difference, it can miss one.`));
   else checks.push(item('flag',`${sc.ratio>1?'Short':'Long'} sessions swing more per 100 hands: ${sc.short.sd.toFixed(0)} against ${sc.long.sd.toFixed(0)} bb/100 (${bpP(sc.p)}).`,
     `The model expects the same. The volatility used (${s.sd.toFixed(1)}) mixes the two, so check the volatility rows in the results against the kind of sessions you will play.`));
   const st=s.stability;
   const order=st&&(st.ordered==='date'?'date order':chosen.some(x=>x.date)?'file order, as not every session has a date':'file order');
   if(!st)checks.push(item('na','Stability over time: not checked.','It needs at least 20 sessions.'));
-  else if(!st.flag)checks.push(item('ok',`No change in win rate detected between ${st.groups} blocks of sessions in ${order}.`,`${bpP(st.p)}. Finding none does not show the win rate was steady: with few sessions or a slow drift, this check often misses a change.`));
+  else if(!st.flag)checks.push(item('none',`No change in win rate detected between ${st.groups} blocks of sessions in ${order}.`,`${bpP(st.p)}. Finding none does not show the win rate was steady: with few sessions or a slow drift, this check often misses a change.`));
   else checks.push(item('flag',`The win rate changes over time more than chance allows: ${st.groups} blocks of sessions in ${order} (${bpP(st.p)}).`,
     'An interval that assumes a steady win rate is too narrow. Widening it (below) helps but does not fully fix it; selecting recent months may describe your current game better.'));
-  $('bp_checks').replaceChildren(...checks);
+  $('bp_checks').replaceChildren(...checks);bpInspectStatus(checks);
   const canWiden=Boolean(st&&st.multiplier>1.0001);
   $('bp_widen_box').hidden=!canWiden;
   if(canWiden){$('bp_widen').checked=bpWidenActive();$('bp_widen_text').textContent=`Widen the win-rate interval ×${st.multiplier.toFixed(2)}, from the spread between the blocks${st.flag?' (suggested)':''}.`;}
@@ -2093,7 +2103,8 @@ function renderUncertaintyReference(){
     ['Synthetic history',`${cfg.data.n_blocks} blocks × ${cfg.data.block_hands.toLocaleString()} hands; generating win rate ${cfg.data.true_winrate} and SD ${cfg.data.true_std} bb/100; seed ${cfg.data.seed}.`],
     ['Observed estimate',`${estimate.winrate_bb100.toFixed(2)} bb/100; estimated SD ${estimate.std_bb100.toFixed(2)} bb/100.`],
     ['Estimation uncertainty',`Standard error ${estimate.se_winrate_adjusted.toFixed(2)} bb/100${estimate.se_multiplier>1?`, widened ×${estimate.se_multiplier.toFixed(2)}`:''}. Stability check: ${!estimate.stability_groups?'not run (fewer than 20 blocks)'
-      :`the win rate ${estimate.stability_flag?'differs':'does not differ'} between ${estimate.stability_groups} consecutive groups of blocks more than chance allows (p = ${estimate.stability_p.toFixed(2)})`}. This SE enters the posterior.`],
+      :estimate.stability_flag?`the win rate differs between ${estimate.stability_groups} consecutive groups of blocks more than chance allows (${bpP(estimate.stability_p)})`
+      :`no change detected between ${estimate.stability_groups} consecutive groups of blocks (${bpP(estimate.stability_p)}), which is no evidence the win rate was steady`}. This SE enters the posterior.`],
     ['Prior',`Normal with mean ${r.prior.mean} and SD ${r.prior.std} bb/100.`],
     ['Risk calculation',`Finite-horizon Brownian first-passage model; threshold ${cfg.risk.ruin_threshold_bb} bb; estimated volatility held fixed; posterior draw seed ${cfg.seed}.`],
     ['Saved output',`${provenance.timestamp_utc.slice(0,10)} UTC. The page reads the existing result and settings; this presentation update does not rerun the analysis.`],

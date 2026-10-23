@@ -4,7 +4,8 @@ Runs the same scenario under five increment models — Gaussian baseline,
 Student-t heavy tails, a shock mixture, AR(1) dependence, and regime switching —
 all calibrated to the same edge (and, where possible, the same variance). It then
 compares ruin risk, drawdown, ending-bankroll tails, and time to ruin, to answer:
-how severely does the Gaussian i.i.d. assumption understate risk?
+how much does ruin risk change when the Gaussian i.i.d. assumption is relaxed,
+and in which direction?
 
 Run:
     python -m src.experiments.model_risk --config configs/model_risk.yaml
