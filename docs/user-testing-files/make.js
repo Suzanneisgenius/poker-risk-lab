@@ -29,7 +29,7 @@ const current = (wr, seed) => {
   return [result.params, result.metrics, result.model];
 };
 
-// Outputs of the functional-fix engine (commit a176da7, computeRiskLab, seed 42).
+// Outputs of the functional-fix engine (commit 6c9a151, computeRiskLab, seed 42).
 // That version could not save comparisons and had no version field, so these real
 // outputs are wrapped in the current file format with the version filled in by hand.
 const oldModel = { name: "bankroll-monte-carlo", version: "2026-10-05", ruinMonitoring: "at 100-hand step ends", randomNumbers: "one mulberry32 stream for all paths" };

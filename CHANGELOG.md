@@ -95,7 +95,7 @@ How each change splits up at the same seed:
   Before regenerating, the old code reproduced the saved file on this machine
   to the last digit or two of floating point, so the change comes from the
   check alone. Settings and seeds are unchanged; the provenance now records
-  commit 6cc3626 and macOS with numpy 2.5.4 / scipy 1.18.1 (was Linux, numpy
+  commit 1c37f30 and macOS with numpy 2.5.4 / scipy 1.18.1 (was Linux, numpy
   2.2.6 / scipy 1.15.3).
 
 ## 2026-10-22 — Bankroll Risk: import your sessions (CSV)

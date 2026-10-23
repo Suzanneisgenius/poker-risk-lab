@@ -29,7 +29,7 @@ const SETTINGS = Object.freeze({
 
 // --- functional-fix (2026-10-05) engine -------------------------------------
 // The random stream and ruin check of that version, copied from server/compute.js
-// at commit a176da7 (mulberry32, gaussFactory, simulateBankroll). All paths draw
+// at commit 6c9a151 (mulberry32, gaussFactory, simulateBankroll). All paths draw
 // from one shared stream. Drawdowns and stored paths are left out: they change
 // neither which numbers are drawn nor which paths are ruined.
 function mulberry32(seed) {
