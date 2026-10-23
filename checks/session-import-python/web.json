@@ -1978,8 +1978,12 @@
       },
       "stability": {
        "groups": 10,
-       "q": 29.6464782993385,
-       "p": 0.000503789665294407,
+       "f": 3.61891320026896,
+       "df": [
+        9,
+        230
+       ],
+       "p": 0.000305818811771386,
        "standardError": 4.18007551038216,
        "ordered": "date",
        "flag": true,
@@ -2027,8 +2031,12 @@
      ],
      "test": {
       "groups": 4,
-      "q": 24.6140556951024,
-      "p": 0.0000185923274009792,
+      "f": 9.0318687680737,
+      "df": [
+       3,
+       236
+      ],
+      "p": 0.0000110022464847592,
       "standardError": 6.45809214430067
      }
     }
@@ -2556,8 +2564,12 @@
       "scaling": null,
       "stability": {
        "groups": 10,
-       "q": 12.3260708715251,
-       "p": 0.195544877497282,
+       "f": 1.46716106372745,
+       "df": [
+        9,
+        50
+       ],
+       "p": 0.186174397310401,
        "standardError": 4.58065965611779,
        "ordered": "file",
        "flag": false,
@@ -3271,8 +3283,12 @@
       },
       "stability": {
        "groups": 10,
-       "q": 5.71389561930382,
-       "p": 0.768176065774234,
+       "f": 0.606409779151381,
+       "df": [
+        9,
+        70
+       ],
+       "p": 0.787473619796614,
        "standardError": 2.62450906166305,
        "ordered": "date",
        "flag": false,
@@ -3282,6 +3298,698 @@
     }
    ],
    "groupings": []
+  },
+  {
+   "file": "mixed-dates.csv",
+   "delimiter": ",",
+   "columns": {
+    "hands": "hands",
+    "profit": "profit_bb",
+    "stake": "stake",
+    "date": "date"
+   },
+   "rows": 60,
+   "sessions": [
+    {
+     "line": 2,
+     "hands": 1217,
+     "profit": 4.42,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-01-01"
+    },
+    {
+     "line": 3,
+     "hands": 348,
+     "profit": 68.6,
+     "stake": "NL25",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 4,
+     "hands": 269,
+     "profit": -0.52,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-01-03"
+    },
+    {
+     "line": 5,
+     "hands": 1059,
+     "profit": -354.85,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-01-04"
+    },
+    {
+     "line": 6,
+     "hands": 1384,
+     "profit": 225.82,
+     "stake": "NL25",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 7,
+     "hands": 368,
+     "profit": 209.4,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-01-06"
+    },
+    {
+     "line": 8,
+     "hands": 311,
+     "profit": 147.76,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-01-07"
+    },
+    {
+     "line": 9,
+     "hands": 1207,
+     "profit": 185.85,
+     "stake": "NL25",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 10,
+     "hands": 621,
+     "profit": -209.25,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-01-09"
+    },
+    {
+     "line": 11,
+     "hands": 366,
+     "profit": -95.57,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-01-10"
+    },
+    {
+     "line": 12,
+     "hands": 879,
+     "profit": 13.8,
+     "stake": "NL25",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 13,
+     "hands": 269,
+     "profit": 106.91,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-01-12"
+    },
+    {
+     "line": 14,
+     "hands": 927,
+     "profit": -50.98,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-03-20"
+    },
+    {
+     "line": 15,
+     "hands": 1378,
+     "profit": -389.28,
+     "stake": "NL25",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 16,
+     "hands": 758,
+     "profit": 111.49,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-01-15"
+    },
+    {
+     "line": 17,
+     "hands": 1020,
+     "profit": 221.05,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-01-16"
+    },
+    {
+     "line": 18,
+     "hands": 1295,
+     "profit": 571.03,
+     "stake": "NL25",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 19,
+     "hands": 436,
+     "profit": -207.88,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-01-18"
+    },
+    {
+     "line": 20,
+     "hands": 244,
+     "profit": 182.28,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-01-19"
+    },
+    {
+     "line": 21,
+     "hands": 734,
+     "profit": 215.33,
+     "stake": "NL25",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 22,
+     "hands": 1260,
+     "profit": -27.92,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-01-21"
+    },
+    {
+     "line": 23,
+     "hands": 1277,
+     "profit": -171.36,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-01-22"
+    },
+    {
+     "line": 24,
+     "hands": 341,
+     "profit": 454.63,
+     "stake": "NL25",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 25,
+     "hands": 1262,
+     "profit": -459.41,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-01-24"
+    },
+    {
+     "line": 26,
+     "hands": 724,
+     "profit": 205.23,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-01-25"
+    },
+    {
+     "line": 27,
+     "hands": 254,
+     "profit": 202.38,
+     "stake": "NL25",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 28,
+     "hands": 557,
+     "profit": 274.75,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-01-27"
+    },
+    {
+     "line": 29,
+     "hands": 1277,
+     "profit": 152.1,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-01-28"
+    },
+    {
+     "line": 30,
+     "hands": 444,
+     "profit": -133.53,
+     "stake": "NL25",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 31,
+     "hands": 1118,
+     "profit": 235.99,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-01-30"
+    },
+    {
+     "line": 32,
+     "hands": 453,
+     "profit": 280.77,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-01-31"
+    },
+    {
+     "line": 33,
+     "hands": 221,
+     "profit": -125.11,
+     "stake": "NL25",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 34,
+     "hands": 532,
+     "profit": -91.99,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-02-02"
+    },
+    {
+     "line": 35,
+     "hands": 673,
+     "profit": -593.47,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-02-03"
+    },
+    {
+     "line": 36,
+     "hands": 474,
+     "profit": -153.76,
+     "stake": "NL25",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 37,
+     "hands": 603,
+     "profit": -281.98,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-02-05"
+    },
+    {
+     "line": 38,
+     "hands": 896,
+     "profit": 408.04,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-02-06"
+    },
+    {
+     "line": 39,
+     "hands": 912,
+     "profit": 268.37,
+     "stake": "NL25",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 40,
+     "hands": 1163,
+     "profit": 563.02,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-02-08"
+    },
+    {
+     "line": 41,
+     "hands": 1032,
+     "profit": 853.84,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-02-09"
+    },
+    {
+     "line": 42,
+     "hands": 429,
+     "profit": -37.3,
+     "stake": "NL25",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 43,
+     "hands": 671,
+     "profit": -118.03,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-02-11"
+    },
+    {
+     "line": 44,
+     "hands": 1262,
+     "profit": -29.32,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-02-12"
+    },
+    {
+     "line": 45,
+     "hands": 886,
+     "profit": -136.39,
+     "stake": "NL25",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 46,
+     "hands": 604,
+     "profit": -108.31,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-02-14"
+    },
+    {
+     "line": 47,
+     "hands": 487,
+     "profit": 10.49,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-02-15"
+    },
+    {
+     "line": 48,
+     "hands": 1232,
+     "profit": -291.48,
+     "stake": "NL25",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 49,
+     "hands": 1300,
+     "profit": 411.12,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-02-17"
+    },
+    {
+     "line": 50,
+     "hands": 891,
+     "profit": -126.79,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-02-18"
+    },
+    {
+     "line": 51,
+     "hands": 1154,
+     "profit": 229.29,
+     "stake": "NL25",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 52,
+     "hands": 595,
+     "profit": -300.72,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-02-20"
+    },
+    {
+     "line": 53,
+     "hands": 248,
+     "profit": -15.92,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-02-21"
+    },
+    {
+     "line": 54,
+     "hands": 1172,
+     "profit": 103.14,
+     "stake": "NL25",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 55,
+     "hands": 222,
+     "profit": 368.45,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-02-23"
+    },
+    {
+     "line": 56,
+     "hands": 281,
+     "profit": -60.52,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-02-24"
+    },
+    {
+     "line": 57,
+     "hands": 1263,
+     "profit": 187,
+     "stake": "NL25",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 58,
+     "hands": 260,
+     "profit": -77.19,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-02-26"
+    },
+    {
+     "line": 59,
+     "hands": 435,
+     "profit": -339.89,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-02-27"
+    },
+    {
+     "line": 60,
+     "hands": 834,
+     "profit": 125.84,
+     "stake": "NL25",
+     "game": "",
+     "date": null
+    },
+    {
+     "line": 61,
+     "hands": 219,
+     "profit": 188.47,
+     "stake": "NL25",
+     "game": "",
+     "date": "2026-03-01"
+    }
+   ],
+   "problems": [],
+   "selections": [
+    {
+     "id": "all, dated or not",
+     "filter": {
+      "stakes": null,
+      "games": null,
+      "from": null,
+      "to": null
+     },
+     "summary": {
+      "n": 60,
+      "hands": 45008,
+      "profit": 2797.94,
+      "winRate": 6.21653928190544,
+      "variance": 10441.3077261414,
+      "sd": 102.182717355438,
+      "standardError": 4.81651137548859,
+      "sdInterval": [
+       86.6135506901172,
+       124.628371013409
+      ],
+      "lengths": {
+       "min": 219,
+       "max": 1384,
+       "mean": 750.133333333333,
+       "median": 698.5,
+       "cv": 0.511588780961526
+      },
+      "scaling": {
+       "short": {
+        "n": 30,
+        "maxHands": 673,
+        "sd": 113.561571018147
+       },
+       "long": {
+        "n": 30,
+        "minHands": 724,
+        "sd": 88.1674796119849
+       },
+       "ratio": 1.36464199321382,
+       "z": 1.67968628845533,
+       "p": 0.0930183654050518,
+       "flag": false
+      },
+      "stability": {
+       "groups": 10,
+       "f": 1.24395544807126,
+       "df": [
+        9,
+        50
+       ],
+       "p": 0.290680134377273,
+       "standardError": 5.09167988845771,
+       "ordered": "file",
+       "flag": false,
+       "multiplier": 1.05713025289828
+      }
+     }
+    },
+    {
+     "id": "2026-01 to 2026-02 (dated only)",
+     "filter": {
+      "stakes": null,
+      "games": null,
+      "from": "2026-01",
+      "to": "2026-02"
+     },
+     "summary": {
+      "n": 38,
+      "hands": 27021,
+      "profit": 1076.22,
+      "winRate": 3.98290218718774,
+      "variance": 11947.5271052318,
+      "sd": 109.304744202764,
+      "standardError": 6.64948948362016,
+      "sdInterval": [
+       89.1122007435762,
+       141.412712860862
+      ],
+      "lengths": {
+       "min": 222,
+       "max": 1300,
+       "mean": 711.078947368421,
+       "median": 612.5,
+       "cv": 0.516720004877567
+      },
+      "scaling": {
+       "short": {
+        "n": 19,
+        "maxHands": 604,
+        "sd": 106.330158634886
+       },
+       "long": {
+        "n": 19,
+        "minHands": 621,
+        "sd": 114.720223483432
+       },
+       "ratio": 0.968790778497151,
+       "z": -0.133111368634259,
+       "p": 0.894105283402711,
+       "flag": false
+      },
+      "stability": {
+       "groups": 7,
+       "f": 0.546590653379262,
+       "df": [
+        6,
+        31
+       ],
+       "p": 0.768688621507849,
+       "standardError": 5.09476051442562,
+       "ordered": "date",
+       "flag": false,
+       "multiplier": 1
+      }
+     }
+    }
+   ],
+   "groupings": [
+    {
+     "by": "month",
+     "groups": [
+      {
+       "key": "2026-01",
+       "n": 20,
+       "hands": 14866,
+       "winRate": 4.07231265976053,
+       "sd": 84.2200299173442,
+       "standardError": 6.90745918023699
+      },
+      {
+       "key": "2026-02",
+       "n": 18,
+       "hands": 12155,
+       "winRate": 3.87354997943233,
+       "sd": 134.446273030678,
+       "standardError": 12.1947046427225
+      },
+      {
+       "key": "2026-03",
+       "n": 2,
+       "hands": 1146,
+       "winRate": 11.9973821989529,
+       "sd": 121.862423006675,
+       "standardError": 35.9979276854797
+      },
+      {
+       "key": "",
+       "n": 20,
+       "hands": 16841,
+       "winRate": 9.40698295825664,
+       "sd": 90.5198097085396,
+       "standardError": 6.97524866051939
+      }
+     ],
+     "test": {
+      "groups": 4,
+      "f": 0.10506543665049,
+      "df": [
+       3,
+       56
+      ],
+      "p": 0.956781583480756,
+      "standardError": 1.76966255612521
+     }
+    },
+    {
+     "by": "quarter",
+     "groups": [
+      {
+       "key": "2026-Q1",
+       "n": 40,
+       "hands": 28167,
+       "winRate": 4.30897859196933,
+       "sd": 108.322299441824,
+       "standardError": 6.45427660545143
+      },
+      {
+       "key": "",
+       "n": 20,
+       "hands": 16841,
+       "winRate": 9.40698295825664,
+       "sd": 90.5198097085396,
+       "standardError": 6.97524866051939
+      }
+     ],
+     "test": {
+      "groups": 2,
+      "f": 0.259045240284382,
+      "df": [
+       1,
+       58
+      ],
+      "p": 0.612707680304331,
+      "standardError": 2.38758718243114
+     }
+    }
+   ]
   },
   {
    "file": "sessions-mixed.csv",
@@ -6223,8 +6931,12 @@
       },
       "stability": {
        "groups": 10,
-       "q": 11.3225603010738,
-       "p": 0.254245362960778,
+       "f": 1.26646638294248,
+       "df": [
+        9,
+        350
+       ],
+       "p": 0.253887506977551,
        "standardError": 2.56186110225084,
        "ordered": "date",
        "flag": false,
@@ -6279,8 +6991,12 @@
       },
       "stability": {
        "groups": 10,
-       "q": 5.28177242174296,
-       "p": 0.80908625002489,
+       "f": 0.569082279508605,
+       "df": [
+        9,
+        119
+       ],
+       "p": 0.820102977884781,
        "standardError": 2.93001848402428,
        "ordered": "date",
        "flag": false,
@@ -6336,8 +7052,12 @@
       },
       "stability": {
        "groups": 10,
-       "q": 8.7787033731927,
-       "p": 0.457947661436668,
+       "f": 0.974641183031184,
+       "df": [
+        9,
+        280
+       ],
+       "p": 0.461184441711206,
        "standardError": 2.48068729768006,
        "ordered": "date",
        "flag": false,
@@ -6392,8 +7112,12 @@
       },
       "stability": {
        "groups": 10,
-       "q": 14.3508423602122,
-       "p": 0.110380976347071,
+       "f": 1.73521801022534,
+       "df": [
+        9,
+        66
+       ],
+       "p": 0.0984000020393887,
        "standardError": 7.04405963053148,
        "ordered": "date",
        "flag": false,
@@ -6446,8 +7170,12 @@
       },
       "stability": {
        "groups": 10,
-       "q": 5.53210442388803,
-       "p": 0.785678793592773,
+       "f": 0.602389885676008,
+       "df": [
+        9,
+        170
+       ],
+       "p": 0.793839482814627,
        "standardError": 2.36462674660864,
        "ordered": "date",
        "flag": false,
@@ -6504,8 +7232,12 @@
       },
       "stability": {
        "groups": 10,
-       "q": 9.00241954452196,
-       "p": 0.437050873034985,
+       "f": 1.00031205791522,
+       "df": [
+        9,
+        56
+       ],
+       "p": 0.450703391463988,
        "standardError": 5.43705160046204,
        "ordered": "date",
        "flag": false,
@@ -6545,8 +7277,12 @@
      ],
      "test": {
       "groups": 3,
-      "q": 3.06256457909336,
-      "p": 0.216258183838427,
+      "f": 1.53585356011152,
+      "df": [
+       2,
+       357
+      ],
+      "p": 0.216690804390622,
       "standardError": 2.29431830479105
      }
     },
@@ -6572,8 +7308,12 @@
      ],
      "test": {
       "groups": 2,
-      "q": 0.121523470830419,
-      "p": 0.727388000654369,
+      "f": 0.121226001007486,
+      "df": [
+       1,
+       358
+      ],
+      "p": 0.727913220848027,
       "standardError": 0.637508678051204
      }
     },
@@ -6679,8 +7419,12 @@
      ],
      "test": {
       "groups": 12,
-      "q": 11.9221452787118,
-      "p": 0.369523704819469,
+      "f": 1.0867110022498,
+      "df": [
+       11,
+       348
+      ],
+      "p": 0.370888499624754,
       "standardError": 2.288588980756
      }
     },
@@ -6722,8 +7466,12 @@
      ],
      "test": {
       "groups": 4,
-      "q": 0.41451216963084,
-      "p": 0.937228571534579,
+      "f": 0.137174478979832,
+      "df": [
+       3,
+       356
+      ],
+      "p": 0.937781186024497,
       "standardError": 0.787557172984448
      }
     },
@@ -6749,8 +7497,12 @@
      ],
      "test": {
       "groups": 2,
-      "q": 0.0364822135632343,
-      "p": 0.84852310422169,
+      "f": 0.0363842892341172,
+      "df": [
+       1,
+       358
+      ],
+      "p": 0.848832201426586,
       "standardError": 0.41651265021763
      }
     }
@@ -9213,8 +9965,12 @@
       },
       "stability": {
        "groups": 10,
-       "q": 5.9342429496898,
-       "p": 0.746481091003005,
+       "f": 0.65246276798123,
+       "df": [
+        9,
+        290
+       ],
+       "p": 0.751536003542461,
        "standardError": 2.22272716954515,
        "ordered": "file",
        "flag": false,

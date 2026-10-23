@@ -37,12 +37,12 @@
    "coverage_95": {
     "as_is": 0.9483,
     "widened_by_lag1": 0.9563,
-    "widened_by_blocks_when_flagged": 0.9513,
+    "widened_by_blocks_when_flagged": 0.9518,
     "widened_by_blocks_always": 0.9605
    },
    "flags": {
     "spread_against_length": null,
-    "stability": 0.0508,
+    "stability": 0.0558,
     "lag1_on_raw_rates": 0.0393
    }
   },
@@ -61,12 +61,12 @@
    "coverage_95": {
     "as_is": 0.944,
     "widened_by_lag1": 0.951,
-    "widened_by_blocks_when_flagged": 0.9455,
+    "widened_by_blocks_when_flagged": 0.946,
     "widened_by_blocks_always": 0.9563
    },
    "flags": {
     "spread_against_length": null,
-    "stability": 0.0443,
+    "stability": 0.05,
     "lag1_on_raw_rates": 0.041
    }
   },
@@ -85,12 +85,12 @@
    "coverage_95": {
     "as_is": 0.8345,
     "widened_by_lag1": 0.8568,
-    "widened_by_blocks_when_flagged": 0.8593,
+    "widened_by_blocks_when_flagged": 0.8605,
     "widened_by_blocks_always": 0.8908
    },
    "flags": {
     "spread_against_length": null,
-    "stability": 0.1995,
+    "stability": 0.2128,
     "lag1_on_raw_rates": 0.13
    }
   },
@@ -114,7 +114,7 @@
    },
    "flags": {
     "spread_against_length": null,
-    "stability": 0.0403,
+    "stability": 0.0453,
     "lag1_on_raw_rates": 0.0378
    }
   },
@@ -133,12 +133,12 @@
    "coverage_95": {
     "as_is": 0.9523,
     "widened_by_lag1": 0.959,
-    "widened_by_blocks_when_flagged": 0.9558,
+    "widened_by_blocks_when_flagged": 0.956,
     "widened_by_blocks_always": 0.9633
    },
    "flags": {
     "spread_against_length": 0.0118,
-    "stability": 0.0463,
+    "stability": 0.0528,
     "lag1_on_raw_rates": 0.0365
    }
   },
@@ -157,12 +157,12 @@
    "coverage_95": {
     "as_is": 0.9483,
     "widened_by_lag1": 0.9535,
-    "widened_by_blocks_when_flagged": 0.9498,
+    "widened_by_blocks_when_flagged": 0.95,
     "widened_by_blocks_always": 0.9603
    },
    "flags": {
     "spread_against_length": 0.0253,
-    "stability": 0.031,
+    "stability": 0.0363,
     "lag1_on_raw_rates": 0.0465
    }
   },
@@ -181,12 +181,12 @@
    "coverage_95": {
     "as_is": 0.783,
     "widened_by_lag1": 0.808,
-    "widened_by_blocks_when_flagged": 0.8328,
+    "widened_by_blocks_when_flagged": 0.836,
     "widened_by_blocks_always": 0.8673
    },
    "flags": {
     "spread_against_length": 0.0148,
-    "stability": 0.3218,
+    "stability": 0.34,
     "lag1_on_raw_rates": 0.1353
    }
   },
@@ -205,12 +205,12 @@
    "coverage_95": {
     "as_is": 0.949,
     "widened_by_lag1": 0.954,
-    "widened_by_blocks_when_flagged": 0.9515,
+    "widened_by_blocks_when_flagged": 0.9518,
     "widened_by_blocks_always": 0.9598
    },
    "flags": {
     "spread_against_length": 0.0093,
-    "stability": 0.0408,
+    "stability": 0.046,
     "lag1_on_raw_rates": 0.0378
    }
   },
@@ -229,12 +229,12 @@
    "coverage_95": {
     "as_is": 0.943,
     "widened_by_lag1": 0.95,
-    "widened_by_blocks_when_flagged": 0.945,
+    "widened_by_blocks_when_flagged": 0.9458,
     "widened_by_blocks_always": 0.9538
    },
    "flags": {
     "spread_against_length": 0.01,
-    "stability": 0.047,
+    "stability": 0.0533,
     "lag1_on_raw_rates": 0.0438
    }
   },
@@ -258,7 +258,7 @@
    },
    "flags": {
     "spread_against_length": 0.1035,
-    "stability": 0.0153,
+    "stability": 0.0185,
     "lag1_on_raw_rates": 0.0418
    }
   },
@@ -277,12 +277,12 @@
    "coverage_95": {
     "as_is": 0.8055,
     "widened_by_lag1": 0.8195,
-    "widened_by_blocks_when_flagged": 0.8465,
+    "widened_by_blocks_when_flagged": 0.8478,
     "widened_by_blocks_always": 0.8788
    },
    "flags": {
     "spread_against_length": 0.0158,
-    "stability": 0.2985,
+    "stability": 0.3123,
     "lag1_on_raw_rates": 0.0723
    }
   },
@@ -301,12 +301,12 @@
    "coverage_95": {
     "as_is": 0.952,
     "widened_by_lag1": 0.9575,
-    "widened_by_blocks_when_flagged": 0.956,
+    "widened_by_blocks_when_flagged": 0.9563,
     "widened_by_blocks_always": 0.9653
    },
    "flags": {
     "spread_against_length": 0.0078,
-    "stability": 0.0515,
+    "stability": 0.0568,
     "lag1_on_raw_rates": 0.0413
    }
   },
@@ -330,7 +330,7 @@
    },
    "flags": {
     "spread_against_length": 0.0103,
-    "stability": 0.0465,
+    "stability": 0.0518,
     "lag1_on_raw_rates": 0.0413
    }
   },
@@ -373,12 +373,12 @@
    "coverage_95": {
     "as_is": 0.7553,
     "widened_by_lag1": 0.771,
-    "widened_by_blocks_when_flagged": 0.8265,
+    "widened_by_blocks_when_flagged": 0.8285,
     "widened_by_blocks_always": 0.8643
    },
    "flags": {
     "spread_against_length": 0.0265,
-    "stability": 0.3953,
+    "stability": 0.4128,
     "lag1_on_raw_rates": 0.0505
    }
   },
@@ -397,12 +397,12 @@
    "coverage_95": {
     "as_is": 0.9475,
     "widened_by_lag1": 0.9545,
-    "widened_by_blocks_when_flagged": 0.9525,
+    "widened_by_blocks_when_flagged": 0.953,
     "widened_by_blocks_always": 0.962
    },
    "flags": {
     "spread_against_length": 0.0103,
-    "stability": 0.0693,
+    "stability": 0.0758,
     "lag1_on_raw_rates": 0.035
    }
   }

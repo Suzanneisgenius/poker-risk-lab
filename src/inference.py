@@ -16,10 +16,12 @@ break-even. Conflating SD with SE is the classic mistake this module avoids.
 The standard error assumes one win rate throughout. A stability check (the one
 the web page's session import uses, standalone/shared/sessions.js) cuts the
 blocks, in the order given, into up to 10 consecutive groups and compares their
-win rates; when they differ by more than chance, the SE is widened to the
-between-group one. It replaced a lag-1 autocorrelation adjustment on
-2026-10-22: in checks/session-lengths/ that rarely noticed a drifting win rate
-and widening by it did not restore the interval's coverage.
+win rates with an F test; when they differ by more than chance, the SE is
+widened to the between-group one. It replaced a lag-1 autocorrelation
+adjustment on 2026-10-22: in checks/session-lengths/ that rarely noticed a
+drifting win rate and widening by it did not restore the interval's coverage.
+A check that does not flag has not shown the win rate is steady; a slow drift
+is often missed.
 """
 
 from __future__ import annotations
@@ -45,7 +47,7 @@ class EdgeEstimate:
     # Stability check: 0 groups (and None below) when not run, which needs at
     # least 20 blocks and some spread.
     stability_groups: int
-    stability_q: float | None     # heterogeneity statistic, chi-square(groups - 1)
+    stability_f: float | None     # between / within groups, F(groups - 1, n_blocks - groups)
     stability_p: float | None
     stability_flag: bool          # p < 0.05
     se_between_groups: float | None
@@ -93,24 +95,31 @@ def stability_check(hands: np.ndarray, profit: np.ndarray, mu_hat: float,
     """Is the win rate the same throughout? Blocks in time order.
 
     The blocks are cut into ``G = min(10, n // 5)`` consecutive groups of equal
-    count. With ``W_g`` the group's hands / 100 and ``mu_g`` its win rate,
-    ``Q = sum(W_g (mu_g - mu_hat)^2) / sigma^2`` is chi-square with ``G - 1``
-    degrees of freedom when every group shares one win rate, and the
+    count. With ``W_g`` the group's hands / 100 and ``mu_g`` its win rate, the
+    weighted residuals split exactly into ``B = sum(W_g (mu_g - mu_hat)^2)``
+    between the groups and ``E = sum(w_i (r_i - mu_g)^2)`` within them. With
+    one win rate throughout, ``F = (B / (G - 1)) / (E / (n - G))`` has an
+    ``F(G - 1, n - G)`` distribution exactly (normal blocks, sigma unknown).
+    Until 2026-10-23 ``B / sigma_hat^2`` was read as chi-square(G - 1), which
+    treats sigma as known and flags too rarely with few blocks. The
     between-group standard error of ``mu_hat`` is
     ``sqrt(G / (G - 1) * sum((W_g / W)^2 (mu_g - mu_hat)^2))``.
     """
     n = hands.size
+    w, r = hands / 100.0, 100.0 * profit / hands
     if n < STABILITY_MIN_BLOCKS or not sigma > 0:
         return None
     g = min(STABILITY_MAX_GROUPS, n // 5)
     edges = [(k * n) // g for k in range(g + 1)]
-    gh = np.array([hands[a:b].sum() for a, b in zip(edges[:-1], edges[1:])])
-    gp = np.array([profit[a:b].sum() for a, b in zip(edges[:-1], edges[1:])])
-    w, rate = gh / 100.0, 100.0 * gp / gh
-    q = float(np.sum(w * (rate - mu_hat) ** 2) / sigma ** 2)
-    between = float(np.sqrt(g / (g - 1) * np.sum((w / w.sum()) ** 2 * (rate - mu_hat) ** 2)))
-    return {"groups": g, "q": q, "p": float(stats.chi2.sf(q, g - 1)),
-            "se_between": between, "multiplier": min(10.0, max(1.0, between / se))}
+    parts = [slice(a, b) for a, b in zip(edges[:-1], edges[1:])]
+    gw = np.array([w[k].sum() for k in parts])
+    rate = np.array([100.0 * profit[k].sum() / hands[k].sum() for k in parts])
+    between = float(np.sum(gw * (rate - mu_hat) ** 2))
+    within = float(sum(np.sum(w[k] * (r[k] - m) ** 2) for k, m in zip(parts, rate)))
+    f = between / (g - 1) / (within / (n - g)) if within > 0 else float("inf")
+    se_between = float(np.sqrt(g / (g - 1) * np.sum((gw / gw.sum()) ** 2 * (rate - mu_hat) ** 2)))
+    return {"groups": g, "f": f, "p": float(stats.f.sf(f, g - 1, n - g)) if within > 0 else 0.0,
+            "se_between": se_between, "multiplier": min(10.0, max(1.0, se_between / se))}
 
 
 def estimate_edge(
@@ -176,7 +185,7 @@ def estimate_edge(
         std_bb100=sigma, se_winrate=se, ci_low=lo, ci_high=hi,
         confidence_level=confidence_level,
         stability_groups=check["groups"] if check else 0,
-        stability_q=check["q"] if check else None,
+        stability_f=check["f"] if check else None,
         stability_p=check["p"] if check else None,
         stability_flag=flag,
         se_between_groups=check["se_between"] if check else None,

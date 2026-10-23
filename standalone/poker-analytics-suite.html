@@ -205,6 +205,9 @@
   .bp-checks li small{display:block;color:var(--muted)}
   .bp-widen{display:flex;gap:8px;align-items:flex-start;font-size:13px;margin:0 0 8px;cursor:pointer}
   .bp-widen input{margin-top:3px;accent-color:var(--accent)}
+  .bp-period .hint{margin:0}
+  .bp-period .hint:empty{display:none}
+  .bp-linkbtn{border:0;background:none;color:var(--accent);font:inherit;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px}
   .bp-groups-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
   .bp-groups-head h3{margin:0}
   .bp-groups-head select{background:var(--surface2);border:1px solid var(--grid);color:var(--text);border-radius:8px;padding:5px 8px;font:inherit;font-size:13px}
@@ -1082,10 +1085,14 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
           <div id="bp_filters" hidden>
             <fieldset class="bp-chips" id="bp_stakes_box"><legend>Stakes</legend><div id="bp_stakes"></div></fieldset>
             <fieldset class="bp-chips" id="bp_games_box"><legend>Games</legend><div id="bp_games"></div></fieldset>
-            <div class="row2" id="bp_period_box">
-              <div class="fld"><label for="bp_from">From month</label><select id="bp_from"></select></div>
-              <div class="fld"><label for="bp_to">To month</label><select id="bp_to"></select></div>
-            </div>
+            <fieldset class="bp-chips bp-period" id="bp_period_box"><legend>Dates</legend>
+              <label class="bp-widen"><input type="checkbox" id="bp_period_on"> <span>Only sessions from a range of months</span></label>
+              <div class="row2" id="bp_period_range" hidden>
+                <div class="fld"><label for="bp_from">From month</label><select id="bp_from"></select></div>
+                <div class="fld"><label for="bp_to">To month</label><select id="bp_to"></select></div>
+              </div>
+              <p class="hint" id="bp_period_note"></p>
+            </fieldset>
             <div class="bp-selection" id="bp_selection" role="status" aria-live="polite"></div>
             <section class="bp-fit" aria-labelledby="bp_fit_title">
               <h3 id="bp_fit_title">Do the sessions fit the model?</h3>
@@ -1737,7 +1744,8 @@ const PokerSessions = (() => {
   };
 
   // Sessions matching the chosen stakes, games and months (YYYY-MM, inclusive).
-  // A period filter leaves out sessions without a date.
+  // A period filter leaves out sessions without a date; with none (the page's
+  // default) every session counts, dated or not.
   function filterSessions(sessions, { stakes = null, games = null, from = null, to = null } = {}) {
     return sessions.filter((s) => (!stakes || stakes.has(s.stake)) && (!games || games.has(s.game))
       && (!from || (s.date && s.date.slice(0, 7) >= from)) && (!to || (s.date && s.date.slice(0, 7) <= to)));
@@ -1758,8 +1766,12 @@ const PokerSessions = (() => {
       : list.sort((a, b) => (a.key === "") - (b.key === "") || a.key.localeCompare(b.key));
   }
 
-  // Sessions in time order (by date, then file order); file order without dates.
-  const chronological = (sessions) => [...sessions].sort((a, b) => (a.date && b.date && a.date !== b.date ? (a.date < b.date ? -1 : 1) : a.order - b.order));
+  // Sessions in time order: by date, then file order, when every session has a
+  // date; otherwise file order, which is all a partly dated file can vouch for
+  // (as checks/session-import-python/run.py does).
+  const chronological = (sessions) => (sessions.every((s) => s.date)
+    ? [...sessions].sort((a, b) => (a.date !== b.date ? (a.date < b.date ? -1 : 1) : a.order - b.order))
+    : [...sessions].sort((a, b) => a.order - b.order));
 
   function weighted(sessions) {
     let hands = 0, profit = 0;
@@ -1773,22 +1785,36 @@ const PokerSessions = (() => {
     return { n: sessions.length, hands, profit, winRate, variance: sessions.length > 1 ? squares / (sessions.length - 1) : null };
   }
 
-  // Win rates of groups of sessions compared with the overall one: the
-  // statistic Q = sum(W_g (mu_g - mu)^2) / sigma^2, with W_g = hands_g / 100,
-  // is chi-square with G - 1 degrees of freedom when every group shares one
-  // win rate. Also returns the between-group (cluster-robust) standard error
-  // of the overall win rate, sqrt(G / (G - 1) * sum((W_g / W)^2 (mu_g - mu)^2)).
-  function heterogeneity(groups, winRate, sd) {
+  // Do groups of sessions (from weighted or summarize) share one win rate? The
+  // weighted residuals split exactly into a between-group part
+  // B = sum(W_g (mu_g - mu)^2), W_g = hands_g / 100, and a within-group part
+  // E = sum over groups of (n_g - 1) * variance_g. With one win rate, normal
+  // results and sigma unknown, F = (B / (G - 1)) / (E / (n - G)) has an
+  // F(G - 1, n - G) distribution exactly. (Dividing B by the pooled sigma^2 and
+  // reading it as chi-square(G - 1), the rule until 2026-10-23, treats sigma as
+  // known; with few sessions it flags too rarely.) No p without a session to
+  // spare within the groups (n = G). Also returns the between-group
+  // (cluster-robust) standard error of the overall win rate,
+  // sqrt(G / (G - 1) * sum((W_g / W)^2 (mu_g - mu)^2)).
+  function heterogeneity(groups, winRate) {
     const G = groups.length;
-    if (G < 2 || !(sd > 0)) return null;
+    if (G < 2) return null;
+    const n = groups.reduce((sum, g) => sum + g.n, 0);
     const total = groups.reduce((sum, g) => sum + g.hands, 0) / 100;
-    let q = 0, between = 0;
+    let between = 0, se = 0, within = 0;
     for (const g of groups) {
       const w = g.hands / 100, rate = (100 * g.profit) / g.hands;
-      q += (w * (rate - winRate) ** 2) / (sd * sd);
-      between += (w / total) ** 2 * (rate - winRate) ** 2;
+      between += w * (rate - winRate) ** 2;
+      se += (w / total) ** 2 * (rate - winRate) ** 2;
+      if (g.n > 1) within += (g.n - 1) * g.variance;
     }
-    return { groups: G, q, p: 1 - Stats.chiSquareCdf(q, G - 1), standardError: Math.sqrt((G / (G - 1)) * between) };
+    const df = [G - 1, n - G];
+    let f = null, p = null;
+    if (df[1] > 0 && (between > 0 || within > 0)) {
+      f = within > 0 ? between / df[0] / (within / df[1]) : Infinity;
+      p = within > 0 ? 1 - Stats.fCdf(f, df[0], df[1]) : 0;
+    }
+    return { groups: G, f, df, p, standardError: Math.sqrt((G / (G - 1)) * se) };
   }
 
   // Estimates for a set of sessions, with two checks of the model:
@@ -1798,10 +1824,12 @@ const PokerSessions = (() => {
   //    deviations, which, unlike a variance-ratio F test, heavy tails do not
   //    set off). Their mean ratio estimates the ratio of the two volatilities.
   //  - stability: is the win rate the same throughout? The sessions in time
-  //    order are cut into up to 10 consecutive blocks of equal count and the
-  //    blocks' win rates compared (heterogeneity, above). When it flags, the
-  //    between-block standard error is the honest one: the page offers to
-  //    widen the interval by that ratio.
+  //    order (chronological, above) are cut into up to 10 consecutive blocks
+  //    of equal count and the blocks' win rates compared (heterogeneity,
+  //    above). When it flags, the between-block standard error is the honest
+  //    one: the page offers to widen the interval by that ratio. A check that
+  //    does not flag has not shown the win rate is steady: in
+  //    checks/session-lengths it caught a slow drift in only some runs.
   // A lag-1 correlation (src/inference.py's rule until 2026-10-22) was tried
   // first; in checks/session-lengths it rarely noticed a drifting win rate and
   // widening by it did not restore the interval's coverage. src/inference.py
@@ -1849,10 +1877,10 @@ const PokerSessions = (() => {
       const ordered = chronological(sessions);
       const G = Math.min(10, Math.floor(base.n / 5));
       const blocks = Array.from({ length: G }, (_, g) => weighted(ordered.slice(Math.floor((g * base.n) / G), Math.floor(((g + 1) * base.n) / G))));
-      const h = heterogeneity(blocks, base.winRate, sd);
+      const h = heterogeneity(blocks, base.winRate);
       stability = {
         ...h, ordered: sessions.every((s) => s.date) ? "date" : "file",
-        flag: h.p < 0.05,
+        flag: h.p !== null && h.p < 0.05,
         multiplier: Math.min(10, Math.max(1, h.standardError / standardError)),
       };
     }
@@ -1860,11 +1888,11 @@ const PokerSessions = (() => {
   }
 
   // Groups (from groupSessions) with each one's estimates, and whether their
-  // win rates differ by more than chance, using the volatility of all of them.
+  // win rates differ by more than chance (heterogeneity, above).
   function compareGroups(sessions, by) {
-    const all = summarize(sessions);
+    const all = weighted(sessions);
     const groups = groupSessions(sessions, by).map((g) => ({ key: g.key, ...summarize(g.sessions) }));
-    return { groups, test: groups.length > 1 && all.sd ? heterogeneity(groups, all.winRate, all.sd) : null };
+    return { groups, test: groups.length > 1 && all.variance > 0 ? heterogeneity(groups, all.winRate) : null };
   }
 
   return { COLUMNS, TEMPLATE, MAX_SESSIONS, parseCsv, parseNumber, parseDate, filterSessions, groupSessions, summarize, compareGroups, heterogeneity, periodOf, chronological };
@@ -2511,8 +2539,9 @@ function renderRangeBreakdown(res){
   const box=$('eq_breakdown');box.hidden=!res;if(!res)return;
   const rows=[...res.groups].sort((a,b)=>a.equity-b.equity||b.share-a.share);
   const split=res.split,byCombo=split.basis==='combo';
-  // Two decimals near 0% and 100%, so a sliver of the range neither vanishes nor rounds the rest to 100%.
-  const pct=v=>(v*100).toFixed((v>0&&v<.001)||(v<1&&v>.999)?2:1)+'%';
+  // Two decimals near 0% and 100%, so a sliver of the range neither vanishes nor
+  // rounds the rest to 100%; below 0.01% (or above 99.99%) it says so.
+  const pct=v=>v>0&&v<1e-4?'<0.01%':v<1&&v>1-1e-4?'>99.99%':(v*100).toFixed((v>0&&v<.001)||(v<1&&v>.999)?2:1)+'%';
   const parts=[split.ahead&&`ahead of ${pct(split.ahead)}`,split.behind&&`behind ${pct(split.behind)}`,split.even&&`even with ${pct(split.even)}`,split.unclear&&`not clearly ahead or behind ${pct(split.unclear)}`].filter(Boolean);
   const list=parts.length>1?parts.slice(0,-1).join(', ')+' and '+parts.at(-1):parts[0];
   $('eq_breakdown_summary').textContent=byCombo?`Combo by combo, weighted: you're ${list} of this range.`:`Hand by hand, using each hand's average over its combos: you're ${list} of this range.`;
@@ -2534,7 +2563,7 @@ function renderRangeBreakdown(res){
   }).join('');
   $('eq_breakdown_note').textContent=byCombo
     ?'Ahead means more than 50% equity against that combo over every runout. A hand whose combos fall on both sides shows the range of its combos.'
-    :`Ahead means the hand's 95% interval lies above 50%, behind that it lies below; otherwise it is not clear, either because the hand is close to 50% or because it got too few runs. Each hand gets runs in proportion to its share, so rare hands get few; the interval does not rely on their spread, which is zero when a few runs all win or all lose. Monte Carlo does not separate a hand's combos, which can sit on different sides of 50%.`;
+    :`Ahead means the hand's 95% interval lies above 50%, behind that it lies below; otherwise it is not clear, either because the hand is close to 50% or because it got too few runs. Each hand gets runs in proportion to its share, so rare hands get few; the interval does not rely on their spread, which is zero when a few runs all win or all lose. Each interval is approximate and holds for that hand alone: across many hands, one may land on the wrong side by chance. Monte Carlo does not separate a hand's combos, which can sit on different sides of 50%.`;
 }
 
 let equityRequest=0;
@@ -3025,7 +3054,8 @@ let bpWidenChoice=null;  // null: follow the stability check
 const bpInputMode=()=>document.querySelector('input[name="bp_input"]:checked').value;
 const bpSessionsActive=()=>bpInputMode()==='sessions';
 const bpWidenActive=()=>Boolean(bpSelection?.stability&&bpSelection.stability.multiplier>1&&(bpWidenChoice??bpSelection.stability.flag));
-const bpP=p=>p<0.001?'p < 0.001':`p = ${p.toFixed(p<0.01?3:2)}`;
+// Enough decimals that a p beside the 5% line never rounds across it.
+const bpP=p=>{if(p<0.001)return 'p < 0.001';let d=p<0.1?3:2;while(d<6&&(+p.toFixed(d)<0.05)!==(p<0.05))d++;return `p = ${p.toFixed(d)}`;};
 const bpKeyLabel=key=>key===''?'(none)':key;
 function bpChips(boxId,listId,groups,name){
   const box=$(boxId),list=$(listId);
@@ -3057,8 +3087,11 @@ function bpLoadSessions(name,text,example=false){
     ...(problems.length>20?[Object.assign(document.createElement('li'),{textContent:`…and ${(problems.length-20).toLocaleString()} more.`})]:[]));
   const stakes=PokerSessions.groupSessions(read.sessions,'stake'),games=PokerSessions.groupSessions(read.sessions,'game');
   bpChips('bp_stakes_box','bp_stakes',stakes,'bp_stake');bpChips('bp_games_box','bp_games',games,'bp_game');
+  // Every session counts until a range of months is chosen; that leaves out
+  // sessions without a date, and the note below says how many.
   const months=[...new Set(read.sessions.map(s=>s.date?.slice(0,7)).filter(Boolean))].sort();
   $('bp_period_box').hidden=!months.length;
+  $('bp_period_on').checked=false;$('bp_period_range').hidden=true;
   for(const [id,selected] of [['bp_from',months[0]],['bp_to',months.at(-1)]]){
     $(id).replaceChildren(...months.map(m=>Object.assign(document.createElement('option'),{value:m,textContent:m,selected:m===selected})));
   }
@@ -3072,18 +3105,34 @@ function bpLoadSessions(name,text,example=false){
 }
 function bpSelectedSessions(){
   const checked=name=>{const boxes=[...document.querySelectorAll(`input[name="${name}"]`)];return boxes.length?new Set(boxes.filter(b=>b.checked).map(b=>b.value)):null;};
-  const dated=!$('bp_period_box').hidden;
+  const byMonth=bpPeriodActive();
   return PokerSessions.filterSessions(bpSessionData.sessions,{stakes:checked('bp_stake'),games:checked('bp_game'),
-    from:dated?$('bp_from').value:null,to:dated?$('bp_to').value:null});
+    from:byMonth?$('bp_from').value:null,to:byMonth?$('bp_to').value:null});
 }
+const bpPeriodActive=()=>!$('bp_period_box').hidden&&$('bp_period_on').checked;
+// What the dates do to the selection: with no range every session counts; with
+// one, sessions without a date drop out, and the note offers to bring them back.
+function bpPeriodNote(){
+  const note=$('bp_period_note'),undated=bpSessionData.sessions.filter(s=>!s.date).length;
+  const n=v=>`${v.toLocaleString()} session${v===1?'':'s'}`;
+  if(!bpPeriodActive()){note.textContent=undated?`All dates, including ${n(undated)} without a date.`:'';return;}
+  const from=$('bp_from').value,to=$('bp_to').value;
+  const outside=bpSessionData.sessions.filter(s=>s.date&&(s.date.slice(0,7)<from||s.date.slice(0,7)>to)).length;
+  const left=[undated&&`${n(undated)} without a date`,outside&&`${n(outside)} outside ${from} to ${to}`].filter(Boolean);
+  if(!left.length){note.textContent='';return;}
+  const all=Object.assign(document.createElement('button'),{type:'button',className:'bp-linkbtn',textContent:'Use all dates'});
+  all.addEventListener('click',()=>{$('bp_period_on').checked=false;bpPeriodToggled();$('bp_period_on').focus();});
+  note.replaceChildren(document.createTextNode(`Leaves out ${left.join(' and ')}. `),all);
+}
+function bpPeriodToggled(){$('bp_period_range').hidden=!$('bp_period_on').checked;bpRenderSelection();}
 function bpSelectionDescription(){
   const part=(name,word)=>{const boxes=[...document.querySelectorAll(`input[name="${name}"]`)],on=boxes.filter(b=>b.checked);
     return !boxes.length||on.length===boxes.length?`all ${word}`:on.map(b=>bpKeyLabel(b.value)).join(', ');};
-  return [part('bp_stake','stakes'),part('bp_game','games'),$('bp_period_box').hidden?'':`${$('bp_from').value} to ${$('bp_to').value}`].filter(Boolean).join(' · ');
+  return [part('bp_stake','stakes'),part('bp_game','games'),bpPeriodActive()?`${$('bp_from').value} to ${$('bp_to').value}`:''].filter(Boolean).join(' · ');
 }
 function bpRenderSelection(){
   const chosen=bpSelectedSessions(),total=bpSessionData.sessions.length;
-  bpWidenChoice=null;
+  bpWidenChoice=null;bpPeriodNote();
   if(chosen.length<2){
     bpSelection=null;$('bp_selection').textContent=`${chosen.length} of ${total.toLocaleString()} sessions selected: select at least two.`;
     $('bp_lengths').textContent='';$('bp_checks').replaceChildren();$('bp_widen_box').hidden=true;$('bp_groups').replaceChildren();$('bp_groups_test').textContent='';
@@ -3100,13 +3149,14 @@ function bpRenderSelection(){
   const checks=[];
   const sc=s.scaling;
   if(!sc)checks.push(item('na','Spread against length: not checked.',L.min===L.max?'All sessions are the same length.':'It needs at least 20 sessions.'));
-  else if(!sc.flag)checks.push(item('ok',`Short and long sessions swing alike per 100 hands: ${sc.short.sd.toFixed(0)} and ${sc.long.sd.toFixed(0)} bb/100.`,`Shorter half up to ${sc.short.maxHands.toLocaleString()} hands, longer half from ${sc.long.minHands.toLocaleString()}; ${bpP(sc.p)}.`));
+  else if(!sc.flag)checks.push(item('ok',`No difference detected in how much short and long sessions swing per 100 hands: ${sc.short.sd.toFixed(0)} and ${sc.long.sd.toFixed(0)} bb/100.`,`Shorter half up to ${sc.short.maxHands.toLocaleString()} hands, longer half from ${sc.long.minHands.toLocaleString()}; ${bpP(sc.p)}. It flags below p = 0.01 when the two differ by more than about 12%; with few sessions or a small difference, it can miss one.`));
   else checks.push(item('flag',`${sc.ratio>1?'Short':'Long'} sessions swing more per 100 hands: ${sc.short.sd.toFixed(0)} against ${sc.long.sd.toFixed(0)} bb/100 (${bpP(sc.p)}).`,
     `The model expects the same. The volatility used (${s.sd.toFixed(1)}) mixes the two, so check the volatility rows in the results against the kind of sessions you will play.`));
   const st=s.stability;
+  const order=st&&(st.ordered==='date'?'date order':chosen.some(x=>x.date)?'file order, as not every session has a date':'file order');
   if(!st)checks.push(item('na','Stability over time: not checked.','It needs at least 20 sessions.'));
-  else if(!st.flag)checks.push(item('ok',`The win rate looks steady: ${st.groups} blocks of sessions in ${st.ordered} order differ no more than chance allows.`,`${bpP(st.p)}.`));
-  else checks.push(item('flag',`The win rate changes over time more than chance allows: ${st.groups} blocks of sessions in ${st.ordered} order (${bpP(st.p)}).`,
+  else if(!st.flag)checks.push(item('ok',`No change in win rate detected between ${st.groups} blocks of sessions in ${order}.`,`${bpP(st.p)}. Finding none does not show the win rate was steady: with few sessions or a slow drift, this check often misses a change.`));
+  else checks.push(item('flag',`The win rate changes over time more than chance allows: ${st.groups} blocks of sessions in ${order} (${bpP(st.p)}).`,
     'An interval that assumes a steady win rate is too narrow. Widening it (below) helps but does not fully fix it; selecting recent months may describe your current game better.'));
   $('bp_checks').replaceChildren(...checks);
   const canWiden=Boolean(st&&st.multiplier>1.0001);
@@ -3127,7 +3177,8 @@ function bpRenderGroups(){
   }));
   const t=compared.test;
   $('bp_groups_test').textContent=!t?'Only one group in the selection.'
-    :`Win rate ± standard error, in bb/100. Do the groups differ? ${bpP(t.p)}: ${t.p<0.05?(by==='stake'||by==='game'?'more than chance allows, so their combined win rate may describe none of them well; consider selecting one.':'more than chance allows: the win rate has changed over time, and recent months may describe your current game better.'):'no clear difference beyond chance.'}`;
+    :t.p===null?'Win rate ± standard error, in bb/100. Do the groups differ? Not tested: every group has a single session, so there is no spread within groups to compare against.'
+    :`Win rate ± standard error, in bb/100. Do the groups differ? ${bpP(t.p)}: ${t.p<0.05?(by==='stake'||by==='game'?'more than chance allows, so their combined win rate may describe none of them well; consider selecting one.':'more than chance allows: the win rate has changed over time, and recent months may describe your current game better.'):'no difference detected, though small groups can hide one.'}`;
 }
 document.querySelectorAll('input[name="bp_input"]').forEach(radio=>radio.addEventListener('change',()=>{
   const sessions=bpSessionsActive();$('bp_totals').hidden=sessions;$('bp_sessions').hidden=!sessions;scheduleBp();
@@ -3142,6 +3193,7 @@ $('bp_file').addEventListener('change',async()=>{
 $('bp_example').addEventListener('click',()=>bpLoadSessions('sessions-example.csv',SESSION_EXAMPLE,true));
 $('bp_template').addEventListener('click',()=>downloadText('sessions-template.csv',PokerSessions.TEMPLATE,'text/csv'));
 ['bp_from','bp_to'].forEach(id=>$(id).addEventListener('change',bpRenderSelection));
+$('bp_period_on').addEventListener('change',bpPeriodToggled);
 $('bp_group_by').addEventListener('change',bpRenderGroups);
 $('bp_widen').addEventListener('change',()=>{bpWidenChoice=$('bp_widen').checked;scheduleBp();});
 

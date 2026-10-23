@@ -139,7 +139,8 @@ const PokerSessions = (() => {
   };
 
   // Sessions matching the chosen stakes, games and months (YYYY-MM, inclusive).
-  // A period filter leaves out sessions without a date.
+  // A period filter leaves out sessions without a date; with none (the page's
+  // default) every session counts, dated or not.
   function filterSessions(sessions, { stakes = null, games = null, from = null, to = null } = {}) {
     return sessions.filter((s) => (!stakes || stakes.has(s.stake)) && (!games || games.has(s.game))
       && (!from || (s.date && s.date.slice(0, 7) >= from)) && (!to || (s.date && s.date.slice(0, 7) <= to)));
@@ -160,8 +161,12 @@ const PokerSessions = (() => {
       : list.sort((a, b) => (a.key === "") - (b.key === "") || a.key.localeCompare(b.key));
   }
 
-  // Sessions in time order (by date, then file order); file order without dates.
-  const chronological = (sessions) => [...sessions].sort((a, b) => (a.date && b.date && a.date !== b.date ? (a.date < b.date ? -1 : 1) : a.order - b.order));
+  // Sessions in time order: by date, then file order, when every session has a
+  // date; otherwise file order, which is all a partly dated file can vouch for
+  // (as checks/session-import-python/run.py does).
+  const chronological = (sessions) => (sessions.every((s) => s.date)
+    ? [...sessions].sort((a, b) => (a.date !== b.date ? (a.date < b.date ? -1 : 1) : a.order - b.order))
+    : [...sessions].sort((a, b) => a.order - b.order));
 
   function weighted(sessions) {
     let hands = 0, profit = 0;
@@ -175,22 +180,36 @@ const PokerSessions = (() => {
     return { n: sessions.length, hands, profit, winRate, variance: sessions.length > 1 ? squares / (sessions.length - 1) : null };
   }
 
-  // Win rates of groups of sessions compared with the overall one: the
-  // statistic Q = sum(W_g (mu_g - mu)^2) / sigma^2, with W_g = hands_g / 100,
-  // is chi-square with G - 1 degrees of freedom when every group shares one
-  // win rate. Also returns the between-group (cluster-robust) standard error
-  // of the overall win rate, sqrt(G / (G - 1) * sum((W_g / W)^2 (mu_g - mu)^2)).
-  function heterogeneity(groups, winRate, sd) {
+  // Do groups of sessions (from weighted or summarize) share one win rate? The
+  // weighted residuals split exactly into a between-group part
+  // B = sum(W_g (mu_g - mu)^2), W_g = hands_g / 100, and a within-group part
+  // E = sum over groups of (n_g - 1) * variance_g. With one win rate, normal
+  // results and sigma unknown, F = (B / (G - 1)) / (E / (n - G)) has an
+  // F(G - 1, n - G) distribution exactly. (Dividing B by the pooled sigma^2 and
+  // reading it as chi-square(G - 1), the rule until 2026-10-23, treats sigma as
+  // known; with few sessions it flags too rarely.) No p without a session to
+  // spare within the groups (n = G). Also returns the between-group
+  // (cluster-robust) standard error of the overall win rate,
+  // sqrt(G / (G - 1) * sum((W_g / W)^2 (mu_g - mu)^2)).
+  function heterogeneity(groups, winRate) {
     const G = groups.length;
-    if (G < 2 || !(sd > 0)) return null;
+    if (G < 2) return null;
+    const n = groups.reduce((sum, g) => sum + g.n, 0);
     const total = groups.reduce((sum, g) => sum + g.hands, 0) / 100;
-    let q = 0, between = 0;
+    let between = 0, se = 0, within = 0;
     for (const g of groups) {
       const w = g.hands / 100, rate = (100 * g.profit) / g.hands;
-      q += (w * (rate - winRate) ** 2) / (sd * sd);
-      between += (w / total) ** 2 * (rate - winRate) ** 2;
+      between += w * (rate - winRate) ** 2;
+      se += (w / total) ** 2 * (rate - winRate) ** 2;
+      if (g.n > 1) within += (g.n - 1) * g.variance;
     }
-    return { groups: G, q, p: 1 - Stats.chiSquareCdf(q, G - 1), standardError: Math.sqrt((G / (G - 1)) * between) };
+    const df = [G - 1, n - G];
+    let f = null, p = null;
+    if (df[1] > 0 && (between > 0 || within > 0)) {
+      f = within > 0 ? between / df[0] / (within / df[1]) : Infinity;
+      p = within > 0 ? 1 - Stats.fCdf(f, df[0], df[1]) : 0;
+    }
+    return { groups: G, f, df, p, standardError: Math.sqrt((G / (G - 1)) * se) };
   }
 
   // Estimates for a set of sessions, with two checks of the model:
@@ -200,10 +219,12 @@ const PokerSessions = (() => {
   //    deviations, which, unlike a variance-ratio F test, heavy tails do not
   //    set off). Their mean ratio estimates the ratio of the two volatilities.
   //  - stability: is the win rate the same throughout? The sessions in time
-  //    order are cut into up to 10 consecutive blocks of equal count and the
-  //    blocks' win rates compared (heterogeneity, above). When it flags, the
-  //    between-block standard error is the honest one: the page offers to
-  //    widen the interval by that ratio.
+  //    order (chronological, above) are cut into up to 10 consecutive blocks
+  //    of equal count and the blocks' win rates compared (heterogeneity,
+  //    above). When it flags, the between-block standard error is the honest
+  //    one: the page offers to widen the interval by that ratio. A check that
+  //    does not flag has not shown the win rate is steady: in
+  //    checks/session-lengths it caught a slow drift in only some runs.
   // A lag-1 correlation (src/inference.py's rule until 2026-10-22) was tried
   // first; in checks/session-lengths it rarely noticed a drifting win rate and
   // widening by it did not restore the interval's coverage. src/inference.py
@@ -251,10 +272,10 @@ const PokerSessions = (() => {
       const ordered = chronological(sessions);
       const G = Math.min(10, Math.floor(base.n / 5));
       const blocks = Array.from({ length: G }, (_, g) => weighted(ordered.slice(Math.floor((g * base.n) / G), Math.floor(((g + 1) * base.n) / G))));
-      const h = heterogeneity(blocks, base.winRate, sd);
+      const h = heterogeneity(blocks, base.winRate);
       stability = {
         ...h, ordered: sessions.every((s) => s.date) ? "date" : "file",
-        flag: h.p < 0.05,
+        flag: h.p !== null && h.p < 0.05,
         multiplier: Math.min(10, Math.max(1, h.standardError / standardError)),
       };
     }
@@ -262,11 +283,11 @@ const PokerSessions = (() => {
   }
 
   // Groups (from groupSessions) with each one's estimates, and whether their
-  // win rates differ by more than chance, using the volatility of all of them.
+  // win rates differ by more than chance (heterogeneity, above).
   function compareGroups(sessions, by) {
-    const all = summarize(sessions);
+    const all = weighted(sessions);
     const groups = groupSessions(sessions, by).map((g) => ({ key: g.key, ...summarize(g.sessions) }));
-    return { groups, test: groups.length > 1 && all.sd ? heterogeneity(groups, all.winRate, all.sd) : null };
+    return { groups, test: groups.length > 1 && all.variance > 0 ? heterogeneity(groups, all.winRate) : null };
   }
 
   return { COLUMNS, TEMPLATE, MAX_SESSIONS, parseCsv, parseNumber, parseDate, filterSessions, groupSessions, summarize, compareGroups, heterogeneity, periodOf, chronological };

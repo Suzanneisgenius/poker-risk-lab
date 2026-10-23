@@ -23,8 +23,12 @@ const SELECTIONS = {
     { id: "2025-10 to 2026-03", from: "2025-10", to: "2026-03" },
     { id: "NL50 NLHE from 2026-01", stakes: ["NL50"], games: ["NLHE 6-max"], from: "2026-01" },
   ],
+  "mixed-dates.csv": [
+    { id: "all, dated or not" },
+    { id: "2026-01 to 2026-02 (dated only)", from: "2026-01", to: "2026-02" },
+  ],
 };
-const GROUPINGS = { "sessions-mixed.csv": ["stake", "game", "month", "quarter", "year"], "drifting.csv": ["quarter"] };
+const GROUPINGS = { "sessions-mixed.csv": ["stake", "game", "month", "quarter", "year"], "drifting.csv": ["quarter"], "mixed-dates.csv": ["month", "quarter"] };
 
 const round = (value) => (typeof value === "number" ? Number(value.toPrecision(15)) : value);
 const clean = (value) => JSON.parse(JSON.stringify(value, (_, v) => round(v)));

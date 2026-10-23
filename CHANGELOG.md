@@ -57,6 +57,73 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-10-23 — review fixes: undated sessions, an F test, range evidence
+
+- **Sessions without a date are no longer dropped.** As soon as a file had
+  one dated session, the page set a month range, and the range left out every
+  undated session with no way back: a three-row file (one dated) read "3
+  sessions read" but "1 of 3 sessions selected" and could not be used. Now
+  every session counts until "Only sessions from a range of months" is
+  ticked; then a note says how many sessions the range leaves out (without a
+  date, or outside the months), with "Use all dates" to undo it. Time order
+  for the stability check follows the Python rule on both sides: by date
+  when every session has one, otherwise file order (the page's sort had
+  mixed the two). `checks/session-import-python/` gains a partly dated file
+  (60 sessions): 6,028 numbers agree.
+- **The stability check and group comparison are F tests.** Both compared
+  the between-group spread B = Σ W_g (μ_g − μ̂)² with the volatility estimated
+  from the same sessions and read B / σ̂² as chi-square(G − 1), which treats
+  σ as known. The weighted residuals split exactly into B and the spread
+  within groups E, and F = (B / (G − 1)) / (E / (n − G)) is F(G − 1, n − G)
+  exactly under the model. Example (now a test in JS and Python): 20 sessions
+  of 100 hands, block means −15, −5, 5, 15 with residuals −20…20 gave p =
+  0.063 before and p = 0.046 now, matching `scipy.stats.f_oneway`. With 20
+  sessions the old reading flagged 3.3% of steady histories instead of 5%;
+  the F test flags 5.0% in 4,000 simulated ones. With every group a single
+  session there is nothing to compare against, and the page says the groups
+  were not tested. `EdgeEstimate.stability_q` is now `stability_f`.
+  `checks/session-lengths/` (150 sessions, so F and chi-square are close):
+
+  | | Before | Now |
+  |---|---|---|
+  | False alarms when the model holds | 4.0–5.1% | 4.5–5.7% |
+  | Drifting win rate flagged | 20.0–39.5% | 21.3–41.3% |
+  | Coverage, widened when flagged (drift) | 82.7–85.9% | 82.8–86.1% |
+
+  The saved uncertainty case is not flagged either way (p 0.55 → 0.58,
+  F = 0.84), so its estimates and risk numbers are unchanged.
+- **No flag no longer reads as proof.** "The win rate looks steady … differ
+  no more than chance allows" is now "No change in win rate detected …" with
+  "Finding none does not show the win rate was steady"; the length check
+  says "No difference detected" instead of "swing alike"; a group comparison
+  without a flag says "no difference detected, though small groups can hide
+  one". A p-value beside 5% gets enough decimals not to round across it
+  (0.0461 shows as 0.046, not 0.05).
+- **Range calls: evidence matched to the claim.** The tie check covered
+  20% ties over 1–150 runs only. Computed exactly by recursion on the score
+  (0, ½ or 1 a run), a hand at 50% is called ahead at most 2.49% of the time
+  over 1–400 runs with no ties, 2.41% with 0.1% ties and 1.31% with 20% ties;
+  over 15 true equities from 2% to 98%, with no ties or 20% ties, one hand's
+  interval holds its equity at least 95.0% of the time. These hold for one
+  hand: the page note now says the interval is approximate and that across
+  many hands one may land on the wrong side by chance.
+- **A sliver of a range shows as "<0.01%".** 22 at weight 0.0001 is
+  0.005% of `QQ, 22:0.0001` and showed as 0.00%; shares below 0.01% now
+  read "<0.01%" and above 99.99% read ">99.99%".
+- **Application summary matched to its sources.** It still said 108 tests
+  (now 130 Python tests plus the JavaScript checks) and that AR(1) and
+  regime switching raise risk ×1.2–1.4 "holding edge and variance fixed".
+  Those multipliers are from an earlier quick run in a different scenario;
+  the case study gives AR(1) ×2.87 (same spread per step) and regimes ×1.65,
+  whose steps are wider (SD about 101 instead of 90), so the variance is not
+  held fixed. "≈1.4×" from uncertainty is ×1.34. "The bridge correction cuts
+  the error to < 1%" was 1.08% at a 500-hand step; it now says the bridge
+  estimate agrees within simulation error (at most 1.1%). A new table lists
+  each number's file, settings and commit, and marks the quick runs of
+  2026-07-13/14 (no commit recorded) as historical. The same barrier and
+  slope fixes are in `docs/case_study_imperfect_information.md` and
+  `docs/portfolio_page_prompt.md`.
+
 ## 2026-10-22 — review fixes: rare hands in ranges, bankroll rounding, wording
 
 - **Rare hands in a Monte Carlo range run are no longer called on a few
@@ -71,7 +138,8 @@ How each change splits up at the same seed:
   score of 0, ½ or 1 can have, so it needs no estimate of the spread and ties
   make it more cautious; six straight wins are the fewest that call a hand
   ahead. Computed exactly, a hand at 50% is called ahead at most 2.49% of the
-  time for 1–400 runs (1.23% with 20% ties). Each row shows its runs and
+  time for 1–400 runs (with 20% ties, 1.23% over 1–150 runs, the range then
+  tested; 1.31% over 1–400, see 2026-10-23). Each row shows its runs and
   interval, and says "too few runs to tell" when the interval is 20 points or
   wider. Exact runs are unchanged (J2s still 2/3 ahead, combo by combo).
   Two display fixes found while checking this case: a weighted count now

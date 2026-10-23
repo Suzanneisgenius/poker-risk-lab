@@ -62,9 +62,11 @@ strategy, and translating that strategy back to the full game in real time.
   **0.072**, gambler's-ruin infinite-horizon **0.108** (an upper bound), Markov
   chain **0.068**.
 - **Numerical honesty:** coarse barrier monitoring understates ruin by **8.2%**
-  at a 500-hand step; the Brownian-bridge correction cuts that error to **< 1%**.
-  Monte Carlo error follows the expected rate (fitted log-log slope
-  **−0.55 ± 0.03 ≈ O(N⁻¹ᐟ²)**).
+  at a 500-hand step; the Brownian-bridge estimate agrees with the analytical
+  value within simulation error at every step (relative error at most **1.1%**).
+  Monte Carlo error follows the expected rate (fitted log-log slope **−0.55 ≈
+  O(N⁻¹ᐟ²)**). Both come from earlier quick runs (12,000 paths; 10 seeds per
+  budget) in their own scenarios; regenerate them before quoting decimals.
 - **Uncertainty matters:** with an observed 1.86 bb/100 edge over 50k hands, the
   win rate's confidence interval still includes zero (P(edge > 0) ≈ **67%**);
   propagating that uncertainty raises modeled ruin risk from **27.3%** (plug-in)

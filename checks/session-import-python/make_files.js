@@ -72,6 +72,17 @@ const files = {};
   }).join("\n") + "\n";
 }
 
+// Dates on two sessions in three, and one dated out of file order: with no
+// period filter every session counts, and the time order is the file's.
+{
+  const g = generator(6);
+  files["mixed-dates.csv"] = "date,stake,hands,profit_bb\n" + Array.from({ length: 60 }, (_, i) => {
+    const hands = 200 + Math.floor(g.uniform() * 1200);
+    const date = i % 3 === 1 ? "" : i === 12 ? "2026-03-20" : day([2026, 0, 1], i);
+    return `${date},NL25,${hands},${profit(g, hands, 4, 90)}`;
+  }).join("\n") + "\n";
+}
+
 // Short sessions that swing much more per hand than long ones (an extra swing
 // of 120 bb per session, whatever its length): the length check should flag it.
 {

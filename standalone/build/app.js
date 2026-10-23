@@ -374,8 +374,9 @@ function renderRangeBreakdown(res){
   const box=$('eq_breakdown');box.hidden=!res;if(!res)return;
   const rows=[...res.groups].sort((a,b)=>a.equity-b.equity||b.share-a.share);
   const split=res.split,byCombo=split.basis==='combo';
-  // Two decimals near 0% and 100%, so a sliver of the range neither vanishes nor rounds the rest to 100%.
-  const pct=v=>(v*100).toFixed((v>0&&v<.001)||(v<1&&v>.999)?2:1)+'%';
+  // Two decimals near 0% and 100%, so a sliver of the range neither vanishes nor
+  // rounds the rest to 100%; below 0.01% (or above 99.99%) it says so.
+  const pct=v=>v>0&&v<1e-4?'<0.01%':v<1&&v>1-1e-4?'>99.99%':(v*100).toFixed((v>0&&v<.001)||(v<1&&v>.999)?2:1)+'%';
   const parts=[split.ahead&&`ahead of ${pct(split.ahead)}`,split.behind&&`behind ${pct(split.behind)}`,split.even&&`even with ${pct(split.even)}`,split.unclear&&`not clearly ahead or behind ${pct(split.unclear)}`].filter(Boolean);
   const list=parts.length>1?parts.slice(0,-1).join(', ')+' and '+parts.at(-1):parts[0];
   $('eq_breakdown_summary').textContent=byCombo?`Combo by combo, weighted: you're ${list} of this range.`:`Hand by hand, using each hand's average over its combos: you're ${list} of this range.`;
@@ -397,7 +398,7 @@ function renderRangeBreakdown(res){
   }).join('');
   $('eq_breakdown_note').textContent=byCombo
     ?'Ahead means more than 50% equity against that combo over every runout. A hand whose combos fall on both sides shows the range of its combos.'
-    :`Ahead means the hand's 95% interval lies above 50%, behind that it lies below; otherwise it is not clear, either because the hand is close to 50% or because it got too few runs. Each hand gets runs in proportion to its share, so rare hands get few; the interval does not rely on their spread, which is zero when a few runs all win or all lose. Monte Carlo does not separate a hand's combos, which can sit on different sides of 50%.`;
+    :`Ahead means the hand's 95% interval lies above 50%, behind that it lies below; otherwise it is not clear, either because the hand is close to 50% or because it got too few runs. Each hand gets runs in proportion to its share, so rare hands get few; the interval does not rely on their spread, which is zero when a few runs all win or all lose. Each interval is approximate and holds for that hand alone: across many hands, one may land on the wrong side by chance. Monte Carlo does not separate a hand's combos, which can sit on different sides of 50%.`;
 }
 
 let equityRequest=0;
@@ -888,7 +889,8 @@ let bpWidenChoice=null;  // null: follow the stability check
 const bpInputMode=()=>document.querySelector('input[name="bp_input"]:checked').value;
 const bpSessionsActive=()=>bpInputMode()==='sessions';
 const bpWidenActive=()=>Boolean(bpSelection?.stability&&bpSelection.stability.multiplier>1&&(bpWidenChoice??bpSelection.stability.flag));
-const bpP=p=>p<0.001?'p < 0.001':`p = ${p.toFixed(p<0.01?3:2)}`;
+// Enough decimals that a p beside the 5% line never rounds across it.
+const bpP=p=>{if(p<0.001)return 'p < 0.001';let d=p<0.1?3:2;while(d<6&&(+p.toFixed(d)<0.05)!==(p<0.05))d++;return `p = ${p.toFixed(d)}`;};
 const bpKeyLabel=key=>key===''?'(none)':key;
 function bpChips(boxId,listId,groups,name){
   const box=$(boxId),list=$(listId);
@@ -920,8 +922,11 @@ function bpLoadSessions(name,text,example=false){
     ...(problems.length>20?[Object.assign(document.createElement('li'),{textContent:`…and ${(problems.length-20).toLocaleString()} more.`})]:[]));
   const stakes=PokerSessions.groupSessions(read.sessions,'stake'),games=PokerSessions.groupSessions(read.sessions,'game');
   bpChips('bp_stakes_box','bp_stakes',stakes,'bp_stake');bpChips('bp_games_box','bp_games',games,'bp_game');
+  // Every session counts until a range of months is chosen; that leaves out
+  // sessions without a date, and the note below says how many.
   const months=[...new Set(read.sessions.map(s=>s.date?.slice(0,7)).filter(Boolean))].sort();
   $('bp_period_box').hidden=!months.length;
+  $('bp_period_on').checked=false;$('bp_period_range').hidden=true;
   for(const [id,selected] of [['bp_from',months[0]],['bp_to',months.at(-1)]]){
     $(id).replaceChildren(...months.map(m=>Object.assign(document.createElement('option'),{value:m,textContent:m,selected:m===selected})));
   }
@@ -935,18 +940,34 @@ function bpLoadSessions(name,text,example=false){
 }
 function bpSelectedSessions(){
   const checked=name=>{const boxes=[...document.querySelectorAll(`input[name="${name}"]`)];return boxes.length?new Set(boxes.filter(b=>b.checked).map(b=>b.value)):null;};
-  const dated=!$('bp_period_box').hidden;
+  const byMonth=bpPeriodActive();
   return PokerSessions.filterSessions(bpSessionData.sessions,{stakes:checked('bp_stake'),games:checked('bp_game'),
-    from:dated?$('bp_from').value:null,to:dated?$('bp_to').value:null});
+    from:byMonth?$('bp_from').value:null,to:byMonth?$('bp_to').value:null});
 }
+const bpPeriodActive=()=>!$('bp_period_box').hidden&&$('bp_period_on').checked;
+// What the dates do to the selection: with no range every session counts; with
+// one, sessions without a date drop out, and the note offers to bring them back.
+function bpPeriodNote(){
+  const note=$('bp_period_note'),undated=bpSessionData.sessions.filter(s=>!s.date).length;
+  const n=v=>`${v.toLocaleString()} session${v===1?'':'s'}`;
+  if(!bpPeriodActive()){note.textContent=undated?`All dates, including ${n(undated)} without a date.`:'';return;}
+  const from=$('bp_from').value,to=$('bp_to').value;
+  const outside=bpSessionData.sessions.filter(s=>s.date&&(s.date.slice(0,7)<from||s.date.slice(0,7)>to)).length;
+  const left=[undated&&`${n(undated)} without a date`,outside&&`${n(outside)} outside ${from} to ${to}`].filter(Boolean);
+  if(!left.length){note.textContent='';return;}
+  const all=Object.assign(document.createElement('button'),{type:'button',className:'bp-linkbtn',textContent:'Use all dates'});
+  all.addEventListener('click',()=>{$('bp_period_on').checked=false;bpPeriodToggled();$('bp_period_on').focus();});
+  note.replaceChildren(document.createTextNode(`Leaves out ${left.join(' and ')}. `),all);
+}
+function bpPeriodToggled(){$('bp_period_range').hidden=!$('bp_period_on').checked;bpRenderSelection();}
 function bpSelectionDescription(){
   const part=(name,word)=>{const boxes=[...document.querySelectorAll(`input[name="${name}"]`)],on=boxes.filter(b=>b.checked);
     return !boxes.length||on.length===boxes.length?`all ${word}`:on.map(b=>bpKeyLabel(b.value)).join(', ');};
-  return [part('bp_stake','stakes'),part('bp_game','games'),$('bp_period_box').hidden?'':`${$('bp_from').value} to ${$('bp_to').value}`].filter(Boolean).join(' · ');
+  return [part('bp_stake','stakes'),part('bp_game','games'),bpPeriodActive()?`${$('bp_from').value} to ${$('bp_to').value}`:''].filter(Boolean).join(' · ');
 }
 function bpRenderSelection(){
   const chosen=bpSelectedSessions(),total=bpSessionData.sessions.length;
-  bpWidenChoice=null;
+  bpWidenChoice=null;bpPeriodNote();
   if(chosen.length<2){
     bpSelection=null;$('bp_selection').textContent=`${chosen.length} of ${total.toLocaleString()} sessions selected: select at least two.`;
     $('bp_lengths').textContent='';$('bp_checks').replaceChildren();$('bp_widen_box').hidden=true;$('bp_groups').replaceChildren();$('bp_groups_test').textContent='';
@@ -963,13 +984,14 @@ function bpRenderSelection(){
   const checks=[];
   const sc=s.scaling;
   if(!sc)checks.push(item('na','Spread against length: not checked.',L.min===L.max?'All sessions are the same length.':'It needs at least 20 sessions.'));
-  else if(!sc.flag)checks.push(item('ok',`Short and long sessions swing alike per 100 hands: ${sc.short.sd.toFixed(0)} and ${sc.long.sd.toFixed(0)} bb/100.`,`Shorter half up to ${sc.short.maxHands.toLocaleString()} hands, longer half from ${sc.long.minHands.toLocaleString()}; ${bpP(sc.p)}.`));
+  else if(!sc.flag)checks.push(item('ok',`No difference detected in how much short and long sessions swing per 100 hands: ${sc.short.sd.toFixed(0)} and ${sc.long.sd.toFixed(0)} bb/100.`,`Shorter half up to ${sc.short.maxHands.toLocaleString()} hands, longer half from ${sc.long.minHands.toLocaleString()}; ${bpP(sc.p)}. It flags below p = 0.01 when the two differ by more than about 12%; with few sessions or a small difference, it can miss one.`));
   else checks.push(item('flag',`${sc.ratio>1?'Short':'Long'} sessions swing more per 100 hands: ${sc.short.sd.toFixed(0)} against ${sc.long.sd.toFixed(0)} bb/100 (${bpP(sc.p)}).`,
     `The model expects the same. The volatility used (${s.sd.toFixed(1)}) mixes the two, so check the volatility rows in the results against the kind of sessions you will play.`));
   const st=s.stability;
+  const order=st&&(st.ordered==='date'?'date order':chosen.some(x=>x.date)?'file order, as not every session has a date':'file order');
   if(!st)checks.push(item('na','Stability over time: not checked.','It needs at least 20 sessions.'));
-  else if(!st.flag)checks.push(item('ok',`The win rate looks steady: ${st.groups} blocks of sessions in ${st.ordered} order differ no more than chance allows.`,`${bpP(st.p)}.`));
-  else checks.push(item('flag',`The win rate changes over time more than chance allows: ${st.groups} blocks of sessions in ${st.ordered} order (${bpP(st.p)}).`,
+  else if(!st.flag)checks.push(item('ok',`No change in win rate detected between ${st.groups} blocks of sessions in ${order}.`,`${bpP(st.p)}. Finding none does not show the win rate was steady: with few sessions or a slow drift, this check often misses a change.`));
+  else checks.push(item('flag',`The win rate changes over time more than chance allows: ${st.groups} blocks of sessions in ${order} (${bpP(st.p)}).`,
     'An interval that assumes a steady win rate is too narrow. Widening it (below) helps but does not fully fix it; selecting recent months may describe your current game better.'));
   $('bp_checks').replaceChildren(...checks);
   const canWiden=Boolean(st&&st.multiplier>1.0001);
@@ -990,7 +1012,8 @@ function bpRenderGroups(){
   }));
   const t=compared.test;
   $('bp_groups_test').textContent=!t?'Only one group in the selection.'
-    :`Win rate ± standard error, in bb/100. Do the groups differ? ${bpP(t.p)}: ${t.p<0.05?(by==='stake'||by==='game'?'more than chance allows, so their combined win rate may describe none of them well; consider selecting one.':'more than chance allows: the win rate has changed over time, and recent months may describe your current game better.'):'no clear difference beyond chance.'}`;
+    :t.p===null?'Win rate ± standard error, in bb/100. Do the groups differ? Not tested: every group has a single session, so there is no spread within groups to compare against.'
+    :`Win rate ± standard error, in bb/100. Do the groups differ? ${bpP(t.p)}: ${t.p<0.05?(by==='stake'||by==='game'?'more than chance allows, so their combined win rate may describe none of them well; consider selecting one.':'more than chance allows: the win rate has changed over time, and recent months may describe your current game better.'):'no difference detected, though small groups can hide one.'}`;
 }
 document.querySelectorAll('input[name="bp_input"]').forEach(radio=>radio.addEventListener('change',()=>{
   const sessions=bpSessionsActive();$('bp_totals').hidden=sessions;$('bp_sessions').hidden=!sessions;scheduleBp();
@@ -1005,6 +1028,7 @@ $('bp_file').addEventListener('change',async()=>{
 $('bp_example').addEventListener('click',()=>bpLoadSessions('sessions-example.csv',SESSION_EXAMPLE,true));
 $('bp_template').addEventListener('click',()=>downloadText('sessions-template.csv',PokerSessions.TEMPLATE,'text/csv'));
 ['bp_from','bp_to'].forEach(id=>$(id).addEventListener('change',bpRenderSelection));
+$('bp_period_on').addEventListener('change',bpPeriodToggled);
 $('bp_group_by').addEventListener('change',bpRenderGroups);
 $('bp_widen').addEventListener('change',()=>{bpWidenChoice=$('bp_widen').checked;scheduleBp();});
 

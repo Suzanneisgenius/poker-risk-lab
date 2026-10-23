@@ -15,7 +15,7 @@
     {
       "file": "drifting.csv",
       "sessions": 240,
-      "comparisons": 1249,
+      "comparisons": 1253,
       "largest_difference": {
         "relative": 7.1e-15,
         "probability": 8.1e-09
@@ -26,10 +26,10 @@
     {
       "file": "equal-blocks.csv",
       "sessions": 60,
-      "comparisons": 320,
+      "comparisons": 322,
       "largest_difference": {
         "relative": 9.1e-15,
-        "probability": 4.7e-16
+        "probability": 2.1e-15
       },
       "failures": [],
       "passed": true
@@ -37,7 +37,7 @@
     {
       "file": "european.csv",
       "sessions": 80,
-      "comparisons": 428,
+      "comparisons": 430,
       "largest_difference": {
         "relative": 6.6e-15,
         "probability": 3.5e-08
@@ -46,9 +46,20 @@
       "passed": true
     },
     {
+      "file": "mixed-dates.csv",
+      "sessions": 60,
+      "comparisons": 396,
+      "largest_difference": {
+        "relative": 1e-14,
+        "probability": 2.1e-08
+      },
+      "failures": [],
+      "passed": true
+    },
+    {
       "file": "sessions-mixed.csv",
       "sessions": 360,
-      "comparisons": 2075,
+      "comparisons": 2097,
       "largest_difference": {
         "relative": 2e-14,
         "probability": 2e-08
@@ -59,7 +70,7 @@
     {
       "file": "short-and-long.csv",
       "sessions": 300,
-      "comparisons": 1528,
+      "comparisons": 1530,
       "largest_difference": {
         "relative": 9.8e-15,
         "probability": 1.6e-11
@@ -68,6 +79,6 @@
       "passed": true
     }
   ],
-  "comparisons": 5600,
+  "comparisons": 6028,
   "all_passed": true
 }

@@ -1,5 +1,7 @@
 """Tests for frequentist edge estimation from block history."""
 
+import warnings
+
 import numpy as np
 import pytest
 from scipy import stats
@@ -76,13 +78,47 @@ def test_stability_check_matches_its_definition():
     gh = np.array([hands[a:b].sum() for a, b in zip(edges, edges[1:])])
     gp = np.array([profit[a:b].sum() for a, b in zip(edges, edges[1:])])
     rate, w = 100 * gp / gh, gh / 100
-    q = np.sum(w * (rate - est.winrate_bb100) ** 2) / est.std_bb100 ** 2
+    b = np.sum(w * (rate - est.winrate_bb100) ** 2)
+    # Between plus within is the whole weighted residual sum of squares.
+    e = 52 * est.std_bb100 ** 2 - b
+    f = (b / 9) / (e / 43)
     between = np.sqrt(10 / 9 * np.sum((w / w.sum()) ** 2 * (rate - est.winrate_bb100) ** 2))
     assert est.stability_groups == 10
-    assert est.stability_q == pytest.approx(q, rel=1e-12)
-    assert est.stability_p == pytest.approx(1 - stats.chi2.cdf(q, 9), rel=1e-9)
+    assert est.stability_f == pytest.approx(f, rel=1e-10)
+    assert est.stability_p == pytest.approx(1 - stats.f.cdf(f, 9, 43), rel=1e-9)
     assert est.se_between_groups == pytest.approx(between, rel=1e-12)
     assert est.stability_multiplier == pytest.approx(min(10, max(1, between / est.se_winrate)))
+
+
+def test_stability_check_is_the_one_way_anova():
+    # 20 blocks of 100 hands, 4 groups of 5: group means -15, -5, 5, 15 bb/100,
+    # residuals -20..20. With equal weights the check is a one-way ANOVA, so
+    # scipy.stats.f_oneway is an independent reference: F = 10/3, p = 0.046.
+    # Reading B / sigma_hat^2 = 7.31 as chi-square(3) gave p = 0.063.
+    groups = [[m + e for e in (-20, -10, 0, 10, 20)] for m in (-15, -5, 5, 15)]
+    with pytest.warns(UserWarning, match="differs between 4 consecutive groups"):
+        est = estimate_edge(np.full(20, 100.0), np.concatenate(groups))
+    reference = stats.f_oneway(*groups)
+    assert est.stability_groups == 4
+    assert est.stability_f == pytest.approx(reference.statistic, rel=1e-12)
+    assert est.stability_p == pytest.approx(reference.pvalue, rel=1e-9)
+    assert est.stability_flag
+
+
+def test_stability_check_false_alarm_rate_with_few_blocks():
+    # One win rate, 20 blocks of unequal length: the F test flags about 5% of
+    # histories. The chi-square reading flagged about 3.3% here (exactly
+    # P(F(3, 16) > 3.73)), so a real change was missed more often too.
+    rng = np.random.default_rng(11)
+    runs, flags = 4000, 0
+    for _ in range(runs):
+        hands = rng.integers(50, 2000, size=20).astype(float)
+        profit = rng.normal(3 * hands / 100, 90 * np.sqrt(hands / 100))
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            flags += estimate_edge(hands, profit).stability_flag
+    se = np.sqrt(0.05 * 0.95 / runs)
+    assert abs(flags / runs - 0.05) < 4 * se
 
 
 def test_steady_win_rate_is_not_widened():

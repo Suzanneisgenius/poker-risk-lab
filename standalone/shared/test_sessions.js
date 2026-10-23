@@ -74,6 +74,20 @@ assert.equal(steady.stability.groups, 10);
 // A win rate that jumps halfway is caught by the stability check, and widening helps.
 const jump = S.summarize(make(400, (i) => (i < 200 ? 15 : -9)));
 assert.ok(jump.stability.flag && jump.stability.multiplier > 1.5, `jump flagged, multiplier ${jump.stability.multiplier}`);
+// The stability check is an F test of the blocks' win rates against the spread
+// within them. 20 sessions of 100 hands, 4 blocks of 5: block means -15, -5, 5,
+// 15 bb/100, each with residuals -20, -10, 0, 10, 20. With equal weights this
+// is a one-way ANOVA; scipy.stats.f_oneway gives F = 10/3, p = 0.0461155.
+// Reading B / sigma^2 = 7.31 as chi-square(3), the rule before 2026-10-23,
+// gave p = 0.0627 and no flag.
+const anova = [-15, -5, 5, 15].flatMap((m) => [-20, -10, 0, 10, 20].map((e) => m + e)).map((profit, order) => ({ hands: 100, profit, order, date: null }));
+const fTest = S.summarize(anova).stability;
+assert.deepEqual([fTest.groups, fTest.df], [4, [3, 16]]);
+close(fTest.f, 10 / 3, 1e-14, "F statistic as scipy f_oneway");
+close(fTest.p, 0.04611550897078254, 1e-9, "F p-value as scipy f_oneway");
+assert.ok(fTest.flag, "flagged at 5%");
+// With a session in every group there is nothing within the groups to compare against.
+assert.equal(S.heterogeneity([{ n: 1, hands: 100, profit: 5 }, { n: 1, hands: 100, profit: -5 }], 0).p, null, "no p with one session per group");
 // Short sessions that swing far more per hand than long ones are caught by the length check.
 const lopsided = make(400, () => 3).map((s) => ({ ...s, profit: s.profit + (s.hands < 500 ? 150 * normal() : 0) }));
 assert.ok(S.summarize(lopsided).scaling.flag, "spread against length flagged");
@@ -84,10 +98,15 @@ assert.equal(S.filterSessions(dated, { stakes: new Set(["NL25"]) }).length, 3);
 assert.equal(S.filterSessions(dated, { from: "2026-02", to: "2026-04" }).length, 2, "a period filter leaves out undated sessions");
 assert.deepEqual(S.groupSessions(dated, "quarter").map((g) => [g.key, g.sessions.length]), [["2026-Q1", 2], ["2026-Q2", 1], ["", 1]]);
 assert.deepEqual(S.groupSessions(dated, "stake").map((g) => g.key), ["NL25", "NL50"], "most hands first");
+assert.equal(S.filterSessions(dated, {}).length, 4, "no period filter: undated sessions count too");
+// Partly dated: file order, as checks/session-import-python/run.py; fully dated: by date.
+const partly = S.parseCsv("date,hands,profit_bb\n2026-03-01,100,1\n,100,2\n2026-01-01,100,3\n").sessions;
+assert.deepEqual(S.chronological(partly).map((s) => s.profit), [1, 2, 3], "partly dated: file order");
+assert.deepEqual(S.chronological(partly.filter((s) => s.date)).map((s) => s.profit), [3, 1], "dated: by date");
 const compared = S.compareGroups(make(300, () => 3), "stake");
 assert.equal(compared.groups.length, 2);
 assert.ok(compared.test.p > 0.01, "two stakes with the same win rate do not differ");
 const differ = make(300, () => 3).map((s) => ({ ...s, profit: s.profit + (s.stake === "NL50" ? -0.2 * s.hands : 0) }));
 assert.ok(S.compareGroups(differ, "stake").test.p < 0.001, "a 20 bb/100 gap between stakes is found");
 
-console.log("PASS: distributions against scipy, CSV reading (delimiters, decimal commas, quotes, problems by line), hands-weighted estimates, length and stability checks, filters and group comparisons.");
+console.log("PASS: distributions against scipy, CSV reading (delimiters, decimal commas, quotes, problems by line), hands-weighted estimates, length and stability (F) checks, filters, date order and group comparisons.");

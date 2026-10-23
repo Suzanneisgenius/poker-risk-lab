@@ -207,26 +207,45 @@ for (const n of [1, 2, 3, 4, 5]) {
     E.scoreInterval(1, n)[0] < 0.5 && E.scoreInterval(0, n)[1] > 0.5);
 }
 expectTrue("6 runs all won: called ahead", E.scoreInterval(1, 6)[0] > 0.5 && E.scoreInterval(0, 6)[1] < 0.5);
-// Exactly, for a hand at 50%: how often is it called ahead? At most 2.5% for
-// every number of runs, wins and losses only or with ties.
-const logFact = [0];
-for (let i = 1; i <= 400; i++) logFact[i] = logFact[i - 1] + Math.log(i);
-let worstPlain = 0, worstTies = 0;
-for (let n = 1; n <= 400; n++) {
-  let p = 0;
-  for (let k = 0; k <= n; k++) if (E.scoreInterval(k / n, n)[0] > 0.5) p += Math.exp(logFact[n] - logFact[k] - logFact[n - k] - n * Math.LN2);
-  worstPlain = Math.max(worstPlain, p);
-}
-for (let n = 1; n <= 150; n++) {
-  let p = 0;  // win and loss 40% each, tie 20%
-  for (let w = 0; w <= n; w++) for (let t = 0; t <= n - w; t++) {
-    const l = n - w - t;
-    if (E.scoreInterval((w + t / 2) / n, n)[0] > 0.5) p += Math.exp(logFact[n] - logFact[w] - logFact[t] - logFact[l] + (w + l) * Math.log(0.4) + t * Math.log(0.2));
+// Exactly, by recursion on the distribution of the score (0, ½ or 1 a run):
+// how often is a hand at 50% called ahead, for 1-400 runs, without ties and
+// with 0.1% or 20% of runs tied? And how often does the interval hold the
+// true equity, on a grid of equities from 2% to 98%? These bound one hand's
+// interval, not all the hands of a range at once.
+function scoreRuns(equity, tie, maxRuns, visit) {
+  const win = equity - tie / 2, loss = 1 - equity - tie / 2;
+  let dist = [1];  // dist[s]: probability of s half-points so far
+  for (let n = 1; n <= maxRuns; n++) {
+    const next = new Array(2 * n + 1).fill(0);
+    dist.forEach((q, s) => { next[s] += q * loss; next[s + 1] += q * tie; next[s + 2] += q * win; });
+    dist = next;
+    visit(n, dist);
   }
-  worstTies = Math.max(worstTies, p);
 }
-expectTrue(`a hand at exactly 50% is called ahead at most ${(worstPlain * 100).toFixed(2)}% of the time (1-400 runs), ${(worstTies * 100).toFixed(2)}% with ties (1-150 runs)`,
-  worstPlain <= 0.025 && worstTies <= 0.025);
+const calledAhead = {};
+for (const tie of [0, 0.001, 0.2]) {
+  calledAhead[tie] = 0;
+  scoreRuns(0.5, tie, 400, (n, dist) => {
+    let p = 0;
+    dist.forEach((q, s) => { if (E.scoreInterval(s / (2 * n), n)[0] > 0.5) p += q; });
+    calledAhead[tie] = Math.max(calledAhead[tie], p);
+  });
+}
+expectTrue(`a hand at exactly 50% is called ahead at most ${(calledAhead[0] * 100).toFixed(2)}% of the time over 1-400 runs, ${(calledAhead[0.001] * 100).toFixed(2)}% with 0.1% ties, ${(calledAhead[0.2] * 100).toFixed(2)}% with 20% ties`,
+  Math.max(...Object.values(calledAhead)) <= 0.025 && Math.abs(calledAhead[0.2] - 0.0131032) < 1e-6);
+let lowestCover = 1;
+for (const tie of [0, 0.2]) {
+  for (const equity of [0.02, 0.05, 0.1, 0.2, 0.3, 0.4, 0.45, 0.5, 0.55, 0.6, 0.7, 0.8, 0.9, 0.95, 0.98]) {
+    if (equity < tie / 2 || 1 - equity < tie / 2) continue;
+    scoreRuns(equity, tie, 400, (n, dist) => {
+      let c = 0;
+      dist.forEach((q, s) => { const [lo, hi] = E.scoreInterval(s / (2 * n), n); if (lo <= equity && equity <= hi) c += q; });
+      lowestCover = Math.min(lowestCover, c);
+    });
+  }
+}
+expectTrue(`one hand's 95% interval holds its equity at least ${(lowestCover * 100).toFixed(2)}% of the time (equity 2-98%, no ties or 20% ties, 1-400 runs)`,
+  lowestCover >= 0.95 - 1e-12);
 check("forced exact preflop = weighted mean of exact combos", E.equityVsRange(ak, small, [], { exactLimit: Infinity }).equity, preExact, 1e-12);
 expectTrue("same seed, same result", E.equityVsRange(ak, small, [], { trials: 5000, seed: 3 }).equity === E.equityVsRange(ak, small, [], { trials: 5000, seed: 3 }).equity);
 expectTrue("every hand in the range gets at least one trial",

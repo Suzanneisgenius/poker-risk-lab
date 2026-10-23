@@ -205,6 +205,9 @@
   .bp-checks li small{display:block;color:var(--muted)}
   .bp-widen{display:flex;gap:8px;align-items:flex-start;font-size:13px;margin:0 0 8px;cursor:pointer}
   .bp-widen input{margin-top:3px;accent-color:var(--accent)}
+  .bp-period .hint{margin:0}
+  .bp-period .hint:empty{display:none}
+  .bp-linkbtn{border:0;background:none;color:var(--accent);font:inherit;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px}
   .bp-groups-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
   .bp-groups-head h3{margin:0}
   .bp-groups-head select{background:var(--surface2);border:1px solid var(--grid);color:var(--text);border-radius:8px;padding:5px 8px;font:inherit;font-size:13px}
@@ -1082,10 +1085,14 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
           <div id="bp_filters" hidden>
             <fieldset class="bp-chips" id="bp_stakes_box"><legend>Stakes</legend><div id="bp_stakes"></div></fieldset>
             <fieldset class="bp-chips" id="bp_games_box"><legend>Games</legend><div id="bp_games"></div></fieldset>
-            <div class="row2" id="bp_period_box">
-              <div class="fld"><label for="bp_from">From month</label><select id="bp_from"></select></div>
-              <div class="fld"><label for="bp_to">To month</label><select id="bp_to"></select></div>
-            </div>
+            <fieldset class="bp-chips bp-period" id="bp_period_box"><legend>Dates</legend>
+              <label class="bp-widen"><input type="checkbox" id="bp_period_on"> <span>Only sessions from a range of months</span></label>
+              <div class="row2" id="bp_period_range" hidden>
+                <div class="fld"><label for="bp_from">From month</label><select id="bp_from"></select></div>
+                <div class="fld"><label for="bp_to">To month</label><select id="bp_to"></select></div>
+              </div>
+              <p class="hint" id="bp_period_note"></p>
+            </fieldset>
             <div class="bp-selection" id="bp_selection" role="status" aria-live="polite"></div>
             <section class="bp-fit" aria-labelledby="bp_fit_title">
               <h3 id="bp_fit_title">Do the sessions fit the model?</h3>

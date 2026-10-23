@@ -146,7 +146,7 @@ real value from §10. Suit→metric mapping is intentional; label it once.
   for eyebrows, numbers, and annotations to give a lab-log feel.
 - A real terminal-style **"Reproduce"** block:
   `python -m src.experiments.barrier_resolution --config configs/barrier_resolution.yaml`
-- A small provenance stamp: `seed 42 · reproducible · 108 tests passing`.
+- A small provenance stamp: `seed 42 · reproducible · 130 Python tests + JS checks`.
 - Restraint: one accent, red only for ruin, generous spacing, no gradients that
   hurt contrast, no emoji, no casino imagery.
 
@@ -158,10 +158,13 @@ Canonical hero scenario: **win rate 3 bb/100, std 90 bb/100, bankroll 3,000 bb
 - Risk of ruin: **7.2%**, 95% CI **[6.6%, 7.7%]**.
 - Cross-validation: MC **0.072** · Brownian finite **0.072** · Brownian infinite
   **0.108** · Markov **0.068**.
-- Barrier: endpoint monitoring understates ruin by **8.2%** at a 500-hand step;
-  Brownian-bridge correction cuts the error to **< 1%**; endpoint → analytical as
-  step → 1.
-- Monte Carlo convergence: fitted log-log slope **−0.55 ± 0.03** (≈ O(N^-1/2)).
+- Barrier (earlier quick run, 12,000 paths, a 62%-ruin scenario): endpoint
+  monitoring understates ruin by **8.2%** at a 500-hand step; the
+  Brownian-bridge estimate agrees with the analytical value within simulation
+  error at every step (at most **1.1%**); endpoint → analytical as step → 1.
+- Monte Carlo convergence (earlier quick run, 10 seeds per budget): fitted
+  log-log slope **−0.55** (≈ O(N^-1/2)); its ± 0.03 is the regression's own
+  error and leaves out the noise in each point.
 - Bayesian (edge 1.86 bb/100 over 50k hands; SE 3.98; 95% CI includes 0;
   P(edge > 0) ≈ **67%**): plug-in ruin **27.3%** → uncertainty-integrated
   **36.5%** (**×1.34**); P(true risk > 25%) ≈ **55%**.

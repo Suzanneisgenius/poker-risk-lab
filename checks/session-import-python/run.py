@@ -9,8 +9,10 @@ separately:
   standard error
   volatility interval   own chi-square quantile       scipy.stats.chi2
   length check          own Welch test                numpy + scipy.stats.norm
-  stability check       own blocks and chi-square     src.inference.estimate_edge (scipy.stats.chi2)
-  group comparison      own chi-square                numpy + scipy.stats.chi2
+  stability check       own blocks and F test         src.inference.estimate_edge (scipy.stats.f)
+  group comparison      own F test                    numpy + scipy.stats.f
+  time order            date if every session has     the same rule, in pandas
+                        one, else file order
 
 This is an internal check: both sides are this repository's code, so agreement
 shows the page computes what the research code computes, not that the model
@@ -84,12 +86,18 @@ def weighted(df: pd.DataFrame) -> dict:
             "variance": float(np.sum(w * (r - rate) ** 2) / (len(df) - 1)) if len(df) > 1 else None}
 
 
-def heterogeneity(groups: list[dict], win_rate: float, sd: float) -> dict:
+def heterogeneity(groups: list[dict], win_rate: float) -> dict:
+    # One-way ANOVA weighted by hands: between groups against within them.
     total = sum(g["hands"] for g in groups) / 100
-    q = sum((g["hands"] / 100) * (g["winRate"] - win_rate) ** 2 for g in groups) / sd ** 2
-    between = sum((g["hands"] / 100 / total) ** 2 * (g["winRate"] - win_rate) ** 2 for g in groups)
-    G = len(groups)
-    return {"groups": G, "q": q, "p": float(stats.chi2.sf(q, G - 1)), "standardError": math.sqrt(G / (G - 1) * between)}
+    b = sum((g["hands"] / 100) * (g["winRate"] - win_rate) ** 2 for g in groups)
+    e = sum((g["n"] - 1) * g["variance"] for g in groups if g["n"] > 1)
+    se = sum((g["hands"] / 100 / total) ** 2 * (g["winRate"] - win_rate) ** 2 for g in groups)
+    G, n = len(groups), sum(g["n"] for g in groups)
+    f = p = None
+    if n > G and (b > 0 or e > 0):
+        f = (b / (G - 1)) / (e / (n - G)) if e > 0 else math.inf
+        p = float(stats.f.sf(f, G - 1, n - G)) if e > 0 else 0.0
+    return {"groups": G, "f": f, "df": [G - 1, n - G], "p": p, "standardError": math.sqrt(G / (G - 1) * se)}
 
 
 def summarize(df: pd.DataFrame) -> dict:
@@ -120,7 +128,8 @@ def summarize(df: pd.DataFrame) -> dict:
         out["scaling"] = {"short": {"n": ns, "sd": sds}, "long": {"n": nl, "sd": sdl}, "ratio": ms / ml, "z": z, "p": p,
                           "flag": bool(p < 0.01 and abs(math.log(ms / ml)) > math.log(1.12))}
     if est.stability_groups:
-        out["stability"] = {"groups": est.stability_groups, "q": est.stability_q, "p": est.stability_p,
+        out["stability"] = {"groups": est.stability_groups, "f": est.stability_f,
+                            "df": [est.stability_groups - 1, n - est.stability_groups], "p": est.stability_p,
                             "standardError": est.se_between_groups, "flag": est.stability_flag,
                             "multiplier": est.stability_multiplier}
     return out
@@ -129,10 +138,12 @@ def summarize(df: pd.DataFrame) -> dict:
 def group_key(df: pd.DataFrame, by: str) -> pd.Series:
     if by in ("stake", "game"):
         return df[by]
+    dated = df["date"] != ""
     if by == "year":
         return df["date"].str[:4]
     if by == "quarter":
-        return df["date"].str[:4] + "-Q" + ((df["date"].str[5:7].astype(int) + 2) // 3).astype(str)
+        month = pd.to_numeric(df["date"].str[5:7], errors="coerce").fillna(1).astype(int)
+        return (df["date"].str[:4] + "-Q" + ((month + 2) // 3).astype(str)).where(dated, "")
     return df["date"].str[:7]
 
 
@@ -141,7 +152,17 @@ class Diff:
         self.count, self.largest, self.failures = 0, {"relative": 0.0, "probability": 0.0}, []
 
     def add(self, name: str, web, py, kind: str = "relative") -> None:
+        if isinstance(py, list):
+            for i, (a, b) in enumerate(zip(web, py)):
+                self.add(f"{name}[{i}]", a, b, kind)
+            if len(web) != len(py):
+                self.failures.append(f"{name}: lengths differ")
+            return
         self.count += 1
+        if py is None or web is None:
+            if web is not py:
+                self.failures.append(f"{name}: web {web!r}, python {py!r}")
+            return
         if isinstance(py, bool) or isinstance(web, bool) or isinstance(py, str):
             if web != py:
                 self.failures.append(f"{name}: web {web!r}, python {py!r}")
@@ -209,7 +230,7 @@ def compare_file(entry: dict) -> dict:
                 d.add(f"{name} sd", web_group["sd"], math.sqrt(g["variance"]))
                 d.add(f"{name} standard error", web_group["standardError"], math.sqrt(g["variance"]) / math.sqrt(g["hands"] / 100))
         d.add(f"{grouping['by']}: every session in exactly one group", sum(g["n"] for g in py_groups), len(df))
-        het = heterogeneity(py_groups, overall["winRate"], overall["sd"])
+        het = heterogeneity(py_groups, overall["winRate"])
         for key, value in het.items():
             d.add(f"{grouping['by']} test {key}", grouping["test"][key], value, "probability" if key == "p" else "relative")
     return {"file": entry["file"], "sessions": len(df), "comparisons": d.count,
