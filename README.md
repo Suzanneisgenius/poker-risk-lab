@@ -14,6 +14,11 @@ win rate after 50,000 hands leaves anything from 0.1% to 83.3% plausible, and
 five models of how results arrive give 6.4% to 20.3%. More computing only fixes
 the first.
 
+**How a misleading result was checked.** After an engine update the same seed
+gave a lower risk (7.85% → 6.35%); switching the two changes on separately and
+rerunning 40 seeds showed the drop was sampling, and the corrected engine
+averages 7.12% against the exact 7.17% (6.76% without the correction).
+
 | | |
 |---|---|
 | **Case study** | [`case-study/index.html`](case-study/index.html): three questions, one at a time, plus how a misleading result was checked. Static page: open the file directly, or `/case-study/` on the running app. |
@@ -176,15 +181,12 @@ and CFR implementation remain in the private server repository and are never
 included in the public bundle. See [SECURE_DEPLOY.md](SECURE_DEPLOY.md) for the
 deployment flow.
 
-The suite provides five tools behind one dark UI:
+The main tabs are Risk Lab, Bankroll Risk, Hand Equity and Pot Odds & EV;
+Preflop and About sit to the right as secondary tabs. Two routes run end to
+end: *from your results* (Bankroll Risk) and *from an opponent's range* (Hand
+Equity, then Pot Odds & EV). On both, a "What changed" box compares a new
+result with the one shown before the edit and says why the answer moved.
 
-- **Hand Equity** — expected pot share against up to five fixed or random
-  opponent hands, or one opponent's weighted range (`TT+, AQs+, AKo`, chart
-  or top X%), and an optional board. Fixed heads-up spots and ranges from the
-  flop on use exact enumeration; multiway and preflop range spots use seeded
-  Monte Carlo. Range results show equity against each hand in the range.
-- **Pot Odds & EV** — turns the latest card-derived equity into a call/fold
-  decision with EV in big blinds; manual equity remains an advanced option.
 - **Bankroll Risk** — starts from your own results: hands, net win rate and a
   volatility from your tracker or a labelled assumption, or a CSV of sessions
   (`hands`, `profit_bb`, optional stake, game and date) read in the browser,
@@ -203,12 +205,19 @@ The suite provides five tools behind one dark UI:
   `barrier_resolution.py`), and its risk-versus-bankroll curve reuses the same
   simulated swings at every bankroll (common random numbers) with pointwise 95%
   Wilson intervals.
+- **Hand Equity** — expected pot share against up to five fixed or random
+  opponent hands, or one opponent's weighted range (`TT+, AQs+, AKo`, chart
+  or top X%), and an optional board. Fixed heads-up spots and ranges from the
+  flop on use exact enumeration; multiway and preflop range spots use seeded
+  Monte Carlo. Range results show equity against each hand in the range.
+- **Pot Odds & EV** — turns the latest card-derived equity into a call/fold
+  decision with EV in big blinds; manual equity remains an advanced option.
 - **Preflop** — browse, compare, and practise five 169-hand demonstration
   ranges. These illustrative frequencies validate the complete product workflow
   but are not solver-verified; the private API is ready for licensed solver
-  exports to replace them later.
-- **GTO Trainer** — CFR on Kuhn poker, with a live convergence curve to the known
-  game value (−1/18) and the equilibrium strategy table.
+  exports to replace them later. An optional Kuhn poker demo runs CFR with a
+  live convergence curve to the known game value (−1/18) and the equilibrium
+  strategy table.
 
 The private compute engines live in `standalone/engines/` and `server/compute.js`.
 The server adds strict input limits, same-origin API enforcement, a bounded worker

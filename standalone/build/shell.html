@@ -37,6 +37,7 @@
   .trust span:nth-child(2){animation-delay:.06s}.trust span:nth-child(3){animation-delay:.12s}
   .nav{display:flex;gap:4px;border-bottom:1px solid rgba(42,58,82,.85);padding:0 clamp(18px,2.6vw,54px);flex-wrap:wrap;position:sticky;top:0;z-index:40;background:rgba(8,17,31,.86);backdrop-filter:blur(18px) saturate(1.25);box-shadow:0 10px 28px rgba(0,0,0,.12)}
   .nav .t{margin:7px 0;padding:9px 15px;font:inherit;font-size:14.5px;color:var(--muted);cursor:pointer;border:1px solid transparent;border-radius:12px;background:transparent;transition:color .18s ease,background .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+  .nav .t.more{font-size:13.5px}.nav .more-start{margin-left:auto}
   .nav .t:hover{color:var(--text);background:rgba(56,189,248,.04)}
   .nav .t.on{color:#ecfaff;border-color:rgba(56,189,248,.34);background:linear-gradient(135deg,rgba(56,189,248,.17),rgba(185,103,255,.09));box-shadow:0 8px 24px rgba(0,7,18,.18),inset 0 1px 0 rgba(255,255,255,.06);font-weight:650;text-shadow:0 0 18px rgba(56,189,248,.35)}
   main{padding:clamp(18px,2vw,34px) clamp(18px,2.6vw,54px) 44px;max-width:1920px;width:100%;min-height:calc(100vh - 164px);margin:0 auto}
@@ -152,6 +153,13 @@
   .bp-gap span{font-weight:400;color:var(--text)}
   .bp-gap.is-short strong{color:var(--median)}.bp-gap.is-met strong{color:var(--pos)}
   .bp-definition{margin:0;color:var(--muted);font-size:13px;line-height:1.55}
+  .change-note{border:1px solid var(--glass-border);border-radius:14px;padding:12px 14px;margin:0 0 12px;background:rgba(17,28,47,.45);font-size:13.5px;line-height:1.5}
+  .change-note h3{margin:0 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+  .change-note ul{margin:0 0 8px;padding-left:18px}.change-note li{overflow-wrap:anywhere}
+  .change-note table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;margin:0 0 8px}
+  .change-note th,.change-note td{padding:4px 8px 4px 0;text-align:left;border-bottom:1px solid rgba(148,190,222,.12);font-weight:400}
+  .change-note thead th{color:var(--muted);font-size:12.5px}.change-note .num{text-align:right;white-space:nowrap;padding-left:12px}
+  .change-note .change-why,.change-note .change-hint{margin:0;color:var(--muted)}.change-note .change-why strong{color:var(--text)}
   .bp-block{margin:18px 0 6px}
   .bp-block h3{font-size:16px;margin:0 0 6px;letter-spacing:-.01em}
   .bp-block h4{font-size:13px;color:var(--muted);font-weight:600;margin:14px 0 6px}
@@ -298,7 +306,7 @@
   .ev-layout{grid-template-columns:minmax(360px,430px) minmax(0,1fr);min-height:clamp(560px,calc(100vh - 260px),760px);align-items:stretch}
   .ev-input-panel{height:100%;position:relative;overflow:hidden}
   .ev-input-panel::before{content:"";position:absolute;width:190px;height:190px;right:-90px;top:-100px;border-radius:50%;background:rgba(56,189,248,.1);filter:blur(12px);pointer-events:none}
-  .ev-results{min-width:0;height:100%;padding:clamp(20px,2.2vw,34px);border:1px solid rgba(65,86,114,.5);border-radius:18px;position:relative;overflow:hidden;display:grid;grid-template-rows:auto auto auto auto 1fr;align-content:start;gap:18px;background:
+  .ev-results{min-width:0;height:100%;padding:clamp(20px,2.2vw,34px);border:1px solid rgba(65,86,114,.5);border-radius:18px;position:relative;overflow:hidden;display:grid;grid-template-rows:auto auto auto auto auto 1fr;align-content:start;gap:18px;background:
     radial-gradient(circle at 88% 8%,rgba(56,189,248,.13),transparent 30%),
     linear-gradient(145deg,rgba(17,29,49,.92),rgba(9,19,34,.96));box-shadow:0 24px 70px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.025)}
   .ev-results::after{content:"";position:absolute;inset:auto -8% -38% 34%;height:58%;background:radial-gradient(ellipse,rgba(56,189,248,.075),transparent 66%);pointer-events:none}
@@ -739,18 +747,18 @@
 <noscript><p class="explainer" style="margin:16px">This interactive suite requires JavaScript.</p></noscript>
 <header>
   <div class="brandrow">
-    <div><h1>Poker Analytics Suite</h1><p class="sub">Explore equity, pot odds, bankroll risk, preflop ranges, and game theory in one place.</p></div>
+    <div><h1>Poker Analytics Suite</h1><p class="sub">Two routes: from your results to the bankroll they justify, and from an opponent's range to a call.</p></div>
     <div class="trust" aria-label="Product assurances"><span>Private server calculations</span><span>No account required</span><span>Seeded &amp; reproducible</span></div>
   </div>
   <p class="disc">Built for learning and research. Results are model estimates, not financial or gambling advice.</p>
 </header>
 <nav class="nav" role="tablist" aria-label="Poker analytics tools">
   <button type="button" class="t on" id="tab-risklab" data-mod="risklab" role="tab" aria-controls="risklab" aria-selected="true">Risk Lab</button>
+  <button type="button" class="t" id="tab-bankroll" data-mod="bankroll" role="tab" aria-controls="bankroll" aria-selected="false" tabindex="-1">Bankroll Risk</button>
   <button type="button" class="t" id="tab-equity" data-mod="equity" role="tab" aria-controls="equity" aria-selected="false" tabindex="-1">Hand Equity</button>
   <button type="button" class="t" id="tab-ev" data-mod="ev" role="tab" aria-controls="ev" aria-selected="false" tabindex="-1">Pot Odds &amp; EV</button>
-  <button type="button" class="t" id="tab-bankroll" data-mod="bankroll" role="tab" aria-controls="bankroll" aria-selected="false" tabindex="-1">Bankroll Risk</button>
-  <button type="button" class="t" id="tab-preflop" data-mod="preflop" role="tab" aria-controls="preflop" aria-selected="false" tabindex="-1">Preflop</button>
-  <button type="button" class="t" id="tab-about" data-mod="about" role="tab" aria-controls="about" aria-selected="false" tabindex="-1">About</button>
+  <button type="button" class="t more more-start" id="tab-preflop" data-mod="preflop" role="tab" aria-controls="preflop" aria-selected="false" tabindex="-1">Preflop</button>
+  <button type="button" class="t more" id="tab-about" data-mod="about" role="tab" aria-controls="about" aria-selected="false" tabindex="-1">About</button>
 </nav>
 <main id="main-content">
 
@@ -1027,6 +1035,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
         <div class="ev-result-head"><h2>EV of calling</h2><p class="result-state" id="ev_result_state" data-state="empty" role="status" aria-live="polite"><strong>No result yet</strong></p></div>
         <div class="ev-primary-row result-dim"><div><output id="ev_main_value">—</output><p id="ev_verdict"></p></div><div class="ev-gap-box"><span>Equity margin</span><strong id="ev_gap">—</strong><small id="ev_gap_note">Distance from break-even</small></div></div>
         <dl class="ev-equity-context result-dim"><div><dt>Equity used</dt><dd id="ev_current_pct">—</dd></div><div><dt>Break-even equity</dt><dd id="ev_threshold_pct">—</dd></div></dl>
+        <div class="change-note result-dim" id="ev_change"></div>
         <div class="ev-sensitivity result-dim"><h3>How EV changes with equity</h3><div id="ev_sensitivity_chart" role="img" aria-label="Expected value of calling as a function of assumed equity"></div><div class="ev-chart-key"><span><i></i>Equity used</span><span><i class="ev-key-threshold"></i>Break-even</span><span><i class="ev-key-test"></i>Test assumption</span></div>
           <div class="ev-test-controls"><label for="ev_test_equity">Try an equity assumption <output id="ev_test_pct">—</output></label><input id="ev_test_equity" type="range" min="0" max="100" step="0.1" value="45" disabled><div><p id="ev_test_result" aria-live="polite"></p><button type="button" class="btn ghost" id="ev_reset_test" disabled>Reset to equity used</button></div></div>
           <p class="cap" id="ev_sensitivity_note"></p>
@@ -1153,6 +1162,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
           <p class="bp-gap" id="bp_gap"></p>
           <p class="bp-definition" id="bp_definition"></p>
         </section>
+        <div class="change-note result-dim" id="bp_change"></div>
         <div class="kgrid k3 result-dim" id="bp_kpis"></div>
         <div class="card result-dim"><div id="bp_posterior" style="height:240px" role="img" aria-label="Posterior distribution of the win rate"></div></div>
         <p class="cap" id="bp_posterior_cap">What the results and the prior say about your true win rate. Shaded: 95% interval.</p>
@@ -1408,9 +1418,9 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
   <section class="mod" id="about" role="tabpanel" aria-labelledby="tab-about">
     <h3>What this is</h3>
     <ul class="doc">
+      <li><b>Bankroll Risk</b> — from your own results (totals, or a CSV of sessions weighted by hands and checked against the model): the win rate's posterior interval, average risk of ruin and its posterior interval, and the bankroll for “risk below X% with Y% posterior probability”, with how the answer changes under other volatilities, priors and sample sizes. Or Monte Carlo risk of ruin for an assumed win rate, with a finite-horizon Brownian cross-check (the full Python engine adds a Markov-chain check and file export).</li>
       <li><b>Hand Equity</b> — expected pot share against up to five fixed or random opponent hands, or one opponent's weighted range, and an optional board. Heads-up spots with known cards, and ranges from the flop on, are enumerated exactly; multiway and preflop range spots use seeded Monte Carlo.</li>
       <li><b>Pot Odds &amp; EV</b> — uses the latest card-derived equity for a call/fold decision with expected value in big blinds; manual equity is optional.</li>
-      <li><b>Bankroll Risk</b> — from your own results (totals, or a CSV of sessions weighted by hands and checked against the model): the win rate's posterior interval, average risk of ruin and its posterior interval, and the bankroll for “risk below X% with Y% posterior probability”, with how the answer changes under other volatilities, priors and sample sizes. Or Monte Carlo risk of ruin for an assumed win rate, with a finite-horizon Brownian cross-check (the full Python engine adds a Markov-chain check and file export).</li>
       <li><b>Preflop</b> — browse, compare, and practise 169-hand strategy matrices, with an optional Kuhn poker learning demo. The current ranges are an illustrative demonstration dataset, not solver-verified output.</li>
     </ul>
     <h3>The through-line: reproducibility and validation</h3>

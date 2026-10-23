@@ -92,3 +92,8 @@ footer{padding:28px 0 40px;color:var(--dim);font-size:14px}
 figure{margin:16px 0 0}
 [id]{scroll-margin-top:72px}
 @media(max-width:720px){.top{position:static}[id]{scroll-margin-top:8px}}
+.check-nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0 0}
+.check-nums div{background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.check-nums dt{font-size:13.5px;color:var(--muted);line-height:1.35}
+.check-nums dd{margin:4px 0 0;font-size:22px;font-weight:650;font-variant-numeric:tabular-nums}
+@media(max-width:720px){.check-nums{grid-template-columns:1fr}}

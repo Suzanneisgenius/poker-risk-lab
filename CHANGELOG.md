@@ -57,6 +57,37 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-10-23 — two routes, and the investigation up front
+
+- **Case study.** A short preview of "Checking a misleading result" now sits
+  right after the short answer: the 7.85% → 6.35% drop at seed 42, why it was
+  sampling, and the 40-seed averages (endpoint-only 6.76%, bridge 7.12%, s.e.
+  0.08 points, exact 7.17%) with their conditions and a link to the full
+  section. The numbers are filled in from
+  `checks/calculation-change-2026-10-21/results.json` at build time, and
+  `scripts/test_case_study_build.js` checks them. The README's main finding
+  adds one sentence on the same check.
+- **Tabs.** Risk Lab, Bankroll Risk, Hand Equity and Pot Odds & EV come first;
+  Preflop (with the Kuhn poker demo) and About sit to the right as secondary
+  tabs. The header line names the two routes.
+- **"What changed" on both routes.** Bankroll Risk and Pot Odds & EV compare
+  each new result with the one shown when the edit began (when a control was
+  focused or pressed): which inputs differ, the main numbers before and now,
+  and why they moved. A reason states a direction only where it holds by
+  construction, for example a stricter risk limit or a lower win rate needing
+  more bankroll, or EV moving by the equity change × (pot + call). Where the
+  volatility changes, which moves both the win-rate estimate and the risk at
+  each win rate, it names both without a direction. When inputs from more than
+  one group changed, it says the comparison cannot tell which one moved the
+  answer. `standalone/test_ui_logic.js` checks every stated direction against
+  the computed numbers.
+- **`site/DEPLOY.md`** said the page works by double-click and on Netlify Drop
+  or GitHub Pages, and listed a "GTO Trainer" tab. The app needs its Node
+  server for every calculation, so a static copy loads but cannot calculate.
+  It now describes the server deployment, the static case-study pages and the
+  current tabs. The README's tool list follows the new tab order and folds the
+  Kuhn demo into Preflop.
+
 ## 2026-10-23 — findings stated within what was checked
 
 - **Uncertainty does not always raise risk.** `src/bayes.py`,

@@ -111,6 +111,20 @@ function setBusy(button,busy,busyLabel){
   if(busy){if(!button.hasAttribute('aria-busy'))button.dataset.idleLabel=button.textContent;button.textContent=busyLabel;button.disabled=true;button.setAttribute('aria-busy','true');}
   else{button.textContent=button.dataset.idleLabel||button.textContent;button.disabled=false;button.removeAttribute('aria-busy');}
 }
+/* "What changed" box for the two guided routes: the inputs that differ from
+   the result shown before the edit began, the main numbers before and now, and
+   why they moved. Built as text, since inputs can come from an imported file. */
+function renderChange(box,change,{intro,same}){
+  const el=(tag,text,cls)=>{const node=document.createElement(tag);if(text!=null)node.textContent=text;if(cls)node.className=cls;return node;};
+  if(!change||change.same){box.replaceChildren(el('p',change?same:intro,'change-hint'));return;}
+  const list=el('ul');change.items.forEach(text=>list.append(el('li',text)));
+  const table=el('table'),head=el('tr'),body=el('tbody');
+  ['','Before','Now'].forEach((text,k)=>{const th=el('th',text,k?'num':'');th.scope='col';head.append(th);});
+  change.rows.forEach(([label,before,now])=>{const tr=el('tr'),th=el('th',label);th.scope='row';tr.append(th,el('td',before,'num'),el('td',now,'num'));body.append(tr);});
+  const thead=el('thead');thead.append(head);table.append(thead,body);
+  const why=el('p',null,'change-why');why.append(el('strong','Why: '),change.why);
+  box.replaceChildren(el('h3','What changed'),list,table,why);
+}
 const plotlyReady=()=>typeof globalThis.Plotly!=="undefined";
 function chartUnavailable(id){
   const el=$(id); if(!el)return;
@@ -506,6 +520,7 @@ let evRequest=0;
 let evController=null;
 let evCurrentResult=null;
 let evResultBasis='';
+let evLast=null,evBase=null;  // as bpLast and bpBase
 let evTestPct=null;
 // The equity explorer only makes sense for a current result, so it is
 // disabled in every other state.
@@ -517,6 +532,30 @@ const signedValue=(value,digits=1)=>`${value<0?'−':value>0?'+':''}${Math.abs(v
 function evAmount(value){
   const amount=Math.abs(value)>=10000?Math.abs(value).toLocaleString('en-US',{notation:'compact',maximumFractionDigits:2}):Math.abs(value).toFixed(2);
   return `${value<0?'−':value>0?'+':''}${amount} bb`;
+}
+// The EV comparison: equity (from the cards or typed in) and the price (pot
+// and call). EV = equity × (pot + call) − call, so with the price fixed each
+// point of equity is worth (pot + call) / 100.
+const evSnapshot=(r,source)=>({source,equity:r.equity,pot:r.pot,call:r.call,required:r.requiredEquity,ev:r.evCall});
+function evChange(base,cur){
+  if(!base)return null;
+  const items=[],groups=new Set(),pct=v=>(v*100).toFixed(1)+'%';
+  const note=(group,label,from,to)=>{if(from!==to){groups.add(group);items.push(`${label}: ${from} → ${to}`);}};
+  note('equity','Equity from',base.source,cur.source);
+  if(base.source===cur.source)note('equity','Equity',pct(base.equity),pct(cur.equity));
+  note('price','Pot',`${base.pot} bb`,`${cur.pot} bb`);
+  note('price','Call',`${base.call} bb`,`${cur.call} bb`);
+  if(!groups.size){
+    if(Math.abs(cur.equity-base.equity)<1e-12)return {same:true};
+    groups.add('equity');  // moved by less than the 0.1 shown
+  }
+  const rows=[['Equity',pct(base.equity),pct(cur.equity)],['Break-even equity',pct(base.required),pct(cur.required)],['EV of calling',evAmount(base.ev),evAmount(cur.ev)]];
+  const crossed=Math.sign(base.ev)!==Math.sign(cur.ev)&&Math.abs(base.ev)>1e-9&&Math.abs(cur.ev)>1e-9?` The call is now ${cur.ev>0?'above':'below'} break-even.`:'';
+  let why;
+  if(groups.size>1)why='The equity and the price both changed, so this comparison cannot say which one moved the EV. Change one at a time to see each effect.';
+  else if(groups.has('equity'))why=`The pot and the call are the same, so break-even stays at ${pct(cur.required)}. Equity moved ${signedValue((cur.equity-base.equity)*100)} points, and each point is worth ${((cur.pot+cur.call)/100).toLocaleString('en-US',{maximumFractionDigits:4})} bb here, so EV moved ${evAmount(cur.ev-base.ev)}.${crossed}`;
+  else why=`The equity is the same (${pct(cur.equity)}), but the price changed. Break-even is call ÷ (pot + call): ${pct(base.required)} → ${pct(cur.required)}, so EV moved ${evAmount(cur.ev-base.ev)}.${crossed}`;
+  return {items,rows,why};
 }
 function renderEVSensitivity(){
   if(!evCurrentResult)return;
@@ -545,6 +584,9 @@ function renderEVSensitivity(){
 }
 function renderEV(result,source){
   evCurrentResult=result;
+  const snapshot=evSnapshot(result,source);
+  renderChange($('ev_change'),evChange(evBase,snapshot),{intro:'Change the opponent’s range on Hand Equity, or the pot or the call here, and this box shows what changed and why.',same:'Nothing that affects the EV differs from before this change.'});
+  evLast=snapshot;
   evResultBasis=`${source} · equity ${(result.equity*100).toFixed(1)}% · pot ${result.pot.toLocaleString()} bb · call ${result.call.toLocaleString()} bb`;
   const gap=(result.equity-result.requiredEquity)*100,zero=Math.abs(result.evCall)<1e-9;
   $('ev_main_value').textContent=evAmount(zero?0:result.evCall);
@@ -593,6 +635,8 @@ $('ev_reset_test').addEventListener('click',()=>{if(evCurrentResult){evTestPct=e
 $('ev_eq').addEventListener('input',()=>{window.__equityMode='manual';updateEVEquitySource();runEV();});
 let _evT=null;
 ['ev_pot','ev_bet'].forEach(id=>$(id).addEventListener('input',()=>{clearTimeout(_evT);_evT=setTimeout(runEV,100);}));
+// Edits on Hand Equity feed the EV too, so an edit on either tab starts a comparison.
+['equity','ev'].forEach(id=>['focusin','pointerdown'].forEach(type=>$(id).addEventListener(type,()=>{evBase=evLast;},true)));
 
 /* ================= 3. BANKROLL RISK ================= */
 let bankrollRequest=0;
@@ -682,6 +726,8 @@ const BP_SERIES={upper:{color:'#F472B6',dash:'solid'},average:{color:'#C4B5FD',d
 const BP_PRIOR_SHORT={none:'no prior',weak:'weakly informative prior',skeptical:'skeptical prior'};
 const BP_FIELDS=['bp_hands','bp_wr','bp_sd','bp_bank','bp_thr','bp_bb','bp_horizon','bp_target','bp_cred','bp_margin','bp_level'];
 let bpRequest=0,bpController=null,bpBasis='',bpTimer=null,bpHasResult=false;
+// The last result shown, and the one shown when the current edit began.
+let bpLast=null,bpBase=null;
 function setBpState(state,note=''){setResultState($('bp_results'),$('bp_result_state'),state,{note,basis:bpBasis});}
 const bkMode=()=>document.querySelector('input[name="bk_mode"]:checked').value;
 const bpSdSource=()=>document.querySelector('input[name="bp_sd_source"]:checked').value;
@@ -707,6 +753,54 @@ function bpPctAgainst(v,level){
 }
 const bpRange=(lo,hi)=>`${bpPct(lo)} to ${bpPct(hi)}`;
 const bpHands=n=>n>=1e6?`${(n/1e6).toFixed(n>=1e7?1:2)} million`:Math.round(n).toLocaleString();
+// What changed between the result shown before an edit and the new one, and
+// why the answer moved. Each input belongs to one group; when more than one
+// group changed, the comparison cannot say which change moved the answer.
+const BP_SD_SOURCE={assumed:'assumed',tracker:'from your tracker',sessions:'estimated from the sessions'};
+const bpSnapshot=(r,context)=>({inputs:r.inputs,context,need:r.bankroll.credible.buyIns,used:r.winRate.credible,interval:r.winRate.interval,average:r.risk.average});
+function bpChange(base,cur){
+  if(!base)return null;
+  const a=base.inputs,b=cur.inputs,items=[],groups=new Set();
+  const note=(group,label,from,to)=>{if(from!==to){groups.add(group);items.push(`${label}: ${from} → ${to}`);}};
+  const exact=v=>String(+v.toFixed(2)),rate=v=>`${v<0?'−':'+'}${exact(Math.abs(v))} bb/100`;
+  const results=s=>s.context?`${s.context.sessions.toLocaleString()} sessions (${s.context.description})`:`totals, ${s.inputs.hands.toLocaleString()} hands at ${rate(s.inputs.winRate)}`;
+  if(base.context||cur.context){
+    note('data','Results',results(base),results(cur));
+    note('data','Win-rate interval widened',a.seMultiplier>1?`×${a.seMultiplier.toFixed(2)}`:'no',b.seMultiplier>1?`×${b.seMultiplier.toFixed(2)}`:'no');
+  }else{note('data','Hands played',a.hands.toLocaleString(),b.hands.toLocaleString());note('data','Win rate',rate(a.winRate),rate(b.winRate));}
+  // With sessions on both sides the volatility is estimated from them, so it
+  // changes with the selection rather than as a setting of its own.
+  if(!(a.sdSource==='sessions'&&b.sdSource==='sessions'))note('volatility','Volatility',`${exact(a.sd)} bb/100 (${BP_SD_SOURCE[a.sdSource]})`,`${exact(b.sd)} bb/100 (${BP_SD_SOURCE[b.sdSource]})`);
+  note('prior','Prior',a.priorLabel,b.priorLabel);
+  note('target','Risk limit',bpLevel(a.target),bpLevel(b.target));
+  note('credibility','Posterior probability asked for',bpLevel(a.credibility),bpLevel(b.credibility));
+  note('thr','Ruin threshold',`${exact(a.thr)} buy-ins`,`${exact(b.thr)} buy-ins`);
+  note('horizon','Hands you plan to play',a.horizon.toLocaleString(),b.horizon.toLocaleString());
+  note('bank','Your bankroll',`${exact(a.bank)} buy-ins`,`${exact(b.bank)} buy-ins`);
+  note('units','Big blinds per buy-in',exact(a.bbPerBuyIn),exact(b.bbPerBuyIn));
+  if(!groups.size)return {same:true};
+  const rows=[['Bankroll needed',`${bpNeed(base.need)} BI`,`${bpNeed(cur.need)} BI`],
+    ['Win rate the answer uses',`${bpSigned(base.used)} bb/100`,`${bpSigned(cur.used)} bb/100`],
+    ['Average risk at your bankroll',bpPct(base.average),bpPct(cur.average)]];
+  const one=groups.size===1?[...groups][0]:null,more=(x,y)=>y>x;
+  const interval=s=>`${bpSigned(s.interval[0])} to ${bpSigned(s.interval[1])}`,used=`${bpSigned(base.used)} to ${bpSigned(cur.used)} bb/100`;
+  let why;
+  if(!one)why='Several things changed at once, so this comparison cannot say which one moved the answer. Change one at a time to see each effect.';
+  else if(one==='bank')why='Only your bankroll changed. The bankroll needed stays the same; what changes is whether yours is enough.';
+  else if(one==='units')why=`The model works in big blinds, so a different buy-in size changes your bankroll${a.thr||b.thr?' and threshold':''} in big blinds and every amount shown in buy-ins.`;
+  else if(one==='target'){const s=b.target<a.target;why=`A ${s?'stricter':'looser'} limit on risk needs ${s?'more':'less'} bankroll. The win rate the answer uses does not change.`;}
+  else if(one==='credibility'){const m=more(a.credibility,b.credibility);why=`Asking to be ${m?'more':'less'} sure uses a ${m?'lower':'higher'} point of the win-rate estimate (${used}), so ${m?'more':'less'} bankroll is needed.`;}
+  else if(one==='thr')why='Risk depends on the room above the threshold, so the bankroll needed moves with the threshold, by the same number of buy-ins.';
+  else if(one==='horizon'){const m=more(a.horizon,b.horizon);why=`${m?'More':'Fewer'} hands leave ${m?'more':'less'} time to fall to the threshold, so ${m?'more':'less'} bankroll is needed for the same risk.`;}
+  else if(one==='volatility')why=`Volatility changes two things: how sure the win-rate estimate is (95% interval ${interval(base)} → ${interval(cur)} bb/100, so the point the answer uses moved from ${used}) and how much risk each win rate carries. Both feed the answer.`;
+  else if(b.sdSource==='sessions'&&exact(a.sd)!==exact(b.sd))why=`The selected sessions changed both the win-rate estimate (95% interval ${interval(base)} → ${interval(cur)} bb/100) and the volatility estimated from them (${exact(a.sd)} → ${exact(b.sd)} bb/100). Both feed the answer.`;
+  else{
+    const lower=cur.used<base.used;
+    why=`The win-rate estimate changed: 95% interval ${interval(base)} → ${interval(cur)} bb/100. The answer uses its ${bpLevel(1-b.credibility)} point, `
+      +(Math.abs(cur.used-base.used)<0.05?'which barely moved, so neither did the answer.':`which moved from ${used}. A ${lower?'lower':'higher'} win rate needs ${lower?'more':'less'} bankroll for the same risk.`);
+  }
+  return {items,rows,why};
+}
 function bpQuestionText(){
   const thr=+$('bp_thr').value,horizon=+$('bp_horizon').value;
   $('bp_question_text').textContent=`Bankroll so that, given these results and this model, the posterior probability is at least ${$('bp_cred').value||'…'}% that the risk of falling to ${thr>0?thr+' buy-ins':'zero'} within ${horizon>0?horizon.toLocaleString():'…'} hands is below ${$('bp_target').value||'…'}%.`;
@@ -760,6 +854,9 @@ function renderBp(r,context=null){
   bpBasis=(context?`${context.sessions.toLocaleString()} sessions (${context.description}) · `:'')
     +`${i.hands.toLocaleString()} hands at ${bpSigned(i.winRate)} bb/100 · volatility ${sdText}${widened} · ${BP_PRIOR_SHORT[i.prior]} · ${bpBI(i.bank)} buy-ins of ${i.bbPerBuyIn} bb · ${horizon} · threshold ${thr} · risk below ${tgt} with ${q} posterior probability`;
   bpHasResult=true;setBpState('current');
+  const snapshot=bpSnapshot(r,context);
+  renderChange($('bp_change'),bpChange(bpBase,snapshot),{intro:'Change one setting, such as the prior or the volatility, and this box shows what it changed and why.',same:'Nothing that affects the bankroll needed differs from before this change.'});
+  bpLast=snapshot;
 
   const need=b.credible;
   $('bp_need').textContent=need.buyIns==null?'Too large to compute':`${bpNeed(need.buyIns)} buy-ins`;
@@ -878,6 +975,9 @@ document.querySelectorAll('.bpsdpreset').forEach(button=>button.addEventListener
 document.querySelectorAll('input[name="bp_prior"]').forEach(radio=>radio.addEventListener('change',scheduleBp));
 BP_FIELDS.forEach(id=>$(id).addEventListener('input',scheduleBp));
 $('bp_run').addEventListener('click',runBp);
+// An edit begins when a control is focused or pressed (a click does not focus
+// a button in every browser); later results are compared with what was shown then.
+['focusin','pointerdown'].forEach(type=>$('bp_view').addEventListener(type,()=>{bpBase=bpLast;},true));
 
 /* Imported sessions. The file is read in the browser with PokerSessions
    (standalone/shared/sessions.js); only the totals of the selection go to the

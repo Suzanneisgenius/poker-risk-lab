@@ -483,6 +483,55 @@ async function main(){
     assert.equal(f.bpPctAgainst(0.8,0.8),"80.0%");
   }
 
+  // --- "What changed" on the two guided routes: the reason matches the numbers ----------
+  {
+    const { computeBankrollPosterior } = require("../server/bankroll_posterior.js");
+    const ctx=vm.createContext({});
+    vm.runInContext(slice("const bpPct=","function bpQuestionText(")+slice("const signedValue=","function renderEVSensitivity(")
+      +";this.f={bpSnapshot,bpChange,evChange};",ctx);
+    const f=ctx.f;
+    const base={hands:40000,winRate:3,sd:90,sdSource:"assumed",prior:"weak",bank:30,thr:0,bbPerBuyIn:100,horizon:100000,target:5,credibility:80};
+    const snap=(input,context=null)=>f.bpSnapshot(computeBankrollPosterior(input),context);
+    const change=(edit,from=base)=>{const a=snap(from),b=snap({...from,...edit});return {a,b,c:f.bpChange(a,b)};};
+    // Any direction the reason states must be the direction the answer moved.
+    const agrees=({a,b,c})=>{
+      if(/needs more bankroll|more bankroll is needed/.test(c.why))assert.ok(b.need>a.need,c.why);
+      if(/needs less bankroll|less bankroll is needed/.test(c.why))assert.ok(b.need<a.need,c.why);
+    };
+    assert.equal(f.bpChange(null,snap(base)),null,"first result: no comparison");
+    assert.deepEqual({...f.bpChange(snap(base),snap({...base,margin:2}))},{same:true},"precision alone does not change the answer");
+    let x=change({prior:"skeptical"});
+    assert.deepEqual([...x.c.items],["Prior: Weakly informative, Normal(0, 10²) → Skeptical, Normal(0, 2²)"]);
+    assert.match(x.c.why,/A lower win rate needs more bankroll/);agrees(x);
+    x=change({winRate:6});assert.deepEqual([...x.c.items],["Win rate: +3 bb/100 → +6 bb/100"]);assert.match(x.c.why,/higher win rate needs less/);agrees(x);
+    x=change({target:2});assert.match(x.c.why,/stricter limit/);assert.equal(x.a.used,x.b.used);agrees(x);
+    x=change({credibility:95});assert.match(x.c.why,/more sure uses a lower point/);assert.ok(x.b.used<x.a.used);agrees(x);
+    x=change({horizon:200000});assert.match(x.c.why,/^More hands/);agrees(x);
+    x=change({thr:5,bank:35});assert.match(x.c.why,/Several things changed at once/,"threshold and bankroll together");
+    x=change({thr:5});assert.match(x.c.why,/by the same number of buy-ins/);assert.ok(Math.abs(x.b.need-x.a.need-5)<1e-6);
+    x=change({bank:60});assert.match(x.c.why,/^Only your bankroll changed/);assert.equal(x.a.need,x.b.need);
+    x=change({sd:120});assert.match(x.c.why,/^Volatility changes two things/);assert.doesNotMatch(x.c.why,/more bankroll|less bankroll/);
+    x=change({prior:"skeptical",target:2});assert.equal(x.c.items.length,2);assert.match(x.c.why,/cannot say which one/);
+    assert.deepEqual([...x.c.rows.map(r=>r[0])],["Bankroll needed","Win rate the answer uses","Average risk at your bankroll"]);
+    // Sessions: the selection changes the volatility too, so no direction is claimed.
+    const s1={...base,sdSource:"sessions",sd:90,sdRange:[80,100]},s2={...s1,hands:20000,winRate:5,sd:110,sdRange:[95,125]};
+    const c=f.bpChange(snap(s1,{sessions:40,description:"all"}),snap(s2,{sessions:20,description:"2026 only"}));
+    assert.deepEqual([...c.items],["Results: 40 sessions (all) → 20 sessions (2026 only)"]);
+    assert.match(c.why,/both the win-rate estimate .* and the volatility estimated from them \(90 → 110 bb\/100\)/);
+    // EV: equity × (pot + call) − call, so the stated EV change is exact.
+    const ev=(equity,pot=10,call=5,source="Ad Ks vs range QQ+")=>({source,equity,pot,call,required:call/(pot+call),ev:equity*pot-(1-equity)*call});
+    assert.equal(f.evChange(null,ev(0.3)),null);
+    assert.deepEqual({...f.evChange(ev(0.3),ev(0.3))},{same:true});
+    let e=f.evChange(ev(0.3),ev(0.4,10,5,"Ad Ks vs range QQ+, AK"));
+    assert.deepEqual([...e.items],["Equity from: Ad Ks vs range QQ+ → Ad Ks vs range QQ+, AK"]);
+    assert.match(e.why,/break-even stays at 33\.3%\. Equity moved \+10\.0 points, and each point is worth 0\.15 bb here, so EV moved \+1\.50 bb\. The call is now above break-even\./);
+    e=f.evChange(ev(0.3),ev(0.3,20,5));assert.deepEqual([...e.items],["Pot: 10 bb → 20 bb"]);
+    assert.match(e.why,/^The equity is the same \(30\.0%\), but the price changed\. Break-even is call ÷ \(pot \+ call\): 33\.3% → 20\.0%, so EV moved \+3\.00 bb\. The call is now above/);
+    e=f.evChange(ev(0.3),ev(0.4,20,5,"Manual equity"));assert.match(e.why,/cannot say which one moved the EV/);
+    e=f.evChange(ev(0.3,10,5,"Manual equity"),ev(0.25,10,5,"Manual equity"));assert.deepEqual([...e.items],["Equity: 30.0% → 25.0%"]);
+    assert.doesNotMatch(e.why,/now (above|below)/,"no crossing: both below break-even");
+  }
+
   const seed=harness();seed.get("seed").value="0";assert.equal(seed.run("integerInput('seed',42)"),0);
   const showdown=computeEquity({hero:["Ah","Kd"].map(strToCard),opponents:[["As","Kc"].map(strToCard),["Ad","Kh"].map(strToCard)],board:["2c","3d","4h","5s","6c"].map(strToCard),trials:1000,seed:0});
   assert.equal(showdown.result.method,"exact");assert.equal(showdown.result.trials,1);assert.equal(showdown.result.equity,1/3);

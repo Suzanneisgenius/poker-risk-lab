@@ -12,6 +12,12 @@ const text = (html) => html.replace(/<script[\s\S]*?<\/script>/g, "");
 
 const real = render(loadInputs());
 assert.deepEqual(real.failures, [], "the saved results all pass");
+// The preview near the top quotes the 40-seed averages from the saved check.
+const calcPlus3 = loadInputs().calc.multi_seed.rows.find((r) => r.winrate_bb100 === 3);
+const preview = text(real.pages.index).match(/<section aria-labelledby="checked">[\s\S]*?<\/section>/)[0];
+for (const v of [calcPlus3.mean_risk_endpoint_only, calcPlus3.mean_risk_bridge, calcPlus3.analytical_finite_horizon_brownian]) {
+  assert.ok(preview.includes((v * 100).toFixed(2) + "%"), `the preview shows ${(v * 100).toFixed(2)}%`);
+}
 assert.doesNotMatch(text(real.pages.validation), /<span class="fail">/);
 
 // The regressions from the review: an exact range spot off by 0.1, a preflop

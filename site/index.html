@@ -37,6 +37,7 @@
   .trust span:nth-child(2){animation-delay:.06s}.trust span:nth-child(3){animation-delay:.12s}
   .nav{display:flex;gap:4px;border-bottom:1px solid rgba(42,58,82,.85);padding:0 clamp(18px,2.6vw,54px);flex-wrap:wrap;position:sticky;top:0;z-index:40;background:rgba(8,17,31,.86);backdrop-filter:blur(18px) saturate(1.25);box-shadow:0 10px 28px rgba(0,0,0,.12)}
   .nav .t{margin:7px 0;padding:9px 15px;font:inherit;font-size:14.5px;color:var(--muted);cursor:pointer;border:1px solid transparent;border-radius:12px;background:transparent;transition:color .18s ease,background .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+  .nav .t.more{font-size:13.5px}.nav .more-start{margin-left:auto}
   .nav .t:hover{color:var(--text);background:rgba(56,189,248,.04)}
   .nav .t.on{color:#ecfaff;border-color:rgba(56,189,248,.34);background:linear-gradient(135deg,rgba(56,189,248,.17),rgba(185,103,255,.09));box-shadow:0 8px 24px rgba(0,7,18,.18),inset 0 1px 0 rgba(255,255,255,.06);font-weight:650;text-shadow:0 0 18px rgba(56,189,248,.35)}
   main{padding:clamp(18px,2vw,34px) clamp(18px,2.6vw,54px) 44px;max-width:1920px;width:100%;min-height:calc(100vh - 164px);margin:0 auto}
@@ -152,6 +153,13 @@
   .bp-gap span{font-weight:400;color:var(--text)}
   .bp-gap.is-short strong{color:var(--median)}.bp-gap.is-met strong{color:var(--pos)}
   .bp-definition{margin:0;color:var(--muted);font-size:13px;line-height:1.55}
+  .change-note{border:1px solid var(--glass-border);border-radius:14px;padding:12px 14px;margin:0 0 12px;background:rgba(17,28,47,.45);font-size:13.5px;line-height:1.5}
+  .change-note h3{margin:0 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+  .change-note ul{margin:0 0 8px;padding-left:18px}.change-note li{overflow-wrap:anywhere}
+  .change-note table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;margin:0 0 8px}
+  .change-note th,.change-note td{padding:4px 8px 4px 0;text-align:left;border-bottom:1px solid rgba(148,190,222,.12);font-weight:400}
+  .change-note thead th{color:var(--muted);font-size:12.5px}.change-note .num{text-align:right;white-space:nowrap;padding-left:12px}
+  .change-note .change-why,.change-note .change-hint{margin:0;color:var(--muted)}.change-note .change-why strong{color:var(--text)}
   .bp-block{margin:18px 0 6px}
   .bp-block h3{font-size:16px;margin:0 0 6px;letter-spacing:-.01em}
   .bp-block h4{font-size:13px;color:var(--muted);font-weight:600;margin:14px 0 6px}
@@ -298,7 +306,7 @@
   .ev-layout{grid-template-columns:minmax(360px,430px) minmax(0,1fr);min-height:clamp(560px,calc(100vh - 260px),760px);align-items:stretch}
   .ev-input-panel{height:100%;position:relative;overflow:hidden}
   .ev-input-panel::before{content:"";position:absolute;width:190px;height:190px;right:-90px;top:-100px;border-radius:50%;background:rgba(56,189,248,.1);filter:blur(12px);pointer-events:none}
-  .ev-results{min-width:0;height:100%;padding:clamp(20px,2.2vw,34px);border:1px solid rgba(65,86,114,.5);border-radius:18px;position:relative;overflow:hidden;display:grid;grid-template-rows:auto auto auto auto 1fr;align-content:start;gap:18px;background:
+  .ev-results{min-width:0;height:100%;padding:clamp(20px,2.2vw,34px);border:1px solid rgba(65,86,114,.5);border-radius:18px;position:relative;overflow:hidden;display:grid;grid-template-rows:auto auto auto auto auto 1fr;align-content:start;gap:18px;background:
     radial-gradient(circle at 88% 8%,rgba(56,189,248,.13),transparent 30%),
     linear-gradient(145deg,rgba(17,29,49,.92),rgba(9,19,34,.96));box-shadow:0 24px 70px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.025)}
   .ev-results::after{content:"";position:absolute;inset:auto -8% -38% 34%;height:58%;background:radial-gradient(ellipse,rgba(56,189,248,.075),transparent 66%);pointer-events:none}
@@ -739,18 +747,18 @@
 <noscript><p class="explainer" style="margin:16px">This interactive suite requires JavaScript.</p></noscript>
 <header>
   <div class="brandrow">
-    <div><h1>Poker Analytics Suite</h1><p class="sub">Explore equity, pot odds, bankroll risk, preflop ranges, and game theory in one place.</p></div>
+    <div><h1>Poker Analytics Suite</h1><p class="sub">Two routes: from your results to the bankroll they justify, and from an opponent's range to a call.</p></div>
     <div class="trust" aria-label="Product assurances"><span>Private server calculations</span><span>No account required</span><span>Seeded &amp; reproducible</span></div>
   </div>
   <p class="disc">Built for learning and research. Results are model estimates, not financial or gambling advice.</p>
 </header>
 <nav class="nav" role="tablist" aria-label="Poker analytics tools">
   <button type="button" class="t on" id="tab-risklab" data-mod="risklab" role="tab" aria-controls="risklab" aria-selected="true">Risk Lab</button>
+  <button type="button" class="t" id="tab-bankroll" data-mod="bankroll" role="tab" aria-controls="bankroll" aria-selected="false" tabindex="-1">Bankroll Risk</button>
   <button type="button" class="t" id="tab-equity" data-mod="equity" role="tab" aria-controls="equity" aria-selected="false" tabindex="-1">Hand Equity</button>
   <button type="button" class="t" id="tab-ev" data-mod="ev" role="tab" aria-controls="ev" aria-selected="false" tabindex="-1">Pot Odds &amp; EV</button>
-  <button type="button" class="t" id="tab-bankroll" data-mod="bankroll" role="tab" aria-controls="bankroll" aria-selected="false" tabindex="-1">Bankroll Risk</button>
-  <button type="button" class="t" id="tab-preflop" data-mod="preflop" role="tab" aria-controls="preflop" aria-selected="false" tabindex="-1">Preflop</button>
-  <button type="button" class="t" id="tab-about" data-mod="about" role="tab" aria-controls="about" aria-selected="false" tabindex="-1">About</button>
+  <button type="button" class="t more more-start" id="tab-preflop" data-mod="preflop" role="tab" aria-controls="preflop" aria-selected="false" tabindex="-1">Preflop</button>
+  <button type="button" class="t more" id="tab-about" data-mod="about" role="tab" aria-controls="about" aria-selected="false" tabindex="-1">About</button>
 </nav>
 <main id="main-content">
 
@@ -1027,6 +1035,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
         <div class="ev-result-head"><h2>EV of calling</h2><p class="result-state" id="ev_result_state" data-state="empty" role="status" aria-live="polite"><strong>No result yet</strong></p></div>
         <div class="ev-primary-row result-dim"><div><output id="ev_main_value">—</output><p id="ev_verdict"></p></div><div class="ev-gap-box"><span>Equity margin</span><strong id="ev_gap">—</strong><small id="ev_gap_note">Distance from break-even</small></div></div>
         <dl class="ev-equity-context result-dim"><div><dt>Equity used</dt><dd id="ev_current_pct">—</dd></div><div><dt>Break-even equity</dt><dd id="ev_threshold_pct">—</dd></div></dl>
+        <div class="change-note result-dim" id="ev_change"></div>
         <div class="ev-sensitivity result-dim"><h3>How EV changes with equity</h3><div id="ev_sensitivity_chart" role="img" aria-label="Expected value of calling as a function of assumed equity"></div><div class="ev-chart-key"><span><i></i>Equity used</span><span><i class="ev-key-threshold"></i>Break-even</span><span><i class="ev-key-test"></i>Test assumption</span></div>
           <div class="ev-test-controls"><label for="ev_test_equity">Try an equity assumption <output id="ev_test_pct">—</output></label><input id="ev_test_equity" type="range" min="0" max="100" step="0.1" value="45" disabled><div><p id="ev_test_result" aria-live="polite"></p><button type="button" class="btn ghost" id="ev_reset_test" disabled>Reset to equity used</button></div></div>
           <p class="cap" id="ev_sensitivity_note"></p>
@@ -1153,6 +1162,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
           <p class="bp-gap" id="bp_gap"></p>
           <p class="bp-definition" id="bp_definition"></p>
         </section>
+        <div class="change-note result-dim" id="bp_change"></div>
         <div class="kgrid k3 result-dim" id="bp_kpis"></div>
         <div class="card result-dim"><div id="bp_posterior" style="height:240px" role="img" aria-label="Posterior distribution of the win rate"></div></div>
         <p class="cap" id="bp_posterior_cap">What the results and the prior say about your true win rate. Shaded: 95% interval.</p>
@@ -1408,9 +1418,9 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
   <section class="mod" id="about" role="tabpanel" aria-labelledby="tab-about">
     <h3>What this is</h3>
     <ul class="doc">
+      <li><b>Bankroll Risk</b> — from your own results (totals, or a CSV of sessions weighted by hands and checked against the model): the win rate's posterior interval, average risk of ruin and its posterior interval, and the bankroll for “risk below X% with Y% posterior probability”, with how the answer changes under other volatilities, priors and sample sizes. Or Monte Carlo risk of ruin for an assumed win rate, with a finite-horizon Brownian cross-check (the full Python engine adds a Markov-chain check and file export).</li>
       <li><b>Hand Equity</b> — expected pot share against up to five fixed or random opponent hands, or one opponent's weighted range, and an optional board. Heads-up spots with known cards, and ranges from the flop on, are enumerated exactly; multiway and preflop range spots use seeded Monte Carlo.</li>
       <li><b>Pot Odds &amp; EV</b> — uses the latest card-derived equity for a call/fold decision with expected value in big blinds; manual equity is optional.</li>
-      <li><b>Bankroll Risk</b> — from your own results (totals, or a CSV of sessions weighted by hands and checked against the model): the win rate's posterior interval, average risk of ruin and its posterior interval, and the bankroll for “risk below X% with Y% posterior probability”, with how the answer changes under other volatilities, priors and sample sizes. Or Monte Carlo risk of ruin for an assumed win rate, with a finite-horizon Brownian cross-check (the full Python engine adds a Markov-chain check and file export).</li>
       <li><b>Preflop</b> — browse, compare, and practise 169-hand strategy matrices, with an optional Kuhn poker learning demo. The current ranges are an illustrative demonstration dataset, not solver-verified output.</li>
     </ul>
     <h3>The through-line: reproducibility and validation</h3>
@@ -2283,6 +2293,20 @@ function setBusy(button,busy,busyLabel){
   if(busy){if(!button.hasAttribute('aria-busy'))button.dataset.idleLabel=button.textContent;button.textContent=busyLabel;button.disabled=true;button.setAttribute('aria-busy','true');}
   else{button.textContent=button.dataset.idleLabel||button.textContent;button.disabled=false;button.removeAttribute('aria-busy');}
 }
+/* "What changed" box for the two guided routes: the inputs that differ from
+   the result shown before the edit began, the main numbers before and now, and
+   why they moved. Built as text, since inputs can come from an imported file. */
+function renderChange(box,change,{intro,same}){
+  const el=(tag,text,cls)=>{const node=document.createElement(tag);if(text!=null)node.textContent=text;if(cls)node.className=cls;return node;};
+  if(!change||change.same){box.replaceChildren(el('p',change?same:intro,'change-hint'));return;}
+  const list=el('ul');change.items.forEach(text=>list.append(el('li',text)));
+  const table=el('table'),head=el('tr'),body=el('tbody');
+  ['','Before','Now'].forEach((text,k)=>{const th=el('th',text,k?'num':'');th.scope='col';head.append(th);});
+  change.rows.forEach(([label,before,now])=>{const tr=el('tr'),th=el('th',label);th.scope='row';tr.append(th,el('td',before,'num'),el('td',now,'num'));body.append(tr);});
+  const thead=el('thead');thead.append(head);table.append(thead,body);
+  const why=el('p',null,'change-why');why.append(el('strong','Why: '),change.why);
+  box.replaceChildren(el('h3','What changed'),list,table,why);
+}
 const plotlyReady=()=>typeof globalThis.Plotly!=="undefined";
 function chartUnavailable(id){
   const el=$(id); if(!el)return;
@@ -2678,6 +2702,7 @@ let evRequest=0;
 let evController=null;
 let evCurrentResult=null;
 let evResultBasis='';
+let evLast=null,evBase=null;  // as bpLast and bpBase
 let evTestPct=null;
 // The equity explorer only makes sense for a current result, so it is
 // disabled in every other state.
@@ -2689,6 +2714,30 @@ const signedValue=(value,digits=1)=>`${value<0?'−':value>0?'+':''}${Math.abs(v
 function evAmount(value){
   const amount=Math.abs(value)>=10000?Math.abs(value).toLocaleString('en-US',{notation:'compact',maximumFractionDigits:2}):Math.abs(value).toFixed(2);
   return `${value<0?'−':value>0?'+':''}${amount} bb`;
+}
+// The EV comparison: equity (from the cards or typed in) and the price (pot
+// and call). EV = equity × (pot + call) − call, so with the price fixed each
+// point of equity is worth (pot + call) / 100.
+const evSnapshot=(r,source)=>({source,equity:r.equity,pot:r.pot,call:r.call,required:r.requiredEquity,ev:r.evCall});
+function evChange(base,cur){
+  if(!base)return null;
+  const items=[],groups=new Set(),pct=v=>(v*100).toFixed(1)+'%';
+  const note=(group,label,from,to)=>{if(from!==to){groups.add(group);items.push(`${label}: ${from} → ${to}`);}};
+  note('equity','Equity from',base.source,cur.source);
+  if(base.source===cur.source)note('equity','Equity',pct(base.equity),pct(cur.equity));
+  note('price','Pot',`${base.pot} bb`,`${cur.pot} bb`);
+  note('price','Call',`${base.call} bb`,`${cur.call} bb`);
+  if(!groups.size){
+    if(Math.abs(cur.equity-base.equity)<1e-12)return {same:true};
+    groups.add('equity');  // moved by less than the 0.1 shown
+  }
+  const rows=[['Equity',pct(base.equity),pct(cur.equity)],['Break-even equity',pct(base.required),pct(cur.required)],['EV of calling',evAmount(base.ev),evAmount(cur.ev)]];
+  const crossed=Math.sign(base.ev)!==Math.sign(cur.ev)&&Math.abs(base.ev)>1e-9&&Math.abs(cur.ev)>1e-9?` The call is now ${cur.ev>0?'above':'below'} break-even.`:'';
+  let why;
+  if(groups.size>1)why='The equity and the price both changed, so this comparison cannot say which one moved the EV. Change one at a time to see each effect.';
+  else if(groups.has('equity'))why=`The pot and the call are the same, so break-even stays at ${pct(cur.required)}. Equity moved ${signedValue((cur.equity-base.equity)*100)} points, and each point is worth ${((cur.pot+cur.call)/100).toLocaleString('en-US',{maximumFractionDigits:4})} bb here, so EV moved ${evAmount(cur.ev-base.ev)}.${crossed}`;
+  else why=`The equity is the same (${pct(cur.equity)}), but the price changed. Break-even is call ÷ (pot + call): ${pct(base.required)} → ${pct(cur.required)}, so EV moved ${evAmount(cur.ev-base.ev)}.${crossed}`;
+  return {items,rows,why};
 }
 function renderEVSensitivity(){
   if(!evCurrentResult)return;
@@ -2717,6 +2766,9 @@ function renderEVSensitivity(){
 }
 function renderEV(result,source){
   evCurrentResult=result;
+  const snapshot=evSnapshot(result,source);
+  renderChange($('ev_change'),evChange(evBase,snapshot),{intro:'Change the opponent’s range on Hand Equity, or the pot or the call here, and this box shows what changed and why.',same:'Nothing that affects the EV differs from before this change.'});
+  evLast=snapshot;
   evResultBasis=`${source} · equity ${(result.equity*100).toFixed(1)}% · pot ${result.pot.toLocaleString()} bb · call ${result.call.toLocaleString()} bb`;
   const gap=(result.equity-result.requiredEquity)*100,zero=Math.abs(result.evCall)<1e-9;
   $('ev_main_value').textContent=evAmount(zero?0:result.evCall);
@@ -2765,6 +2817,8 @@ $('ev_reset_test').addEventListener('click',()=>{if(evCurrentResult){evTestPct=e
 $('ev_eq').addEventListener('input',()=>{window.__equityMode='manual';updateEVEquitySource();runEV();});
 let _evT=null;
 ['ev_pot','ev_bet'].forEach(id=>$(id).addEventListener('input',()=>{clearTimeout(_evT);_evT=setTimeout(runEV,100);}));
+// Edits on Hand Equity feed the EV too, so an edit on either tab starts a comparison.
+['equity','ev'].forEach(id=>['focusin','pointerdown'].forEach(type=>$(id).addEventListener(type,()=>{evBase=evLast;},true)));
 
 /* ================= 3. BANKROLL RISK ================= */
 let bankrollRequest=0;
@@ -2854,6 +2908,8 @@ const BP_SERIES={upper:{color:'#F472B6',dash:'solid'},average:{color:'#C4B5FD',d
 const BP_PRIOR_SHORT={none:'no prior',weak:'weakly informative prior',skeptical:'skeptical prior'};
 const BP_FIELDS=['bp_hands','bp_wr','bp_sd','bp_bank','bp_thr','bp_bb','bp_horizon','bp_target','bp_cred','bp_margin','bp_level'];
 let bpRequest=0,bpController=null,bpBasis='',bpTimer=null,bpHasResult=false;
+// The last result shown, and the one shown when the current edit began.
+let bpLast=null,bpBase=null;
 function setBpState(state,note=''){setResultState($('bp_results'),$('bp_result_state'),state,{note,basis:bpBasis});}
 const bkMode=()=>document.querySelector('input[name="bk_mode"]:checked').value;
 const bpSdSource=()=>document.querySelector('input[name="bp_sd_source"]:checked').value;
@@ -2879,6 +2935,54 @@ function bpPctAgainst(v,level){
 }
 const bpRange=(lo,hi)=>`${bpPct(lo)} to ${bpPct(hi)}`;
 const bpHands=n=>n>=1e6?`${(n/1e6).toFixed(n>=1e7?1:2)} million`:Math.round(n).toLocaleString();
+// What changed between the result shown before an edit and the new one, and
+// why the answer moved. Each input belongs to one group; when more than one
+// group changed, the comparison cannot say which change moved the answer.
+const BP_SD_SOURCE={assumed:'assumed',tracker:'from your tracker',sessions:'estimated from the sessions'};
+const bpSnapshot=(r,context)=>({inputs:r.inputs,context,need:r.bankroll.credible.buyIns,used:r.winRate.credible,interval:r.winRate.interval,average:r.risk.average});
+function bpChange(base,cur){
+  if(!base)return null;
+  const a=base.inputs,b=cur.inputs,items=[],groups=new Set();
+  const note=(group,label,from,to)=>{if(from!==to){groups.add(group);items.push(`${label}: ${from} → ${to}`);}};
+  const exact=v=>String(+v.toFixed(2)),rate=v=>`${v<0?'−':'+'}${exact(Math.abs(v))} bb/100`;
+  const results=s=>s.context?`${s.context.sessions.toLocaleString()} sessions (${s.context.description})`:`totals, ${s.inputs.hands.toLocaleString()} hands at ${rate(s.inputs.winRate)}`;
+  if(base.context||cur.context){
+    note('data','Results',results(base),results(cur));
+    note('data','Win-rate interval widened',a.seMultiplier>1?`×${a.seMultiplier.toFixed(2)}`:'no',b.seMultiplier>1?`×${b.seMultiplier.toFixed(2)}`:'no');
+  }else{note('data','Hands played',a.hands.toLocaleString(),b.hands.toLocaleString());note('data','Win rate',rate(a.winRate),rate(b.winRate));}
+  // With sessions on both sides the volatility is estimated from them, so it
+  // changes with the selection rather than as a setting of its own.
+  if(!(a.sdSource==='sessions'&&b.sdSource==='sessions'))note('volatility','Volatility',`${exact(a.sd)} bb/100 (${BP_SD_SOURCE[a.sdSource]})`,`${exact(b.sd)} bb/100 (${BP_SD_SOURCE[b.sdSource]})`);
+  note('prior','Prior',a.priorLabel,b.priorLabel);
+  note('target','Risk limit',bpLevel(a.target),bpLevel(b.target));
+  note('credibility','Posterior probability asked for',bpLevel(a.credibility),bpLevel(b.credibility));
+  note('thr','Ruin threshold',`${exact(a.thr)} buy-ins`,`${exact(b.thr)} buy-ins`);
+  note('horizon','Hands you plan to play',a.horizon.toLocaleString(),b.horizon.toLocaleString());
+  note('bank','Your bankroll',`${exact(a.bank)} buy-ins`,`${exact(b.bank)} buy-ins`);
+  note('units','Big blinds per buy-in',exact(a.bbPerBuyIn),exact(b.bbPerBuyIn));
+  if(!groups.size)return {same:true};
+  const rows=[['Bankroll needed',`${bpNeed(base.need)} BI`,`${bpNeed(cur.need)} BI`],
+    ['Win rate the answer uses',`${bpSigned(base.used)} bb/100`,`${bpSigned(cur.used)} bb/100`],
+    ['Average risk at your bankroll',bpPct(base.average),bpPct(cur.average)]];
+  const one=groups.size===1?[...groups][0]:null,more=(x,y)=>y>x;
+  const interval=s=>`${bpSigned(s.interval[0])} to ${bpSigned(s.interval[1])}`,used=`${bpSigned(base.used)} to ${bpSigned(cur.used)} bb/100`;
+  let why;
+  if(!one)why='Several things changed at once, so this comparison cannot say which one moved the answer. Change one at a time to see each effect.';
+  else if(one==='bank')why='Only your bankroll changed. The bankroll needed stays the same; what changes is whether yours is enough.';
+  else if(one==='units')why=`The model works in big blinds, so a different buy-in size changes your bankroll${a.thr||b.thr?' and threshold':''} in big blinds and every amount shown in buy-ins.`;
+  else if(one==='target'){const s=b.target<a.target;why=`A ${s?'stricter':'looser'} limit on risk needs ${s?'more':'less'} bankroll. The win rate the answer uses does not change.`;}
+  else if(one==='credibility'){const m=more(a.credibility,b.credibility);why=`Asking to be ${m?'more':'less'} sure uses a ${m?'lower':'higher'} point of the win-rate estimate (${used}), so ${m?'more':'less'} bankroll is needed.`;}
+  else if(one==='thr')why='Risk depends on the room above the threshold, so the bankroll needed moves with the threshold, by the same number of buy-ins.';
+  else if(one==='horizon'){const m=more(a.horizon,b.horizon);why=`${m?'More':'Fewer'} hands leave ${m?'more':'less'} time to fall to the threshold, so ${m?'more':'less'} bankroll is needed for the same risk.`;}
+  else if(one==='volatility')why=`Volatility changes two things: how sure the win-rate estimate is (95% interval ${interval(base)} → ${interval(cur)} bb/100, so the point the answer uses moved from ${used}) and how much risk each win rate carries. Both feed the answer.`;
+  else if(b.sdSource==='sessions'&&exact(a.sd)!==exact(b.sd))why=`The selected sessions changed both the win-rate estimate (95% interval ${interval(base)} → ${interval(cur)} bb/100) and the volatility estimated from them (${exact(a.sd)} → ${exact(b.sd)} bb/100). Both feed the answer.`;
+  else{
+    const lower=cur.used<base.used;
+    why=`The win-rate estimate changed: 95% interval ${interval(base)} → ${interval(cur)} bb/100. The answer uses its ${bpLevel(1-b.credibility)} point, `
+      +(Math.abs(cur.used-base.used)<0.05?'which barely moved, so neither did the answer.':`which moved from ${used}. A ${lower?'lower':'higher'} win rate needs ${lower?'more':'less'} bankroll for the same risk.`);
+  }
+  return {items,rows,why};
+}
 function bpQuestionText(){
   const thr=+$('bp_thr').value,horizon=+$('bp_horizon').value;
   $('bp_question_text').textContent=`Bankroll so that, given these results and this model, the posterior probability is at least ${$('bp_cred').value||'…'}% that the risk of falling to ${thr>0?thr+' buy-ins':'zero'} within ${horizon>0?horizon.toLocaleString():'…'} hands is below ${$('bp_target').value||'…'}%.`;
@@ -2932,6 +3036,9 @@ function renderBp(r,context=null){
   bpBasis=(context?`${context.sessions.toLocaleString()} sessions (${context.description}) · `:'')
     +`${i.hands.toLocaleString()} hands at ${bpSigned(i.winRate)} bb/100 · volatility ${sdText}${widened} · ${BP_PRIOR_SHORT[i.prior]} · ${bpBI(i.bank)} buy-ins of ${i.bbPerBuyIn} bb · ${horizon} · threshold ${thr} · risk below ${tgt} with ${q} posterior probability`;
   bpHasResult=true;setBpState('current');
+  const snapshot=bpSnapshot(r,context);
+  renderChange($('bp_change'),bpChange(bpBase,snapshot),{intro:'Change one setting, such as the prior or the volatility, and this box shows what it changed and why.',same:'Nothing that affects the bankroll needed differs from before this change.'});
+  bpLast=snapshot;
 
   const need=b.credible;
   $('bp_need').textContent=need.buyIns==null?'Too large to compute':`${bpNeed(need.buyIns)} buy-ins`;
@@ -3050,6 +3157,9 @@ document.querySelectorAll('.bpsdpreset').forEach(button=>button.addEventListener
 document.querySelectorAll('input[name="bp_prior"]').forEach(radio=>radio.addEventListener('change',scheduleBp));
 BP_FIELDS.forEach(id=>$(id).addEventListener('input',scheduleBp));
 $('bp_run').addEventListener('click',runBp);
+// An edit begins when a control is focused or pressed (a click does not focus
+// a button in every browser); later results are compared with what was shown then.
+['focusin','pointerdown'].forEach(type=>$('bp_view').addEventListener(type,()=>{bpBase=bpLast;},true));
 
 /* Imported sessions. The file is read in the browser with PokerSessions
    (standalone/shared/sessions.js); only the totals of the selection go to the

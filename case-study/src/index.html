@@ -44,6 +44,18 @@
   </ul>
 </section>
 
+<section aria-labelledby="checked">
+  <p class="eyebrow">One check, in short</p>
+  <h2 id="checked">A lower risk that was not a real change</h2>
+  <p class="finding">After an engine update, the same settings and seed gave a lower risk: <strong>{{c_before}} → {{c_after}}</strong>. Two things had changed at once, the random numbers and how ruin is monitored, so each was switched on separately and then rerun over {{c_seeds}} seeds. The drop came from drawing different random numbers. The new monitoring raised risk on every seed and brought the average close to the exact value.</p>
+  <dl class="check-nums">
+    <div><dt>Ruin checked only at the end of each step</dt><dd>{{c_endpoint}}</dd></div>
+    <div><dt>With the Brownian-bridge correction</dt><dd>{{c_mean}} <span class="muted small">(s.e. {{c_se}} points)</span></dd></div>
+    <div><dt>Exact value for the model</dt><dd>{{exact}}</dd></div>
+  </dl>
+  <p class="method">Averages over seeds 0–{{c_seeds_last}}, {{c_paths}} paths each. +3 bb/100, 30 buy-ins, 90 bb/100, 100,000 hands, steps of 100 hands. <a href="#investigation">How it was checked, step by step</a>.</p>
+</section>
+
 <section aria-labelledby="cases">
   <h2 id="cases">Three questions, one at a time</h2>
 
