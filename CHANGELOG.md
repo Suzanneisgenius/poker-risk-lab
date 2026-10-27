@@ -57,6 +57,44 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-10-27 — review fixes: snapshot checks, card picker, theme switch
+
+- **Snapshot checks across platforms.** The posterior-bankroll and
+  session-import checks compared their JSON output character by character, so
+  a last-digit difference between platforms failed them (an earlier Linux run
+  reported `0.7292665967931233` against `0.7292665967931234`). They now
+  compare parsed values. A floating-point result may differ only by roundoff,
+  `|current − saved| ≤ 1e-12 + 1e-12 × max(|current|, |saved|)`; inputs,
+  integers, labels, flags and structure must match exactly, and non-finite
+  numbers fail. Accepted roundoff is reported with its field and size.
+  `checks/test_compare_snapshot.js`, run by `npm run check:posterior`, checks
+  that real changes still fail. The saved results are unchanged. This is the
+  comparison from the earlier CI fix, which this history did not include.
+- **Card picker.** While the picker is open, the page behind it is inert.
+  Before, Shift+Tab from the first card reached "Send equity → Pot Odds & EV"
+  behind it, and Enter then switched tabs under the open picker. Tab and
+  Shift+Tab now wrap between the close button and the last available card.
+  Focus moves into the picker as it opens and returns to the card slot when it
+  closes, also after a pick has re-rendered the slots. The picker's markup
+  moved out of `<main>` so the page can be made inert around it.
+- **Theme switch.** Changing the system theme with charts on screen redraws
+  every chart from the data it holds, with each old theme colour, solid or
+  tinted, swapped for the new one: traces, fills, markers, annotations and
+  shapes as well as text and grid. Before, only text and grid changed until
+  the next calculation. The Hand Equity bars use the CSS colour variables
+  directly. In a browser check, the six charts drawn on Risk Lab and Bankroll
+  Risk held the same colours after a switch to dark as on a fresh dark load,
+  and their original colours after switching back.
+- **`tint()`.** Three-digit colours such as `#fff` came out as
+  `rgba(0,0,15,…)`: an edit during the restyle broke the expansion. Charts only
+  pass six-digit colours, so none was affected. Fixed, with a test.
+- **About.** "The application does not persist calculation inputs" was too
+  broad, since saved comparisons keep their inputs in the browser. It now says
+  the server does not store calculation inputs, and lists what stays in the
+  browser: saved comparisons with their inputs and results, Preflop practice
+  progress, and whether the Risk Lab guide is hidden.
+- No calculation changed.
+
 ## 2026-10-27 — app restyled to match the case study
 
 - **Removed.** The gradient title, the glow that followed the mouse, the

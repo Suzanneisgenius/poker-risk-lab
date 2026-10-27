@@ -532,9 +532,37 @@ async function main(){
     assert.doesNotMatch(e.why,/now (above|below)/,"no crossing: both below break-even");
   }
 
+  // --- Chart colours: tints, and recolouring drawn charts on a theme switch ----------------
+  {
+    const reacted=[];
+    const ctx=vm.createContext({C:{},CFG:{displayModeBar:false},document:{querySelectorAll:()=>charts},Plotly:{react:(el,data,layout,cfg)=>reacted.push({el,data,layout,cfg})}});
+    var charts=[];
+    vm.runInContext(slice("function hexRGB(","function readChartColors(")+slice("function colorParts(","if(typeof matchMedia")+";this.f={tint,recolorCharts};",ctx);
+    const {tint,recolorCharts}=ctx.f;
+    assert.equal(tint("#fff",.5),"rgba(255,255,255,0.5)");
+    assert.equal(tint("#abc",1),tint("#aabbcc",1),"three-digit hex expands");
+    assert.equal(tint("#2b6cb0",.16),"rgba(43,108,176,0.16)");
+    const light={bg:"#ffffff",grid:"#e1ddd4",accent:"#2b6cb0",ruin:"#b23b52",median:"#b5801a",text:"#1d1f23",band:tint("#2b6cb0",.16)};
+    const dark={bg:"#222225",grid:"#38383d",accent:"#4a8fd8",ruin:"#de5f74",median:"#bf8a28",text:"#e9e7e2",band:tint("#4a8fd8",.16)};
+    const data=[{mode:"lines",x:[1,2],y:[3,4],line:{color:light.accent,dash:"dash"},fillcolor:light.band,marker:{color:[light.accent,light.median]}}];
+    const layout={paper_bgcolor:"rgba(0,0,0,0)",font:{color:light.text},xaxis:{gridcolor:light.grid,range:[0,1]},
+      annotations:[{text:"MEDIAN",bgcolor:tint(light.bg,.85),font:{color:light.median}}],shapes:[{line:{color:light.ruin}}]};
+    charts=[{data,layout}];
+    Object.assign(ctx.C,dark);recolorCharts(light);
+    const [r]=reacted;
+    assert.equal(r.el,charts[0]);assert.equal(r.cfg,ctx.CFG);
+    assert.equal(r.data[0].line.color,dark.accent);assert.equal(r.data[0].line.dash,"dash");assert.equal(r.data[0].mode,"lines");
+    assert.equal(r.data[0].fillcolor,dark.band,"tinted fills keep their alpha");
+    assert.deepEqual([...r.data[0].marker.color],[dark.accent,dark.median]);assert.deepEqual([...r.data[0].y],[3,4]);
+    assert.equal(r.layout.paper_bgcolor,"rgba(0,0,0,0)");assert.equal(r.layout.font.color,dark.text);assert.equal(r.layout.xaxis.gridcolor,dark.grid);
+    assert.equal(r.layout.annotations[0].bgcolor,tint(dark.bg,.85));assert.equal(r.layout.annotations[0].font.color,dark.median);
+    assert.equal(r.layout.shapes[0].line.color,dark.ruin);
+    assert.equal(data[0].line.color,light.accent,"the drawn chart's own objects are not modified");
+  }
+
   const seed=harness();seed.get("seed").value="0";assert.equal(seed.run("integerInput('seed',42)"),0);
   const showdown=computeEquity({hero:["Ah","Kd"].map(strToCard),opponents:[["As","Kc"].map(strToCard),["Ad","Kh"].map(strToCard)],board:["2c","3d","4h","5s","6c"].map(strToCard),trials:1000,seed:0});
   assert.equal(showdown.result.method,"exact");assert.equal(showdown.result.trials,1);assert.equal(showdown.result.equity,1/3);
-  console.log("PASS: practice sets (10/20/169) in all 5 scenarios; retry + added origins; saved progress, resume, previous review, corrupt or blocked storage; frequency questions; answer gating, reveal, no double scoring; review and retry missed; per-scenario progress; set-size change; practice this spot; unavailable actions; loading, races, retry; hand search; matrix keys; Risk Lab guide; comparison JSON/CSV, import validation, load messages; result states; seed 0; exact multiway showdown; bankroll amounts rounded up and kept on the right side of the target.");
+  console.log("PASS: practice sets (10/20/169) in all 5 scenarios; retry + added origins; saved progress, resume, previous review, corrupt or blocked storage; frequency questions; answer gating, reveal, no double scoring; review and retry missed; per-scenario progress; set-size change; practice this spot; unavailable actions; loading, races, retry; hand search; matrix keys; Risk Lab guide; comparison JSON/CSV, import validation, load messages; result states; seed 0; exact multiway showdown; bankroll amounts rounded up and kept on the right side of the target; chart tints and theme-switch recolouring.");
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});

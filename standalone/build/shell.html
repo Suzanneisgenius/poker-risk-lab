@@ -1405,7 +1405,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
     <ul class="doc">
       <li>The <a href="case-study/">case study</a> asks how much a simulated risk estimate can be trusted, one source of uncertainty at a time; the <a href="case-study/validation.html">validation page</a> lists each check with its benchmark, conditions and limits.</li>
       <li>Every engine is seeded and reproducible; each is checked against an independent method (exact enumeration, analytical Brownian, known game value).</li>
-      <li>The public page contains only interface and chart-rendering code. Equity, EV, bankroll Monte Carlo, and CFR calculations run on a private same-origin API; the application does not persist calculation inputs.</li>
+      <li>The public page contains only interface and chart-rendering code. Equity, EV, bankroll Monte Carlo, and CFR calculations run on a private same-origin API. The server does not store calculation inputs. Comparisons you choose to save (with their inputs and results), Preflop practice progress and whether the Risk Lab guide is hidden are kept in this browser only.</li>
     </ul>
     <h3>Poker terms in plain language</h3>
     <dl class="glossary">
@@ -1428,12 +1428,11 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
     </ul>
   </section>
 
-  <!-- card picker overlay -->
-  <div class="picker" id="picker" role="dialog" aria-modal="true" aria-labelledby="picktitle"><div class="pickbox">
-    <button type="button" class="pickclose" id="pickclose" aria-label="Close card picker">✕</button>
-    <h4 id="picktitle">Pick a card</h4>
-    <div class="pgrid" id="pgrid"></div>
-  </div></div>
-
 </main>
+<!-- card picker overlay: outside main, so the page behind it can be made inert while it is open -->
+<div class="picker" id="picker" role="dialog" aria-modal="true" aria-labelledby="picktitle"><div class="pickbox">
+  <button type="button" class="pickclose" id="pickclose" aria-label="Close card picker">✕</button>
+  <h4 id="picktitle">Pick a card</h4>
+  <div class="pgrid" id="pgrid"></div>
+</div></div>
 <footer class="site-foot">Poker Analytics Suite · Xinrui Song · research and educational project · <a href="case-study/">Case study</a> · <a href="case-study/validation.html">How the numbers are checked</a></footer>

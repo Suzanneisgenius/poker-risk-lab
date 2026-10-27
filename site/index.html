@@ -1405,7 +1405,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
     <ul class="doc">
       <li>The <a href="case-study/">case study</a> asks how much a simulated risk estimate can be trusted, one source of uncertainty at a time; the <a href="case-study/validation.html">validation page</a> lists each check with its benchmark, conditions and limits.</li>
       <li>Every engine is seeded and reproducible; each is checked against an independent method (exact enumeration, analytical Brownian, known game value).</li>
-      <li>The public page contains only interface and chart-rendering code. Equity, EV, bankroll Monte Carlo, and CFR calculations run on a private same-origin API; the application does not persist calculation inputs.</li>
+      <li>The public page contains only interface and chart-rendering code. Equity, EV, bankroll Monte Carlo, and CFR calculations run on a private same-origin API. The server does not store calculation inputs. Comparisons you choose to save (with their inputs and results), Preflop practice progress and whether the Risk Lab guide is hidden are kept in this browser only.</li>
     </ul>
     <h3>Poker terms in plain language</h3>
     <dl class="glossary">
@@ -1428,14 +1428,13 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
     </ul>
   </section>
 
-  <!-- card picker overlay -->
-  <div class="picker" id="picker" role="dialog" aria-modal="true" aria-labelledby="picktitle"><div class="pickbox">
-    <button type="button" class="pickclose" id="pickclose" aria-label="Close card picker">✕</button>
-    <h4 id="picktitle">Pick a card</h4>
-    <div class="pgrid" id="pgrid"></div>
-  </div></div>
-
 </main>
+<!-- card picker overlay: outside main, so the page behind it can be made inert while it is open -->
+<div class="picker" id="picker" role="dialog" aria-modal="true" aria-labelledby="picktitle"><div class="pickbox">
+  <button type="button" class="pickclose" id="pickclose" aria-label="Close card picker">✕</button>
+  <h4 id="picktitle">Pick a card</h4>
+  <div class="pgrid" id="pgrid"></div>
+</div></div>
 <footer class="site-foot">Poker Analytics Suite · Xinrui Song · research and educational project · <a href="case-study/">Case study</a> · <a href="case-study/validation.html">How the numbers are checked</a></footer>
 
 <script>
@@ -2168,7 +2167,8 @@ if (typeof module !== "undefined") module.exports = PokerRange;
 const RANKS="23456789TJQKA";
 // Chart colours are read from the page's CSS tokens, so charts follow the light or dark theme.
 const C={};
-function tint(hex,alpha){const h=hex.slice(1),n=parseInt(h.length===3?h.replace(/./g,"function tint(hex,alpha){const n=parseInt(hex.slice(1),16);function tint(hex,alpha){const n=parseInt(hex.slice(1),16);"):h,16);return `rgba(${n>>16},${n>>8&255},${n&255},${alpha})`;}
+function hexRGB(hex){let h=hex.slice(1);if(h.length===3)h=[...h].map(c=>c+c).join('');const n=parseInt(h,16);return [n>>16,n>>8&255,n&255];}
+function tint(hex,alpha){return `rgba(${hexRGB(hex).join(',')},${alpha})`;}
 function readChartColors(){
   const css=typeof getComputedStyle==='function'?getComputedStyle(document.documentElement):null;
   const v=(name,fallback)=>css?.getPropertyValue(name).trim()||fallback;
@@ -2184,11 +2184,28 @@ function layout(title,xt,yt,extra){return Object.assign({title:{text:title,font:
   margin:{l:62,r:18,t:44,b:48},xaxis:{title:xt,gridcolor:C.grid,zerolinecolor:C.grid},
   yaxis:{title:yt,gridcolor:C.grid,zerolinecolor:C.grid},legend:{font:{color:C.muted}}},extra||{});}
 const $=id=>document.getElementById(id);
-// A theme switch recolours the text and grid of charts already drawn; traces pick up the new colours on their next update.
+// A theme switch redraws every chart already drawn from the data it holds, with each old theme colour
+// (solid or tinted) swapped for the new one: traces, fills, markers, annotations, shapes, text and grid.
+function colorParts(color){
+  if(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(color))return {rgb:hexRGB(color).join(','),alpha:null};
+  const m=/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)$/i.exec(color);
+  return m?{rgb:`${m[1]},${m[2]},${m[3]}`,alpha:m[4]===undefined?null:Number(m[4])}:null;
+}
+function recolorCharts(before){
+  const swap=new Map();
+  for(const k of Object.keys(before)){const old=colorParts(before[k]);if(old&&old.alpha===null&&before[k]!==C[k])swap.set(old.rgb,C[k]);}
+  const recolor=value=>{
+    if(typeof value==='string'){const c=colorParts(value),next=c&&swap.get(c.rgb);return next?(c.alpha===null?next:tint(next,c.alpha)):value;}
+    if(Array.isArray(value))return value.map(recolor);
+    if(Object.prototype.toString.call(value)==='[object Object]')return Object.fromEntries(Object.entries(value).map(([k,v])=>[k,recolor(v)]));
+    return value;
+  };
+  document.querySelectorAll('.js-plotly-plot').forEach(el=>Plotly.react(el,recolor(el.data),recolor(el.layout),CFG));
+}
 if(typeof matchMedia==='function')matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>{
+  const before={...C};
   readChartColors();
-  document.querySelectorAll('.js-plotly-plot').forEach(el=>Plotly.relayout(el,{'font.color':C.muted,'title.font.color':C.text,'legend.font.color':C.muted,
-    'xaxis.gridcolor':C.grid,'xaxis.zerolinecolor':C.grid,'yaxis.gridcolor':C.grid,'yaxis.zerolinecolor':C.grid}));
+  if(typeof globalThis.Plotly!=='undefined')recolorCharts(before);
 });
 function kpiCard(l,v,s){return `<div class="kpi"><div class="kl">${l}</div><div class="kv">${v}</div><div class="ks">${s||''}</div></div>`;}
 const reducedMotion=()=>typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2314,7 +2331,7 @@ let activeOpponents=[0];
 // only) or a 'random' hand dealt on every trial.
 const opponentModes=['cards','cards','cards','cards','cards'];
 let activeSlot=null;
-let pickerReturnFocus=null;
+let pickerReturnFocus=null,pickerInert=[];
 const cardRed=idx=>{const s=Math.floor(idx/13);return s===1||s===2;};   // d,h
 const groupOf=sid=>sid.startsWith('hero')?'hero':sid.startsWith('opp')?'opponent':sid.startsWith('pf')?'preflop':'board';
 const opponentIndexOf=sid=>sid.startsWith('opp')?parseInt(sid.slice(3),10):null;
@@ -2453,9 +2470,18 @@ function openPicker(slotId){
   $('pgrid').innerHTML=html;
   $('picktitle').textContent='Pick a card — '+(groupOf(slotId)==='board'?'board':groupOf(slotId)+' hand');
   $('picker').classList.add('on');
-  requestAnimationFrame(()=>$('pgrid').querySelector('.pcard:not(:disabled)')?.focus());
+  // While the picker is open the rest of the page is inert: no focus, clicks or screen-reader access behind it.
+  if(!pickerInert.length){pickerInert=[...document.body.children].filter(el=>el!==$('picker')&&el.tagName!=='SCRIPT'&&!el.inert);pickerInert.forEach(el=>{el.inert=true;});}
+  // Focus moves in now, not on the next frame, so it never rests on the inert page behind.
+  $('pgrid').querySelector('.pcard:not(:disabled)')?.focus();
 }
-function closePicker(){$('picker').classList.remove('on');if(pickerReturnFocus?.isConnected)pickerReturnFocus.focus();}
+function closePicker(){
+  $('picker').classList.remove('on');
+  pickerInert.forEach(el=>{el.inert=false;});pickerInert=[];
+  // A pick re-renders the card slots, so focus returns to the new slot with the same id.
+  const back=pickerReturnFocus?.isConnected?pickerReturnFocus:pickerReturnFocus?.id&&document.getElementById(pickerReturnFocus.id);
+  back?.focus();
+}
 function fillSlot(idx){
   const g=groupOf(activeSlot); cardState[activeSlot]=idx;
   if(g==='preflop'){renderPfHandSlots();syncPfHandFromCards();}
@@ -2492,6 +2518,14 @@ $('eq_add_opp').addEventListener('click',()=>{const idx=[0,1,2,3,4].find(i=>!act
 $('pgrid').addEventListener('click',e=>{const c=e.target.closest('.pcard');
   if(c&&!c.classList.contains('used')) fillSlot(+c.dataset.card);});
 $('pickclose').addEventListener('click',closePicker);
+// Tab and Shift+Tab wrap between the close button and the last available card.
+$('picker').addEventListener('keydown',e=>{
+  if(e.key!=='Tab')return;
+  const items=[$('pickclose'),...$('pgrid').querySelectorAll('.pcard:not(:disabled)')];
+  const first=items[0],last=items[items.length-1];
+  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+});
 $('picker').addEventListener('click',e=>{if(e.target.id==='picker')closePicker();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('picker').classList.contains('on'))closePicker();});
 function clearEquityCards(){Object.keys(cardState).filter(k=>groupOf(k)!=='preflop').forEach(k=>cardState[k]=null);}
@@ -2528,7 +2562,7 @@ function renderRangeBreakdown(res){
   const list=parts.length>1?parts.slice(0,-1).join(', ')+' and '+parts.at(-1):parts[0];
   $('eq_breakdown_summary').textContent=byCombo?`Combo by combo, weighted: you're ${list} of this range.`:`Hand by hand, using each hand's average over its combos: you're ${list} of this range.`;
   const middle=byCombo?split.even:split.unclear;
-  $('eq_breakdown_bar').innerHTML=`<span style="width:${split.ahead*100}%;background:${C.pos}"></span><span style="width:${middle*100}%;background:${C.muted}"></span><span style="width:${split.behind*100}%;background:${C.ruin}"></span>`;
+  $('eq_breakdown_bar').innerHTML=`<span style="width:${split.ahead*100}%;background:var(--pos)"></span><span style="width:${middle*100}%;background:var(--muted)"></span><span style="width:${split.behind*100}%;background:var(--ruin)"></span>`;
   $('eq_breakdown_bar').setAttribute('aria-label',`Share of the range: ahead ${pct(split.ahead)}, ${byCombo?'even':'not clear'} ${pct(middle)}, behind ${pct(split.behind)}`);
   $('eq_breakdown_rows').innerHTML=rows.map(g=>{
     const e=g.equity*100;
@@ -2603,9 +2637,9 @@ async function runEquity(showResult=false){
     $('eq_kpis').innerHTML=kpiCard('Equity',eqp.toFixed(1)+'%','expected share of pot')+
       kpiCard('Win',w.toFixed(1)+'%','')+kpiCard('Tie / Lose',t.toFixed(1)+'% / '+l.toFixed(1)+'%','');
     $('eq_method').textContent=methodTxt;
-    $('eq_bars').innerHTML=`<span style="width:${w}%;background:${C.pos}"></span><span style="width:${t}%;background:${C.muted}"></span><span style="width:${l}%;background:${C.ruin}"></span>`;
+    $('eq_bars').innerHTML=`<span style="width:${w}%;background:var(--pos)"></span><span style="width:${t}%;background:var(--muted)"></span><span style="width:${l}%;background:var(--ruin)"></span>`;
     $('eq_bars').setAttribute('aria-label',`Equity result: win ${w.toFixed(1)} percent, tie ${t.toFixed(1)} percent, lose ${l.toFixed(1)} percent`);
-    $('eq_legend').innerHTML=`<span style="color:${C.pos}">■ win</span>&nbsp;&nbsp;<span style="color:${C.muted}">■ tie</span>&nbsp;&nbsp;<span style="color:${C.ruin}">■ lose</span>`;
+    $('eq_legend').innerHTML=`<span style="color:var(--pos)">■ win</span>&nbsp;&nbsp;<span style="color:var(--muted)">■ tie</span>&nbsp;&nbsp;<span style="color:var(--ruin)">■ lose</span>`;
     $('eq_note').innerHTML=range
       ?(res.method==='exact'?'Exact result: every combo in the range on every runout, weighted by the range. No simulation noise.'
         :`Monte Carlo estimate; standard error ≈ ${(res.standardError*100).toFixed(2)} pp. Each hand in the range gets trials in proportion to its share, so the shares themselves are exact.`)

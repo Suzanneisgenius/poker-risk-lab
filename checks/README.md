@@ -22,6 +22,15 @@ Errors and agreement are reproducible from the seeds recorded in each output.
 Timings depend on the machine; each output records the CPU and runtime
 versions it was measured with. `--write` refreshes a saved output.
 
+The posterior and session-import JavaScript checks compare parsed values,
+allowing only floating-point roundoff: `|current - saved| <= 1e-12 +
+1e-12 * max(|current|, |saved|)`. Inputs, integer values, labels, flags and
+structure must match exactly; non-finite numbers fail. Any accepted roundoff
+is reported with its field and magnitude, and failures identify changed fields.
+`checks/test_compare_snapshot.js` verifies that numerical and structural
+regressions still fail. The Python comparisons retain their separate numerical
+tolerances, and the saved reference results are unchanged.
+
 Independent means a separate implementation by other authors (PokerKit).
 Checks of this repository's code against other code in this repository —
 the engine-agreement check and the reference evaluator in

@@ -10,6 +10,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const { assertSnapshot } = require("../compare_snapshot.js");
 const { computeBankrollPosterior, POSTERIOR_MODEL } = require("../../server/bankroll_posterior.js");
 
 // One record of results seen under several sample sizes, priors and
@@ -35,10 +36,7 @@ const text = JSON.stringify({ model: POSTERIOR_MODEL, cases }, null, 1) + "\n";
 const file = path.join(__dirname, "web.json");
 
 if (process.argv.includes("--check")) {
-  if (fs.readFileSync(file, "utf8") !== text) {
-    console.error("The posterior bankroll results differ from checks/bankroll-posterior-python/web.json. If the change is intended, run with --write and re-run run.py.");
-    process.exit(1);
-  }
+  assertSnapshot({ model: POSTERIOR_MODEL, cases }, JSON.parse(fs.readFileSync(file, "utf8")), "Posterior bankroll web.json");
   console.log(`PASS: ${cases.length} posterior bankroll cases match web.json.`);
 } else if (process.argv.includes("--write")) {
   fs.writeFileSync(file, text);
