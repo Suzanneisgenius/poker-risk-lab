@@ -105,9 +105,11 @@ function setBusy(button,busy,busyLabel){
 /* "What changed" box for the two guided routes: the inputs that differ from
    the result shown before the edit began, the main numbers before and now, and
    why they moved. Built as text, since inputs can come from an imported file. */
-function renderChange(box,change,{intro,same}){
+function renderChange(box,change,{same}){
   const el=(tag,text,cls)=>{const node=document.createElement(tag);if(text!=null)node.textContent=text;if(cls)node.className=cls;return node;};
-  if(!change||change.same){box.replaceChildren(el('p',change?same:intro,'change-hint'));return;}
+  // Nothing to compare yet: the box stays hidden until a result changes.
+  box.hidden=!change;
+  if(!change||change.same){box.replaceChildren(...(change?[el('p',same,'change-hint')]:[]));return;}
   const list=el('ul');change.items.forEach(text=>list.append(el('li',text)));
   const table=el('table'),head=el('tr'),body=el('tbody');
   ['','Before','Now'].forEach((text,k)=>{const th=el('th',text,k?'num':'');th.scope='col';head.append(th);});
@@ -473,18 +475,18 @@ async function runEquity(showResult=false){
     else if(eqp>=35){vtxt=`This is a competitive spot${field}: about ${Math.round(eqp)}% of the pot on average.`;tone='caution';}
     else{vtxt=`You're the underdog${field}: about ${Math.round(eqp)}% of the pot on average.`;tone='negative';}
     const vd=$('eq_verdict'); vd.style.display='block';
-    vd.className='result-insight result-dim '+tone;vd.textContent=vtxt;
-    $('eq_kpis').innerHTML=kpiCard('Equity',eqp.toFixed(1)+'%','expected share of pot')+
+    vd.className='result-insight result-dim sr-only '+tone;vd.textContent=vtxt;
+    $('eq_kpis').innerHTML=kpiCard('Equity',eqp.toFixed(1)+'%','')+
       kpiCard('Win',w.toFixed(1)+'%','')+kpiCard('Tie / Lose',t.toFixed(1)+'% / '+l.toFixed(1)+'%','');
     $('eq_method').textContent=methodTxt;
     $('eq_bars').innerHTML=`<span style="width:${w}%;background:var(--pos)"></span><span style="width:${t}%;background:var(--muted)"></span><span style="width:${l}%;background:var(--ruin)"></span>`;
     $('eq_bars').setAttribute('aria-label',`Equity result: win ${w.toFixed(1)} percent, tie ${t.toFixed(1)} percent, lose ${l.toFixed(1)} percent`);
     $('eq_legend').innerHTML=`<span style="color:var(--pos)">■ win</span>&nbsp;&nbsp;<span style="color:var(--muted)">■ tie</span>&nbsp;&nbsp;<span style="color:var(--ruin)">■ lose</span>`;
     $('eq_note').innerHTML=range
-      ?(res.method==='exact'?'Exact result: every combo in the range on every runout, weighted by the range. No simulation noise.'
+      ?(res.method==='exact'?''
         :`Monte Carlo estimate; standard error ≈ ${(res.standardError*100).toFixed(2)} pp. Each hand in the range gets trials in proportion to its share, so the shares themselves are exact.`)
       :res.method==='exact'
-      ?'Exact result — no simulation noise.'
+      ?''
       :'Monte Carlo estimate; conservative approximate standard error ≈ '+(Math.sqrt(res.equity*(1-res.equity)/res.trials)*100).toFixed(2)+' pp (allows for fractional split pots).';
     renderRangeBreakdown(range?res:null);
     window.__lastEquity=eqp;
@@ -569,7 +571,7 @@ function renderEVSensitivity(){
   const testEV=q*r.pot-(1-q)*r.call;
   $('ev_test_pct').textContent=test.toFixed(1)+'%';
   $('ev_test_result').textContent=`At ${test.toFixed(1)}% equity: ${evAmount(testEV)} EV per call.`;
-  $('ev_sensitivity_note').textContent=`Pot ${r.pot.toLocaleString()} bb · call ${r.call.toLocaleString()} bb held fixed. Each +1 percentage point of equity adds ${((r.pot+r.call)/100).toLocaleString('en-US',{maximumFractionDigits:4})} bb to EV. The slider tests an assumption; it does not recalculate the cards.`;
+  $('ev_sensitivity_note').textContent=`Pot ${r.pot.toLocaleString()} bb · call ${r.call.toLocaleString()} bb held fixed. Each +1 point of equity adds ${((r.pot+r.call)/100).toLocaleString('en-US',{maximumFractionDigits:4})} bb.`;
   $('ev_sensitivity_chart').setAttribute('aria-label',`EV increases linearly with equity at pot ${r.pot} bb and call ${r.call} bb. Break-even ${(r.requiredEquity*100).toFixed(1)} percent. EV for the displayed calculation ${r.evCall.toFixed(2)} bb; test EV ${testEV.toFixed(2)} bb.`);
   if(!plotlyReady()){chartUnavailable('ev_sensitivity_chart');return;}
   const threshold=r.requiredEquity*100;
@@ -591,22 +593,21 @@ function renderEVSensitivity(){
 function renderEV(result,source){
   evCurrentResult=result;
   const snapshot=evSnapshot(result,source);
-  renderChange($('ev_change'),evChange(evBase,snapshot),{intro:'Change the opponent’s range on Hand Equity, or the pot or the call here, and this box shows what changed and why.',same:'Nothing that affects the EV differs from before this change.'});
+  renderChange($('ev_change'),evChange(evBase,snapshot),{same:'Nothing that affects the EV differs from before this change.'});
   evLast=snapshot;
   evResultBasis=`${source} · equity ${(result.equity*100).toFixed(1)}% · pot ${result.pot.toLocaleString()} bb · call ${result.call.toLocaleString()} bb`;
   const gap=(result.equity-result.requiredEquity)*100,zero=Math.abs(result.evCall)<1e-9;
   $('ev_main_value').textContent=evAmount(zero?0:result.evCall);
   $('ev_gap').textContent=signedValue(Math.abs(gap)<1e-9?0:gap)+' pp';
-  $('ev_gap_note').textContent=Math.abs(gap)<1e-9?'At break-even':gap>0?'Above break-even':'Below break-even';
   $('ev_current_pct').textContent=(result.equity*100).toFixed(1)+'%';
   $('ev_threshold_pct').textContent=(result.requiredEquity*100).toFixed(1)+'%';
-  $('ev_verdict').textContent=zero?'Break-even in this model':result.evCall>0?'Positive EV relative to folding (0 bb)':'Negative EV relative to folding (0 bb)';
+  $('ev_verdict').textContent=zero?'Same as folding (0 bb)':result.evCall>0?'Better than folding (0 bb)':'Worse than folding (0 bb)';
   $('ev_results').classList.toggle('is-positive',!zero&&result.evCall>0);
   $('ev_results').classList.toggle('is-negative',!zero&&result.evCall<0);
   setEVState('current');
   evTestPct=result.equity*100;
   $('ev_test_equity').value=(result.equity*100).toFixed(1);
-  $('ev_expl').textContent=`EV = equity × ${result.pot} − (1 − equity) × ${result.call} bb. Equity uses a 0–1 fraction. This assumes a fixed eligible pot and no future betting, rake or side pots. The curve explores equity assumptions; it is not a confidence interval.`;
+  $('ev_expl').textContent=`EV = equity × ${result.pot} − (1 − equity) × ${result.call} bb. Assumes no future betting, rake or side pots.`;
   renderEVSensitivity();
 }
 async function runEV(){
@@ -687,10 +688,10 @@ async function runBankroll(){
   setBankrollState('current');
   const ror=metrics.risk,med=metrics.medianTerminal,p95=metrics.p95Drawdown,pp=metrics.profitProbability;
   const rorCount=Math.round(ror*100),riskTone=ror<0.05?'positive':ror<0.2?'caution':'negative';
-  $('bk_insight').className='result-insight result-dim '+riskTone;
+  $('bk_insight').className='result-insight result-dim sr-only '+riskTone;
   $('bk_insight').textContent=`About ${rorCount} in 100 simulated bankrolls reach the ruin threshold within ${Math.round(p.hands/1000)}k hands under these assumptions.`;
   $('bk_kpis').innerHTML=kpiCard('Risk of ruin',(ror*100).toFixed(1)+'%','over '+p.hands.toLocaleString()+' hands')+
-    kpiCard('P95 max drawdown',p95.toFixed(1)+' BI','95% of paths never fall further from a peak')+
+    kpiCard('P95 max drawdown',p95.toFixed(1)+' BI','')+
     kpiCard('Median terminal',med.toFixed(1)+' BI','')+
     kpiCard('Prob. profit',(pp*100).toFixed(1)+'%','')+
     kpiCard('Brownian (finite)',(metrics.brownian*100).toFixed(1)+'%','analytical check')+
@@ -806,12 +807,7 @@ function bpChange(base,cur){
   }
   return {items,rows,why};
 }
-function bpQuestionText(){
-  const thr=+$('bp_thr').value,horizon=+$('bp_horizon').value;
-  $('bp_question_text').textContent=`Bankroll so that, given these results and this model, the posterior probability is at least ${$('bp_cred').value||'…'}% that the risk of falling to ${thr>0?thr+' buy-ins':'zero'} within ${horizon>0?horizon.toLocaleString():'…'} hands is below ${$('bp_target').value||'…'}%.`;
-}
 function scheduleBp(){
-  bpQuestionText();
   ++bpRequest;bpController?.abort();bpController=null;
   setBpState(bpHasResult?'stale':'empty','Inputs changed. Updating…');
   clearTimeout(bpTimer);bpTimer=setTimeout(runBp,350);
@@ -860,7 +856,7 @@ function renderBp(r,context=null){
     +`${i.hands.toLocaleString()} hands at ${bpSigned(i.winRate)} bb/100 · volatility ${sdText}${widened} · ${BP_PRIOR_SHORT[i.prior]} · ${bpBI(i.bank)} buy-ins of ${i.bbPerBuyIn} bb · ${horizon} · threshold ${thr} · risk below ${tgt} with ${q} posterior probability`;
   bpHasResult=true;setBpState('current');
   const snapshot=bpSnapshot(r,context);
-  renderChange($('bp_change'),bpChange(bpBase,snapshot),{intro:'Change one setting, such as the prior or the volatility, and this box shows what it changed and why.',same:'Nothing that affects the bankroll needed differs from before this change.'});
+  renderChange($('bp_change'),bpChange(bpBase,snapshot),{same:'Nothing that affects the bankroll needed differs from before this change.'});
   bpLast=snapshot;
 
   const need=b.credible;
@@ -872,15 +868,15 @@ function renderBp(r,context=null){
   gapHead.textContent=need.met?`Your ${bpBI(i.bank)} buy-ins are enough.`:`You have ${bpBI(i.bank)}: ${bpBI(bpShort(need.buyIns,i.bank))} more needed.`;
   gapRest.textContent=' '+atYours;
   $('bp_gap').replaceChildren(gapHead,gapRest);
-  $('bp_definition').textContent=`Meaning: given these ${i.hands.toLocaleString()} hands and this model, there is at least a ${q} posterior probability that the chance of falling to ${thr} within the next ${horizon} is below ${tgt}. This is the ${q} posterior upper bound of model risk. It is not the average risk, and not a ${q} chance of avoiding ruin.`;
+  $('bp_definition').textContent=`Given these ${i.hands.toLocaleString()} hands and this model, the posterior probability is at least ${q} that the chance of falling to ${thr} within the next ${horizon} is below ${tgt}. This is not average risk, and ${q} is not the chance of avoiding ruin.`;
 
   const weight=i.prior==='none'?'results only, no prior':`${Math.round(w.dataWeight*100)}% of the weight from your results`;
   $('bp_kpis').innerHTML=kpiCard('Win rate, 95% interval',`${bpSigned(w.interval[0])} to ${bpSigned(w.interval[1])}`,`bb/100 · posterior mean ${bpSigned(w.mean)}`)+
     kpiCard('Chance the win rate is above 0',bpPct(w.probPositive),weight)+
-    kpiCard('Average risk',bpPct(risk.average),'averaged over the win rate’s uncertainty')+
-    kpiCard('Risk, 95% interval',bpRange(risk.interval[0],risk.interval[1]),'posterior interval of model risk')+
+    kpiCard('Average risk',bpPct(risk.average),'')+
+    kpiCard('Risk, 95% interval',bpRange(risk.interval[0],risk.interval[1]),'')+
     kpiCard(`Risk, ${q} upper bound`,bpPctAgainst(risk.upper,i.target),`at your bankroll · limit ${tgt}`)+
-    kpiCard('Observed win rate as exact',bpPct(risk.plugIn),`if ${bpSigned(i.winRate)} bb/100 were certain`);
+    kpiCard('Risk if the observed win rate were exact',bpPct(risk.plugIn),'');
 
   const answer='<span class="bp-tag">this answer</span>';
   const compare=a=>{
@@ -893,7 +889,6 @@ function renderBp(r,context=null){
     [`Average risk below ${tgt}`,b.average],
     [`Risk below ${tgt} if ${bpSigned(i.winRate)} bb/100 were exact`,b.plugIn],
   ].map(([label,a],k)=>`<tr${k===0?' class="is-current"':''}><th scope="row">${label}</th><td class="num">${bpNeed(a.buyIns)} BI</td><td class="num">${compare(a)}</td></tr>`).join('');
-  $('bp_readings_note').textContent=`The last row ignores that the win rate is uncertain; it is what a calculator with a fixed win rate (like the simulation mode) gives. “${q} sure that risk is below ${tgt}” is also different from “a ${q} chance of not going broke”, which is average risk below ${bpLevel(1-i.credibility)}.`;
 
   const labels={winRate:['Uncertain win rate','95% posterior interval'],volatility:['Volatility assumption',`${r.sources.items[1].values.map(v=>+v.toFixed(1)).join(', ')} bb/100`],prior:['Prior','none, weak, skeptical']};
   $('bp_sources').innerHTML=r.sources.items.map(s=>{
@@ -925,7 +920,7 @@ function renderBp(r,context=null){
   const s=r.sampleSize;
   $('bp_sample_text').textContent=`With your ${i.hands.toLocaleString()} hands, a ${bpLevel(s.level)} interval for the win rate from the results alone is ± ${s.currentHalfWidth.toFixed(1)} bb/100. Narrowing it to ± ${s.margin} bb/100 takes about ${bpHands(s.totalHands)} hands in total${s.moreHands>0?`, ${bpHands(s.moreHands)} more than you have`:', which you already have'}. Volatility used: ${sdText}${i.seMultiplier>1?`; interval widened ×${i.seMultiplier.toFixed(2)} for changes over time`:''}.`;
   $('bp_model_text').textContent=`${r.model.name}, version ${r.model.version}. Likelihood: ${r.model.likelihood}. Posterior: ${r.model.posterior}. Risk: ${r.model.risk}. This page computes it live in JavaScript; in the fixed verification cases of checks/bankroll-posterior-python/, every table and chart value was recomputed by the Python research code (src/bayes.py, src/validation.py) with scipy and agrees.`;
-  $('bp_posterior_cap').textContent=`What the results and the ${BP_PRIOR_SHORT[i.prior]} say about your true win rate. Shaded: 95% interval. The answer uses the ${bpLevel(1-i.credibility)} point (${bpSigned(w.credible)} bb/100): risk at that win rate is the ${q} upper bound.`;
+  $('bp_posterior_cap').textContent=`Shaded: 95% interval. The answer uses the ${bpLevel(1-i.credibility)} point (${bpSigned(w.credible)} bb/100): risk at that win rate is the ${q} upper bound.`;
   renderBpCharts(r);
 }
 function renderBpCharts(r){
@@ -1166,7 +1161,7 @@ async function runGTO(){
     if(request!==gtoRequest)return;
     const exact=r.value;
     $('gto_kpis').innerHTML=kpiCard('Game value (P1)',exact.toFixed(4),'theory −0.0556')+
-      kpiCard('|error vs −1/18|',Math.abs(exact-(-1/18)).toFixed(4),'lower is better')+
+      kpiCard('|error vs −1/18|',Math.abs(exact-(-1/18)).toFixed(4),'')+
       kpiCard('Iterations',iters.toLocaleString(),'seed '+seed)+
       kpiCard('Info sets',Object.keys(r.strategy).length,'');
     const lay=layout('CFR convergence','Iterations','Game value (P1)');
@@ -1460,8 +1455,7 @@ function pfSummary(scenario){
 }
 function renderPfSummary(scenario,targetId='pf_summary'){
   const summary=pfSummary(scenario);
-  $(targetId).innerHTML=`<div class="label"><span>Range summary</span><strong>${scenario.stack}bb</strong></div>`+
-    `<div><span>VPIP</span><strong>${summary.vpip.toFixed(1)}%</strong></div>`+
+  $(targetId).innerHTML=`<div><span>VPIP</span><strong>${summary.vpip.toFixed(1)}%</strong></div>`+
     `<div class="raise"><span>Raise</span><strong>${summary.raise.toFixed(1)}%</strong></div>`+
     `<div class="call"><span>Call</span><strong>${summary.call.toFixed(1)}%</strong></div>`+
     `<div class="jam"><span>Jam</span><strong>${summary.jam.toFixed(1)}%</strong></div>`+
@@ -1497,10 +1491,8 @@ function renderPfMeta(scenario){
 }
 function renderPfHandDetail(hand){
   if(!hand)return;
-  $('pf_mix_hand').textContent=hand.hand;$('pf_hand_mix').innerHTML=pfActionRows(hand.actions);
   renderPfHandSlots();$('pf_hand_name').textContent=hand.hand;
   $('pf_detail_mix').innerHTML=pfActionRows(hand.actions);
-  $('pf_guidance').textContent=hand.guidance;
 }
 function fillPfScenarioSelects(){
   const options=pfScenarios.map(s=>`<option value="${s.id}">${s.title}</option>`).join('');
@@ -1545,7 +1537,7 @@ async function loadPreflop(scenarioId){
     renderPfLibrary();
     if(pfMode==='trainer')renderPfTrainer();
     else if(pfMode==='compare')renderPfCompare();
-    else $('pf_status').textContent=`${pfScenarios.length} demo scenarios · 169 starting hands`;
+    else $('pf_status').textContent='Library ready · select a hand or change the scenario';
   }catch(error){if(request===pfRequest){pfLoading=false;pfFailed=true;$('pf_status').textContent=errorMessage(error);$('pf_retry').hidden=false;if(pfMode==='trainer')renderPfTrainer();}}
   finally{if(request===pfRequest)$('preflop').setAttribute('aria-busy','false');}
 }
@@ -2022,8 +2014,8 @@ function setLabSavedA(snapshot,name){
   labSavedA=snapshot;
   $('lab_a_name').value=name||'A · '+labDefaultName(snapshot.params);delete $('lab_a_name').dataset.edited;
   delete $('lab_b_name').dataset.edited;
-  $('lab_save_a').textContent='Replace A with current';
-  $('lab_save_hint').textContent='A is saved. Next, change one assumption; B follows the current simulation and the comparison appears below.';
+  $('lab_save_a').textContent='Replace A with this result';
+  $('lab_save_hint').textContent='A saved. Change one assumption; the comparison with B appears below.';
   $('lab_save_next').hidden=false;$('lab_view_compare').hidden=false;
 }
 // Saving A no longer jumps away: the next step is offered right here.
@@ -2033,8 +2025,8 @@ $('lab_save_a').addEventListener('click',()=>{
   renderLabComparison();renderLabGuide();
 });
 $('lab_clear_a').addEventListener('click',()=>{
-  labSavedA=null;labSeed=42;$('lab_compare').hidden=true;$('lab_save_a').textContent='Save current as A';
-  $('lab_save_hint').textContent='Save a baseline, then change the assumptions to compare it with B.';
+  labSavedA=null;labSeed=42;$('lab_compare').hidden=true;$('lab_save_a').textContent='Save this result as A';
+  $('lab_save_hint').textContent='';
   $('lab_save_next').hidden=true;$('lab_view_compare').hidden=true;
   renderLabGuide();$('lab_save_a').focus();
 });
@@ -2102,7 +2094,7 @@ function renderLabSaved(message=null){
   if(message!=null)$('lab_saved_status').textContent=message;
   const items=list||[],current=labCurrentResult?.model?.version;
   $('lab_saved_empty').hidden=items.length>0;
-  $('lab_saved_empty').textContent=list?'No saved comparisons in this browser yet.':'This browser does not allow saving here. Downloads still work.';
+  $('lab_saved_empty').textContent=list?'No saved comparisons yet. Compare A with B, then choose Save comparison.':'This browser does not allow saving here. Downloads still work.';
   $('lab_saved_list').innerHTML=items.map(entry=>{
     const r=entry.record,pct=v=>(v*100).toFixed(1)+'%',id=escapeHtml(entry.id),open=labSavedOpen.has(entry.id);
     const versions=[r.a.model?.version,r.b.model?.version];
@@ -2201,8 +2193,8 @@ function renderUncertaintyReference(){
   $('lab_u_delta').textContent=`In this saved case, average model risk is ${((risk.expected_risk-risk.plug_in_risk)*100).toFixed(1)} percentage points higher when I account for win-rate uncertainty.`;
   const ci=risk.credible_intervals.ci_95;
   $('lab_u_interval').textContent=`95% posterior interval for model risk: ${pct(ci[0])}–${pct(ci[1])}`;
-  $('lab_u_posterior_note').textContent=`Posterior mean ${post.mean.toFixed(2)} bb/100 · posterior SD ${post.std.toFixed(2)} bb/100. Probability that the win rate is above zero: ${pct(post.prob_positive)}. The dashed line marks break-even at 0 bb/100.`;
-  $('lab_u_settings').textContent=`Fixed case · ${estimate.total_hands.toLocaleString()} synthetic hands · ${cfg.risk.bankroll_bb/100} BI · ${cfg.risk.n_hands.toLocaleString()}-hand horizon · ${risk.n_draws.toLocaleString()} posterior draws · independent of the live controls`;
+  $('lab_u_posterior_note').textContent=`Posterior mean ${post.mean.toFixed(2)} bb/100 · posterior SD ${post.std.toFixed(2)} bb/100. Probability that the win rate is above zero: ${pct(post.prob_positive)}.`;
+  $('lab_u_settings').textContent=`Fixed case · ${estimate.total_hands.toLocaleString()} synthetic hands · ${cfg.risk.bankroll_bb/100} BI · ${cfg.risk.n_hands.toLocaleString()}-hand horizon · ${risk.n_draws.toLocaleString()} posterior draws`;
   const sources=[
     ['Synthetic history',`${cfg.data.n_blocks} blocks × ${cfg.data.block_hands.toLocaleString()} hands; generating win rate ${cfg.data.true_winrate} and SD ${cfg.data.true_std} bb/100; seed ${cfg.data.seed}.`],
     ['Observed estimate',`${estimate.winrate_bb100.toFixed(2)} bb/100; estimated SD ${estimate.std_bb100.toFixed(2)} bb/100.`],
@@ -2261,7 +2253,7 @@ function renderLab(result){
   labHasResult=true;
   $('lab_live').dataset.state='current';
   $('lab_live').setAttribute('aria-busy','false');
-  $('lab_run_state').textContent='Current result';
+  $('lab_run_state').textContent='';
   $('lab_save_a').disabled=false;
   renderLabComparison();
   renderLabGuide();
@@ -2331,7 +2323,7 @@ function riskCurveTraces(curve){
   return traces;
 }
 function renderLabCurve(p,curve){
-  $('lab_curve_context').textContent=`Current assumptions · ${curve.pathsPerPoint} Monte Carlo paths per point, with the same simulated swings at every bankroll · shaded band = pointwise 95% interval · finite-horizon Brownian comparison.`;
+  $('lab_curve_context').textContent=`${curve.pathsPerPoint} Monte Carlo paths per point, with the same simulated swings at every bankroll`;
   if(!plotlyReady()){chartUnavailable('lab_curve');return;}
   const div=100;
   const compact=$('lab_curve').clientWidth<620;
@@ -2365,14 +2357,14 @@ async function runLab(paths,trigger=null){
     if(request!==labRequest)return;
     renderLab(result);
     if(result.curve){renderLabCurve(result.params,result.curve);labHasCurve=true;labCurveKey=key;}
-    else if(labCurveKey===key)$('lab_curve_context').textContent='Current assumptions · retained Monte Carlo curve · finite-horizon Brownian comparison.';
+    else if(labCurveKey===key)$('lab_curve_context').textContent='Retained curve for these assumptions';
     $('lab_status').textContent=p.paths===LAB_DETAILED_PATHS?'Detailed run complete':'Quick run complete';
   }catch(error){if(request===labRequest){
     $('lab_status').textContent=errorMessage(error);
     $('lab_live').dataset.state='error';$('lab_live').setAttribute('aria-busy','false');
     $('lab_run_state').textContent=labHasResult?'Update failed · showing the previous calculation':'Update failed · no result yet';
     if(labSavedA){$('lab_compare').setAttribute('aria-busy','false');$('lab_compare_state').textContent='Update failed. A stays saved; B is the previous result.';}
-    if(!labHasResult)$('lab_insight').textContent=errorMessage(error);
+    if(!labHasResult){$('lab_insight').className='lab-insight is-error';$('lab_insight').textContent=errorMessage(error);}
     renderLabGuide();
   }}
   finally{if(request===labRequest){labController=null;labTrigger=null;if(trigger)setBusy(trigger,false);}}

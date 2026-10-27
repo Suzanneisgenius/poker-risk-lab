@@ -57,6 +57,54 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-10-27 — fewer secondary labels; the layout explains
+
+- **Removed.** Text that repeated what the layout or a nearby value already
+  says:
+  - the header's "Two routes" line;
+  - the intro boxes at the top of Hand Equity, Pot Odds & EV, Bankroll Risk
+    and Preflop;
+  - Risk Lab's subtitle and the descriptions under the guide's first three
+    steps;
+  - kickers above headings ("Saved experiments", "Strand 01 · Numerics", …);
+  - the descriptions on the volatility cards;
+  - hints that restated a control's label;
+  - captions that repeated a chart's legend;
+  - the Preflop dataset count;
+  - a second, duplicate action-frequency panel in the Preflop library.
+
+  Long notes are cut to their caveat, for example "Intervals cover Monte Carlo
+  error only; the difference has no interval or test".
+- **Moved.** The method notes from the removed intro boxes ("How the estimate
+  works", "What expected value means", "Units and limitations") now sit under
+  each tool's main button. The disclaimer moved from the header to the footer.
+- **Kept for screen readers.** Some text is now visually hidden but still read
+  out:
+  - the "Current result" label;
+  - the plain-language result sentences in Risk Lab, Hand Equity and the
+    simulation mode;
+  - the Preflop matrix's keyboard hint.
+
+  The "What changed" box no longer shows instructions; it stays hidden until
+  an edit changes a result.
+- **Clearer actions.** Buttons say what they do: "Save this result as A",
+  "Run detailed simulation (16k paths)", "Calculate bankroll", "Find hand",
+  "Use this equity in Pot Odds & EV". Other text changes:
+  - "Risk if the observed win rate were exact" replaces "Observed win rate as
+    exact";
+  - "Margin over break-even" replaces "Equity margin";
+  - the EV now reads "Better than folding (0 bb)" or "Worse than folding";
+  - the empty saved-comparisons list says how to add one.
+- **Accessibility.** Seven fields in the Bankroll Risk simulation and two in
+  Hand Equity's simulation settings had labels that were not tied to their
+  inputs; now they are. The pot hint in Pot Odds & EV is linked to its field.
+  A browser check found an accessible name on every visible form control, and
+  every ARIA reference points to an element that exists.
+- **Preflop layout.** At widths between 900 and 1,220 px, the selected hand's
+  name, mix and buttons now sit together. Before, the name drifted to the far
+  right.
+- No calculation changed.
+
 ## 2026-10-27 — review fixes: snapshot checks, card picker, theme switch
 
 - **Snapshot checks across platforms.** The posterior-bankroll and

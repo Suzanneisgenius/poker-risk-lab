@@ -487,7 +487,7 @@ async function main(){
   {
     const { computeBankrollPosterior } = require("../server/bankroll_posterior.js");
     const ctx=vm.createContext({});
-    vm.runInContext(slice("const bpPct=","function bpQuestionText(")+slice("const signedValue=","function renderEVSensitivity(")
+    vm.runInContext(slice("const bpPct=","function scheduleBp(")+slice("const signedValue=","function renderEVSensitivity(")
       +";this.f={bpSnapshot,bpChange,evChange};",ctx);
     const f=ctx.f;
     const base={hands:40000,winRate:3,sd:90,sdSource:"assumed",prior:"weak",bank:30,thr:0,bbPerBuyIn:100,horizon:100000,target:5,credibility:80};
