@@ -21,89 +21,82 @@
 </div></header>
 
 <main class="wrap">
-<section aria-labelledby="title">
-  <p class="eyebrow">Computational statistics · case study</p>
+<header class="article-head">
   <h1 id="title">Poker Risk Lab: Understanding Uncertainty in Simulation</h1>
-  <p class="lede">An interactive study of how numerical error, uncertain inputs and modelling assumptions affect a bankroll-risk estimate. Poker is the setting; the question applies to any simulated risk with an absorbing boundary.</p>
-  <p class="question">How much should we trust a simulated risk estimate?</p>
-</section>
+  <p class="lede">How much should we trust a simulated risk estimate? This is an interactive study of how numerical error, uncertain inputs and modelling assumptions affect a bankroll-risk estimate. Poker is the setting; the question applies to any simulated risk with an absorbing boundary.</p>
+  <p class="byline">Xinrui Song · Updated {{updated}} · <a href="validation.html">How the numbers are checked</a></p>
+</header>
 
 <section aria-labelledby="short">
   <h2 id="short">The short answer</h2>
   <p class="finding">For one scenario — 30 buy-ins, a +3 bb/100 win rate, 90 bb/100 swings, 100,000 hands — the model's exact risk of ruin is <strong>{{exact}}</strong>. A single simulation at the Risk Lab's default 2,000 paths lands within about <strong>{{n2000_half}} points</strong> of it. Not knowing the win rate after 50,000 hands leaves anything from <strong>{{u50_lo}} to {{u50_hi}}</strong> plausible, and five ways results might arrive give <strong>{{a_min}} to {{a_max}}</strong>. More computing only fixes the first.</p>
   <figure class="card" aria-labelledby="overview-cap">
     <div class="chart" id="chart-overview"></div>
-    <div class="legend" aria-hidden="true"><span><i style="background:var(--accent)"></i>Simulation noise</span><span><i style="background:var(--warn)"></i>Uncertain win rate</span><span><i style="background:var(--ruin)"></i>Model assumptions</span><span><i style="border-left:2px dashed var(--warn);border-radius:0;width:2px"></i>Exact model value</span></div>
+    <div class="legend" aria-hidden="true"><span><i style="background:var(--accent)"></i>Simulation noise</span><span><i style="background:var(--warn)"></i>Uncertain win rate</span><span><i style="background:var(--ruin)"></i>Model assumptions</span><span><i style="border-left:2px dashed var(--text);border-radius:0;width:2px"></i>Exact model value</span></div>
     <figcaption id="overview-cap" class="method">Simulation noise: expected 95% range of one run. Win rate: 95% interval of risk given the hands observed. Models: lowest to highest risk across the five models in question 3.</figcaption>
     <details><summary>Data</summary><div class="table-wrap"><table id="table-overview"><thead><tr><th>Source</th><th class="num">Low</th><th class="num">High</th></tr></thead><tbody></tbody></table></div></details>
   </figure>
-  <ul class="grid3">
-    <li><strong>Measures simulation error</strong>Repeated runs, interval coverage, and checks against a closed-form value and independent implementations.</li>
-    <li><strong>Propagates parameter uncertainty</strong>A posterior for the win rate is pushed through the risk formula, instead of plugging in one number.</li>
-    <li><strong>Stress-tests the assumptions</strong>Heavy tails, rare shocks and dependence at the same edge show which departures matter.</li>
-  </ul>
+  <p>The study does three things. It measures simulation error, with repeated runs, interval coverage, and checks against a closed-form value and independent implementations. It propagates uncertainty about the win rate, pushing a posterior through the risk formula instead of plugging in one number. And it stress-tests the assumptions: heavy tails, rare shocks and dependence at the same edge show which departures matter. Sections 1 to 3 below take these in turn.</p>
 </section>
 
 <section aria-labelledby="checked">
-  <p class="eyebrow">One check, in short</p>
   <h2 id="checked">A lower risk that was not a real change</h2>
   <p class="finding">After an engine update, the same settings and seed gave a lower risk: <strong>{{c_before}} → {{c_after}}</strong>. Two things had changed at once, the random numbers and how ruin is monitored, so each was switched on separately and then rerun over {{c_seeds}} seeds. The drop came from drawing different random numbers. The new monitoring raised risk on every seed and brought the average close to the exact value.</p>
-  <dl class="check-nums">
-    <div><dt>Ruin checked only at the end of each step</dt><dd>{{c_endpoint}}</dd></div>
-    <div><dt>With the Brownian-bridge correction</dt><dd>{{c_mean}} <span class="muted small">(s.e. {{c_se}} points)</span></dd></div>
-    <div><dt>Exact value for the model</dt><dd>{{exact}}</dd></div>
-  </dl>
+  <div class="table-wrap"><table class="short">
+    <thead><tr><th>Method</th><th class="num">Estimated risk of ruin</th></tr></thead>
+    <tbody>
+      <tr><td>Ruin checked only at the end of each step</td><td class="num">{{c_endpoint}}</td></tr>
+      <tr><td>With the Brownian-bridge correction</td><td class="num">{{c_mean}} <span class="muted">(s.e. {{c_se}} points)</span></td></tr>
+      <tr><td>Exact value for the model</td><td class="num">{{exact}}</td></tr>
+    </tbody>
+  </table></div>
   <p class="method">Averages over seeds 0–{{c_seeds_last}}, {{c_paths}} paths each. +3 bb/100, 30 buy-ins, 90 bb/100, 100,000 hands, steps of 100 hands. <a href="#investigation">How it was checked, step by step</a>.</p>
 </section>
 
-<section aria-labelledby="cases">
-  <h2 id="cases">Three questions, one at a time</h2>
+<section aria-labelledby="q1">
+  <h2 id="q1" class="chapter"><span class="chapter-n">1 </span>Why does the same setting give a different number on every run?</h2>
+  <div class="control" role="group" aria-label="Paths per run" id="ctl-noise">
+    <span>Paths per run</span>
+    <button type="button" data-value="500" aria-pressed="false">500</button>
+    <button type="button" data-value="2000" aria-pressed="true">2,000 (Risk Lab default)</button>
+    <button type="button" data-value="20000" aria-pressed="false">20,000</button>
+  </div>
+  <div class="chart" id="chart-noise" role="img" aria-labelledby="noise-explain"></div>
+  <p class="explain" id="noise-explain" aria-live="polite"></p>
+  <p class="method"><strong>Method.</strong> The same scenario run with seeds 0–39 at each size, with ruin monitored continuously (Brownian-bridge correction), so the finite-horizon Brownian formula is the exact value being estimated. The shaded band is the binomial 95% range for one run.</p>
+  <p class="limits"><strong>Limits.</strong> “Exact” means exact for this model — independent Normal results at a fixed win rate — not for real games.</p>
+</section>
 
-  <article aria-labelledby="q1">
-    <h3 id="q1"><span class="case-n">1</span> · Why does the same setting give a different number on every run?</h3>
-    <div class="control" role="group" aria-label="Paths per run" id="ctl-noise">
-      <span>Paths per run</span>
-      <button type="button" data-value="500" aria-pressed="false">500</button>
-      <button type="button" data-value="2000" aria-pressed="true">2,000 (Risk Lab default)</button>
-      <button type="button" data-value="20000" aria-pressed="false">20,000</button>
-    </div>
-    <div class="chart" id="chart-noise" role="img" aria-labelledby="noise-explain"></div>
-    <p class="explain" id="noise-explain" aria-live="polite"></p>
-    <p class="method"><strong>Method.</strong> The same scenario run with seeds 0–39 at each size, with ruin monitored continuously (Brownian-bridge correction), so the finite-horizon Brownian formula is the exact value being estimated. The shaded band is the binomial 95% range for one run.</p>
-    <p class="limits"><strong>Limits.</strong> “Exact” means exact for this model — independent Normal results at a fixed win rate — not for real games.</p>
-  </article>
+<section aria-labelledby="q2">
+  <h2 id="q2" class="chapter"><span class="chapter-n">2 </span>If the win rate itself is uncertain, how much do more paths help?</h2>
+  <div class="control" role="group" aria-label="Hands of history" id="ctl-history">
+    <span>Hands of history</span>
+    <button type="button" data-value="10000" aria-pressed="false">10k</button>
+    <button type="button" data-value="50000" aria-pressed="true">50k</button>
+    <button type="button" data-value="200000" aria-pressed="false">200k</button>
+    <button type="button" data-value="1000000" aria-pressed="false">1M</button>
+  </div>
+  <div class="chart" id="chart-uncertainty" role="img" aria-labelledby="uncertainty-explain"></div>
+  <p class="explain" id="uncertainty-explain" aria-live="polite"></p>
+  <p class="method"><strong>Method.</strong> Suppose a player's results so far average exactly +3 bb/100. The win rate's standard error is 90 / √(hands / 100); a Normal posterior (weakly informative prior, N(0, 10²)) is pushed through the risk formula with {{u_draws}} draws. Simulation intervals are binomial 95% ranges at the same win rate.</p>
+  <p class="limits"><strong>Limits.</strong> The swing size is treated as known, and results are assumed independent; both make these intervals narrower than a full analysis would.</p>
+</section>
 
-  <article aria-labelledby="q2">
-    <h3 id="q2"><span class="case-n">2</span> · If the win rate itself is uncertain, how much do more paths help?</h3>
-    <div class="control" role="group" aria-label="Hands of history" id="ctl-history">
-      <span>Hands of history</span>
-      <button type="button" data-value="10000" aria-pressed="false">10k</button>
-      <button type="button" data-value="50000" aria-pressed="true">50k</button>
-      <button type="button" data-value="200000" aria-pressed="false">200k</button>
-      <button type="button" data-value="1000000" aria-pressed="false">1M</button>
-    </div>
-    <div class="chart" id="chart-uncertainty" role="img" aria-labelledby="uncertainty-explain"></div>
-    <p class="explain" id="uncertainty-explain" aria-live="polite"></p>
-    <p class="method"><strong>Method.</strong> Suppose a player's results so far average exactly +3 bb/100. The win rate's standard error is 90 / √(hands / 100); a Normal posterior (weakly informative prior, N(0, 10²)) is pushed through the risk formula with {{u_draws}} draws. Simulation intervals are binomial 95% ranges at the same win rate.</p>
-    <p class="limits"><strong>Limits.</strong> The swing size is treated as known, and results are assumed independent; both make these intervals narrower than a full analysis would.</p>
-  </article>
-
-  <article aria-labelledby="q3">
-    <h3 id="q3"><span class="case-n">3</span> · If results are not independent or not Normal, is the estimate still reliable?</h3>
-    <div class="chart" id="chart-assumptions" role="img" aria-label="Risk of ruin with 95% intervals under five models of how results arrive"></div>
-    <div class="control" role="group" aria-label="Model details" id="ctl-model">
-      <span>Details for</span>
-      <button type="button" data-value="gaussian" aria-pressed="false">Baseline</button>
-      <button type="button" data-value="student_t" aria-pressed="false">Heavy tails</button>
-      <button type="button" data-value="shock_mixture" aria-pressed="false">Shocks</button>
-      <button type="button" data-value="ar1" aria-pressed="true">Swings carry over</button>
-      <button type="button" data-value="regime_switching" aria-pressed="false">Clustered regimes</button>
-    </div>
-    <div class="model-card" id="model-card" aria-live="polite"></div>
-    <p class="explain">Same edge everywhere. Changing the <em>shape</em> of a 100-hand result barely moves risk ({{a_t}} with heavy tails, {{a_shock}} with rare shocks, against {{a_base}}). Letting swings carry over from one step to the next raises it to <strong>{{a_ar1}}</strong> (×{{a_ar1_x}}): each step still has the same spread, but the 100,000-hand total varies {{a_ar1_total}}× as much.</p>
-    <p class="method"><strong>Method.</strong> {{a_paths}} paths per model, one seed. All five models are compared using ruin observed at 100-hand checkpoints; the bridge correction is exact only for Normal steps, so it is not used here. This holds the observation grid fixed. It does not establish equal monitoring bias across models or determine their continuously monitored ruin probabilities. Intervals are Wilson 95%.</p>
-    <p class="limits"><strong>Limits.</strong> These are controlled stress tests, not estimates of how real results arrive. The regime model's steps are also wider (standard deviation about {{a_regime_sd}} instead of 90).</p>
-  </article>
+<section aria-labelledby="q3">
+  <h2 id="q3" class="chapter"><span class="chapter-n">3 </span>If results are not independent or not Normal, is the estimate still reliable?</h2>
+  <div class="chart" id="chart-assumptions" role="img" aria-label="Risk of ruin with 95% intervals under five models of how results arrive"></div>
+  <div class="control" role="group" aria-label="Model details" id="ctl-model">
+    <span>Details for</span>
+    <button type="button" data-value="gaussian" aria-pressed="false">Baseline</button>
+    <button type="button" data-value="student_t" aria-pressed="false">Heavy tails</button>
+    <button type="button" data-value="shock_mixture" aria-pressed="false">Shocks</button>
+    <button type="button" data-value="ar1" aria-pressed="true">Swings carry over</button>
+    <button type="button" data-value="regime_switching" aria-pressed="false">Clustered regimes</button>
+  </div>
+  <div class="model-card" id="model-card" aria-live="polite"></div>
+  <p class="explain">Same edge everywhere. Changing the <em>shape</em> of a 100-hand result barely moves risk ({{a_t}} with heavy tails, {{a_shock}} with rare shocks, against {{a_base}}). Letting swings carry over from one step to the next raises it to <strong>{{a_ar1}}</strong> (×{{a_ar1_x}}): each step still has the same spread, but the 100,000-hand total varies {{a_ar1_total}}× as much.</p>
+  <p class="method"><strong>Method.</strong> {{a_paths}} paths per model, one seed. All five models are compared using ruin observed at 100-hand checkpoints; the bridge correction is exact only for Normal steps, so it is not used here. This holds the observation grid fixed. It does not establish equal monitoring bias across models or determine their continuously monitored ruin probabilities. Intervals are Wilson 95%.</p>
+  <p class="limits"><strong>Limits.</strong> These are controlled stress tests, not estimates of how real results arrive. The regime model's steps are also wider (standard deviation about {{a_regime_sd}} instead of 90).</p>
 </section>
 
 <section aria-labelledby="investigation">
@@ -126,10 +119,7 @@
 <section aria-labelledby="reproduce">
   <h2 id="reproduce">Reproduce</h2>
   <p>Each figure on this page comes from one command and one configuration file. The outputs record the commit, seeds, path counts and software versions; this page is built from them by <code>npm run build</code>.</p>
-  <div class="table-wrap"><table>
-    <thead><tr><th>Figure</th><th>Configuration</th><th>Command</th><th>Recorded with</th></tr></thead>
-    <tbody id="table-reproduce"></tbody>
-  </table></div>
+  <dl class="repro" id="list-reproduce"></dl>
   <p class="method">Install with <code>pip install -r requirements-research.txt</code>. Validation checks have their own commands on the <a href="validation.html">Validation</a> page.</p>
 </section>
 
@@ -215,9 +205,11 @@
     card.replaceChildren();
     node("p", "", card).innerHTML = `<strong>${r.label}.</strong> ${about[key]}`;
     const dl = node("dl", "", card);
-    for (const [k, v] of [["Risk of ruin", `${pct(r.risk, 2)} (${pct(r.wilson95[0], 1)}–${pct(r.wilson95[1], 1)})`], ["Against baseline", `×${r.risk_vs_baseline.toFixed(2)}`],
+    for (const [k, v, sub] of [["Risk of ruin", pct(r.risk, 2), `95% interval ${pct(r.wilson95[0], 1)}–${pct(r.wilson95[1], 1)}`], ["Against baseline", `×${r.risk_vs_baseline.toFixed(2)}`],
       ["Spread of one step", `${r.per_step_sd_bb.toFixed(0)} bb`], ["Spread of the 100k total", `×${r.total_sd_ratio.toFixed(2)}`]]) {
-      node("dt", "", dl, k); node("dd", "", dl, v);
+      node("dt", "", dl, k);
+      const dd = node("dd", "", dl, v);
+      if (sub) node("span", "sub", dd, sub);
     }
   });
 }
@@ -226,8 +218,9 @@
 {
   document.getElementById("table-calc").innerHTML = DATA.calc.map((r) =>
     `<tr><th scope="row">${r.winrate_bb100 > 0 ? "+" : ""}${r.winrate_bb100} bb/100</th><td class="num">${pct(r.functional_fix_2026_10_05.risk, 2)}</td><td class="num">${pct(r.new_streams_endpoint_only.risk, 2)}</td><td class="num">${pct(r.model_2026_10_21.risk, 2)}</td></tr>`).join("");
-  document.getElementById("table-reproduce").innerHTML = DATA.reproduce.map((r) =>
-    `<tr><td>${r.figure}</td><td><code>${r.config}</code></td><td><code>${r.command}</code></td><td class="small">${r.recorded}</td></tr>`).join("");
+  document.getElementById("list-reproduce").innerHTML = DATA.reproduce.map((r) =>
+    `<dt>${r.figure}</dt><dd><pre class="cmd"><code>${r.command}</code></pre>` +
+    `<p class="repro-meta">${r.config.endsWith(".yaml") ? `Configuration <code>${r.config}</code>` : `Configuration: ${r.config}`}. Recorded with ${r.recorded}.</p></dd>`).join("");
 }
 </script>
 </body>

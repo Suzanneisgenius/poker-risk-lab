@@ -7,104 +7,123 @@
 <meta name="description" content="How numerical error, uncertain inputs and modelling assumptions affect a simulated bankroll-risk estimate.">
 <style>
 :root{
-  --bg:#0b1220;--surface:rgba(19,32,52,.82);--surface2:#111c2f;--line:rgba(148,190,222,.18);
-  --text:#e6edf3;--muted:#9fb0c6;--dim:#7d8ea6;--accent:#38bdf8;--warn:#fbbf24;--ruin:#f87171;--pos:#4ade80;
-  --radius:14px;
+  color-scheme:light dark;
+  --bg:#fbfaf7;--surface:#fff;--surface2:#f3f1ec;--line:#e1ddd4;--control:#c9c3b8;--track:#efece6;
+  --text:#1d1f23;--muted:#555b64;--dim:#6b717b;
+  --accent:#2b6cb0;--warn:#b5801a;--ruin:#b23b52;--pos:#1f7a4a;
+  --band:rgba(43,108,176,.16);--code:#f0ede7;--on-bar:#16181b;
+  --serif:Charter,"Bitstream Charter","Iowan Old Style","Sitka Text",Cambria,Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --radius:6px;
 }
+@media (prefers-color-scheme:dark){:root{
+  --bg:#1a1a1c;--surface:#222225;--surface2:#29292d;--line:#38383d;--control:#55555c;--track:#2a2a2e;
+  --text:#e9e7e2;--muted:#aaa79f;--dim:#8f8c85;
+  --accent:#4a8fd8;--warn:#bf8a28;--ruin:#de5f74;--pos:#5cb784;
+  --band:rgba(74,143,216,.2);--code:#2a2a2e;
+}}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-a{color:var(--accent)}
-a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid #fff;outline-offset:2px}
-.wrap{max-width:960px;margin:0 auto;padding:0 16px}
-.top{border-bottom:1px solid var(--line);background:rgba(11,18,32,.9);position:sticky;top:0;z-index:5}
+body{margin:0;background:var(--bg);color:var(--text);font:18px/1.65 var(--serif)}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:780px;margin:0 auto;padding:0 16px}
+.top{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:5;font-family:var(--sans)}
 .top .wrap{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;justify-content:space-between;padding-top:10px;padding-bottom:10px}
-.top strong{font-size:15px}
+.top strong{font:600 14px/1.4 var(--mono)}
 .top nav{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:14px}
 .top nav a{text-decoration:none}
+.top nav a:hover{text-decoration:underline}
 .top nav a[aria-current="page"]{color:var(--text);font-weight:650}
-h1{font-size:clamp(28px,5vw,40px);line-height:1.15;margin:0 0 12px}
-h2{font-size:24px;line-height:1.25;margin:0 0 12px}
-h3{font-size:19px;line-height:1.3;margin:0 0 8px}
+h1{font-size:clamp(30px,5vw,42px);line-height:1.15;letter-spacing:-.01em;margin:0 0 14px}
+h2{font-size:26px;line-height:1.25;margin:0 0 12px}
+h3{font-size:20px;line-height:1.3;margin:0 0 8px}
 section{padding:36px 0;border-bottom:1px solid var(--line)}
 section:last-of-type{border-bottom:0}
-.eyebrow{margin:0 0 8px;color:var(--accent);font-size:13px;font-weight:650;letter-spacing:.06em;text-transform:uppercase}
-.lede{font-size:18px;color:var(--muted);max-width:720px;margin:0 0 18px}
-.question{font-size:21px;font-weight:650;color:var(--warn);margin:0}
+/* Article header: title, standfirst, byline */
+.article-head{padding:44px 0 28px;border-bottom:1px solid var(--line)}
+.lede{font-size:21px;line-height:1.5;color:var(--muted);margin:0 0 18px}
+.byline{margin:0;font:13.5px/1.5 var(--mono);color:var(--dim)}
+/* Numbered chapters; the number hangs in the margin on wide screens */
+.chapter{position:relative}
+.chapter-n{font:600 .8em/1 var(--mono);color:var(--accent);margin-right:.2em}
+@media(min-width:900px){.chapter-n{position:absolute;right:100%;top:.32em;margin-right:.9em}}
 .muted{color:var(--muted)}
 .small{font-size:14px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
-.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0 0;padding:0;list-style:none}
-.grid3 li{background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px}
-.grid3 strong{display:block;margin-bottom:2px}
-.finding{font-size:17px;max-width:800px}
-article{margin:0 0 28px;padding:20px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}
-article:last-child{margin-bottom:0}
-.case-n{color:var(--accent);font-weight:700}
-.control{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0}
+.card{margin:20px 0;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+article{margin:32px 0 0}
+h2+article{margin-top:16px}
+.control{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0;font-family:var(--sans)}
 .control>span{font-size:14px;color:var(--muted);margin-right:4px}
-.control button{font:inherit;font-size:14px;min-height:40px;padding:6px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);color:var(--text);cursor:pointer}
-.control button[aria-pressed="true"]{border-color:var(--accent);background:rgba(56,189,248,.16);font-weight:650}
+.control button{font:inherit;font-size:14px;min-height:40px;padding:6px 12px;border-radius:4px;border:1px solid var(--control);background:var(--surface);color:var(--text);cursor:pointer}
+.control button[aria-pressed="true"]{border-color:var(--accent);background:var(--band);font-weight:650}
 .explain{margin:12px 0 0}
-.method,.limits{margin:10px 0 0;font-size:14px;color:var(--muted)}
+.method,.limits{margin:10px 0 0;font:14.5px/1.55 var(--sans);color:var(--muted)}
 .method strong,.limits strong{color:var(--text)}
 /* Interval and dot charts (HTML, so text stays readable at any width) */
-.chart{margin:8px 0 0}
-.row{display:grid;grid-template-columns:minmax(0,15rem) minmax(0,1fr);gap:4px 14px;align-items:center;margin:0 0 10px}
+.chart{margin:8px 0 0;font-family:var(--sans)}
+.row{display:grid;grid-template-columns:minmax(0,13rem) minmax(0,1fr);gap:4px 14px;align-items:center;margin:0 0 10px}
 .row-label{font-size:14px;color:var(--muted);line-height:1.3}
-.track{position:relative;height:26px;border-radius:6px;background:rgba(148,190,222,.06)}
-.bar{position:absolute;top:6px;height:14px;border-radius:3px;min-width:3px}
+.track{position:relative;height:26px;border-radius:3px;background:var(--track)}
+.bar{position:absolute;top:6px;height:14px;border-radius:2px;min-width:3px}
 .bar.noise{background:var(--accent)}.bar.parameter{background:var(--warn)}.bar.model{background:var(--ruin)}
-.bar.band{top:3px;height:20px;background:rgba(56,189,248,.18)}
+.bar.band{top:3px;height:20px;background:var(--band)}
 .value{position:absolute;top:3px;font-size:12.5px;color:var(--muted);white-space:nowrap}
-.value.inside{color:#0b1220;font-weight:650}
+.value.inside{color:var(--on-bar);font-weight:650}
 .dot{position:absolute;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:var(--accent)}
 .point{position:absolute;top:8px;width:10px;height:10px;margin-left:-5px;border-radius:50%}
 .whisker{position:absolute;top:12px;height:2px}
-.ref{position:absolute;top:-4px;bottom:-4px;width:0;border-left:1.5px dashed var(--warn)}
-.axis{position:relative;height:20px;margin-left:calc(min(15rem,40%) + 14px);font-size:12px;color:var(--dim)}
+.ref{position:absolute;top:-4px;bottom:-4px;width:0;border-left:1.5px dashed var(--text)}
+.axis{position:relative;height:20px;margin-left:calc(min(13rem,40%) + 14px);font-size:12px;color:var(--dim)}
 .axis span{position:absolute;transform:translateX(-50%)}
 .axis-title{font-size:12.5px;color:var(--dim);margin:4px 0 0}
-.legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;color:var(--muted);margin:6px 0 0}
-.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
-.model-card{margin:12px 0 0;padding:12px 14px;border-radius:12px;background:var(--surface2);border:1px solid var(--line)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 16px;font:13px/1.5 var(--sans);color:var(--muted);margin:6px 0 0}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.model-card{margin:12px 0 0;padding:12px 14px;border-radius:var(--radius);background:var(--surface2);border:1px solid var(--line)}
 .model-card p{margin:0 0 6px}
-.model-card dl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:8px 0 0}
+.model-card dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(8.5rem,1fr));gap:10px 16px;margin:10px 0 0;font-family:var(--sans)}
 .model-card dt{font-size:12.5px;color:var(--muted)}
-.model-card dd{margin:0;font-weight:650}
+.model-card dd{margin:0;font:650 17px/1.35 var(--mono)}
+.model-card dd .sub{display:block;font:12.5px/1.4 var(--sans);color:var(--muted)}
 /* Tables */
 .table-wrap{overflow-x:auto;margin:12px 0 0}
-table{border-collapse:collapse;width:100%;font-size:14px}
+table{border-collapse:collapse;width:100%;font:14.5px/1.5 var(--sans)}
+table.short{width:auto;min-width:min(100%,520px)}
 caption{text-align:left;color:var(--muted);font-size:13.5px;padding:0 0 6px}
-th,td{padding:7px 10px 7px 0;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
-thead th{color:var(--muted);font-weight:600}
+th,td{padding:7px 14px 7px 0;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+thead th{color:var(--muted);font-weight:600;border-bottom-color:var(--text)}
 td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
-code{font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;background:rgba(148,190,222,.1);padding:1px 5px;border-radius:5px;overflow-wrap:anywhere}
+td.num{font:13.5px/1.6 var(--mono)}
+code{font:13px/1.4 var(--mono);background:var(--code);padding:1px 5px;border-radius:3px;overflow-wrap:anywhere}
+/* Reproduce: one command per figure, shown as a terminal line */
+.repro{margin:16px 0 0}
+.repro dt{font:600 15px/1.4 var(--sans);margin:20px 0 6px}
+.repro dt:first-child{margin-top:0}
+.repro dd{margin:0}
+.cmd{margin:0;padding:9px 12px;background:var(--code);border-radius:4px;overflow-x:auto;font:13px/1.5 var(--mono)}
+.cmd code{padding:0;background:none;overflow-wrap:normal;white-space:pre}
+.cmd code::before{content:"$ ";color:var(--dim)}
+.repro-meta{margin:6px 0 0;font:13.5px/1.5 var(--sans);color:var(--muted)}
 details{margin:10px 0 0}
-summary{cursor:pointer;color:var(--accent);font-size:14px}
+summary{cursor:pointer;color:var(--accent);font:14px/1.5 var(--sans)}
 ol.steps{padding-left:22px}
 ol.steps li{margin:0 0 8px}
 .pass{color:var(--pos);font-weight:650}
 .fail{color:var(--ruin);font-weight:650}
 .note{border-left:3px solid var(--warn);padding:2px 0 2px 12px;color:var(--muted)}
-footer{padding:28px 0 40px;color:var(--dim);font-size:14px}
+footer{padding:28px 0 40px;color:var(--dim);font:14px/1.5 var(--sans)}
 @media(max-width:720px){
-  .grid3{grid-template-columns:1fr}
+  body{font-size:17px}
+  .lede{font-size:19px}
   .row{grid-template-columns:1fr}
   .axis{margin-left:0}
-  .model-card dl{grid-template-columns:repeat(2,minmax(0,1fr))}
-  article{padding:16px}
 }
 @media print{.top{position:static}}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 figure{margin:16px 0 0}
 [id]{scroll-margin-top:72px}
 @media(max-width:720px){.top{position:static}[id]{scroll-margin-top:8px}}
-.check-nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0 0}
-.check-nums div{background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
-.check-nums dt{font-size:13.5px;color:var(--muted);line-height:1.35}
-.check-nums dd{margin:4px 0 0;font-size:22px;font-weight:650;font-variant-numeric:tabular-nums}
-@media(max-width:720px){.check-nums{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -119,89 +138,82 @@ figure{margin:16px 0 0}
 </div></header>
 
 <main class="wrap">
-<section aria-labelledby="title">
-  <p class="eyebrow">Computational statistics · case study</p>
+<header class="article-head">
   <h1 id="title">Poker Risk Lab: Understanding Uncertainty in Simulation</h1>
-  <p class="lede">An interactive study of how numerical error, uncertain inputs and modelling assumptions affect a bankroll-risk estimate. Poker is the setting; the question applies to any simulated risk with an absorbing boundary.</p>
-  <p class="question">How much should we trust a simulated risk estimate?</p>
-</section>
+  <p class="lede">How much should we trust a simulated risk estimate? This is an interactive study of how numerical error, uncertain inputs and modelling assumptions affect a bankroll-risk estimate. Poker is the setting; the question applies to any simulated risk with an absorbing boundary.</p>
+  <p class="byline">Xinrui Song · Updated 2026-10-26 · <a href="validation.html">How the numbers are checked</a></p>
+</header>
 
 <section aria-labelledby="short">
   <h2 id="short">The short answer</h2>
   <p class="finding">For one scenario — 30 buy-ins, a +3 bb/100 win rate, 90 bb/100 swings, 100,000 hands — the model's exact risk of ruin is <strong>7.17%</strong>. A single simulation at the Risk Lab's default 2,000 paths lands within about <strong>±1.13 points</strong> of it. Not knowing the win rate after 50,000 hands leaves anything from <strong>0.1% to 83.3%</strong> plausible, and five ways results might arrive give <strong>6.4% to 20.3%</strong>. More computing only fixes the first.</p>
   <figure class="card" aria-labelledby="overview-cap">
     <div class="chart" id="chart-overview"></div>
-    <div class="legend" aria-hidden="true"><span><i style="background:var(--accent)"></i>Simulation noise</span><span><i style="background:var(--warn)"></i>Uncertain win rate</span><span><i style="background:var(--ruin)"></i>Model assumptions</span><span><i style="border-left:2px dashed var(--warn);border-radius:0;width:2px"></i>Exact model value</span></div>
+    <div class="legend" aria-hidden="true"><span><i style="background:var(--accent)"></i>Simulation noise</span><span><i style="background:var(--warn)"></i>Uncertain win rate</span><span><i style="background:var(--ruin)"></i>Model assumptions</span><span><i style="border-left:2px dashed var(--text);border-radius:0;width:2px"></i>Exact model value</span></div>
     <figcaption id="overview-cap" class="method">Simulation noise: expected 95% range of one run. Win rate: 95% interval of risk given the hands observed. Models: lowest to highest risk across the five models in question 3.</figcaption>
     <details><summary>Data</summary><div class="table-wrap"><table id="table-overview"><thead><tr><th>Source</th><th class="num">Low</th><th class="num">High</th></tr></thead><tbody></tbody></table></div></details>
   </figure>
-  <ul class="grid3">
-    <li><strong>Measures simulation error</strong>Repeated runs, interval coverage, and checks against a closed-form value and independent implementations.</li>
-    <li><strong>Propagates parameter uncertainty</strong>A posterior for the win rate is pushed through the risk formula, instead of plugging in one number.</li>
-    <li><strong>Stress-tests the assumptions</strong>Heavy tails, rare shocks and dependence at the same edge show which departures matter.</li>
-  </ul>
+  <p>The study does three things. It measures simulation error, with repeated runs, interval coverage, and checks against a closed-form value and independent implementations. It propagates uncertainty about the win rate, pushing a posterior through the risk formula instead of plugging in one number. And it stress-tests the assumptions: heavy tails, rare shocks and dependence at the same edge show which departures matter. Sections 1 to 3 below take these in turn.</p>
 </section>
 
 <section aria-labelledby="checked">
-  <p class="eyebrow">One check, in short</p>
   <h2 id="checked">A lower risk that was not a real change</h2>
   <p class="finding">After an engine update, the same settings and seed gave a lower risk: <strong>7.85% → 6.35%</strong>. Two things had changed at once, the random numbers and how ruin is monitored, so each was switched on separately and then rerun over 40 seeds. The drop came from drawing different random numbers. The new monitoring raised risk on every seed and brought the average close to the exact value.</p>
-  <dl class="check-nums">
-    <div><dt>Ruin checked only at the end of each step</dt><dd>6.76%</dd></div>
-    <div><dt>With the Brownian-bridge correction</dt><dd>7.12% <span class="muted small">(s.e. 0.08 points)</span></dd></div>
-    <div><dt>Exact value for the model</dt><dd>7.17%</dd></div>
-  </dl>
+  <div class="table-wrap"><table class="short">
+    <thead><tr><th>Method</th><th class="num">Estimated risk of ruin</th></tr></thead>
+    <tbody>
+      <tr><td>Ruin checked only at the end of each step</td><td class="num">6.76%</td></tr>
+      <tr><td>With the Brownian-bridge correction</td><td class="num">7.12% <span class="muted">(s.e. 0.08 points)</span></td></tr>
+      <tr><td>Exact value for the model</td><td class="num">7.17%</td></tr>
+    </tbody>
+  </table></div>
   <p class="method">Averages over seeds 0–39, 2,000 paths each. +3 bb/100, 30 buy-ins, 90 bb/100, 100,000 hands, steps of 100 hands. <a href="#investigation">How it was checked, step by step</a>.</p>
 </section>
 
-<section aria-labelledby="cases">
-  <h2 id="cases">Three questions, one at a time</h2>
+<section aria-labelledby="q1">
+  <h2 id="q1" class="chapter"><span class="chapter-n">1 </span>Why does the same setting give a different number on every run?</h2>
+  <div class="control" role="group" aria-label="Paths per run" id="ctl-noise">
+    <span>Paths per run</span>
+    <button type="button" data-value="500" aria-pressed="false">500</button>
+    <button type="button" data-value="2000" aria-pressed="true">2,000 (Risk Lab default)</button>
+    <button type="button" data-value="20000" aria-pressed="false">20,000</button>
+  </div>
+  <div class="chart" id="chart-noise" role="img" aria-labelledby="noise-explain"></div>
+  <p class="explain" id="noise-explain" aria-live="polite"></p>
+  <p class="method"><strong>Method.</strong> The same scenario run with seeds 0–39 at each size, with ruin monitored continuously (Brownian-bridge correction), so the finite-horizon Brownian formula is the exact value being estimated. The shaded band is the binomial 95% range for one run.</p>
+  <p class="limits"><strong>Limits.</strong> “Exact” means exact for this model — independent Normal results at a fixed win rate — not for real games.</p>
+</section>
 
-  <article aria-labelledby="q1">
-    <h3 id="q1"><span class="case-n">1</span> · Why does the same setting give a different number on every run?</h3>
-    <div class="control" role="group" aria-label="Paths per run" id="ctl-noise">
-      <span>Paths per run</span>
-      <button type="button" data-value="500" aria-pressed="false">500</button>
-      <button type="button" data-value="2000" aria-pressed="true">2,000 (Risk Lab default)</button>
-      <button type="button" data-value="20000" aria-pressed="false">20,000</button>
-    </div>
-    <div class="chart" id="chart-noise" role="img" aria-labelledby="noise-explain"></div>
-    <p class="explain" id="noise-explain" aria-live="polite"></p>
-    <p class="method"><strong>Method.</strong> The same scenario run with seeds 0–39 at each size, with ruin monitored continuously (Brownian-bridge correction), so the finite-horizon Brownian formula is the exact value being estimated. The shaded band is the binomial 95% range for one run.</p>
-    <p class="limits"><strong>Limits.</strong> “Exact” means exact for this model — independent Normal results at a fixed win rate — not for real games.</p>
-  </article>
+<section aria-labelledby="q2">
+  <h2 id="q2" class="chapter"><span class="chapter-n">2 </span>If the win rate itself is uncertain, how much do more paths help?</h2>
+  <div class="control" role="group" aria-label="Hands of history" id="ctl-history">
+    <span>Hands of history</span>
+    <button type="button" data-value="10000" aria-pressed="false">10k</button>
+    <button type="button" data-value="50000" aria-pressed="true">50k</button>
+    <button type="button" data-value="200000" aria-pressed="false">200k</button>
+    <button type="button" data-value="1000000" aria-pressed="false">1M</button>
+  </div>
+  <div class="chart" id="chart-uncertainty" role="img" aria-labelledby="uncertainty-explain"></div>
+  <p class="explain" id="uncertainty-explain" aria-live="polite"></p>
+  <p class="method"><strong>Method.</strong> Suppose a player's results so far average exactly +3 bb/100. The win rate's standard error is 90 / √(hands / 100); a Normal posterior (weakly informative prior, N(0, 10²)) is pushed through the risk formula with 20,000 draws. Simulation intervals are binomial 95% ranges at the same win rate.</p>
+  <p class="limits"><strong>Limits.</strong> The swing size is treated as known, and results are assumed independent; both make these intervals narrower than a full analysis would.</p>
+</section>
 
-  <article aria-labelledby="q2">
-    <h3 id="q2"><span class="case-n">2</span> · If the win rate itself is uncertain, how much do more paths help?</h3>
-    <div class="control" role="group" aria-label="Hands of history" id="ctl-history">
-      <span>Hands of history</span>
-      <button type="button" data-value="10000" aria-pressed="false">10k</button>
-      <button type="button" data-value="50000" aria-pressed="true">50k</button>
-      <button type="button" data-value="200000" aria-pressed="false">200k</button>
-      <button type="button" data-value="1000000" aria-pressed="false">1M</button>
-    </div>
-    <div class="chart" id="chart-uncertainty" role="img" aria-labelledby="uncertainty-explain"></div>
-    <p class="explain" id="uncertainty-explain" aria-live="polite"></p>
-    <p class="method"><strong>Method.</strong> Suppose a player's results so far average exactly +3 bb/100. The win rate's standard error is 90 / √(hands / 100); a Normal posterior (weakly informative prior, N(0, 10²)) is pushed through the risk formula with 20,000 draws. Simulation intervals are binomial 95% ranges at the same win rate.</p>
-    <p class="limits"><strong>Limits.</strong> The swing size is treated as known, and results are assumed independent; both make these intervals narrower than a full analysis would.</p>
-  </article>
-
-  <article aria-labelledby="q3">
-    <h3 id="q3"><span class="case-n">3</span> · If results are not independent or not Normal, is the estimate still reliable?</h3>
-    <div class="chart" id="chart-assumptions" role="img" aria-label="Risk of ruin with 95% intervals under five models of how results arrive"></div>
-    <div class="control" role="group" aria-label="Model details" id="ctl-model">
-      <span>Details for</span>
-      <button type="button" data-value="gaussian" aria-pressed="false">Baseline</button>
-      <button type="button" data-value="student_t" aria-pressed="false">Heavy tails</button>
-      <button type="button" data-value="shock_mixture" aria-pressed="false">Shocks</button>
-      <button type="button" data-value="ar1" aria-pressed="true">Swings carry over</button>
-      <button type="button" data-value="regime_switching" aria-pressed="false">Clustered regimes</button>
-    </div>
-    <div class="model-card" id="model-card" aria-live="polite"></div>
-    <p class="explain">Same edge everywhere. Changing the <em>shape</em> of a 100-hand result barely moves risk (6.4% with heavy tails, 7.3% with rare shocks, against 7.0%). Letting swings carry over from one step to the next raises it to <strong>20.3%</strong> (×2.87): each step still has the same spread, but the 100,000-hand total varies 1.37× as much.</p>
-    <p class="method"><strong>Method.</strong> 40,000 paths per model, one seed. All five models are compared using ruin observed at 100-hand checkpoints; the bridge correction is exact only for Normal steps, so it is not used here. This holds the observation grid fixed. It does not establish equal monitoring bias across models or determine their continuously monitored ruin probabilities. Intervals are Wilson 95%.</p>
-    <p class="limits"><strong>Limits.</strong> These are controlled stress tests, not estimates of how real results arrive. The regime model's steps are also wider (standard deviation about 101 instead of 90).</p>
-  </article>
+<section aria-labelledby="q3">
+  <h2 id="q3" class="chapter"><span class="chapter-n">3 </span>If results are not independent or not Normal, is the estimate still reliable?</h2>
+  <div class="chart" id="chart-assumptions" role="img" aria-label="Risk of ruin with 95% intervals under five models of how results arrive"></div>
+  <div class="control" role="group" aria-label="Model details" id="ctl-model">
+    <span>Details for</span>
+    <button type="button" data-value="gaussian" aria-pressed="false">Baseline</button>
+    <button type="button" data-value="student_t" aria-pressed="false">Heavy tails</button>
+    <button type="button" data-value="shock_mixture" aria-pressed="false">Shocks</button>
+    <button type="button" data-value="ar1" aria-pressed="true">Swings carry over</button>
+    <button type="button" data-value="regime_switching" aria-pressed="false">Clustered regimes</button>
+  </div>
+  <div class="model-card" id="model-card" aria-live="polite"></div>
+  <p class="explain">Same edge everywhere. Changing the <em>shape</em> of a 100-hand result barely moves risk (6.4% with heavy tails, 7.3% with rare shocks, against 7.0%). Letting swings carry over from one step to the next raises it to <strong>20.3%</strong> (×2.87): each step still has the same spread, but the 100,000-hand total varies 1.37× as much.</p>
+  <p class="method"><strong>Method.</strong> 40,000 paths per model, one seed. All five models are compared using ruin observed at 100-hand checkpoints; the bridge correction is exact only for Normal steps, so it is not used here. This holds the observation grid fixed. It does not establish equal monitoring bias across models or determine their continuously monitored ruin probabilities. Intervals are Wilson 95%.</p>
+  <p class="limits"><strong>Limits.</strong> These are controlled stress tests, not estimates of how real results arrive. The regime model's steps are also wider (standard deviation about 101 instead of 90).</p>
 </section>
 
 <section aria-labelledby="investigation">
@@ -224,10 +236,7 @@ figure{margin:16px 0 0}
 <section aria-labelledby="reproduce">
   <h2 id="reproduce">Reproduce</h2>
   <p>Each figure on this page comes from one command and one configuration file. The outputs record the commit, seeds, path counts and software versions; this page is built from them by <code>npm run build</code>.</p>
-  <div class="table-wrap"><table>
-    <thead><tr><th>Figure</th><th>Configuration</th><th>Command</th><th>Recorded with</th></tr></thead>
-    <tbody id="table-reproduce"></tbody>
-  </table></div>
+  <dl class="repro" id="list-reproduce"></dl>
   <p class="method">Install with <code>pip install -r requirements-research.txt</code>. Validation checks have their own commands on the <a href="validation.html">Validation</a> page.</p>
 </section>
 
@@ -415,9 +424,11 @@ function choice(group, onChange) {
     card.replaceChildren();
     node("p", "", card).innerHTML = `<strong>${r.label}.</strong> ${about[key]}`;
     const dl = node("dl", "", card);
-    for (const [k, v] of [["Risk of ruin", `${pct(r.risk, 2)} (${pct(r.wilson95[0], 1)}–${pct(r.wilson95[1], 1)})`], ["Against baseline", `×${r.risk_vs_baseline.toFixed(2)}`],
+    for (const [k, v, sub] of [["Risk of ruin", pct(r.risk, 2), `95% interval ${pct(r.wilson95[0], 1)}–${pct(r.wilson95[1], 1)}`], ["Against baseline", `×${r.risk_vs_baseline.toFixed(2)}`],
       ["Spread of one step", `${r.per_step_sd_bb.toFixed(0)} bb`], ["Spread of the 100k total", `×${r.total_sd_ratio.toFixed(2)}`]]) {
-      node("dt", "", dl, k); node("dd", "", dl, v);
+      node("dt", "", dl, k);
+      const dd = node("dd", "", dl, v);
+      if (sub) node("span", "sub", dd, sub);
     }
   });
 }
@@ -426,8 +437,9 @@ function choice(group, onChange) {
 {
   document.getElementById("table-calc").innerHTML = DATA.calc.map((r) =>
     `<tr><th scope="row">${r.winrate_bb100 > 0 ? "+" : ""}${r.winrate_bb100} bb/100</th><td class="num">${pct(r.functional_fix_2026_10_05.risk, 2)}</td><td class="num">${pct(r.new_streams_endpoint_only.risk, 2)}</td><td class="num">${pct(r.model_2026_10_21.risk, 2)}</td></tr>`).join("");
-  document.getElementById("table-reproduce").innerHTML = DATA.reproduce.map((r) =>
-    `<tr><td>${r.figure}</td><td><code>${r.config}</code></td><td><code>${r.command}</code></td><td class="small">${r.recorded}</td></tr>`).join("");
+  document.getElementById("list-reproduce").innerHTML = DATA.reproduce.map((r) =>
+    `<dt>${r.figure}</dt><dd><pre class="cmd"><code>${r.command}</code></pre>` +
+    `<p class="repro-meta">${r.config.endsWith(".yaml") ? `Configuration <code>${r.config}</code>` : `Configuration: ${r.config}`}. Recorded with ${r.recorded}.</p></dd>`).join("");
 }
 </script>
 </body>

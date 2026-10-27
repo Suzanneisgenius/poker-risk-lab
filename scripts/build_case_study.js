@@ -29,6 +29,7 @@ function loadInputs() {
     posterior: read("checks/bankroll-posterior-python/results.json"),
     sessionImport: read("checks/session-import-python/results.json"),
     sessionLengths: read("checks/session-lengths/results.json"),
+    changelog: fs.readFileSync(path.join(ROOT, "CHANGELOG.md"), "utf8"),
   };
 }
 
@@ -69,7 +70,7 @@ const CHECK_NAMES = {
 };
 
 function render(inputs) {
-  const { noise, uncertainty, assumptions, overview, calc, pokerkit, ranges, handOrder, accuracy, benchmark, engines, posterior, sessionImport, sessionLengths } = inputs;
+  const { noise, uncertainty, assumptions, overview, calc, pokerkit, ranges, handOrder, accuracy, benchmark, engines, posterior, sessionImport, sessionLengths, changelog } = inputs;
   const study = (model) => sessionLengths.cells.filter((c) => c.model === model);
   const spanPct = (values, d = 1) => `${pct(Math.min(...values), d)}–${pct(Math.max(...values), d)}`;
   const ok = verdicts(inputs);
@@ -95,7 +96,11 @@ function render(inputs) {
   const tenPower = (v, digits = 0) => (v === 0 ? "0" : v.toExponential(digits).replace(/e-(\d+)/, (_, power) => " × 10⁻" + [...power].map((d) => "⁰¹²³⁴⁵⁶⁷⁸⁹"[d]).join("")));
   const rangeGap = tenPower(ranges.exact.reduce((m, s) => Math.max(m, Math.abs(s.difference)), 0));
 
+  // The page's "Updated" date is the newest dated CHANGELOG entry.
+  const updated = changelog.match(/^## (\d{4}-\d{2}-\d{2})/m)[1];
+
   const facts = {
+    updated,
     exact: pct(noise.exact_risk, 2),
     n2000_half: "±" + points(noiseBy[2000].theory_95[1] - noise.exact_risk),
     u50_lo: pct(historyBy[50000].risk_interval[0]),

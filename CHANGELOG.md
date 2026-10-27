@@ -57,6 +57,29 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-10-26 — case study pages restyled as a project write-up
+
+- **Look.** The case study and Validation pages are light by default (a dark
+  variant follows the system setting), with a serif body, a 780 px text
+  column, sans-serif for controls, charts and tables, and monospace for the
+  byline, chapter numbers, figures in tables and commands. Chart colours were
+  re-chosen for the light background and checked for colour-blind separation.
+- **Header.** Each page opens with its title, a standfirst and a byline:
+  author, the date of the newest dated CHANGELOG entry (filled in at build
+  time) and a link to the other page. The uppercase labels above headings are
+  gone; the case study's opening question is now the standfirst's first
+  sentence.
+- **Structure.** The three feature cards under the short answer became one
+  paragraph; the three result cards in the investigation preview became a
+  table. The three questions are numbered sections (anchors `#q1`–`#q3` kept)
+  rather than boxes, and the Validation page's checks are no longer boxed.
+- **Reproduce.** The four-column table, whose commands broke mid-word, is now
+  one entry per figure: the command as a terminal line, then its
+  configuration and what it was recorded with. The overview's configuration
+  is no longer shown as a file path.
+- **Model details (question 3).** The risk of ruin and its interval no longer
+  share one cramped cell; the interval sits on a second line.
+
 ## 2026-10-23 — README rewritten
 
 - The README is the author's rewrite: the investigation of the 7.85% → 6.35%
