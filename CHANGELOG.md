@@ -57,6 +57,35 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-10-27 — app restyled to match the case study
+
+- **Removed.** The gradient title, the glow that followed the mouse, the
+  background grid and glow, the frosted-glass blur, the gradient scrollbar
+  and the three badges under the title. Tab, badge and bar entrance
+  animations, the counting-up result numbers, the card flip and hover lifts
+  are gone too, along with the JavaScript that drove them.
+- **Look.** The app uses the case study's colours: light by default, with a
+  dark variant that follows the system setting. Headings are serif, controls
+  sans-serif, and the title and result numbers monospace. Panels are plain
+  bordered boxes; the tabs are underlined rather than pills; the "First time
+  here?" guide is a numbered list rather than four cards.
+- **Charts.** Plotly charts take their colours from the page's colour tokens,
+  so they stay readable in both themes and recolour when the system theme
+  changes. Two captions that still said "cyan" now say "blue".
+- **Preflop.** Strategy fills are Raise `#2b6cb0`, Call `#9e6c10`, Jam
+  `#a8366e` and Fold `#6b717b` in both themes. White cell labels are readable
+  on every fill, and raise, call and jam pass the colour-vision checks. The
+  selected cell is outlined in the text colour. `design-qa.md` now opens with
+  a note that it records the earlier dark design.
+- **Results as a table.** The result cards in Bankroll Risk (both modes),
+  Hand Equity and the Kuhn poker demo are rows of a short table: label and
+  note on the left, value in monospace on the right, in the style of
+  variance calculators such as PrimeDope's.
+- **Header and footer.** Under the title, a byline: Xinrui Song, then links to
+  the case study and to "How the numbers are checked". A footer repeats the
+  project name, author and the same two links.
+- No calculation changed.
+
 ## 2026-10-26 — case study pages restyled as a project write-up
 
 - **Look.** The case study and Validation pages are light by default (a dark

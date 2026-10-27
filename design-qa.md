@@ -1,5 +1,13 @@
 # Preflop Design QA
 
+> **Superseded (2026-10-27).** The app now uses the case study's light theme,
+> with a dark variant that follows the system setting. The glass panels, glows and
+> the amber selection ring described below are gone. Strategy fills are now
+> Raise `#2b6cb0`, Call `#9e6c10`, Jam `#a8366e` and Fold `#6b717b`, the same in
+> both themes, so white cell labels stay readable. Raise, call and jam pass the
+> colour-vision checks. The selected cell is outlined in the text colour. The
+> record below describes the earlier dark design.
+
 ## Target and implementation
 
 - Reference visual: `/Users/suzanne/.codex/generated_images/019f7d7d-d551-7810-9d06-503d83372bf0/exec-6e38e50a-107a-4eeb-ab0c-bc31d14ecd1f.png` (`1486 × 1058`)

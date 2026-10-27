@@ -5,8 +5,17 @@
 
 /* ---------- shared: Plotly theme ---------- */
 const RANKS="23456789TJQKA";
-const C={bg:'#0B1220',grid:'#243247',accent:'#38BDF8',ruin:'#F87171',pos:'#4ADE80',
-  median:'#FBBF24',text:'#E6EDF3',muted:'#94A3B8',band:'rgba(56,189,248,0.16)'};
+// Chart colours are read from the page's CSS tokens, so charts follow the light or dark theme.
+const C={};
+function tint(hex,alpha){const h=hex.slice(1),n=parseInt(h.length===3?h.replace(/./g,"function tint(hex,alpha){const n=parseInt(hex.slice(1),16);function tint(hex,alpha){const n=parseInt(hex.slice(1),16);"):h,16);return `rgba(${n>>16},${n>>8&255},${n&255},${alpha})`;}
+function readChartColors(){
+  const css=typeof getComputedStyle==='function'?getComputedStyle(document.documentElement):null;
+  const v=(name,fallback)=>css?.getPropertyValue(name).trim()||fallback;
+  Object.assign(C,{bg:v('--surface','#ffffff'),grid:v('--grid','#e1ddd4'),accent:v('--accent','#2b6cb0'),ruin:v('--ruin','#b23b52'),
+    pos:v('--pos','#1f7a4a'),median:v('--median','#b5801a'),text:v('--text','#1d1f23'),muted:v('--muted','#555b64')});
+  C.band=tint(C.accent,.16);
+}
+readChartColors();
 const CFG={displayModeBar:false,responsive:true};
 const UNCERTAINTY_REFERENCE=/*__UNCERTAINTY_REFERENCE__*/ null;
 function layout(title,xt,yt,extra){return Object.assign({title:{text:title,font:{color:C.text,size:16}},
@@ -14,50 +23,14 @@ function layout(title,xt,yt,extra){return Object.assign({title:{text:title,font:
   margin:{l:62,r:18,t:44,b:48},xaxis:{title:xt,gridcolor:C.grid,zerolinecolor:C.grid},
   yaxis:{title:yt,gridcolor:C.grid,zerolinecolor:C.grid},legend:{font:{color:C.muted}}},extra||{});}
 const $=id=>document.getElementById(id);
+// A theme switch recolours the text and grid of charts already drawn; traces pick up the new colours on their next update.
+if(typeof matchMedia==='function')matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>{
+  readChartColors();
+  document.querySelectorAll('.js-plotly-plot').forEach(el=>Plotly.relayout(el,{'font.color':C.muted,'title.font.color':C.text,'legend.font.color':C.muted,
+    'xaxis.gridcolor':C.grid,'xaxis.zerolinecolor':C.grid,'yaxis.gridcolor':C.grid,'yaxis.zerolinecolor':C.grid}));
+});
 function kpiCard(l,v,s){return `<div class="kpi"><div class="kl">${l}</div><div class="kv">${v}</div><div class="ks">${s||''}</div></div>`;}
-const numberRollRAF=new WeakMap();
 const reducedMotion=()=>typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
-if(typeof matchMedia==='function'&&matchMedia('(pointer:fine)').matches&&!reducedMotion()){
-  let pointerFrame=0,pointerX=innerWidth/2,pointerY=innerHeight*.18;
-  document.addEventListener('pointermove',event=>{
-    pointerX=event.clientX;pointerY=event.clientY;
-    if(pointerFrame)return;
-    pointerFrame=requestAnimationFrame(()=>{
-      document.documentElement.style.setProperty('--pointer-x',pointerX+'px');
-      document.documentElement.style.setProperty('--pointer-y',pointerY+'px');
-      pointerFrame=0;
-    });
-  },{passive:true});
-}
-function parseRollingNumber(text){
-  const m=String(text).trim().match(/^([+\-−]?)([\d,]+(?:\.\d+)?)(.*)$/);
-  if(!m||/\d/.test(m[3]))return null;
-  const magnitude=Number(m[2].replaceAll(',',''));if(!Number.isFinite(magnitude))return null;
-  const negative=m[1]==='-'||m[1]==='−';
-  return {value:negative?-magnitude:magnitude,positive:m[1]==='+',minus:m[1]==='−'?'−':'-',decimals:(m[2].split('.')[1]||'').length,grouped:m[2].includes(','),suffix:m[3]};
-}
-function rollingText(spec,value){
-  const abs=Math.abs(value),opts={minimumFractionDigits:spec.decimals,maximumFractionDigits:spec.decimals,useGrouping:spec.grouped};
-  const digits=spec.grouped?abs.toLocaleString('en-US',opts):abs.toFixed(spec.decimals);
-  return (value<0?spec.minus:spec.positive?'+':'')+digits+spec.suffix;
-}
-function rollNumber(el,finalText){
-  if(!el)return;const text=String(finalText),spec=parseRollingNumber(text),old=numberRollRAF.get(el);
-  if(old)cancelAnimationFrame(old);
-  if(!spec){el.textContent=text;return;}
-  const current=Number(el.dataset.rollCurrent),from=Number.isFinite(current)?current:0,to=spec.value;
-  el.dataset.rollTarget=String(to);el.setAttribute('aria-label',text);
-  if(reducedMotion()||!('requestAnimationFrame' in globalThis)||Math.abs(to-from)<1e-9){el.textContent=text;el.dataset.rollCurrent=String(to);el.classList.remove('is-counting');return;}
-  const start=performance.now(),duration=650;el.classList.add('is-counting');
-  const tick=now=>{const t=Math.min(1,(now-start)/duration),eased=1-Math.pow(1-t,3),value=from+(to-from)*eased;
-    el.textContent=rollingText(spec,value);el.dataset.rollCurrent=String(value);
-    if(t<1)numberRollRAF.set(el,requestAnimationFrame(tick));
-    else{el.textContent=text;el.dataset.rollCurrent=String(to);el.classList.remove('is-counting');numberRollRAF.delete(el);}
-  };
-  numberRollRAF.set(el,requestAnimationFrame(tick));
-}
-function rollKpis(containerId){requestAnimationFrame(()=>document.querySelectorAll(`#${containerId} .kv`).forEach(el=>rollNumber(el,el.textContent)));}
-function animateResultBar(el){if(!el||reducedMotion()||typeof el.animate!=='function')return;el.animate([{transform:'scaleX(.04)'},{transform:'scaleX(1)'}],{duration:520,easing:'cubic-bezier(.2,.75,.25,1)'});}
 const clamp=(value,min,max)=>Math.min(max,Math.max(min,value));
 function integerInput(id,fallback){const value=Number.parseInt($(id).value,10);return Number.isFinite(value)?value:fallback;}
 async function apiJSON(path,payload,timeoutMs=60000,externalSignal=null){
@@ -326,7 +299,6 @@ function fillSlot(idx){
   const g=groupOf(activeSlot); cardState[activeSlot]=idx;
   if(g==='preflop'){renderPfHandSlots();syncPfHandFromCards();}
   else{renderSlots();markEquityDirty();}
-  const el=$('slot_'+activeSlot); if(el) el.classList.add('pop');
   closePicker();
   if(g!=='board'){const ids=g==='hero'?SLOTS.hero:g==='preflop'?SLOTS.preflop:opponentSlots(opponentIndexOf(activeSlot));const next=ids.find(s=>cardState[s]==null);
     if(next) setTimeout(()=>openPicker(next),140); }
@@ -469,7 +441,6 @@ async function runEquity(showResult=false){
     vd.className='result-insight result-dim '+tone;vd.textContent=vtxt;
     $('eq_kpis').innerHTML=kpiCard('Equity',eqp.toFixed(1)+'%','expected share of pot')+
       kpiCard('Win',w.toFixed(1)+'%','')+kpiCard('Tie / Lose',t.toFixed(1)+'% / '+l.toFixed(1)+'%','');
-    rollKpis('eq_kpis');
     $('eq_method').textContent=methodTxt;
     $('eq_bars').innerHTML=`<span style="width:${w}%;background:${C.pos}"></span><span style="width:${t}%;background:${C.muted}"></span><span style="width:${l}%;background:${C.ruin}"></span>`;
     $('eq_bars').setAttribute('aria-label',`Equity result: win ${w.toFixed(1)} percent, tie ${t.toFixed(1)} percent, lose ${l.toFixed(1)} percent`);
@@ -689,7 +660,6 @@ async function runBankroll(){
     kpiCard('Prob. profit',(pp*100).toFixed(1)+'%','')+
     kpiCard('Brownian (finite)',(metrics.brownian*100).toFixed(1)+'%','analytical check')+
     kpiCard('Paths',p.paths.toLocaleString(),'seed '+p.seed);
-  rollKpis('bk_kpis');
   if(!plotlyReady()){chartUnavailable('bk_fan');chartUnavailable('bk_curve');return;}
   const tr=[];
   if(r.paths.length>=20)tr.push({x:r.xs.concat(r.xs.slice().reverse()),y:r.p95.concat(r.p05.slice().reverse()),fill:'toself',fillcolor:C.band,line:{color:'rgba(0,0,0,0)'},hoverinfo:'skip',showlegend:false});
@@ -720,9 +690,9 @@ document.querySelectorAll('.bksdpreset').forEach(button=>button.addEventListener
 
 /* ================= 3b. BANKROLL FROM YOUR RESULTS ================= */
 // Same three readings everywhere: the observed win rate taken as exact (amber),
-// the average over the win rate's posterior (violet) and the posterior upper
-// bound that the answer uses (pink). Dash styles repeat the distinction.
-const BP_SERIES={upper:{color:'#F472B6',dash:'solid'},average:{color:'#C4B5FD',dash:'dash'},plugIn:{color:'#FBBF24',dash:'dot'}};
+// the average over the win rate's posterior (blue) and the posterior upper
+// bound that the answer uses (rose). Dash styles repeat the distinction.
+const BP_SERIES={upper:{get color(){return C.ruin},dash:'solid'},average:{get color(){return C.accent},dash:'dash'},plugIn:{get color(){return C.median},dash:'dot'}};
 const BP_PRIOR_SHORT={none:'no prior',weak:'weakly informative prior',skeptical:'skeptical prior'};
 const BP_FIELDS=['bp_hands','bp_wr','bp_sd','bp_bank','bp_thr','bp_bb','bp_horizon','bp_target','bp_cred','bp_margin','bp_level'];
 let bpRequest=0,bpController=null,bpBasis='',bpTimer=null,bpHasResult=false;
@@ -876,7 +846,6 @@ function renderBp(r,context=null){
     kpiCard('Risk, 95% interval',bpRange(risk.interval[0],risk.interval[1]),'posterior interval of model risk')+
     kpiCard(`Risk, ${q} upper bound`,bpPctAgainst(risk.upper,i.target),`at your bankroll · limit ${tgt}`)+
     kpiCard('Observed win rate as exact',bpPct(risk.plugIn),`if ${bpSigned(i.winRate)} bb/100 were certain`);
-  rollKpis('bp_kpis');
 
   const answer='<span class="bp-tag">this answer</span>';
   const compare=a=>{
@@ -936,9 +905,9 @@ function renderBpCharts(r){
   postLay.shapes=[vline(0,C.muted,'dash'),vline(w.credible,BP_SERIES.upper.color,'dash')];
   postLay.annotations=[{x:w.credible,y:1,yref:'paper',yanchor:'bottom',text:`${bpLevel(1-i.credibility)} point ${bpSigned(w.credible)}`,showarrow:false,font:{color:C.text,size:11},xanchor:w.credible<w.mean?'right':'left'}];
   Plotly.react('bp_posterior',[
-    {x:inside.concat(inside.slice().reverse()),y:inside.map(density).concat(inside.map(()=>0)),fill:'toself',fillcolor:'rgba(196,181,253,.16)',line:{color:'rgba(0,0,0,0)'},hoverinfo:'skip'},
-    {x:xs,y:xs.map(density),mode:'lines',line:{color:'#C4B5FD',width:2},hovertemplate:'Win rate %{x:.1f} bb/100<extra></extra>'},
-    {x:[i.winRate],y:[density(i.winRate)],mode:'markers',marker:{color:BP_SERIES.plugIn.color,size:9,line:{color:'#111c2f',width:2}},hovertemplate:`Observed ${bpSigned(i.winRate)} bb/100<extra></extra>`},
+    {x:inside.concat(inside.slice().reverse()),y:inside.map(density).concat(inside.map(()=>0)),fill:'toself',fillcolor:tint(C.accent,.14),line:{color:'rgba(0,0,0,0)'},hoverinfo:'skip'},
+    {x:xs,y:xs.map(density),mode:'lines',line:{color:C.accent,width:2},hovertemplate:'Win rate %{x:.1f} bb/100<extra></extra>'},
+    {x:[i.winRate],y:[density(i.winRate)],mode:'markers',marker:{color:BP_SERIES.plugIn.color,size:9,line:{color:C.bg,width:2}},hovertemplate:`Observed ${bpSigned(i.winRate)} bb/100<extra></extra>`},
   ],postLay,CFG);
   $('bp_posterior').setAttribute('aria-label',`Posterior of the win rate: mean ${bpSigned(w.mean)} bb/100, 95% interval ${bpSigned(w.interval[0])} to ${bpSigned(w.interval[1])}. Observed ${bpSigned(i.winRate)}. The answer uses ${bpSigned(w.credible)}.`);
 
@@ -947,7 +916,7 @@ function renderBpCharts(r){
   const traces=['plugIn','average','upper'].map(key=>({x:c.bankroll,y:c[key],mode:'lines',name:names[key],line:{color:BP_SERIES[key].color,dash:BP_SERIES[key].dash,width:key==='upper'?2.6:2},hovertemplate:'%{x:.1f} buy-ins: %{y:.1%}<extra>'+names[key]+'</extra>'}));
   const crossings=[['plugIn',b.plugIn],['average',b.average],['upper',b.credible]].filter(([,a])=>a.buyIns!=null);
   traces.push({x:crossings.map(([,a])=>a.buyIns),y:crossings.map(()=>i.target),mode:'markers',showlegend:false,
-    marker:{color:crossings.map(([k])=>BP_SERIES[k].color),size:10,line:{color:'#111c2f',width:2}},
+    marker:{color:crossings.map(([k])=>BP_SERIES[k].color),size:10,line:{color:C.bg,width:2}},
     customdata:crossings.map(([k,a])=>`${names[k]}: ${bpNeed(a.buyIns)} buy-ins`),hovertemplate:'%{customdata}<extra>needed</extra>'});
   const lay=layout('','Bankroll (buy-ins)','Risk of ruin',{yaxis:{tickformat:'.0%',gridcolor:C.grid,range:[0,1.02],fixedrange:true},
     legend:{orientation:'h',x:0,y:1.02,yanchor:'bottom',font:{color:C.muted,size:compact?11:12}},margin:{l:56,r:14,t:compact?92:62,b:46}});
@@ -1165,7 +1134,6 @@ async function runGTO(){
       kpiCard('|error vs −1/18|',Math.abs(exact-(-1/18)).toFixed(4),'lower is better')+
       kpiCard('Iterations',iters.toLocaleString(),'seed '+seed)+
       kpiCard('Info sets',Object.keys(r.strategy).length,'');
-    rollKpis('gto_kpis');
     const lay=layout('CFR convergence','Iterations','Game value (P1)');
     lay.shapes=[{type:'line',x0:r.history[0].iter,x1:iters,y0:-1/18,y1:-1/18,line:{color:C.pos,dash:'dash',width:1.4}}];
     if(plotlyReady())Plotly.react('gto_conv',[{x:r.history.map(h=>h.iter),y:r.history.map(h=>h.value),mode:'lines',line:{color:C.accent,width:2},name:'running value'}],lay,CFG);
@@ -1186,7 +1154,8 @@ $('gto').addEventListener('toggle',()=>{if($('gto').open)window.dispatchEvent(ne
 /* ================= 5. PREFLOP RANGE LIBRARY ================= */
 const PF_ACTIONS=['raise','call','jam','fold'];
 const PF_LABELS={raise:'Raise',call:'Call',jam:'Jam',fold:'Fold'};
-const PF_COLORS={raise:'#38BDF8',call:'#22C55E',jam:'#EC4899',fold:'#4B5563'};
+// The fills are CSS tokens, defined with the rest of the preflop styles.
+const PF_COLORS={raise:'var(--pf-raise)',call:'var(--pf-call)',jam:'var(--pf-jam)',fold:'var(--pf-fold)'};
 let pfDataset=null;
 let pfScenarios=[];
 let pfScenario=null;
@@ -1575,7 +1544,7 @@ async function renderPfCompare(){
     const largest=[...deltas].sort((a,b)=>Math.abs(b.value)-Math.abs(a.value))[0];
     const direction=largest.value===0?'is unchanged':`${largest.value>0?'increases':'decreases'} ${Math.abs(largest.value)} pp`;
     $('pf_delta').innerHTML=`<h3 tabindex="-1">${pfCompareHand}: ${PF_LABELS[largest.action]} ${direction}</h3><p>Range B minus Range A. Frequencies are from the demonstration dataset.</p><div class="pf-delta-grid">`+
-      deltas.map(delta=>`<div class="pf-delta-item"><span>${PF_LABELS[delta.action]}</span><strong style="color:${PF_COLORS[delta.action]}">${delta.value>0?'+':''}${delta.value} pp</strong></div>`).join('')+'</div>';
+      deltas.map(delta=>`<div class="pf-delta-item"><span>${PF_LABELS[delta.action]}</span><strong>${delta.value>0?'+':''}${delta.value} pp</strong></div>`).join('')+'</div>';
     if(pfMode==='compare')$('pf_status').textContent='Comparison ready · select any hand in either matrix';
   }catch(error){if(request===pfCompareRequest&&pfMode==='compare')$('pf_status').textContent=errorMessage(error);}
 }
@@ -2000,7 +1969,7 @@ function renderLabComparison(){
   $('lab_compare_precision').textContent=`A: ${a.params.paths.toLocaleString()} paths, seed ${a.params.seed} · B: ${b.params.paths.toLocaleString()} paths, seed ${b.params.seed}. ${changes.length>1?'Several inputs changed; this comparison cannot isolate one driver.':'Change one input at a time to examine its sensitivity.'}`;
   if(!plotlyReady()){chartUnavailable('lab_compare_chart');return;}
   const traces=[];
-  [[a,C.median,'Saved A','rgba(251,191,36,.10)'],[b,C.accent,'Current B','rgba(56,189,248,.12)']].forEach(([r,color,name,fill])=>{
+  [[a,C.median,'Saved A',tint(C.median,.12)],[b,C.accent,'Current B',tint(C.accent,.12)]].forEach(([r,color,name,fill])=>{
     const f=r.fan;
     traces.push({x:f.xs.concat(f.xs.slice().reverse()),y:f.p75.concat(f.p25.slice().reverse()),fill:'toself',fillcolor:fill,line:{color:'transparent'},hoverinfo:'skip',showlegend:false});
     traces.push({x:f.xs,y:f.p50,mode:'lines',name,line:{color,width:2.5},hovertemplate:`${name} median<br>%{x:,} hands<br>%{y:.1f} BI<extra></extra>`});
@@ -2215,15 +2184,15 @@ function renderUncertaintyReference(){
   riskLay.margin={l:15,r:30,t:12,b:44};riskLay.showlegend=false;
   riskLay.xaxis.range=[0,100];riskLay.xaxis.dtick=25;riskLay.xaxis.fixedrange=true;
   riskLay.yaxis={showticklabels:false,showgrid:false,zeroline:false,fixedrange:true};
-  Plotly.react('lab_u_risk_chart',[{type:'bar',orientation:'h',x:[risk.expected_risk*100,risk.plug_in_risk*100],y:['With uncertainty','One estimate'],marker:{color:['#C4B5FD',C.median]},text:[pct(risk.expected_risk),pct(risk.plug_in_risk)],textposition:'outside',textfont:{color:C.text,size:13},cliponaxis:false,hovertemplate:'%{y}<br>Risk %{x:.1f}%<extra></extra>'}],riskLay,CFG);
+  Plotly.react('lab_u_risk_chart',[{type:'bar',orientation:'h',x:[risk.expected_risk*100,risk.plug_in_risk*100],y:['With uncertainty','One estimate'],marker:{color:[C.accent,C.median]},text:[pct(risk.expected_risk),pct(risk.plug_in_risk)],textposition:'outside',textfont:{color:C.text,size:13},cliponaxis:false,hovertemplate:'%{y}<br>Risk %{x:.1f}%<extra></extra>'}],riskLay,CFG);
   const start=post.mean-4*post.std,end=post.mean+4*post.std;
   const xs=Array.from({length:241},(_,i)=>start+(end-start)*i/240);
   const density=xs.map(x=>Math.exp(-.5*((x-post.mean)/post.std)**2)/(post.std*Math.sqrt(2*Math.PI)));
   const postLay=layout('','Win rate (bb/100)','Density');
   postLay.margin={l:50,r:12,t:12,b:49};postLay.showlegend=false;postLay.xaxis.fixedrange=true;postLay.yaxis.fixedrange=true;postLay.yaxis.rangemode='tozero';
   postLay.shapes=[{type:'line',x0:0,x1:0,yref:'paper',y0:0,y1:1,line:{color:C.muted,dash:'dash',width:1.5}}];
-  Plotly.react('lab_u_posterior',[{x:xs,y:density,mode:'lines',fill:'tozeroy',fillcolor:'rgba(196,181,253,.12)',line:{color:'#C4B5FD',width:2.4},hovertemplate:'Win rate %{x:.2f} bb/100<br>Density %{y:.3f}<extra></extra>'},
-    {x:[post.mean],y:[1/(post.std*Math.sqrt(2*Math.PI))],mode:'markers',marker:{color:'#C4B5FD',size:7},hovertemplate:'Posterior mean %{x:.2f} bb/100<extra></extra>'}],postLay,CFG);
+  Plotly.react('lab_u_posterior',[{x:xs,y:density,mode:'lines',fill:'tozeroy',fillcolor:tint(C.accent,.12),line:{color:C.accent,width:2.4},hovertemplate:'Win rate %{x:.2f} bb/100<br>Density %{y:.3f}<extra></extra>'},
+    {x:[post.mean],y:[1/(post.std*Math.sqrt(2*Math.PI))],mode:'markers',marker:{color:C.accent,size:7},hovertemplate:'Posterior mean %{x:.2f} bb/100<extra></extra>'}],postLay,CFG);
 }
 function markLabPending(message,busy=true){
   $('lab_live').dataset.state=labHasResult?'pending':'loading';
@@ -2274,8 +2243,8 @@ function renderLab(result){
   if(!plotlyReady()){chartUnavailable('lab_fan');return;}
   const tr=[],L=r.xs.length,p05=r.p05,p25=r.p25,p50=r.p50,p75=r.p75,p95=r.p95;
   if(r.paths.length>=20){
-    tr.push({x:r.xs.concat(r.xs.slice().reverse()),y:p95.concat(p05.slice().reverse()),fill:'toself',fillcolor:'rgba(56,189,248,.065)',line:{color:'rgba(0,0,0,0)'},hoverinfo:'skip',showlegend:false});
-    tr.push({x:r.xs.concat(r.xs.slice().reverse()),y:p75.concat(p25.slice().reverse()),fill:'toself',fillcolor:'rgba(56,189,248,.19)',line:{color:'rgba(0,0,0,0)'},hoverinfo:'skip',showlegend:false});
+    tr.push({x:r.xs.concat(r.xs.slice().reverse()),y:p95.concat(p05.slice().reverse()),fill:'toself',fillcolor:tint(C.accent,.08),line:{color:'rgba(0,0,0,0)'},hoverinfo:'skip',showlegend:false});
+    tr.push({x:r.xs.concat(r.xs.slice().reverse()),y:p75.concat(p25.slice().reverse()),fill:'toself',fillcolor:tint(C.accent,.2),line:{color:'rgba(0,0,0,0)'},hoverinfo:'skip',showlegend:false});
   }
   const compact=$('lab_fan').clientWidth<620,target=Math.min(compact?8:14,r.paths.length);
   const ruinedPool=[],safePool=[];
@@ -2294,13 +2263,13 @@ function renderLab(result){
   displayIndices.forEach((pathIndex,displayIndex)=>{
     const ruined=r.ruinFlags[pathIndex];
     tr.push({x:r.xs,y:r.paths[pathIndex],mode:'lines',
-      line:{color:ruined?'rgba(248,113,113,.36)':'rgba(125,211,252,.19)',width:ruined?1.1:0.9,dash:ruined?'dot':'solid'},
+      line:{color:ruined?tint(C.ruin,.4):tint(C.accent,.25),width:ruined?1.1:0.9,dash:ruined?'dot':'solid'},
       text:Array(L).fill(ruined?'Reached ruin':'Survived horizon'),
       hovertemplate:`Example ${displayIndex+1}<br>%{x:,} hands<br>%{y:.1f} BI<br>%{text}<extra></extra>`,showlegend:false});
   });
   tr.push({x:r.xs,y:p50,mode:'lines',line:{color:C.median,width:3},
     hovertemplate:'Median<br>%{x:,} hands<br>%{y:.1f} BI<extra></extra>',showlegend:false});
-  tr.push({x:[0,p.hands],y:[p50[0],p50[L-1]],mode:'markers',marker:{color:C.median,size:[6,8],line:{color:'#0B1220',width:1.5}},hoverinfo:'skip',showlegend:false});
+  tr.push({x:[0,p.hands],y:[p50[0],p50[L-1]],mode:'markers',marker:{color:C.median,size:[6,8],line:{color:C.bg,width:1.5}},hoverinfo:'skip',showlegend:false});
   const lay=layout('','Hands played','Bankroll (buy-ins)');
   lay.margin=compact?{l:48,r:12,t:15,b:46}:{l:60,r:24,t:18,b:52};lay.showlegend=false;lay.hovermode='closest';lay.yaxis.rangemode='tozero';
   lay.xaxis.tickformat='~s';lay.xaxis.fixedrange=true;lay.xaxis.automargin=true;
@@ -2308,9 +2277,9 @@ function renderLab(result){
   lay.shapes=[{type:'line',x0:0,x1:p.hands,y0:p.bank/div,y1:p.bank/div,line:{color:C.muted,dash:'dot',width:1}},
               {type:'line',x0:0,x1:p.hands,y0:p.thr/div,y1:p.thr/div,line:{color:C.ruin,dash:'dash',width:1.4}}];
   lay.annotations=[
-    {x:0,y:p.bank/div,xanchor:'left',yanchor:'bottom',xshift:8,yshift:7,text:`START ${(p.bank/div).toFixed(0)} BI`,showarrow:false,bgcolor:'rgba(11,18,32,.82)',borderpad:3,font:{color:C.muted,size:10,family:'ui-monospace'}},
-    {x:0,y:p.thr/div,xanchor:'left',yanchor:'bottom',xshift:8,yshift:7,text:'0 BI · RUIN',showarrow:false,bgcolor:'rgba(11,18,32,.82)',borderpad:3,font:{color:C.ruin,size:10,family:'ui-monospace'}},
-    {x:p.hands,y:p50[L-1],xanchor:'right',yanchor:'bottom',xshift:-7,yshift:8,text:`MEDIAN ${p50[L-1].toFixed(1)} BI`,showarrow:false,bgcolor:'rgba(11,18,32,.86)',bordercolor:'rgba(251,191,36,.24)',borderwidth:1,borderpad:4,font:{color:C.median,size:compact?10:11,family:'ui-monospace'}}
+    {x:0,y:p.bank/div,xanchor:'left',yanchor:'bottom',xshift:8,yshift:7,text:`START ${(p.bank/div).toFixed(0)} BI`,showarrow:false,bgcolor:tint(C.bg,.85),borderpad:3,font:{color:C.muted,size:10,family:'ui-monospace'}},
+    {x:0,y:p.thr/div,xanchor:'left',yanchor:'bottom',xshift:8,yshift:7,text:'0 BI · RUIN',showarrow:false,bgcolor:tint(C.bg,.85),borderpad:3,font:{color:C.ruin,size:10,family:'ui-monospace'}},
+    {x:p.hands,y:p50[L-1],xanchor:'right',yanchor:'bottom',xshift:-7,yshift:8,text:`MEDIAN ${p50[L-1].toFixed(1)} BI`,showarrow:false,bgcolor:tint(C.bg,.88),bordercolor:tint(C.median,.45),borderwidth:1,borderpad:4,font:{color:C.median,size:compact?10:11,family:'ui-monospace'}}
   ];
   Plotly.react('lab_fan',tr,lay,CFG);
 }
