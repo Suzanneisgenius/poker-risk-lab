@@ -57,6 +57,30 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-10-28 — Risk Lab opens on the result; research summary moved in
+
+- The Risk Lab title is one line, with the three starting scenarios beside
+  it. The four-step comparison guide is one strip that shows only the current
+  step's button and text; on phones it shows the current step alone. At
+  1440×900 the risk number, the full bankroll-path chart and "Save this result
+  as A" now fit in the first screen.
+- The calculation-engine note above the Risk Lab result is gone; the story
+  card below covers it. The Bankroll tab keeps its own note.
+- The research area opens with "How far can one risk estimate be trusted?":
+  simulation noise, uncertain win rate and return-model assumptions on one
+  0–100% axis, each with what narrows it and a link to its case-study
+  question. A story card replaces the bridge-correction strand: 6.76% → 7.12%
+  over 40 paired seeds (analytical 7.17%), and why seed 42 still moved
+  7.85% → 6.35%.
+- These figures are built from the same saved JSON through the research
+  dashboard's own loader, so the two pages cannot disagree. The build fails if
+  the summary marker is missing or the saved set no longer has five return
+  models.
+- Dark mode: brighter accent, ruin, median, grid and axis-text tokens.
+  Example paths over the dark chart surface go from about 1.43:1 to 1.95:1
+  contrast. Example paths are a little stronger in light mode too.
+- The research dashboard itself is unchanged and still linked from the header.
+
 ## 2026-10-28 — research dashboard
 
 - Add an offline research dashboard at `/dashboard/`, built from saved checks

@@ -2290,7 +2290,7 @@ function renderLab(result){
   displayIndices.forEach((pathIndex,displayIndex)=>{
     const ruined=r.ruinFlags[pathIndex];
     tr.push({x:r.xs,y:r.paths[pathIndex],mode:'lines',
-      line:{color:ruined?tint(C.ruin,.4):tint(C.accent,.25),width:ruined?1.1:0.9,dash:ruined?'dot':'solid'},
+      line:{color:ruined?tint(C.ruin,.5):tint(C.accent,.35),width:ruined?1.1:0.9,dash:ruined?'dot':'solid'},
       text:Array(L).fill(ruined?'Reached ruin':'Survived horizon'),
       hovertemplate:`Example ${displayIndex+1}<br>%{x:,} hands<br>%{y:.1f} BI<br>%{text}<extra></extra>`,showlegend:false});
   });
