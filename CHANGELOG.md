@@ -64,6 +64,9 @@ How each change splits up at the same seed:
   Courier New for headings, the site title and byline, result numbers, code
   and the labels drawn on charts. Nothing is downloaded; both ship with macOS
   and Windows.
+- One exception: the Research overview's main heading ("How much should we
+  trust a simulated risk estimate?") keeps its original Georgia style, with
+  the same size, weight and letter spacing as before.
 - Courier New reads smaller than Arial at the same size, so small typewriter
   text (byline, swing values, axis ticks, code) is 1–1.5 px larger, and the
   START, RUIN and MEDIAN chart labels are bold. Case-study body text is
