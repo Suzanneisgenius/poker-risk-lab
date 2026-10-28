@@ -57,6 +57,13 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-10-28 — the static dashboard is the Research overview
+
+- The saved-results page now calls itself the Research overview in its tab
+  title, label and skip link, and the Risk Lab's research link and
+  `site/DEPLOY.md` use the same name. The Node app on Render stays the main
+  experience.
+
 ## 2026-10-28 — Arial and a typewriter face on every page
 
 - The app, the case study, the validation page and the Research overview now
