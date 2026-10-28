@@ -36,3 +36,10 @@ if evidence is needed. Run against a clean, rebuilt checkout for a release recor
 This script was added after the c377cf8 handoff. It is a new reproducible smoke
 check, not the missing generator of that handoff's historical browser-check.json.
 It runs separately from `npm test` and is not currently a CI job.
+
+## Static dashboard
+
+Run `node checks/browser/dashboard.js` after the same install and build. It
+checks the dashboard and Pages artifact offline, including filters, stored
+examples, EV input errors, downloads, links, keyboard tabs and mobile widths.
+See `dashboard/README.md` for scope. Reports go to `outputs/dashboard-check/`.

@@ -55,12 +55,17 @@ async function main() {
     const page = await fetch(`${base}/`);
     assert.equal(page.status, 200);
     assert.match(page.headers.get("content-security-policy"), /frame-ancestors 'none'/);
-    for (const pagePath of ["/case-study/", "/case-study/index.html", "/case-study/validation.html"]) {
+    for (const pagePath of ["/case-study/", "/case-study/index.html", "/case-study/validation.html", "/dashboard/", "/dashboard/index.html"]) {
       const caseStudy = await fetch(`${base}${pagePath}`);
       assert.equal(caseStudy.status, 200, pagePath);
       assert.match(caseStudy.headers.get("content-type"), /text\/html/);
       assert.match(caseStudy.headers.get("content-security-policy"), /frame-ancestors 'none'/);
     }
+    assert.equal((await fetch(`${base}/dashboard/src/app.js`)).status, 404);
+    assert.equal((await fetch(`${base}/dashboard/vendor/chart.umd.min.js`)).status, 404);
+    const dashRedirect = await fetch(`${base}/dashboard`, { redirect: "manual" });
+    assert.equal(dashRedirect.status, 301);
+    assert.equal(dashRedirect.headers.get("location"), "/dashboard/");
     const bare = await fetch(`${base}/case-study`, { redirect: "manual" });
     assert.equal(bare.status, 301);
     assert.equal(bare.headers.get("location"), "/case-study/");

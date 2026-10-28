@@ -7,7 +7,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "node scripts/build_static_site.js && node scripts/build_case_study.js",
+    "build": "node scripts/build_static_site.js && node scripts/build_case_study.js && node scripts/build_dashboard.js",
     "start": "node server/app.js",
     "test:engines": "node standalone/engines/test_engines.js",
     "test:api": "node server/test_api.js",
@@ -15,8 +15,9 @@
     "test:unit": "node server/test_unit.js",
     "check:calc-change": "node checks/calculation-change-2026-10-21/run.js --check",
     "test:range": "node standalone/shared/test_range.js",
-    "test": "node standalone/engines/test_engines.js && node standalone/shared/test_range.js && node standalone/shared/test_sessions.js && node server/test_unit.js && node server/test_api.js && npm run check:posterior && npm run check:sessions && node scripts/test_case_study_build.js && npm run test:ui",
+    "test": "node standalone/engines/test_engines.js && node standalone/shared/test_range.js && node standalone/shared/test_sessions.js && node server/test_unit.js && node server/test_api.js && npm run check:posterior && npm run check:sessions && node scripts/test_case_study_build.js && npm run test:ui && node scripts/test_dashboard.js",
     "check:posterior": "node checks/test_compare_snapshot.js && node checks/bankroll-posterior-python/ours.js --check",
-    "check:sessions": "node checks/session-import-python/ours.js --check && node checks/session-lengths/run.js --check"
+    "check:sessions": "node checks/session-import-python/ours.js --check && node checks/session-lengths/run.js --check",
+    "build:pages": "node scripts/package_dashboard.js"
   }
 }

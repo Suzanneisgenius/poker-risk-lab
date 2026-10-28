@@ -1,0 +1,43 @@
+name: Dashboard preview
+
+# Manual deployment: Pages must first be enabled for this private repository.
+# Only the explicit static artifact is uploaded, never the repository root.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dashboard-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: npm run build
+      - run: npm test
+      - run: npm run check:calc-change
+      - run: npm run build:pages
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: outputs/github-pages
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy static dashboard
+        id: deployment
+        uses: actions/deploy-pages@v4

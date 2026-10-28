@@ -57,6 +57,19 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-10-28 — research dashboard
+
+- Add an offline research dashboard at `/dashboard/`, built from saved checks
+  and research JSON with source hashes. Switch history length, simulation
+  budget and paired bridge scenarios; inspect the underlying values.
+- Add four saved posterior-bankroll examples and six PokerKit-checked equity
+  examples, with an explicitly simplified pot-odds/EV illustration.
+- Keep posterior intervals, Monte Carlo variation and model stress-test ranges
+  distinct. The page does not accept personal history or run private engines.
+- Add an allowlisted Pages artifact and a manual deployment workflow. Only the
+  dashboard and static case-study/validation pages are packaged. Deployment
+  availability is separate from building or pushing the files.
+
 ## 2026-10-27 — final review follow-up
 
 - Name the Bankroll Risk 95% risk interval explicitly as a posterior interval.

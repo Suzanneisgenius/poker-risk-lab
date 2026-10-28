@@ -13,6 +13,8 @@ const ROOT = path.resolve(__dirname, "..");
 const INDEX = path.join(ROOT, "index.html");
 // Static pages served as they are. The case study pages contain no engine code.
 const PAGES = new Map([
+  ["/dashboard/", path.join(ROOT, "dashboard", "index.html")],
+  ["/dashboard/index.html", path.join(ROOT, "dashboard", "index.html")],
   ["/", INDEX],
   ["/index.html", INDEX],
   ["/case-study/", path.join(ROOT, "case-study", "index.html")],
@@ -187,8 +189,8 @@ async function handler(request, response) {
   if (url.pathname.startsWith("/api/")) return json(response, 404, { error: "API endpoint not found." });
 
   const isRead = request.method === "GET" || request.method === "HEAD";
-  if (isRead && url.pathname === "/case-study") {
-    response.writeHead(301, { ...securityHeaders("text/plain; charset=utf-8"), Location: "/case-study/" });
+  if (isRead && ["/case-study", "/dashboard"].includes(url.pathname)) {
+    response.writeHead(301, { ...securityHeaders("text/plain; charset=utf-8"), Location: url.pathname + "/" });
     response.end();
     return;
   }

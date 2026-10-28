@@ -9,6 +9,11 @@ a deployment on its own.
 
 ## Ways to share
 
+- **The research dashboard, as a static preview.** `dashboard/index.html` works
+  offline with saved scenarios. For GitHub Pages, use only the allowlisted
+  artifact described in [`GITHUB_PAGES.md`](../GITHUB_PAGES.md). It is separate
+  from the server-backed app and does not calculate new ranges or bankrolls.
+
 - **The app, publicly.** Deploy the Node service as described in
   [`SECURE_DEPLOY.md`](../SECURE_DEPLOY.md) (configuration in `render.yaml`).
   On a free plan the service sleeps when idle, so the first visit after a pause
