@@ -17,10 +17,14 @@ function readChartColors(){
   C.band=tint(C.accent,.16);
 }
 readChartColors();
+// Chart text uses the page's font tokens too: Arial for axes and legends, the typewriter face for labels on the plot.
+const FONT=(()=>{const css=typeof getComputedStyle==='function'?getComputedStyle(document.documentElement):null;
+  const v=(name,fallback)=>css?.getPropertyValue(name).trim()||fallback;
+  return {sans:v('--sans','Arial,sans-serif'),mono:v('--mono','"Courier New",monospace')};})();
 const CFG={displayModeBar:false,responsive:true};
 const UNCERTAINTY_REFERENCE=/*__UNCERTAINTY_REFERENCE__*/ null;
 function layout(title,xt,yt,extra){return Object.assign({title:{text:title,font:{color:C.text,size:16}},
-  paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:C.muted,size:13},
+  paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{family:FONT.sans,color:C.muted,size:13},
   margin:{l:62,r:18,t:44,b:48},xaxis:{title:xt,gridcolor:C.grid,zerolinecolor:C.grid},
   yaxis:{title:yt,gridcolor:C.grid,zerolinecolor:C.grid},legend:{font:{color:C.muted}}},extra||{});}
 const $=id=>document.getElementById(id);
@@ -2304,9 +2308,9 @@ function renderLab(result){
   lay.shapes=[{type:'line',x0:0,x1:p.hands,y0:p.bank/div,y1:p.bank/div,line:{color:C.muted,dash:'dot',width:1}},
               {type:'line',x0:0,x1:p.hands,y0:p.thr/div,y1:p.thr/div,line:{color:C.ruin,dash:'dash',width:1.4}}];
   lay.annotations=[
-    {x:0,y:p.bank/div,xanchor:'left',yanchor:'bottom',xshift:8,yshift:7,text:`START ${(p.bank/div).toFixed(0)} BI`,showarrow:false,bgcolor:tint(C.bg,.85),borderpad:3,font:{color:C.muted,size:10,family:'ui-monospace'}},
-    {x:0,y:p.thr/div,xanchor:'left',yanchor:'bottom',xshift:8,yshift:7,text:'0 BI · RUIN',showarrow:false,bgcolor:tint(C.bg,.85),borderpad:3,font:{color:C.ruin,size:10,family:'ui-monospace'}},
-    {x:p.hands,y:p50[L-1],xanchor:'right',yanchor:'bottom',xshift:-7,yshift:8,text:`MEDIAN ${p50[L-1].toFixed(1)} BI`,showarrow:false,bgcolor:tint(C.bg,.88),bordercolor:tint(C.median,.45),borderwidth:1,borderpad:4,font:{color:C.median,size:compact?10:11,family:'ui-monospace'}}
+    {x:0,y:p.bank/div,xanchor:'left',yanchor:'bottom',xshift:8,yshift:7,text:`START ${(p.bank/div).toFixed(0)} BI`,showarrow:false,bgcolor:tint(C.bg,.85),borderpad:3,font:{color:C.muted,size:11,family:FONT.mono,weight:700}},
+    {x:0,y:p.thr/div,xanchor:'left',yanchor:'bottom',xshift:8,yshift:7,text:'0 BI · RUIN',showarrow:false,bgcolor:tint(C.bg,.85),borderpad:3,font:{color:C.ruin,size:11,family:FONT.mono,weight:700}},
+    {x:p.hands,y:p50[L-1],xanchor:'right',yanchor:'bottom',xshift:-7,yshift:8,text:`MEDIAN ${p50[L-1].toFixed(1)} BI`,showarrow:false,bgcolor:tint(C.bg,.88),bordercolor:tint(C.median,.45),borderwidth:1,borderpad:4,font:{color:C.median,size:compact?11:12,family:FONT.mono,weight:700}}
   ];
   Plotly.react('lab_fan',tr,lay,CFG);
 }

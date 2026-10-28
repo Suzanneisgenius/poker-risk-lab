@@ -16,7 +16,7 @@
   const need = x => x == null ? 'Not found in search range' : (x < 100 ? (Math.ceil(x * 10) / 10).toFixed(1) : String(Math.ceil(x)));
   const colors = { noise: '#3568a6', parameter: '#29634f', model: '#a05b17', neutral: '#7c8681', red: '#a73d4f' };
   const charts = {};
-  Chart.defaults.font.family = 'system-ui, sans-serif';
+  Chart.defaults.font.family = 'Arial, "Helvetica Neue", Helvetica, sans-serif';
   Chart.defaults.font.size = 11;
   Chart.defaults.color = '#59645e';
   Chart.defaults.animation = false;

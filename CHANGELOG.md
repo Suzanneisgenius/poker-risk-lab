@@ -57,6 +57,22 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-10-28 — Arial and a typewriter face on every page
+
+- The app, the case study, the validation page and the Research overview now
+  share two system fonts: Arial for text, controls, axes and legends, and
+  Courier New for headings, the site title and byline, result numbers, code
+  and the labels drawn on charts. Nothing is downloaded; both ship with macOS
+  and Windows.
+- Courier New reads smaller than Arial at the same size, so small typewriter
+  text (byline, swing values, axis ticks, code) is 1–1.5 px larger, and the
+  START, RUIN and MEDIAN chart labels are bold. Case-study body text is
+  17 px Arial instead of 18 px Charter.
+- The Research overview heading no longer joins "trust" and "a" on phones,
+  where its line break is hidden.
+- `standalone/bankroll-risk-lab.html`, the older self-contained page, keeps
+  its original fonts.
+
 ## 2026-10-28 — Full-app Render delivery polish
 
 - Keep the original Node application as the primary experience. Rename the
