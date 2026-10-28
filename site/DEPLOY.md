@@ -9,6 +9,10 @@ a deployment on its own.
 
 ## Ways to share
 
+The primary portfolio experience is the **full Node application on Render**,
+with the original interface and live calculations. The saved-results dashboard
+is an optional research overview.
+
 - **The research dashboard, as a static preview.** `dashboard/index.html` works
   offline with saved scenarios. For GitHub Pages, use only the allowlisted
   artifact described in [`GITHUB_PAGES.md`](../GITHUB_PAGES.md). It is separate

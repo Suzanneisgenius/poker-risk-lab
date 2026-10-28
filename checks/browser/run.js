@@ -55,6 +55,52 @@ async function main() {
   await page.goto(base, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => !!document.querySelector('#lab_fan .main-svg'));
 
+  await check('Risk Lab keeps the result and chart in the desktop first screen', async () => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.waitForFunction(() => document.getElementById('lab_live').dataset.state === 'current');
+    for (const id of ['lab_ror', 'lab_fan', 'lab_save_a']) {
+      const rect = await page.locator('#' + id).boundingBox();
+      assert(rect && rect.y >= 0 && rect.y + rect.height <= 900, id + ' falls outside the first screen');
+    }
+    await page.screenshot({ path: path.join(output, 'risklab-desktop-light.png') });
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.waitForFunction(() => document.getElementById('lab_fan').layout.font.color === getComputedStyle(document.documentElement).getPropertyValue('--muted').trim());
+    await page.screenshot({ path: path.join(output, 'risklab-desktop-dark.png') });
+    await page.emulateMedia({ colorScheme: 'light' });
+  });
+  await check('Risk Lab mobile guide preserves A and recalculates B after one change', async () => {
+    await page.setViewportSize(report.viewports[1]);
+    await page.waitForFunction(() => document.documentElement.scrollWidth <= innerWidth + 1);
+    const a = await page.locator('#lab_ror').innerText();
+    await page.locator('#lab_guide_save').click();
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'lab_guide_change');
+    assert.equal(await page.locator('#lab_a_risk').innerText(), a);
+    for (const id of ['lab_guide_change', 'lab_save_next', 'lab_view_compare']) {
+      const rect = await page.locator('#' + id).boundingBox();
+      assert(rect && rect.height >= 44 && rect.x >= 0 && rect.x + rect.width <= 376, id + ' mobile target');
+    }
+    await page.locator('#lab_guide_change').click();
+    assert(await page.locator('#lab_bank').isVisible());
+    await page.locator('#lab_bank').press('ArrowRight');
+    await page.waitForFunction(() => document.getElementById('lab_live').dataset.state === 'current' && document.getElementById('lab_active_scenario').textContent.startsWith('31 buy-ins'));
+    assert.equal(await page.locator('#lab_a_risk').innerText(), a, 'A must stay fixed');
+    assert.notEqual(await page.locator('#lab_b_risk').innerText(), a, 'B must recalculate');
+    assert.match(await page.locator('#lab_guide_result').innerText(), /after changing bankroll/i);
+    assert.match(await page.locator('#lab_compare_delta').innerText(), /bankroll/i);
+    assert(await page.locator('#lab_export_json').isEnabled());
+    const size = await page.evaluate(() => ({ viewport: innerWidth, content: document.documentElement.scrollWidth }));
+    assert.equal(size.viewport, 375);
+    assert(size.content <= 376, 'A/B comparison overflows');
+    await page.screenshot({ path: path.join(output, 'risklab-phone-comparison.png'), fullPage: true });
+    await page.locator('#lab_guide_hide').click();
+    await page.reload({ waitUntil: 'networkidle' });
+    assert(await page.locator('#lab_guide_show').isVisible(), 'Guide preference survives reload');
+    await page.locator('#lab_guide_show').click();
+    await page.screenshot({ path: path.join(output, 'risklab-phone.png'), fullPage: true });
+    await page.setViewportSize(report.viewports[0]);
+    return { width: size.viewport, savedA: a, scope: 'One bankroll change, A/B state, touch targets, overflow and guide persistence.' };
+  });
+
   await check('Picker traps keyboard focus and restores the opener', async () => {
     await page.locator('#tab-equity').click();
     await page.locator('#slot_hero0').click();

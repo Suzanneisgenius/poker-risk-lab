@@ -16,24 +16,60 @@ downloaded interface must—but the calculation engines never leave the server.
 
 ## One-time deployment
 
-1. On GitHub, create a new **Private** repository, for example
-   `poker-analytics-private`. Do not add a README or license during creation.
-2. From this project folder, push the private source:
+1. Use the existing private repository
+   `Suzanneisgenius/poker-analytics-private`, branch `main`. Do not create a new
+   repository, reinitialize Git, or change its visibility.
+2. In Render, choose **New → Blueprint**, connect that GitHub repository, and
+   review the root-level `render.yaml`. If a Render service already serves this
+   repository, update that service instead of creating a duplicate.
+3. The service must be a **Node Web Service**, not a Static Site:
 
-   ```bash
-   git init
-   git add .
-   git commit -m "Private server-backed poker analytics suite"
-   git branch -M main
-   git remote add origin https://github.com/<your-user>/poker-analytics-private.git
-   git push -u origin main
-   ```
+   | Setting | Value |
+   | --- | --- |
+   | Branch | `main` |
+   | Root directory | repository root (leave blank) |
+   | Build | `npm run build && npm test` |
+   | Start | `npm start` |
+   | Health check | `/api/health` |
+   | Node | `22` |
+   | Environment | `CALC_WORKERS=2`, `TRUST_PROXY_HOPS=1` |
 
-3. In Render, choose **New → Blueprint**, connect GitHub, select the private
-   repository, and apply the detected root-level `render.yaml`.
-4. Wait for the build and tests to pass. Render then displays the public
-   `https://...onrender.com` URL. Open `/api/health` on that domain to confirm it
-   returns `{"ok":true,"service":"poker-analytics-api"}`.
+   Let Render provide `PORT`; the server already binds to `0.0.0.0`. No API
+   keys, separate frontend host, or database are required for the application.
+4. Wait for Render to mark the deploy Live, then use the **actual URL shown by
+   Render**. A successful GitHub push or CI run alone is not a deployment.
+
+## Verify the deployed application
+
+- `/api/health` returns `{"ok":true,"service":"poker-analytics-api"}`.
+- `/` opens the original Risk Lab with its full interface. Save A, change one
+  assumption and check that B recalculates and the comparison updates.
+- In Bankroll Risk, change the historical sample size and run the calculation.
+- In Hand Equity, try `TT+, AQs+, AKo`, then send the equity to Pot Odds & EV.
+- Open `/case-study/` and `/case-study/validation.html`; `/dashboard/` is an
+  optional saved-results overview, not the main application.
+- Repeat the main route on a narrow screen and check the browser console.
+
+Record the deployed commit and URL after these checks. Until then, describe the
+release as prepared or pushed, not publicly verified.
+
+## Free-service expectations
+
+The current Blueprint selects the Free instance. Render says an idle free web
+service sleeps after 15 minutes; restarting on the next visit takes about a
+minute and Render shows its own loading page. The original design and calculation
+features remain available after startup, but local speed does not establish the
+performance of Render's shared resources. Check a detailed simulation on the
+actual service before sharing it as a portfolio demo.
+
+Saved A/B comparisons are stored in the visitor's browser, not on Render's
+filesystem. Export JSON for a portable copy. A paid instance can avoid idle
+spin-down, but changing the plan is a separate decision; this setup does not
+subscribe to one.
+
+References: [Render web services](https://render.com/docs/web-services),
+[Blueprint configuration](https://render.com/docs/blueprint-spec),
+[free-instance limits](https://render.com/docs/free).
 
 Render should be granted access only to this private repository. Visitors receive
 the public site and API results, not repository access.
@@ -43,9 +79,11 @@ the public site and API results, not repository access.
 ```bash
 npm run build
 npm test
-git add .
+# Review and stage only the intended release files.
+git diff --stat
+git add <reviewed-files>
 git commit -m "Update poker analytics suite"
-git push
+git push origin main
 ```
 
 Render automatically rebuilds and deploys the linked branch.

@@ -1,7 +1,8 @@
 # Browser smoke checks
 
 These checks exercise the built application in a fresh Chromium context. They
-cover picker focus trapping/restoration, the posterior-interval label, visible
+cover the Risk Lab desktop first screen, its mobile A/B guide and touch targets,
+picker focus trapping/restoration, the posterior-interval label, visible
 Preflop demo-data labels, chart font redraw on light/dark changes, and horizontal
 overflow at an actual viewport of 375 CSS pixels. The report names each checked
 chart. Trace/fill recoloring has separate unit coverage in `npm run test:ui`.

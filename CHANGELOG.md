@@ -57,6 +57,17 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-10-28 — Full-app Render delivery polish
+
+- Keep the original Node application as the primary experience. Rename the
+  optional dashboard header link to Research overview.
+- Keep the guide's step number beside its text on narrow screens and use
+  44-pixel minimum heights for its mobile buttons and the A/B follow-up actions.
+  The save row wraps at intermediate widths. The first guide step says "this
+  result", so it still describes the action after choosing a different preset.
+- Update Render instructions for the existing private repository, including
+  post-deployment calculation checks and the free instance's startup delay.
+
 ## 2026-10-28 — Risk Lab opens on the result; research summary moved in
 
 - The Risk Lab title is one line, with the three starting scenarios beside
