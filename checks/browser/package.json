@@ -1,0 +1,6 @@
+{
+  "name": "poker-browser-checks",
+  "private": true,
+  "scripts": { "test": "node run.js" },
+  "devDependencies": { "playwright": "1.62.1" }
+}

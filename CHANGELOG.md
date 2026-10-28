@@ -57,6 +57,15 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-10-27 — final review follow-up
+
+- Name the Bankroll Risk 95% risk interval explicitly as a posterior interval.
+- Place a shared “Demo data” label above the Preflop views, including Compare.
+- Add an optional, pinned Chromium smoke-check script and run instructions in
+  `checks/browser/`. It records the source revision, runtime, viewport and
+  results, and exits unsuccessfully when a check fails. It does not replace
+  numerical tests or claim full accessibility or device coverage.
+
 ## 2026-10-27 — fewer secondary labels; the layout explains
 
 - **Removed.** Text that repeated what the layout or a nearby value already

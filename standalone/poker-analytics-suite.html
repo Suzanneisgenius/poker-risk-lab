@@ -317,6 +317,8 @@
   /* ---- Preflop range library ---- */
   /* Range fills: dark enough for white labels in both themes; raise, call and jam pass the colour-vision checks */
   :root{--pf-fold:#6b717b;--pf-call:#9e6c10;--pf-raise:#2b6cb0;--pf-jam:#a8366e;--pf-jam-strong:#8c2a5a;--pf-mixed:var(--text)}
+  .pf-mode-header{display:flex;align-items:center;flex-wrap:wrap;gap:8px 20px;margin-bottom:18px}
+  .pf-mode-header .pf-modebar{margin-bottom:0}
   .pf-modebar{display:flex;gap:22px;width:min(520px,100%);border-bottom:1px solid var(--grid);margin:0 0 18px}
   .pf-mode{min-height:42px;padding:0 2px;border:0;border-radius:0;background:transparent;color:var(--muted);font:inherit;font-weight:650;cursor:pointer}
   .pf-mode:hover{color:var(--text);background:color-mix(in srgb,var(--accent) 5%,transparent)}
@@ -1195,10 +1197,13 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
 
   <!-- ===================== PREFLOP ===================== -->
   <section class="mod" id="preflop" role="tabpanel" aria-labelledby="tab-preflop">
-    <div class="pf-modebar" role="tablist" aria-label="Preflop modes">
-      <button type="button" class="pf-mode" id="pf-mode-library" data-pf-mode="library" role="tab" aria-controls="pf-view-library" aria-selected="true">Library</button>
-      <button type="button" class="pf-mode" id="pf-mode-compare" data-pf-mode="compare" role="tab" aria-controls="pf-view-compare" aria-selected="false">Compare</button>
-      <button type="button" class="pf-mode" id="pf-mode-trainer" data-pf-mode="trainer" role="tab" aria-controls="pf-view-trainer" aria-selected="false">Trainer</button>
+    <div class="pf-mode-header">
+      <div class="pf-modebar" role="tablist" aria-label="Preflop modes">
+        <button type="button" class="pf-mode" id="pf-mode-library" data-pf-mode="library" role="tab" aria-controls="pf-view-library" aria-selected="true">Library</button>
+        <button type="button" class="pf-mode" id="pf-mode-compare" data-pf-mode="compare" role="tab" aria-controls="pf-view-compare" aria-selected="false">Compare</button>
+        <button type="button" class="pf-mode" id="pf-mode-trainer" data-pf-mode="trainer" role="tab" aria-controls="pf-view-trainer" aria-selected="false">Trainer</button>
+      </div>
+      <span class="pf-demo-badge" id="pf_demo_badge">Demo data</span>
     </div>
     <p class="pf-status" id="pf_status" role="status" aria-live="polite">Choose Preflop to load the demonstration range library.</p>
     <button type="button" class="btn ghost" id="pf_retry" hidden>Retry loading ranges</button>
@@ -1225,7 +1230,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
           <div class="pf-context-note" id="pf_context_note" role="note"></div>
         </aside>
         <div class="pf-main">
-          <div class="pf-head"><h2 id="pf_title">Loading preflop range…</h2><span class="pf-demo-badge">Demo strategy dataset</span></div>
+          <div class="pf-head"><h2 id="pf_title">Loading preflop range…</h2></div>
           <div class="pf-matrix-wrap"><div class="pf-matrix" id="pf_matrix" role="group" aria-label="Preflop starting hand range" aria-describedby="pf_matrix_hint"></div></div>
           <div class="pf-legend" aria-label="Strategy colors">
             <span><i class="pf-swatch raise"></i>Raise</span><span><i class="pf-swatch call"></i>Call</span><span><i class="pf-swatch jam"></i>Jam</span><span><i class="pf-swatch fold"></i>Fold</span><span><i class="pf-mixed-key"></i>Mixed</span>
@@ -2990,7 +2995,7 @@ function renderBp(r,context=null){
   $('bp_kpis').innerHTML=kpiCard('Win rate, 95% interval',`${bpSigned(w.interval[0])} to ${bpSigned(w.interval[1])}`,`bb/100 · posterior mean ${bpSigned(w.mean)}`)+
     kpiCard('Chance the win rate is above 0',bpPct(w.probPositive),weight)+
     kpiCard('Average risk',bpPct(risk.average),'')+
-    kpiCard('Risk, 95% interval',bpRange(risk.interval[0],risk.interval[1]),'')+
+    kpiCard('Risk, 95% posterior interval',bpRange(risk.interval[0],risk.interval[1]),'')+
     kpiCard(`Risk, ${q} upper bound`,bpPctAgainst(risk.upper,i.target),`at your bankroll · limit ${tgt}`)+
     kpiCard('Risk if the observed win rate were exact',bpPct(risk.plugIn),'');
 

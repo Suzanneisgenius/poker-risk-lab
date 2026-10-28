@@ -874,7 +874,7 @@ function renderBp(r,context=null){
   $('bp_kpis').innerHTML=kpiCard('Win rate, 95% interval',`${bpSigned(w.interval[0])} to ${bpSigned(w.interval[1])}`,`bb/100 · posterior mean ${bpSigned(w.mean)}`)+
     kpiCard('Chance the win rate is above 0',bpPct(w.probPositive),weight)+
     kpiCard('Average risk',bpPct(risk.average),'')+
-    kpiCard('Risk, 95% interval',bpRange(risk.interval[0],risk.interval[1]),'')+
+    kpiCard('Risk, 95% posterior interval',bpRange(risk.interval[0],risk.interval[1]),'')+
     kpiCard(`Risk, ${q} upper bound`,bpPctAgainst(risk.upper,i.target),`at your bankroll · limit ${tgt}`)+
     kpiCard('Risk if the observed win rate were exact',bpPct(risk.plugIn),'');
 
