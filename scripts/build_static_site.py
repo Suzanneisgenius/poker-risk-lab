@@ -1,4 +1,4 @@
-"""Build the public UI without embedding any private calculation engine."""
+"""Build the public UI without embedding any server-side calculation engine."""
 
 from pathlib import Path
 

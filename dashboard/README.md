@@ -1,8 +1,8 @@
-# Research dashboard
+# Research overview
 
 Open `index.html` directly, or run `npm start` and visit
 <http://localhost:4174/dashboard/>. This is an offline presentation of saved
-experiments, with filters and a simple EV illustration. It does not run private
+experiments, with filters and a simple EV illustration. It does not run server-side
 calculation engines, accept personal session files or send data to a server.
 
 Three views:
@@ -37,8 +37,8 @@ opens the standalone file directly. Outputs and environment details go to
 
 Chart.js 4.5.1 is vendored and embedded for offline use, under the accompanying
 MIT license. Its copyright and license are included in the built page. The
-private calculation code is neither imported nor embedded.
+server-side calculation code is neither imported nor embedded.
 
 See [GitHub Pages instructions](../GITHUB_PAGES.md) for the explicit six-file
-publication artifact. Keep the repository private. A built artifact is not
+publication artifact. The source repository is public. A built artifact is not
 proof of a live deployment.

@@ -1,7 +1,7 @@
-# Static dashboard on GitHub Pages
+# Research overview on GitHub Pages
 
 The research dashboard and case-study pages can be hosted statically. The full
-Equity, EV, bankroll and CFR application still requires the private Node server;
+Equity, EV, bankroll and CFR application still requires the Node server;
 follow [SECURE_DEPLOY.md](SECURE_DEPLOY.md) for that application.
 
 ## Build the publication artifact
@@ -28,14 +28,13 @@ or the full application. Case-study navigation is adjusted in the artifact to
 return to the dashboard instead of linking to an unavailable Node application.
 The original app and case-study pages remain available on the Node server.
 
-## Deploy without making the repository public
+## Deploy the static overview
 
-GitHub Pages support for a private repository depends on the account plan and
-permissions. Do not change repository visibility to work around a restriction.
-The selected published presentation files are accessible to site visitors;
-the rest of the private repository is not part of the artifact.
+The repository is public. The six-file allowlist controls what is served by
+Pages; it does not make other repository files private. The full live application
+is deployed separately as a Node service (see `SECURE_DEPLOY.md`).
 
-If eligible, enable **Settings → Pages → Source: GitHub Actions**, then run the
+Enable **Settings → Pages → Source: GitHub Actions**, then run the
 manual **Dashboard preview** workflow on `main`. It rebuilds, tests, packages
 only the six files, and uses `actions/deploy-pages`. The workflow's environment
 output supplies the actual URL. Verify the page, filters and links there before

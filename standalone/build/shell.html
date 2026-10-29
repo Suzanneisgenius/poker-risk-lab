@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Interactive poker equity, pot-odds, bankroll-risk, preflop-range, and game-theory tools powered by a private calculation service.">
+<meta name="description" content="Interactive poker equity, pot-odds, bankroll-risk, preflop-range, and game-theory tools powered by a server-side calculation service.">
 <meta name="theme-color" content="#0B1220">
 <title>Poker Analytics Suite</title>
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
@@ -1393,7 +1393,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
     <ul class="doc">
       <li>The <a href="case-study/">case study</a> asks how much a simulated risk estimate can be trusted, one source of uncertainty at a time; the <a href="case-study/validation.html">validation page</a> lists each check with its benchmark, conditions and limits.</li>
       <li>Every engine is seeded and reproducible; each is checked against an independent method (exact enumeration, analytical Brownian, known game value).</li>
-      <li>The public page contains only interface and chart-rendering code. Equity, EV, bankroll Monte Carlo, and CFR calculations run on a private same-origin API. The server does not store calculation inputs. Comparisons you choose to save (with their inputs and results), Preflop practice progress and whether the Risk Lab guide is hidden are kept in this browser only.</li>
+      <li>The application source, including its calculation engines, is publicly available in the GitHub repository. The browser page contains interface and chart-rendering code; Equity, EV, bankroll Monte Carlo, and CFR calculations execute on the Node server through a same-origin API. The server does not store calculation inputs. Comparisons you choose to save (with their inputs and results), Preflop practice progress and whether the Risk Lab guide is hidden are kept in this browser only.</li>
     </ul>
     <h3>Poker terms in plain language</h3>
     <dl class="glossary">

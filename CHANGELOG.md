@@ -57,6 +57,19 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-10-29 — Public-source documentation
+
+- Describe the public source and server-side computation accurately across the
+  README, application, package metadata and deployment guides. Keep npm's
+  `private: true` to prevent accidental registry publication.
+- Use Poker Analytics Suite for the application and Risk Lab for its research
+  view. Point the README's first research link to the bankroll case study.
+- Mark early UI notes and the standalone prototype as historical. Remove the
+  unused pnpm lockfile; the application uses npm and the browser test tooling
+  retains its own npm lockfile.
+- Personal application drafts are kept outside the current source tree and
+  ignored. Historical commits are unchanged.
+
 ## 2026-10-28 — the static dashboard is the Research overview
 
 - The saved-results page now calls itself the Research overview in its tab

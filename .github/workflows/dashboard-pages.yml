@@ -1,6 +1,6 @@
 name: Dashboard preview
 
-# Manual deployment: Pages must first be enabled for this private repository.
+# Manual deployment: Pages must first be enabled for this repository.
 # Only the explicit static artifact is uploaded, never the repository root.
 on:
   workflow_dispatch:

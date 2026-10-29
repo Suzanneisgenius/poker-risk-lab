@@ -1,5 +1,10 @@
 # Risk Lab visual update — 2026-10-05
 
+> Historical implementation note for the date above. Numerical values and UI
+> descriptions record that revision, not the current release. Use the
+> [current case study](../case-study/index.html), [methodology](methodology.md)
+> and [validation records](../checks/README.md) for current results.
+
 ## Changes
 
 - A single large current risk estimate now sits beside the bankroll-path chart at wide widths. At narrow widths, the estimate precedes the chart.

@@ -21,7 +21,7 @@ for(const mutate of [s=>s.ranges.all_passed=false,s=>s.ranges.exact[0].match=fal
 }
 assert(!/<script[^>]+src=/.test(html),'dashboard must not need a script CDN');
 assert(!/<!--(?:DATA|APP|STYLE|CHART)-->/i.test(html),'all template slots are populated');
-for(const marker of ['function simulateBankroll','function equityMC','function scoreHand','class CalculationPool'])assert(!html.includes(marker),'private engine leaked: '+marker);
+for(const marker of ['function simulateBankroll','function equityMC','function scoreHand','class CalculationPool'])assert(!html.includes(marker),'server-side engine unexpectedly bundled: '+marker);
 assert.match(html,/Chart\.js v4\.5\.1/);
 const {main:pack}=require('./package_dashboard');pack();
 const out=path.join(root,'outputs/github-pages');

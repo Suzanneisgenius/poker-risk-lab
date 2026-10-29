@@ -1,5 +1,10 @@
 # Secondary Kuhn demo — 2026-10-05
 
+> Historical implementation note for the date above. Numerical values and UI
+> descriptions record that revision, not the current release. Use the
+> [current case study](../case-study/index.html), [methodology](methodology.md)
+> and [validation records](../checks/README.md) for current results.
+
 - Moved the Kuhn/CFR interface to the bottom of Preflop in a native details element, collapsed by default.
 - Removed its independent navigation tab and About list entry. An old #gto link now opens #preflop.
 - Shortened its presentation and used a secondary Run learning demo button.

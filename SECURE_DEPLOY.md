@@ -1,22 +1,23 @@
 # Secure public deployment
 
-This deployment keeps the GitHub repository private while giving visitors a
-normal public HTTPS link. The frontend remains inspectable—as every website's
-downloaded interface must—but the calculation engines never leave the server.
+The GitHub repository is public, including the calculation engine source.
+Render serves the full application at a public HTTPS link. Calculations execute
+on the Node server; the browser bundle contains the interface and chart code.
+Server-side execution is an architecture choice, not source-code secrecy.
 
 ## Architecture
 
 - `index.html`: public interface and chart rendering only.
 - `server/app.js`: same-origin Node HTTP server, security headers, input limits,
   body-size limit, in-memory rate limiting, and API routing.
-- `server/compute.js` plus `standalone/engines/`: private Equity, EV, bankroll,
+- `server/compute.js` plus `standalone/engines/`: server-side Equity, EV, bankroll,
   and CFR implementations.
 - `server/worker.js`: runs CPU-heavy calculations away from the HTTP event loop.
 - `render.yaml`: reproducible Render web-service configuration.
 
 ## One-time deployment
 
-1. Use the existing private repository
+1. Use the existing public repository
    `Suzanneisgenius/poker-analytics-private`, branch `main`. Do not create a new
    repository, reinitialize Git, or change its visibility.
 2. In Render, choose **New → Blueprint**, connect that GitHub repository, and
@@ -71,8 +72,9 @@ References: [Render web services](https://render.com/docs/web-services),
 [Blueprint configuration](https://render.com/docs/blueprint-spec),
 [free-instance limits](https://render.com/docs/free).
 
-Render should be granted access only to this private repository. Visitors receive
-the public site and API results, not repository access.
+When connecting GitHub for automatic deployments, limit Render access to the
+repository it needs. The public app serves pages and API responses; the engine
+source is separately available in the public GitHub repository.
 
 ## Updating later
 
@@ -97,7 +99,7 @@ npm start
 ```
 
 Then open `http://127.0.0.1:4174/`. The application deliberately does not work
-as a standalone `file://` page because calculations require the private API.
+as a standalone `file://` page because calculations require the Node API.
 
 ## Rate limiting and client IPs
 
@@ -129,8 +131,8 @@ Locally, leave `TRUST_PROXY_HOPS` unset so the header is ignored.
 
 ## Protection boundary
 
-This design prevents visitors from downloading the server implementation from
-the public site. It does not make an internet-facing API impossible to probe or
-reimplement from observed inputs and outputs. Keep the repository private,
-retain the request limits, and move to managed rate limiting or authentication
-if traffic becomes substantial.
+The server serves an explicit list of pages and API routes, not arbitrary files
+from the checkout. This reduces accidental exposure of runtime files, but the
+engine source is already public on GitHub. Never commit credentials or personal
+records. Retain the request limits, and consider managed rate limiting or
+authentication if traffic becomes substantial.

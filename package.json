@@ -1,8 +1,8 @@
 {
-  "name": "poker-analytics-suite-private-api",
+  "name": "poker-analytics-suite",
   "version": "18.0.0",
   "private": true,
-  "description": "Server-backed poker analytics suite with private calculation engines.",
+  "description": "Server-backed poker analytics with reproducible bankroll-risk research and range-equity calculations.",
   "engines": {
     "node": ">=20"
   },

@@ -1,5 +1,5 @@
 /* ================= Poker Analytics Suite — public UI logic =================
-   Core calculations run on the private same-origin API and are deliberately
+   Core calculations run on the server-side same-origin API and are deliberately
    excluded from the browser bundle. */
 "use strict";
 
@@ -73,7 +73,7 @@ async function apiJSON(path,payload,timeoutMs=60000,externalSignal=null){
       const aborted=new Error(timedOut?'The calculation took too long. Try a lower precision setting.':'Calculation cancelled.');
       aborted.name='AbortError';throw aborted;
     }
-    if(error instanceof TypeError)throw new Error('Cannot reach the private calculation service. Check your connection and try again.');
+    if(error instanceof TypeError)throw new Error('Cannot reach the calculation service. Check your connection and try again.');
     throw error;
   }finally{clearTimeout(timer);externalSignal?.removeEventListener('abort',abortFromOutside);}
 }

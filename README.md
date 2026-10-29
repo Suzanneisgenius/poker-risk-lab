@@ -1,4 +1,6 @@
-# Poker Risk Lab: Understanding Uncertainty in Simulation
+# Poker Analytics Suite
+
+*Risk Lab: understanding uncertainty in simulation.*
 
 **How much should we trust a simulated risk estimate?**
 
@@ -7,7 +9,7 @@ rates, and assumptions about how returns evolve. Poker bankrolls provide the
 case study; a Python research engine and an interactive web app make the
 experiments reproducible and explorable.
 
-[Research write-up](docs/case_study_imperfect_information.md) ·
+[Research case study](case-study/index.html) ·
 [Validation records](checks/README.md) ·
 [Run the app](#run-locally) ·
 [Reproduce the research](#reproduce-and-check)
@@ -93,7 +95,7 @@ AI tools assisted with reviewing code and tests and checking calculations.
 | **Hand Equity** | Compare a hand with fixed cards, random opponents, or a weighted heads-up range; account for known cards and inspect the breakdown. |
 | **Pot Odds & EV** | Use the equity from Hand Equity to examine the EV of calling at a given pot and call size. |
 
-Risk Lab is the default view. Preflop and About are secondary tabs; Preflop
+Poker Analytics Suite is the application; Risk Lab is its default view. Preflop and About are secondary tabs; Preflop
 includes illustrative range practice and an optional Kuhn poker CFR demo.
 
 Two routes connect inputs, results and interpretation:
@@ -126,8 +128,9 @@ Plotly charts require an internet connection.
 **Demo access:** local setup is documented here; no public demo URL is currently
 listed. The full app requires a Node service; uploading `site/index.html` alone
 to a static host does not provide its calculation API. See
-[deployment instructions](SECURE_DEPLOY.md) for serving the app while keeping
-the source repository private.
+[deployment instructions](SECURE_DEPLOY.md) for running the full app on Render.
+The repository and calculation source are public; calculations execute on the
+Node server and are not bundled into the browser interface.
 
 The case study and Validation page can be read offline or hosted as static
 pages. If shared separately, their **Open the Risk Lab** link needs to point

@@ -1,5 +1,10 @@
 # Scenario comparison, uncertainty case and EV sensitivity — 2026-10-05
 
+> Historical implementation note for the date above. Numerical values and UI
+> descriptions record that revision, not the current release. Use the
+> [current case study](../case-study/index.html), [methodology](methodology.md)
+> and [validation records](../checks/README.md) for current results.
+
 ## Changes
 
 - Risk Lab can save the completed current simulation as A, retain it while B changes, replace A, clear the comparison, and open B's assumptions directly. Inputs, seeded path counts, separate Monte Carlo intervals, a point-estimate difference and stored-path median/50% bands appear together. Pending/error states retain the previous B with an explicit label; saving is disabled until the displayed result matches its inputs.
