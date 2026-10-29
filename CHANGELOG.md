@@ -57,6 +57,15 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-10-29 — Repository name and MIT license
+
+- Rename the GitHub repository to `poker-risk-lab` and update the source link,
+  package repository metadata, Render guide and static-preview test subpath.
+- Add the MIT license with copyright 2026 Xinrui Song. Keep third-party notices
+  and the existing README authorship section unchanged.
+- Include the project MIT license in the seven-file static preview artifact.
+- Retain npm's `private: true` to prevent accidental registry publication.
+
 ## 2026-10-29 — Public-source documentation
 
 - Describe the public source and server-side computation accurately across the

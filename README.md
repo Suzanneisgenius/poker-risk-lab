@@ -9,6 +9,7 @@ rates, and assumptions about how returns evolve. Poker bankrolls provide the
 case study; a Python research engine and an interactive web app make the
 experiments reproducible and explorable.
 
+[Source repository](https://github.com/Suzanneisgenius/poker-risk-lab) ·
 [Research case study](case-study/index.html) ·
 [Validation records](checks/README.md) ·
 [Run the app](#run-locally) ·
@@ -190,3 +191,9 @@ histories. Preflop frequencies are demonstration data, and Kuhn poker is a
 simplified game. This project studies cash-game bankroll risk, not tournaments
 or ICM. Outputs are conditional model estimates for research and education,
 not guarantees or financial or gambling advice.
+
+## License
+
+Project software and documentation are available under the [MIT License](LICENSE),
+copyright 2026 Xinrui Song. Third-party components retain their own copyright
+and license notices, including the vendored [Chart.js license](dashboard/vendor/Chart.js-LICENSE.md).

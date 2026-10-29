@@ -19,7 +19,8 @@ Only `outputs/github-pages/` is suitable for Pages. It contains exactly:
 - `dashboard/index.html` (self-contained dashboard and aggregate saved results)
 - `case-study/index.html`
 - `case-study/validation.html`
-- `Chart.js-LICENSE.md`
+- `LICENSE` (project MIT license)
+- `Chart.js-LICENSE.md` (third-party license)
 - `.nojekyll`
 
 The packager uses an allowlist and rejects unexpected files. It does not copy
@@ -28,15 +29,20 @@ or the full application. Case-study navigation is adjusted in the artifact to
 return to the dashboard instead of linking to an unavailable Node application.
 The original app and case-study pages remain available on the Node server.
 
+The repository is named `poker-risk-lab`; the browser smoke check exercises
+that project subpath. GitHub repository redirects do not redirect an old Pages
+site URL. Use the URL reported by the deployment workflow rather than assuming
+an older Pages link still works.
+
 ## Deploy the static overview
 
-The repository is public. The six-file allowlist controls what is served by
+The repository is public. The seven-file allowlist controls what is served by
 Pages; it does not make other repository files private. The full live application
 is deployed separately as a Node service (see `SECURE_DEPLOY.md`).
 
 Enable **Settings → Pages → Source: GitHub Actions**, then run the
 manual **Dashboard preview** workflow on `main`. It rebuilds, tests, packages
-only the six files, and uses `actions/deploy-pages`. The workflow's environment
+only the seven files, and uses `actions/deploy-pages`. The workflow's environment
 output supplies the actual URL. Verify the page, filters and links there before
 claiming deployment. Future pushes do not automatically redeploy this manual
 preview; rerun the workflow after CI passes.

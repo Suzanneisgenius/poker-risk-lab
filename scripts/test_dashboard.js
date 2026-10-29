@@ -26,7 +26,8 @@ assert.match(html,/Chart\.js v4\.5\.1/);
 const {main:pack}=require('./package_dashboard');pack();
 const out=path.join(root,'outputs/github-pages');
 const walk=d=>fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(path.join(d,e.name)):[path.relative(out,path.join(d,e.name))]).sort();
-assert.deepEqual(walk(out),['.nojekyll','Chart.js-LICENSE.md','case-study/index.html','case-study/validation.html','dashboard/index.html','index.html']);
+assert.deepEqual(walk(out),['.nojekyll','Chart.js-LICENSE.md','LICENSE','case-study/index.html','case-study/validation.html','dashboard/index.html','index.html']);
+assert.equal(fs.readFileSync(path.join(out,'LICENSE'),'utf8'),fs.readFileSync(path.join(root,'LICENSE'),'utf8'));
 for(const file of ['case-study/index.html','case-study/validation.html']) {
   const page=fs.readFileSync(path.join(out,file),'utf8');assert(!page.includes('Open the Risk Lab'));assert(page.includes('../dashboard/'));
 }

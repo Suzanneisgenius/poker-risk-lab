@@ -18,7 +18,7 @@ Server-side execution is an architecture choice, not source-code secrecy.
 ## One-time deployment
 
 1. Use the existing public repository
-   `Suzanneisgenius/poker-analytics-private`, branch `main`. Do not create a new
+   `Suzanneisgenius/poker-risk-lab`, branch `main`. Do not create a new
    repository, reinitialize Git, or change its visibility.
 2. In Render, choose **New → Blueprint**, connect that GitHub repository, and
    review the root-level `render.yaml`. If a Render service already serves this
@@ -75,6 +75,20 @@ References: [Render web services](https://render.com/docs/web-services),
 When connecting GitHub for automatic deployments, limit Render access to the
 repository it needs. The public app serves pages and API responses; the engine
 source is separately available in the public GitHub repository.
+
+## Repository rename
+
+The source repository is now `Suzanneisgenius/poker-risk-lab`. Existing clones
+can update their remote without changing history:
+
+```bash
+git remote set-url origin https://github.com/Suzanneisgenius/poker-risk-lab.git
+```
+
+When creating or reconnecting the Render service, select this repository and
+`main`. The Render service name can remain `poker-analytics-suite`; a repository
+rename does not itself create, rename or verify a deployed service. Use the
+actual URL displayed by Render after deployment.
 
 ## Updating later
 

@@ -19,5 +19,10 @@
     "check:posterior": "node checks/test_compare_snapshot.js && node checks/bankroll-posterior-python/ours.js --check",
     "check:sessions": "node checks/session-import-python/ours.js --check && node checks/session-lengths/run.js --check",
     "build:pages": "node scripts/package_dashboard.js"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Suzanneisgenius/poker-risk-lab.git"
   }
 }

@@ -19,15 +19,15 @@ async function check(name,fn){try{await fn();report.checks.push({name,passed:tru
 async function main(){
  pack();await fs.mkdir(out,{recursive:true});
  server=http.createServer(async(req,res)=>{
-  const prefix='/poker-analytics-private/';
+  const prefix='/poker-risk-lab/';
   let name=new URL(req.url,'http://localhost').pathname;
   if(!name.startsWith(prefix)){res.writeHead(404);res.end();return;}
   name=name.slice(prefix.length);if(name.endsWith('/')||!name)name+='index.html';
-  if(!['index.html','dashboard/index.html','case-study/index.html','case-study/validation.html','Chart.js-LICENSE.md'].includes(name)){res.writeHead(404);res.end();return;}
+  if(!['index.html','dashboard/index.html','case-study/index.html','case-study/validation.html','Chart.js-LICENSE.md','LICENSE'].includes(name)){res.writeHead(404);res.end();return;}
   res.setHeader('Content-Type',name.endsWith('.html')?'text/html':'text/plain');res.end(await fs.readFile(path.join(artifact,name)));
  });
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
- const base=`http://127.0.0.1:${server.address().port}/poker-analytics-private/`;
+ const base=`http://127.0.0.1:${server.address().port}/poker-risk-lab/`;
  browser=await chromium.launch();report.browser=browser.version();
  const context=await browser.newContext({viewport:{width:1440,height:1000}});
  await context.route('**/*',route=>{const u=route.request().url();if(u.startsWith(base)||u.startsWith('file:'))route.continue();else{external.push(u);route.abort();}});

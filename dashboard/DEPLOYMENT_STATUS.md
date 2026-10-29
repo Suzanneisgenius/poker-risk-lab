@@ -5,7 +5,7 @@ overview are built and checked locally. No live URL has been verified in this
 release; a successful push or CI run does not establish a deployment.
 
 Use `SECURE_DEPLOY.md` for the full application on Render, and `GITHUB_PAGES.md`
-for the optional six-file static overview. The static artifact excludes server
+for the optional seven-file static overview. The static artifact excludes server
 engines and session files, but the engine source can be read in the public
 repository. Do not assume that packaging files selectively hides Git history.
 

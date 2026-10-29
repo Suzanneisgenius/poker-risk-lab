@@ -39,6 +39,6 @@ Chart.js 4.5.1 is vendored and embedded for offline use, under the accompanying
 MIT license. Its copyright and license are included in the built page. The
 server-side calculation code is neither imported nor embedded.
 
-See [GitHub Pages instructions](../GITHUB_PAGES.md) for the explicit six-file
+See [GitHub Pages instructions](../GITHUB_PAGES.md) for the explicit seven-file
 publication artifact. The source repository is public. A built artifact is not
 proof of a live deployment.
