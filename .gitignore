@@ -12,3 +12,7 @@ coverage/
 preflop-design-comparison.png
 preflop-implementation-*.png
 preflop-change-hand.png
+
+# Personal application drafts are kept outside this repository.
+/docs/application_summary.md
+/docs/portfolio_page_prompt.md
