@@ -8,12 +8,13 @@ const path = require("node:path");
 const ROOT = path.resolve(__dirname, "..");
 const port = 4197;
 const base = `http://127.0.0.1:${port}`;
+const TEST_COMMIT = "0123456789abcdef0123456789abcdef01234567";
 
 function startServer() {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [path.join(__dirname, "app.js")], {
       cwd: ROOT,
-      env: { ...process.env, PORT: String(port), HOST: "127.0.0.1", CALC_WORKERS: "2", TRUST_PROXY_HOPS: "1" },
+      env: { ...process.env, PORT: String(port), HOST: "127.0.0.1", CALC_WORKERS: "2", TRUST_PROXY_HOPS: "1", RENDER_GIT_COMMIT: TEST_COMMIT },
       stdio: ["ignore", "pipe", "pipe"],
     });
     const timer = setTimeout(() => reject(new Error("Test server did not start.")), 8000);
@@ -44,13 +45,19 @@ async function main() {
     for (const secretMarker of SECRET_MARKERS) {
       assert.equal(publicPage.includes(secretMarker), false, `${file} leaked ${secretMarker}`);
     }
+    // A script from another host must carry a Subresource Integrity hash, so
+    // a changed CDN file is refused by the browser instead of run.
+    for (const tag of publicPage.match(/<script[^>]*\bsrc="https?:[^>]*>/g) || []) {
+      assert.match(tag, /\bintegrity="sha384-[A-Za-z0-9+/]{64}"/, `${file}: ${tag} has no integrity hash`);
+      assert.match(tag, /\bcrossorigin="anonymous"/, `${file}: ${tag} needs crossorigin="anonymous"`);
+    }
   }
 
   const server = await startServer();
   try {
     const health = await fetch(`${base}/api/health`);
     assert.equal(health.status, 200);
-    assert.equal((await health.json()).ok, true);
+    assert.deepEqual(await health.json(), { ok: true, service: "poker-analytics-api", commit: TEST_COMMIT });
 
     const page = await fetch(`${base}/`);
     assert.equal(page.status, 200);

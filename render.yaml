@@ -6,7 +6,9 @@ services:
     buildCommand: npm run build && npm test
     startCommand: npm start
     healthCheckPath: /api/health
-    autoDeploy: true
+    # Deploy a commit on main only after its GitHub checks (Node and Python)
+    # pass. Replaces the deprecated `autoDeploy: true`.
+    autoDeployTrigger: checksPass
     envVars:
       - key: NODE_VERSION
         value: 22

@@ -57,6 +57,27 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-11-01 — Deploy checks for Render
+
+- `render.yaml` deploys a commit only after its GitHub checks (Node and
+  Python) pass. `autoDeployTrigger: checksPass` replaces the deprecated
+  `autoDeploy: true`.
+- `/api/health` also reports the deployed commit: Render's
+  `RENDER_GIT_COMMIT`, or `null` elsewhere.
+- `npm run check:deploy -- <url>` (`scripts/check_deploy.js`) checks a running
+  copy from outside:
+  - the health check and the deployed commit;
+  - the pages and their security headers;
+  - one small request per calculation, and the refusal of cross-origin ones;
+  - with `--heavy`, the time of the largest runs the page offers.
+  `npm test` runs it against a local server (`scripts/test_check_deploy.js`).
+- Plotly is loaded with a Subresource Integrity hash. The file on cdn.plot.ly
+  is byte-identical to `plotly.min.js` in the npm package
+  `plotly.js-dist-min@2.35.2` (same sha256). `server/test_api.js` now requires
+  an integrity hash on every script loaded from another host.
+- `SECURE_DEPLOY.md` gives the Free instance's expected speed, and what to do
+  if the largest runs come close to their timeouts.
+
 ## 2026-11-01 — The real-hand fitting code is in the repository
 
 - `research/real-hands/` holds the scripts behind every number taken from real

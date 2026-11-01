@@ -35,6 +35,9 @@ const TRUST_PROXY_HOPS = Math.max(0, Math.min(5, Number.parseInt(process.env.TRU
 // Set LOG_CLIENT_IP=1 temporarily to confirm TRUST_PROXY_HOPS against the real
 // header chain your host sends.
 const LOG_CLIENT_IP = process.env.LOG_CLIENT_IP === "1";
+// Render sets RENDER_GIT_COMMIT to the commit it deployed. The health check
+// reports it so a deploy can be checked from outside (scripts/check_deploy.js).
+const DEPLOYED_COMMIT = process.env.RENDER_GIT_COMMIT || null;
 
 const routes = new Map([
   ["/api/equity", { type: "equity", timeout: 30000 }],
@@ -182,7 +185,7 @@ async function handler(request, response) {
   const url = new URL(request.url || "/", "http://localhost");
   if (url.pathname === "/api/health") {
     if (request.method !== "GET") return json(response, 405, { error: "Use GET for health checks." }, { Allow: "GET" });
-    return json(response, 200, { ok: true, service: "poker-analytics-api" });
+    return json(response, 200, { ok: true, service: "poker-analytics-api", commit: DEPLOYED_COMMIT });
   }
   const apiRoute = routes.get(url.pathname);
   if (apiRoute) return handleApi(request, response, apiRoute);
