@@ -1729,8 +1729,8 @@
    "src/experiments/case_study.py": "ceb04e4f60d438cccf0901c9e122feee0242225a267bbbae4b0e8b61b2607c3c",
    "configs/case_study/uncertainty.yaml": "74f3b51157b81d37e5ce8935bcce89ef508d4b8a7f0bc1fba8dfe721842e81af"
   },
-  "repo_commit": "02acd8a",
-  "repo_uncommitted_changes": true,
+  "repo_commit": "79941b4",
+  "repo_uncommitted_changes": false,
   "script_sha256": "048b769e88bc997537f49176c0e82518bead2a2c06c14e3c53228a3daa190439",
   "versions": {
    "python": "3.12.14",

@@ -5128,8 +5128,8 @@
   },
   "case_study_models_sha256": "1981ee50473a07092e157ed6e8d76151d78fcb6df6f587bbe6b7490174b06e09",
   "script_sha256": "e5aed8da7ad91f0f33bc2d9f56ca45d251c99e120b571e05a149d4e2a09ae37d",
-  "repo_commit": "02acd8a",
-  "repo_uncommitted_changes": true,
+  "repo_commit": "79941b4",
+  "repo_uncommitted_changes": false,
   "versions": {
    "python": "3.12.14",
    "numpy": "2.5.4",
