@@ -18,7 +18,7 @@ const {
   logPhi,
   MAX_PATH_STEPS,
 } = require("./compute.js");
-const { computeBankrollPosterior, averageRisk } = require("./bankroll_posterior.js");
+const { computeBankrollPosterior, averageRisk, posterior, posteriorQuantile, PRIORS } = require("./bankroll_posterior.js");
 const { normalQuantile } = require("./brownian.js");
 const { clientIp } = require("./client_ip.js");
 const { ValidationError } = require("./errors.js");
@@ -249,7 +249,8 @@ assert.match(oneCombo.methodText, /^Exact: 1 combo × 1,712,304 runouts each/);
   assert.ok(increasing(needed(r.sensitivity.sample).reverse()), "more hands at the same win rate need less bankroll");
   assert.deepEqual(r.sensitivity.volatility.map((row) => row.sd), [70, 90, 120, 150]);
   assert.deepEqual(r.sensitivity.sample.map((row) => row.hands), [10000, 40000, 160000, 640000]);
-  assert.deepEqual(r.sensitivity.prior.map((row) => [row.prior, row.current]), [["none", false], ["weak", true], ["skeptical", false]]);
+  assert.deepEqual(r.sensitivity.prior.map((row) => [row.prior, row.current]),
+    [["none", false], ["weak", true], ["skeptical", false], ["regulars", false], ["players", false]]);
   assert.equal(computeBankrollPosterior({ ...posteriorCase, sd: 85 }).sensitivity.volatility.length, 5, "the entered volatility joins the four assumptions");
   assert.equal(r.sources.widest, "winRate");
 
@@ -281,6 +282,61 @@ assert.match(oneCombo.methodText, /^Exact: 1 combo × 1,712,304 runouts each/);
   closeRelative(widened.winRate.standardError, 1.5 * fromSessions.winRate.standardError, 1e-14, "widened standard error");
   closeRelative(widened.sampleSize.totalHands, 2.25 * fromSessions.sampleSize.totalHands, 1e-6, "hands needed scale with the square");
   assert.ok(widened.bankroll.credible.buyIns > fromSessions.bankroll.credible.buyIns, "a wider interval needs more bankroll");
+
+  // Priors estimated from real hands (configs/population_priors.json).
+  const population = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "configs", "population_priors.json"), "utf8")).priors;
+  assert.equal(PRIORS.regulars.mean, population.regulars.mean);
+  assert.equal(PRIORS.regulars.sd, population.regulars.sd);
+  const regulars = computeBankrollPosterior({ ...posteriorCase, prior: "regulars" });
+  const precision = 1 / 4.5 ** 2 + 1 / population.regulars.sd ** 2;
+  closeRelative(regulars.winRate.mean, (4 / 4.5 ** 2 + population.regulars.mean / population.regulars.sd ** 2) / precision, 1e-14, "regulars: conjugate mean");
+  assert.equal(regulars.winRate.components.length, 1);
+  assert.equal(regulars.inputs.priorFromData, true);
+  assert.equal(r.inputs.priorFromData, false);
+  const weights = PRIORS.players.components.map((c) => c.weight);
+  closeRelative(weights.reduce((a, b) => a + b, 0), 1, 1e-15, "mixture weights sum to 1");
+  closeRelative(weights[0], 690 / 1347, 1e-15, "a group's weight is its share of players");
+
+  // A mixture with one component is that Normal prior.
+  const normalPost = posterior(3, 10000, 90, { mean: 2, sd: 4 });
+  const onePost = posterior(3, 10000, 90, { components: [{ weight: 1, mean: 2, sd: 4 }] });
+  closeRelative(onePost.mean, normalPost.mean, 1e-14, "one-component mixture: mean");
+  closeRelative(onePost.sd, normalPost.sd, 1e-12, "one-component mixture: sd");
+  closeRelative(onePost.probPositive, normalPost.probPositive, 1e-14, "one-component mixture: P(> 0)");
+
+  // The mixture posterior against brute-force Bayes on a grid: prior density
+  // times the Normal likelihood of the observed win rate.
+  const players = computeBankrollPosterior({ hands: 10000, winRate: 3, sd: 90, prior: "players", bank: 30, horizon: 100000 });
+  const pw = players.winRate;
+  {
+    const density = (x) => PRIORS.players.components.reduce((sum, c) => sum + c.weight * Math.exp(-0.5 * ((x - c.mean) / c.sd) ** 2) / c.sd, 0)
+      * Math.exp(-0.5 * ((3 - x) / 9) ** 2);
+    let mass = 0, first = 0, second = 0, risk = 0;
+    for (let k = 0; k <= 200000; k += 1) {
+      const x = -60 + 120 * k / 200000, d = density(x);
+      mass += d; first += d * x; second += d * x * x; risk += d * brownFinite(x, 90, 3000, 0, 100000);
+    }
+    closeRelative(pw.mean, first / mass, 1e-6, "mixture posterior mean");
+    closeRelative(pw.sd, Math.sqrt(second / mass - (first / mass) ** 2), 1e-6, "mixture posterior sd");
+    closeRelative(players.risk.average, risk / mass, 1e-6, "mixture average risk");
+  }
+  closeRelative(pw.components.reduce((sum, c) => sum + c.weight, 0), 1, 1e-14, "posterior weights sum to 1");
+  assert.deepEqual(pw.components.map((c) => c.group), ["1,000–2,499", "2,500–4,999", "5,000–9,999", "10,000+"]);
+  // Interval ends and the answer's win rate are the stated quantiles.
+  const cdf = (x) => pw.components.reduce((sum, c) => sum + c.weight * Math.exp(logPhi((x - c.mean) / c.sd)), 0);
+  for (const [q, x] of [[0.025, pw.interval[0]], [0.975, pw.interval[1]], [0.2, pw.credible]]) {
+    assert.ok(Math.abs(cdf(x) - q) < 1e-6, `quantile ${q}: CDF ${cdf(x)}`);
+  }
+  assert.equal(posteriorQuantile(pw, 1 - 0.8), pw.credible);
+  // The bankroll answer still meets its definition exactly.
+  const playersAt = computeBankrollPosterior({ hands: 10000, winRate: 3, sd: 90, prior: "players", bank: players.bankroll.credible.buyIns, horizon: 100000 });
+  assert.ok(Math.abs(playersAt.risk.upper - 0.05) < 1e-9, "mixture: upper bound = target at the answer");
+  assert.ok(Math.abs(playersAt.risk.probAtMostTarget - 0.8) < 1e-6, "mixture: P(risk <= target) = 80% at the answer");
+  // Few hands: the regulars' prior narrows the risk interval; the all-players prior raises the median risk.
+  const weak10k = computeBankrollPosterior({ hands: 10000, winRate: 3, sd: 90, prior: "weak", bank: 30, horizon: 100000 });
+  const reg10k = computeBankrollPosterior({ hands: 10000, winRate: 3, sd: 90, prior: "regulars", bank: 30, horizon: 100000 });
+  assert.ok(reg10k.risk.interval[1] - reg10k.risk.interval[0] < weak10k.risk.interval[1] - weak10k.risk.interval[0]);
+  assert.ok(players.risk.median > weak10k.risk.median);
 
   assert.equal(estimateCost("bankroll-posterior", posteriorCase), 1);
   for (const bad of [

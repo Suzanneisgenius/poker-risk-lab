@@ -207,6 +207,24 @@ posterior-integrated expected risk, the posterior median risk, credible
 intervals, and threshold-exceedance probabilities — always displaying the
 plug-in and uncertainty-integrated numbers **side by side**.
 
+**Priors estimated from real hands.** The default prior is an assumption.
+`configs/population_priors.json` records two priors fitted outside this
+repository to PartyPoker and Ongame \$2/\$4 hands from July 2009 (PHH dataset,
+CC BY 4.0), with a hierarchical Normal model $\hat\mu_i \sim \mathcal{N}(\mu_i, s_i^2)$,
+$\mu_i \sim \mathcal{N}(m, \tau^2)$ fitted within four groups of players by hands
+played. Regulars (10,000+ hands in the 23 days) give $\mathcal{N}(2.64, 2.46^2)$;
+all players with 1,000+ hands give a four-component mixture with mean −1.18 and
+SD 5.33 bb/100, after rake. With a mixture prior $\sum_k w_k\,\mathcal{N}(m_k, \tau_k^2)$
+the posterior is again a mixture: each component is updated conjugately and
+reweighted by $w_k' \propto w_k\,\varphi(\hat\mu;\, m_k, \tau_k^2 + s^2)$
+(`src/bayes.py`, `mixture_posterior`). Average risk is the weighted sum of the
+components' closed forms. Risk quantiles still follow from the win rate's
+quantiles, because risk falls as the win rate rises. Only the regulars' estimate
+is clean: in the other groups, each player's later half of hands was 4.7 to
+9.7 bb/100 worse than the earlier half, consistent with players stopping after
+losses, so the all-players centre is approximate. Case study §2 compares the
+three priors, and the live Bankroll Risk tool offers both fitted ones.
+
 **Next step: an unknown $\sigma$.** The posterior above treats $\sigma$ as known.
 A Normal–Inverse-Gamma prior on $(\mu,\sigma^2)$ keeps the joint posterior in
 closed form. With a flat prior and $n$ equal blocks, the marginal posterior of

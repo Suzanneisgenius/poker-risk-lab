@@ -133,6 +133,7 @@
   .bp-prior label{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--muted);line-height:1.45;cursor:pointer}
   .bp-prior input{margin-top:3px;accent-color:var(--accent)}
   .bp-prior strong{color:var(--text);font-weight:650}
+  .bp-prior-note{margin:10px 0 4px}
   .bp-answer{border:1px solid var(--grid);background:var(--surface);border-radius:6px;padding:16px 18px;margin:0 0 12px}
   .bp-answer h3{margin:0 0 2px;font:600 13px var(--sans);color:var(--muted);font-weight:600}
   .bp-need{margin:0;font-variant-numeric:tabular-nums}
@@ -1118,8 +1119,11 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
           <fieldset class="bp-prior"><legend class="sr-only">Prior for the win rate</legend>
             <label><input type="radio" name="bp_prior" value="weak" checked> <span><strong>Weakly informative</strong> Normal(0, 10²): win rates beyond ±20 bb/100 are unlikely. Barely moves a large sample.</span></label>
             <label><input type="radio" name="bp_prior" value="skeptical"> <span><strong>Skeptical</strong> Normal(0, 2²): assume little edge until the results show it. Strong unless the sample is very large.</span></label>
+            <label><input type="radio" name="bp_prior" value="regulars"> <span><strong>Regulars, from real hands</strong> Normal(+2.6, 2.5²): how true win rates spread among players with 10,000+ hands at $2/$4 in July 2009, after rake. For a high-volume player.</span></label>
+            <label><input type="radio" name="bp_prior" value="players"> <span><strong>All players, from real hands</strong>: four groups of players with 1,000+ hands at $2/$4 in July 2009, by volume; average −1.2 bb/100. Your results decide which groups they resemble.</span></label>
             <label><input type="radio" name="bp_prior" value="none"> <span><strong>None</strong>: use the results alone.</span></label>
           </fieldset>
+          <p class="cap bp-prior-note">Real-hand priors: PartyPoker and Ongame $2/$4, 1–23 July 2009 (<a href="https://zenodo.org/doi/10.5281/zenodo.10796885" rel="noopener">PHH dataset</a>, CC BY 4.0). They describe that pool only. <a href="case-study/#q2">How they were estimated</a>.</p>
         </details>
         <details class="advanced"><summary>Sample size question</summary><div class="row2">
           <div class="fld"><label for="bp_margin">Precision wanted (± bb/100)</label><input id="bp_margin" type="number" min="0.1" max="100" step="0.5" value="1"></div>
@@ -1138,6 +1142,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
         </section>
         <div class="change-note result-dim" id="bp_change"></div>
         <div class="kgrid k3 result-dim" id="bp_kpis"></div>
+        <p class="cap result-dim" id="bp_groups" hidden></p>
         <div class="card result-dim"><div id="bp_posterior" style="height:240px" role="img" aria-label="Posterior distribution of the win rate"></div></div>
         <p class="cap" id="bp_posterior_cap">Shaded: 95% interval.</p>
         <div class="card result-dim"><div id="bp_curve" style="height:320px" role="img" aria-label="Risk of ruin against bankroll under three readings of risk"></div></div>
@@ -2881,7 +2886,8 @@ document.querySelectorAll('.bksdpreset').forEach(button=>button.addEventListener
 // the average over the win rate's posterior (blue) and the posterior upper
 // bound that the answer uses (rose). Dash styles repeat the distinction.
 const BP_SERIES={upper:{get color(){return C.ruin},dash:'solid'},average:{get color(){return C.accent},dash:'dash'},plugIn:{get color(){return C.median},dash:'dot'}};
-const BP_PRIOR_SHORT={none:'no prior',weak:'weakly informative prior',skeptical:'skeptical prior'};
+const BP_PRIOR_SHORT={none:'no prior',weak:'weakly informative prior',skeptical:'skeptical prior',regulars:'regulars’ prior from real hands',players:'all-players prior from real hands'};
+const BP_PRIOR_NAME={none:'none',weak:'weak',skeptical:'skeptical',regulars:'regulars',players:'all players'};
 const BP_FIELDS=['bp_hands','bp_wr','bp_sd','bp_bank','bp_thr','bp_bb','bp_horizon','bp_target','bp_cred','bp_margin','bp_level'];
 let bpRequest=0,bpController=null,bpBasis='',bpTimer=null,bpHasResult=false;
 // The last result shown, and the one shown when the current edit began.
@@ -3029,6 +3035,10 @@ function renderBp(r,context=null){
     kpiCard('Risk, 95% posterior interval',bpRange(risk.interval[0],risk.interval[1]),'')+
     kpiCard(`Risk, ${q} upper bound`,bpPctAgainst(risk.upper,i.target),`at your bankroll · limit ${tgt}`)+
     kpiCard('Risk if the observed win rate were exact',bpPct(risk.plugIn),'');
+  // Under the all-players prior, how much each volume group counts given these results.
+  const groups=w.components.filter(c=>c.group);
+  $('bp_groups').hidden=!groups.length;
+  $('bp_groups').textContent=groups.length?`Your results weigh the July 2009 player groups (hands played) like this: ${groups.map(c=>`${c.group} ${Math.round(c.weight*100)}%`).join(' · ')}. Without your results the split is by number of players.`:'';
 
   const answer='<span class="bp-tag">this answer</span>';
   const compare=a=>{
@@ -3042,7 +3052,7 @@ function renderBp(r,context=null){
     [`Risk below ${tgt} if ${bpSigned(i.winRate)} bb/100 were exact`,b.plugIn],
   ].map(([label,a],k)=>`<tr${k===0?' class="is-current"':''}><th scope="row">${label}</th><td class="num">${bpNeed(a.buyIns)} BI</td><td class="num">${compare(a)}</td></tr>`).join('');
 
-  const labels={winRate:['Uncertain win rate','95% posterior interval'],volatility:['Volatility assumption',`${r.sources.items[1].values.map(v=>+v.toFixed(1)).join(', ')} bb/100`],prior:['Prior','none, weak, skeptical']};
+  const labels={winRate:['Uncertain win rate','95% posterior interval'],volatility:['Volatility assumption',`${r.sources.items[1].values.map(v=>+v.toFixed(1)).join(', ')} bb/100`],prior:['Prior',r.sensitivity.prior.map(row=>BP_PRIOR_NAME[row.prior]).join(', ')]};
   $('bp_sources').innerHTML=r.sources.items.map(s=>{
     const [lo,hi]=s.range,left=(lo*100).toFixed(2),width=Math.max(0,(hi-lo)*100).toFixed(2);
     return `<div class="bp-source${s.id===r.sources.widest?' is-widest':''}"><div class="bp-source-label">${labels[s.id][0]}<small>${labels[s.id][1]}</small></div><div class="bp-source-track" aria-hidden="true"><span class="bp-source-range" style="left:${left}%;width:${width}%"></span></div><div class="bp-source-value">${bpRange(lo,hi)}</div></div>`;
@@ -3078,7 +3088,9 @@ function renderBp(r,context=null){
 function renderBpCharts(r){
   if(!plotlyReady()){chartUnavailable('bp_posterior');chartUnavailable('bp_curve');return;}
   const i=r.inputs,w=r.winRate,compact=$('bp_curve').clientWidth<520;
-  const start=w.mean-4*w.sd,end=w.mean+4*w.sd,density=x=>Math.exp(-.5*((x-w.mean)/w.sd)**2)/(w.sd*Math.sqrt(2*Math.PI));
+  // The posterior is a sum of Normal components (one unless the prior is a mixture).
+  const parts=w.components,start=Math.min(...parts.map(c=>c.mean-4*c.sd)),end=Math.max(...parts.map(c=>c.mean+4*c.sd));
+  const density=x=>parts.reduce((sum,c)=>sum+c.weight*Math.exp(-.5*((x-c.mean)/c.sd)**2)/(c.sd*Math.sqrt(2*Math.PI)),0);
   const xs=Array.from({length:241},(_,k)=>start+(end-start)*k/240);
   const inside=xs.filter(x=>x>=w.interval[0]&&x<=w.interval[1]);
   const postLay=layout('','True win rate (bb/100)','',{showlegend:false,margin:{l:24,r:14,t:26,b:46}});

@@ -57,6 +57,39 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-11-01 — Priors for the win rate estimated from real hands
+
+- Bankroll Risk (live, computed on the server) offers two new priors for the
+  win rate, fitted to public hand histories (PHH dataset, HandHQ logs,
+  PartyPoker and Ongame $2/$4, July 2009; CC BY 4.0):
+  - **Regulars**, players with 10,000+ hands in the 23 days:
+    Normal(+2.6, 2.5²) bb/100, after rake.
+  - **All players** with 1,000+ hands: a mixture of four groups by hands
+    played, average −1.2 bb/100, SD 5.3. The page shows how the user's results
+    reweight the groups and draws the mixture posterior.
+- The fit was made outside this repository. Its summary numbers are in
+  `configs/population_priors.json`, which both the server and `src/bayes.py`
+  read.
+- `src/bayes.py` gains `MixturePrior`, `mixture_posterior` and
+  `population_priors`. The server's posterior handles mixtures in closed form;
+  quantiles are bisection on its normal CDF.
+- The posterior model version is now 2026-11-01. The prior table in Bankroll
+  Risk has five rows instead of three, so "which input moves the risk most"
+  can change for the same inputs.
+- The JS-against-Python check (`checks/bankroll-posterior-python/`) adds four
+  cases with the new priors: 15 cases, 4,662 numbers, all within tolerance.
+  Mixture quantiles inherit the page CDF's error; the largest was
+  1.3 × 10⁻⁷ bb/100, against a tolerance of 10⁻⁶.
+- Case study §2 compares the three priors after 10,000 to 1,000,000 hands of
+  history. After 10,000 hands averaging +3 bb/100, the median risk is 8.7%
+  with the regulars' prior and 23.0% with the all-players prior, against
+  14.7% with N(0, 10²). By 1,000,000 hands they agree (8.0% to 8.5% average
+  risk). The original N(0, 10²) results are unchanged; `history` in
+  `uncertainty.json` still holds only them, and the comparison is in `priors`.
+- Only the regulars' estimate is clean. Players with fewer hands did 4.7 to
+  9.7 bb/100 worse in the later half of their hands, consistent with stopping
+  after losses. The page and the methodology say so.
+
 ## 2026-10-31 — Case study §3: dependence acts through the long-run variance
 
 - Case study §3 adds the two dependent models with each step narrowed until

@@ -11,6 +11,9 @@ scenario:
 observed_winrate_bb100: 3.0
 history_hands: [10000, 50000, 200000, 1000000]
 prior: {kind: weakly-informative, std: 10.0}
+# The same histories under priors estimated from real hands
+# (configs/population_priors.json: regulars, and all players with 1,000+ hands).
+compare_priors: [regulars, players]
 n_draws: 20000
 seed: 0
 mc_paths: [2000, 20000, 200000]

@@ -3,7 +3,7 @@
   --bg:#fbfaf7;--surface:#fff;--surface2:#f3f1ec;--line:#e1ddd4;--control:#c9c3b8;--track:#efece6;
   --text:#1d1f23;--muted:#555b64;--dim:#6b717b;
   --accent:#2b6cb0;--warn:#b5801a;--ruin:#b23b52;--pos:#1f7a4a;
-  --band:rgba(43,108,176,.16);--code:#f0ede7;--on-bar:#16181b;
+  --band:rgba(43,108,176,.16);--code:#f0ede7;--on-bar:#16181b;--on-pos:#fff;
   --sans:Arial,"Helvetica Neue",Helvetica,sans-serif;
   --mono:"Courier New",Courier,monospace;
   --radius:6px;
@@ -12,7 +12,7 @@
   --bg:#1a1a1c;--surface:#222225;--surface2:#29292d;--line:#38383d;--control:#55555c;--track:#2a2a2e;
   --text:#e9e7e2;--muted:#aaa79f;--dim:#8f8c85;
   --accent:#4a8fd8;--warn:#bf8a28;--ruin:#de5f74;--pos:#5cb784;
-  --band:rgba(74,143,216,.2);--code:#2a2a2e;
+  --band:rgba(74,143,216,.2);--code:#2a2a2e;--on-pos:#16181b;
 }}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -60,10 +60,11 @@ h2+article{margin-top:16px}
 .row-group{margin:16px 0 8px;font-size:13.5px;font-weight:650;color:var(--text)}.row-group:first-child{margin-top:0}
 .track{position:relative;height:26px;border-radius:3px;background:var(--track)}
 .bar{position:absolute;top:6px;height:14px;border-radius:2px;min-width:3px}
-.bar.noise{background:var(--accent)}.bar.parameter{background:var(--warn)}.bar.model{background:var(--ruin)}
+.bar.noise{background:var(--accent)}.bar.parameter{background:var(--warn)}.bar.model{background:var(--ruin)}.bar.fitted{background:var(--pos)}
 .bar.band{top:3px;height:20px;background:var(--band)}
 .value{position:absolute;top:3px;font-size:12.5px;color:var(--muted);white-space:nowrap}
 .value.inside{color:var(--on-bar);font-weight:650}
+.value.inside.fitted{color:var(--on-pos)}
 .dot{position:absolute;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:var(--accent)}
 .point{position:absolute;top:8px;width:10px;height:10px;margin-left:-5px;border-radius:50%}
 .whisker{position:absolute;top:12px;height:2px}
@@ -90,6 +91,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 td.num{font:14.5px/1.6 var(--mono)}
 th.group{padding-top:14px;color:var(--text);font-weight:650;border-bottom-color:var(--line)}
 table.row-labels tbody th[scope="row"]{min-width:11rem}
+.cell-sub{display:block;font:12.5px/1.4 var(--sans);color:var(--muted);white-space:nowrap}
 code{font:14px/1.4 var(--mono);background:var(--code);padding:1px 5px;border-radius:3px;overflow-wrap:anywhere}
 /* Reproduce: one command per figure, shown as a terminal line */
 .repro{margin:16px 0 0}

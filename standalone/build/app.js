@@ -733,7 +733,8 @@ document.querySelectorAll('.bksdpreset').forEach(button=>button.addEventListener
 // the average over the win rate's posterior (blue) and the posterior upper
 // bound that the answer uses (rose). Dash styles repeat the distinction.
 const BP_SERIES={upper:{get color(){return C.ruin},dash:'solid'},average:{get color(){return C.accent},dash:'dash'},plugIn:{get color(){return C.median},dash:'dot'}};
-const BP_PRIOR_SHORT={none:'no prior',weak:'weakly informative prior',skeptical:'skeptical prior'};
+const BP_PRIOR_SHORT={none:'no prior',weak:'weakly informative prior',skeptical:'skeptical prior',regulars:'regulars’ prior from real hands',players:'all-players prior from real hands'};
+const BP_PRIOR_NAME={none:'none',weak:'weak',skeptical:'skeptical',regulars:'regulars',players:'all players'};
 const BP_FIELDS=['bp_hands','bp_wr','bp_sd','bp_bank','bp_thr','bp_bb','bp_horizon','bp_target','bp_cred','bp_margin','bp_level'];
 let bpRequest=0,bpController=null,bpBasis='',bpTimer=null,bpHasResult=false;
 // The last result shown, and the one shown when the current edit began.
@@ -881,6 +882,10 @@ function renderBp(r,context=null){
     kpiCard('Risk, 95% posterior interval',bpRange(risk.interval[0],risk.interval[1]),'')+
     kpiCard(`Risk, ${q} upper bound`,bpPctAgainst(risk.upper,i.target),`at your bankroll · limit ${tgt}`)+
     kpiCard('Risk if the observed win rate were exact',bpPct(risk.plugIn),'');
+  // Under the all-players prior, how much each volume group counts given these results.
+  const groups=w.components.filter(c=>c.group);
+  $('bp_groups').hidden=!groups.length;
+  $('bp_groups').textContent=groups.length?`Your results weigh the July 2009 player groups (hands played) like this: ${groups.map(c=>`${c.group} ${Math.round(c.weight*100)}%`).join(' · ')}. Without your results the split is by number of players.`:'';
 
   const answer='<span class="bp-tag">this answer</span>';
   const compare=a=>{
@@ -894,7 +899,7 @@ function renderBp(r,context=null){
     [`Risk below ${tgt} if ${bpSigned(i.winRate)} bb/100 were exact`,b.plugIn],
   ].map(([label,a],k)=>`<tr${k===0?' class="is-current"':''}><th scope="row">${label}</th><td class="num">${bpNeed(a.buyIns)} BI</td><td class="num">${compare(a)}</td></tr>`).join('');
 
-  const labels={winRate:['Uncertain win rate','95% posterior interval'],volatility:['Volatility assumption',`${r.sources.items[1].values.map(v=>+v.toFixed(1)).join(', ')} bb/100`],prior:['Prior','none, weak, skeptical']};
+  const labels={winRate:['Uncertain win rate','95% posterior interval'],volatility:['Volatility assumption',`${r.sources.items[1].values.map(v=>+v.toFixed(1)).join(', ')} bb/100`],prior:['Prior',r.sensitivity.prior.map(row=>BP_PRIOR_NAME[row.prior]).join(', ')]};
   $('bp_sources').innerHTML=r.sources.items.map(s=>{
     const [lo,hi]=s.range,left=(lo*100).toFixed(2),width=Math.max(0,(hi-lo)*100).toFixed(2);
     return `<div class="bp-source${s.id===r.sources.widest?' is-widest':''}"><div class="bp-source-label">${labels[s.id][0]}<small>${labels[s.id][1]}</small></div><div class="bp-source-track" aria-hidden="true"><span class="bp-source-range" style="left:${left}%;width:${width}%"></span></div><div class="bp-source-value">${bpRange(lo,hi)}</div></div>`;
@@ -930,7 +935,9 @@ function renderBp(r,context=null){
 function renderBpCharts(r){
   if(!plotlyReady()){chartUnavailable('bp_posterior');chartUnavailable('bp_curve');return;}
   const i=r.inputs,w=r.winRate,compact=$('bp_curve').clientWidth<520;
-  const start=w.mean-4*w.sd,end=w.mean+4*w.sd,density=x=>Math.exp(-.5*((x-w.mean)/w.sd)**2)/(w.sd*Math.sqrt(2*Math.PI));
+  // The posterior is a sum of Normal components (one unless the prior is a mixture).
+  const parts=w.components,start=Math.min(...parts.map(c=>c.mean-4*c.sd)),end=Math.max(...parts.map(c=>c.mean+4*c.sd));
+  const density=x=>parts.reduce((sum,c)=>sum+c.weight*Math.exp(-.5*((x-c.mean)/c.sd)**2)/(c.sd*Math.sqrt(2*Math.PI)),0);
   const xs=Array.from({length:241},(_,k)=>start+(end-start)*k/240);
   const inside=xs.filter(x=>x>=w.interval[0]&&x<=w.interval[1]);
   const postLay=layout('','True win rate (bb/100)','',{showlegend:false,margin:{l:24,r:14,t:26,b:46}});

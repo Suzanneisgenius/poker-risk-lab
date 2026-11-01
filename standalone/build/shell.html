@@ -133,6 +133,7 @@
   .bp-prior label{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--muted);line-height:1.45;cursor:pointer}
   .bp-prior input{margin-top:3px;accent-color:var(--accent)}
   .bp-prior strong{color:var(--text);font-weight:650}
+  .bp-prior-note{margin:10px 0 4px}
   .bp-answer{border:1px solid var(--grid);background:var(--surface);border-radius:6px;padding:16px 18px;margin:0 0 12px}
   .bp-answer h3{margin:0 0 2px;font:600 13px var(--sans);color:var(--muted);font-weight:600}
   .bp-need{margin:0;font-variant-numeric:tabular-nums}
@@ -1118,8 +1119,11 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
           <fieldset class="bp-prior"><legend class="sr-only">Prior for the win rate</legend>
             <label><input type="radio" name="bp_prior" value="weak" checked> <span><strong>Weakly informative</strong> Normal(0, 10²): win rates beyond ±20 bb/100 are unlikely. Barely moves a large sample.</span></label>
             <label><input type="radio" name="bp_prior" value="skeptical"> <span><strong>Skeptical</strong> Normal(0, 2²): assume little edge until the results show it. Strong unless the sample is very large.</span></label>
+            <label><input type="radio" name="bp_prior" value="regulars"> <span><strong>Regulars, from real hands</strong> Normal(+2.6, 2.5²): how true win rates spread among players with 10,000+ hands at $2/$4 in July 2009, after rake. For a high-volume player.</span></label>
+            <label><input type="radio" name="bp_prior" value="players"> <span><strong>All players, from real hands</strong>: four groups of players with 1,000+ hands at $2/$4 in July 2009, by volume; average −1.2 bb/100. Your results decide which groups they resemble.</span></label>
             <label><input type="radio" name="bp_prior" value="none"> <span><strong>None</strong>: use the results alone.</span></label>
           </fieldset>
+          <p class="cap bp-prior-note">Real-hand priors: PartyPoker and Ongame $2/$4, 1–23 July 2009 (<a href="https://zenodo.org/doi/10.5281/zenodo.10796885" rel="noopener">PHH dataset</a>, CC BY 4.0). They describe that pool only. <a href="case-study/#q2">How they were estimated</a>.</p>
         </details>
         <details class="advanced"><summary>Sample size question</summary><div class="row2">
           <div class="fld"><label for="bp_margin">Precision wanted (± bb/100)</label><input id="bp_margin" type="number" min="0.1" max="100" step="0.5" value="1"></div>
@@ -1138,6 +1142,7 @@ python -m src.experiments.model_risk --config configs/model_risk.yaml</div>
         </section>
         <div class="change-note result-dim" id="bp_change"></div>
         <div class="kgrid k3 result-dim" id="bp_kpis"></div>
+        <p class="cap result-dim" id="bp_groups" hidden></p>
         <div class="card result-dim"><div id="bp_posterior" style="height:240px" role="img" aria-label="Posterior distribution of the win rate"></div></div>
         <p class="cap" id="bp_posterior_cap">Shaded: 95% interval.</p>
         <div class="card result-dim"><div id="bp_curve" style="height:320px" role="img" aria-label="Risk of ruin against bankroll under three readings of risk"></div></div>

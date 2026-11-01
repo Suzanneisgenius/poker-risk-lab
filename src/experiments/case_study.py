@@ -15,6 +15,7 @@ Run:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import os
@@ -23,7 +24,8 @@ from typing import Any
 
 import numpy as np
 
-from src.bayes import Prior, normal_normal_posterior, posterior_risk, skeptical_prior, weakly_informative_prior
+from src.bayes import (POPULATION_PRIORS, MixturePrior, Prior, population_priors, posterior_risk, skeptical_prior,
+                       update, weakly_informative_prior)
 from src.experiments._provenance import provenance
 from src.models import MODELS, long_run_sd, run_model, variance_matched_sigma
 from src.simulation import _step_sizes, simulate_bankroll
@@ -121,17 +123,16 @@ def _prior(pc: dict[str, Any]) -> Prior:
     return Prior(pc.get("mean", 0.0), pc.get("std", 5.0), "custom")
 
 
-def case_uncertainty(cfg: dict[str, Any]) -> dict[str, Any]:
+def _history(cfg: dict[str, Any], prior: Prior | MixturePrior) -> list[dict[str, Any]]:
+    """Win-rate and risk intervals after each length of history, under one prior."""
     sc, level = cfg["scenario"], cfg.get("level", 0.95)
     observed = cfg["observed_winrate_bb100"]
-    plug_in = exact_risk(sc, observed)
-    prior = _prior(cfg.get("prior", {}))
     key = f"ci_{int(level * 100)}"
     history = []
     for hands in cfg["history_hands"]:
         # Standard error of a win rate measured over `hands` independent hands.
         se = sc["std_bb100"] / math.sqrt(hands / 100)
-        post = normal_normal_posterior(observed, se, prior)
+        post = update(observed, se, prior)
         out = posterior_risk(
             post, std_bb100=sc["std_bb100"], bankroll_bb=sc["bankroll_bb"], n_hands=sc["n_hands"],
             ruin_threshold_bb=sc.get("ruin_threshold_bb", 0.0), plug_in_winrate=observed,
@@ -145,6 +146,32 @@ def case_uncertainty(cfg: dict[str, Any]) -> dict[str, Any]:
             "median_risk": out["median_risk"],
             "p_risk_above_10pct": out["threshold_exceedance"]["p_risk_gt_10pct"],
         })
+    return history
+
+
+def _population_source() -> dict[str, Any]:
+    with open(POPULATION_PRIORS, "rb") as f:
+        raw = f.read()
+    spec = json.loads(raw)
+    return {"file": os.path.relpath(POPULATION_PRIORS, REPO_ROOT), "sha256": hashlib.sha256(raw).hexdigest(),
+            "source": spec["source"], "checks": spec["checks"], "priors": spec["priors"]}
+
+
+def case_uncertainty(cfg: dict[str, Any]) -> dict[str, Any]:
+    sc, level = cfg["scenario"], cfg.get("level", 0.95)
+    observed = cfg["observed_winrate_bb100"]
+    plug_in = exact_risk(sc, observed)
+    prior = _prior(cfg.get("prior", {}))
+    history = _history(cfg, prior)
+    # The same histories under priors estimated from real hands.
+    fitted = population_priors()
+    source = _population_source()
+    priors = [{"id": "reference", "label": f"Normal({prior.mean:g}, {prior.std:g}²)", "kind": "normal",
+               "mean": prior.mean, "sd": prior.std, "history": history}]
+    for pid in cfg.get("compare_priors", []):
+        p = fitted[pid]
+        priors.append({"id": pid, "label": source["priors"][pid]["label"], "kind": source["priors"][pid]["kind"],
+                       "mean": p.mean, "sd": p.std, "history": _history(cfg, p)})
     monte_carlo = []
     for n in cfg["mc_paths"]:
         half = Z95 * math.sqrt(plug_in * (1 - plug_in) / n)
@@ -155,11 +182,15 @@ def case_uncertainty(cfg: dict[str, Any]) -> dict[str, Any]:
         "level": level,
         "history": history,
         "monte_carlo": monte_carlo,
+        "priors": priors,
+        "population_priors": source,
         "provenance": provenance(
             experiment="case_study.uncertainty", config=cfg,
             engine={"risk": "finite-horizon Brownian formula per posterior draw (no simulation noise)",
-                    "posterior": "Normal-Normal conjugate update, standard deviation held fixed",
-                    "monte_carlo_interval": "binomial 95% interval at the plug-in risk"}),
+                    "posterior": "Normal-Normal conjugate update, standard deviation held fixed; "
+                                 "a mixture prior updates each component and reweights them",
+                    "monte_carlo_interval": "binomial 95% interval at the plug-in risk",
+                    "population_priors": f"{source['file']} (sha256 {source['sha256'][:12]})"}),
     }
 
 
@@ -306,21 +337,32 @@ def figure_noise(res: dict[str, Any], path: str) -> None:
     plt.close(fig)
 
 
+PRIOR_SHORT = {"reference": "Prior N(0, 10²)", "regulars": "Regulars' prior (2009 data)",
+               "players": "All players' prior (2009 data)"}
+
+
 def figure_uncertainty(res: dict[str, Any], path: str) -> None:
     plt = _style()
-    fig, ax = plt.subplots(figsize=(8, 3.8))
+    colors = {"reference": WARN, "regulars": POS, "players": MUTED}
     rows = [(f"Simulation, {m['paths']:,} paths", m["interval"], ACC) for m in res["monte_carlo"]]
-    rows += [(f"Win rate from {h['hands']:,} hands", h["risk_interval"], WARN) for h in res["history"]]
+    for i, h in enumerate(res["history"]):
+        rows += [(f"Win rate from {h['hands']:,} hands" if j == 0 else "", p["history"][i]["risk_interval"],
+                  colors[p["id"]]) for j, p in enumerate(res["priors"])]
+    fig, ax = plt.subplots(figsize=(8, 0.3 * len(rows) + 1.6))
     for y, (label, (lo, hi), color) in enumerate(rows):
-        ax.plot([lo * 100, hi * 100], [y, y], color=color, lw=7, solid_capstyle="butt")
-        ax.text(hi * 100 + 0.6, y, f"{pct(lo)}–{pct(hi)}", va="center", fontsize=8.5, color=MUTED)
+        ax.plot([lo * 100, hi * 100], [y, y], color=color, lw=6, solid_capstyle="butt")
+        ax.text(hi * 100 + 0.6, y, f"{pct(lo)}–{pct(hi)}", va="center", fontsize=8, color=MUTED)
     ax.axvline(res["plug_in_risk"] * 100, color=MUTED, lw=1, ls="--")
     ax.set_yticks(range(len(rows)), [r[0] for r in rows])
+    ax.tick_params(axis="y", length=0)
     ax.invert_yaxis()
-    ax.set_xlim(0, 100)
-    ax.set_xlabel(f"Risk of ruin (%) — {int(res['level'] * 100)}% interval")
+    ax.set_xlim(0, 112)
+    for p in res["priors"]:
+        ax.plot([], [], color=colors[p["id"]], lw=6, label=PRIOR_SHORT[p["id"]])
+    ax.legend(loc="lower right", fontsize=8, frameon=False)
+    ax.set_xlabel(f"Risk of ruin (%) — {int(res['level'] * 100)}% interval; history averaging +3 bb/100")
     ax.grid(axis="x", alpha=0.5)
-    ax.set_title("More paths shrink simulation error; only more history narrows the win rate")
+    ax.set_title("More paths shrink simulation error; the win rate's range depends on history and prior")
     fig.tight_layout()
     fig.savefig(path, dpi=150, bbox_inches="tight")
     plt.close(fig)

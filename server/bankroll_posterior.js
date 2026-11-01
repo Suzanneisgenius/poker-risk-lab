@@ -5,7 +5,10 @@
 // The true win rate mu (bb/100) is unknown. Results so far give an observed net
 // win rate over N hands. With the volatility sigma (bb/100) held fixed, the
 // observed rate is Normal(mu, se^2) with se = sigma / sqrt(N / 100), and a
-// Normal prior (or none) gives a Normal posterior for mu.
+// Normal prior (or none) gives a Normal posterior for mu. A prior estimated
+// from real hands can be a mixture of Normals (one per group of players); the
+// posterior is then a mixture too, each group's Normal posterior reweighted by
+// how well that group predicts the observed win rate.
 //
 // "Model risk" R(mu) is the finite-horizon Brownian first-passage probability
 // of falling from the bankroll to the threshold within the planned hands at win
@@ -13,27 +16,42 @@
 //   - risk quantiles: the q-quantile of R(mu) is R at the (1 - q) quantile of mu;
 //   - "posterior probability >= q that risk <= target": R at the (1 - q)
 //     quantile of mu must be <= target, so the bankroll is one root in B;
-//   - average risk E[R(mu)]: closed form for a Normal posterior (averageRisk).
+//   - average risk E[R(mu)]: closed form for a Normal posterior (averageRisk),
+//     and the weighted sum of those for a mixture.
 
 const { ValidationError } = require("./errors.js");
 const { logPhi, phi, normalQuantile, brownFinite } = require("./brownian.js");
+const POPULATION = require("../configs/population_priors.json");
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
 // Change `version` whenever the same inputs would give different numbers.
 const POSTERIOR_MODEL = Object.freeze({
   name: "bankroll-posterior",
-  version: "2026-10-22",
+  version: "2026-11-01",
   likelihood: "observed win rate ~ Normal(true win rate, (volatility / sqrt(hands / 100))^2), volatility held fixed",
-  posterior: "Normal-Normal conjugate update",
+  posterior: "Normal-Normal conjugate update; a mixture prior updates each component and reweights them",
   risk: "finite-horizon Brownian first passage; average over the posterior in closed form",
 });
+
+// Priors estimated from real hands (configs/population_priors.json, also read
+// by the Python research code). A mixture weights each group by its players.
+function populationPrior(id) {
+  const p = POPULATION.priors[id];
+  const base = { id, label: p.label, fromData: true, mean: p.mean, sd: p.sd };
+  if (p.kind === "normal") return Object.freeze(base);
+  const players = p.components.reduce((sum, c) => sum + c.players, 0);
+  return Object.freeze({ ...base, components: Object.freeze(p.components.map((c) => Object.freeze({ weight: c.players / players, mean: c.mean, sd: c.sd, group: c.hands }))) });
+}
 
 const PRIORS = Object.freeze({
   none: Object.freeze({ id: "none", mean: 0, sd: Infinity, label: "None (results only)" }),
   weak: Object.freeze({ id: "weak", mean: 0, sd: 10, label: "Weakly informative, Normal(0, 10²)" }),
   skeptical: Object.freeze({ id: "skeptical", mean: 0, sd: 2, label: "Skeptical, Normal(0, 2²)" }),
+  regulars: populationPrior("regulars"),
+  players: populationPrior("players"),
 });
+const PRIOR_SOURCE = Object.freeze({ ...POPULATION.source });
 const VOLATILITY_ASSUMPTIONS = [70, 90, 120, 150];
 const SAMPLE_MULTIPLES = [0.25, 1, 4, 16];
 const INTERVAL_LEVEL = 0.95;
@@ -86,18 +104,62 @@ function normalizePosteriorInput(input) {
   return p;
 }
 
-// Normal posterior for the true win rate. `dataWeight` is the share of the
-// posterior precision that comes from the results (1 with no prior).
+// Posterior for the true win rate, as Normal components with weights (one
+// component for a Normal prior or none). `dataWeight` is the share of the
+// posterior precision that comes from the results (1 with no prior); for a
+// mixture, the posterior variance over the results' own variance, se^2.
 // `multiplier` widens the standard error (sessions whose win rate drifts).
 function posterior(observed, hands, sd, prior, multiplier = 1) {
   const standardError = (multiplier * sd) / Math.sqrt(hands / 100);
   const dataPrecision = 1 / (standardError * standardError);
-  const priorPrecision = Number.isFinite(prior.sd) ? 1 / (prior.sd * prior.sd) : 0;
-  const precision = dataPrecision + priorPrecision;
-  const mean = (observed * dataPrecision + prior.mean * priorPrecision) / precision;
-  const sdPost = Math.sqrt(1 / precision);
-  return { mean, sd: sdPost, standardError, dataWeight: dataPrecision / precision, probPositive: phi(mean / sdPost) };
+  const update = (mean, sdPrior) => {
+    const priorPrecision = Number.isFinite(sdPrior) ? 1 / (sdPrior * sdPrior) : 0;
+    const precision = dataPrecision + priorPrecision;
+    return { mean: (observed * dataPrecision + mean * priorPrecision) / precision, sd: Math.sqrt(1 / precision), precision };
+  };
+  if (!prior.components) {
+    const { mean, sd: sdPost, precision } = update(prior.mean, prior.sd);
+    return { mean, sd: sdPost, standardError, dataWeight: dataPrecision / precision, probPositive: phi(mean / sdPost),
+      components: [{ weight: 1, mean, sd: sdPost }] };
+  }
+  // Weight of group k: w_k * Normal(observed; m_k, t_k^2 + se^2), in log space.
+  const logWeights = prior.components.map((c) => {
+    const v = c.sd * c.sd + standardError * standardError;
+    return Math.log(c.weight) - 0.5 * Math.log(v) - ((observed - c.mean) ** 2) / (2 * v);
+  });
+  const top = Math.max(...logWeights);
+  const total = logWeights.reduce((sum, lw) => sum + Math.exp(lw - top), 0);
+  const components = prior.components.map((c, i) => {
+    const { mean, sd: sdPost } = update(c.mean, c.sd);
+    return { weight: Math.exp(logWeights[i] - top) / total, mean, sd: sdPost, group: c.group };
+  });
+  const mean = components.reduce((sum, c) => sum + c.weight * c.mean, 0);
+  const variance = components.reduce((sum, c) => sum + c.weight * (c.sd * c.sd + (c.mean - mean) ** 2), 0);
+  return {
+    mean, sd: Math.sqrt(variance), standardError, components,
+    dataWeight: clamp(variance * dataPrecision, 0, 1),
+    probPositive: components.reduce((sum, c) => sum + c.weight * phi(c.mean / c.sd), 0),
+  };
 }
+
+// P(mu <= x) and its inverse for a posterior made of Normal components. The
+// inverse is bisection on the CDF, so it inherits the CDF's accuracy (relative
+// error below 1.2e-7, from standalone/shared/stats.js).
+const posteriorCdf = (post, x) => post.components.reduce((sum, c) => sum + c.weight * phi((x - c.mean) / c.sd), 0);
+function posteriorQuantile(post, q) {
+  let low = Math.min(...post.components.map((c) => c.mean - 12 * c.sd));
+  let high = Math.max(...post.components.map((c) => c.mean + 12 * c.sd));
+  for (let i = 0; i < 200 && high - low > 1e-13 * Math.max(1, Math.abs(high)); i += 1) {
+    const middle = (low + high) / 2;
+    if (posteriorCdf(post, middle) < q) low = middle;
+    else high = middle;
+  }
+  return (low + high) / 2;
+}
+
+// E[R(mu)] over the posterior: the closed form below, per component.
+const posteriorAverageRisk = (post, sigma, bankroll, threshold, hands) =>
+  post.components.reduce((sum, c) => sum + c.weight * averageRisk(c.mean, c.sd, sigma, bankroll, threshold, hands), 0);
 
 // E[R(mu)] for mu ~ Normal(mean, sd^2), exactly. With h = hands / 100,
 // b = bankroll - threshold and v^2 = sigma^2 h + (sd h)^2 (the predictive
@@ -154,11 +216,14 @@ function winRateFor(riskAt, target) {
 // Everything that depends on one choice of volatility, prior and sample size.
 function evaluate(p, sd, prior, hands) {
   const post = posterior(p.winRate, hands, sd, prior, p.seMultiplier);
+  const normal = post.components.length === 1;
   const zInterval = normalQuantile(0.5 + INTERVAL_LEVEL / 2);
-  const interval = [post.mean - zInterval * post.sd, post.mean + zInterval * post.sd];
+  const interval = normal ? [post.mean - zInterval * post.sd, post.mean + zInterval * post.sd]
+    : [posteriorQuantile(post, (1 - INTERVAL_LEVEL) / 2), posteriorQuantile(post, (1 + INTERVAL_LEVEL) / 2)];
   // Risk is at most its q-quantile with posterior probability q, and that
   // quantile is the risk at the (1 - q) quantile of the win rate.
-  const credibleWinRate = post.mean - normalQuantile(p.credibility) * post.sd;
+  const credibleWinRate = normal ? post.mean - normalQuantile(p.credibility) * post.sd : posteriorQuantile(post, 1 - p.credibility);
+  const medianWinRate = normal ? post.mean : posteriorQuantile(post, 0.5);
   const riskAt = (winRate, bank = p.bank) => brownFinite(winRate, sd, bank, p.thr, p.horizon);
   const scale = sd * Math.sqrt(p.horizon / 100);
   const credibleBankroll = bankrollFor((bank) => riskAt(credibleWinRate, bank), p.target, p.thr, scale);
@@ -168,17 +233,17 @@ function evaluate(p, sd, prior, hands) {
     winRate: { ...post, interval, credible: credibleWinRate },
     risk: {
       plugIn: riskAt(p.winRate),
-      average: averageRisk(post.mean, post.sd, sd, p.bank, p.thr, p.horizon),
-      median: riskAt(post.mean),
+      average: posteriorAverageRisk(post, sd, p.bank, p.thr, p.horizon),
+      median: riskAt(medianWinRate),
       interval: [riskAt(interval[1]), riskAt(interval[0])],
       upper: riskAt(credibleWinRate),
       // P(R(mu) <= target) = P(mu >= the win rate where R equals the target).
-      probAtMostTarget: phi((post.mean - breakEvenWinRate) / post.sd),
+      probAtMostTarget: post.components.reduce((sum, c) => sum + c.weight * phi((c.mean - breakEvenWinRate) / c.sd), 0),
       targetWinRate: breakEvenWinRate,
     },
     bankroll: {
       credible: credibleBankroll,
-      average: bankrollFor((bank) => averageRisk(post.mean, post.sd, sd, bank, p.thr, p.horizon), p.target, p.thr, scale),
+      average: bankrollFor((bank) => posteriorAverageRisk(post, sd, bank, p.thr, p.horizon), p.target, p.thr, scale),
       plugIn: bankrollFor((bank) => riskAt(p.winRate, bank), p.target, p.thr, scale),
     },
   };
@@ -254,13 +319,13 @@ function computeBankrollPosterior(input) {
     const bank = p.thr + (1.3 * top * i) / (CURVE_POINTS - 1);
     curve.bankroll.push(bank / p.bbPerBuyIn);
     curve.plugIn.push(brownFinite(p.winRate, p.sd, bank, p.thr, p.horizon));
-    curve.average.push(averageRisk(main.winRate.mean, main.winRate.sd, p.sd, bank, p.thr, p.horizon));
+    curve.average.push(posteriorAverageRisk(main.winRate, p.sd, bank, p.thr, p.horizon));
     curve.upper.push(brownFinite(main.winRate.credible, p.sd, bank, p.thr, p.horizon));
   }
 
   return {
     inputs: {
-      hands: p.hands, winRate: p.winRate, sd: p.sd, sdSource: p.sdSource, prior: p.prior, priorLabel: prior.label,
+      hands: p.hands, winRate: p.winRate, sd: p.sd, sdSource: p.sdSource, prior: p.prior, priorLabel: prior.label, priorFromData: Boolean(prior.fromData),
       bank: p.bankBuyIns, thr: p.thresholdBuyIns, bbPerBuyIn: p.bbPerBuyIn, horizon: p.horizon,
       target: p.target, credibility: p.credibility, margin: p.margin, sampleLevel: p.sampleLevel,
       sdRange: p.sdRange, seMultiplier: p.seMultiplier,
@@ -275,6 +340,9 @@ function computeBankrollPosterior(input) {
       probPositive: main.winRate.probPositive,
       dataWeight: main.winRate.dataWeight,
       credible: main.winRate.credible,
+      // The posterior as Normal components (one unless the prior is a mixture),
+      // so the page can draw its density; `group` names a mixture's player group.
+      components: main.winRate.components,
     },
     risk: { ...main.risk, target: p.target, credibility: p.credibility },
     bankroll: {
@@ -288,6 +356,7 @@ function computeBankrollPosterior(input) {
     sources: { items: sources, widest: widest.id },
     curve,
     model: POSTERIOR_MODEL,
+    priorSource: PRIOR_SOURCE,
   };
 }
 
@@ -298,6 +367,7 @@ module.exports = {
   averageRisk,
   bankrollFor,
   sampleSize,
+  posteriorQuantile,
   PRIORS,
   POSTERIOR_MODEL,
 };

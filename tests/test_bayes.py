@@ -5,11 +5,14 @@ import pytest
 from scipy import integrate, stats
 
 from src.bayes import (
+    MixturePrior,
     Posterior,
     Prior,
     conditional_ruin_risk,
     flat_prior,
+    mixture_posterior,
     normal_normal_posterior,
+    population_priors,
     posterior_risk,
     skeptical_prior,
     weakly_informative_prior,
@@ -96,3 +99,53 @@ def test_posterior_draws_reproducible():
     a = posterior_risk(post, 90.0, 2000.0, 100_000, n_draws=3000, seed=42)
     b = posterior_risk(post, 90.0, 2000.0, 100_000, n_draws=3000, seed=42)
     assert a["expected_risk"] == b["expected_risk"]
+
+
+def test_one_component_mixture_is_the_normal_posterior():
+    normal = normal_normal_posterior(3.0, 9.0, Prior(2.0, 4.0))
+    mix = mixture_posterior(3.0, 9.0, MixturePrior((1.0,), (2.0,), (4.0,)))
+    assert mix.mean == pytest.approx(normal.mean, rel=1e-12)
+    assert mix.std == pytest.approx(normal.std, rel=1e-12)
+    assert mix.credible_interval(0.95) == pytest.approx(normal.credible_interval(0.95), abs=1e-9)
+    assert mix.prob_positive == pytest.approx(normal.prob_positive, abs=1e-12)
+
+
+def test_mixture_posterior_matches_numerical_bayes():
+    prior = MixturePrior((0.5, 0.3, 0.2), (-4.0, 1.0, 3.0), (6.0, 2.5, 2.0))
+    post = mixture_posterior(3.0, 9.0, prior)
+    # Posterior density on a grid: prior density times the Normal likelihood.
+    x = np.linspace(-60, 60, 120_001)
+    dens = sum(w * stats.norm.pdf(x, m, s) for w, m, s in zip(prior.weights, prior.means, prior.stds))
+    dens *= stats.norm.pdf(3.0, x, 9.0)
+    dens /= integrate.trapezoid(dens, x)
+    mean = integrate.trapezoid(x * dens, x)
+    assert post.mean == pytest.approx(mean, abs=1e-6)
+    assert post.std == pytest.approx(np.sqrt(integrate.trapezoid((x - mean) ** 2 * dens, x)), abs=1e-6)
+    assert post.cdf(0.0) == pytest.approx(integrate.trapezoid(np.where(x <= 0, dens, 0), x), abs=1e-4)
+    assert sum(post.weights) == pytest.approx(1.0)
+    q = post.quantile(0.1)
+    assert post.cdf(q) == pytest.approx(0.1, abs=1e-12)
+
+
+def test_mixture_draws_follow_the_posterior():
+    prior = MixturePrior((0.6, 0.4), (-3.0, 3.0), (3.0, 2.0))
+    post = mixture_posterior(1.0, 4.0, prior)
+    d = post.draws(200_000, seed=3)
+    assert d.mean() == pytest.approx(post.mean, abs=0.03)
+    assert d.std() == pytest.approx(post.std, rel=0.01)
+
+
+def test_population_priors_match_their_recorded_summaries():
+    import json
+    from src.bayes import POPULATION_PRIORS
+    with open(POPULATION_PRIORS) as f:
+        spec = json.load(f)["priors"]
+    priors = population_priors()
+    assert isinstance(priors["regulars"], Prior)
+    assert isinstance(priors["players"], MixturePrior)
+    assert sum(priors["players"].weights) == pytest.approx(1.0)
+    assert sum(c["players"] for c in spec["players"]["components"]) == spec["players"]["players"]
+    # The file's overall mean and SD are the mixture's, rounded.
+    for key in ("regulars", "players"):
+        assert priors[key].mean == pytest.approx(spec[key]["mean"], abs=0.002)
+        assert priors[key].std == pytest.approx(spec[key]["sd"], abs=0.002)

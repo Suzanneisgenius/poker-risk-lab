@@ -90,16 +90,396 @@
       "halfwidth": 0.0011306107129831354
     }
   ],
+  "priors": [
+    {
+      "id": "reference",
+      "label": "Normal(0, 10\u00b2)",
+      "kind": "normal",
+      "mean": 0.0,
+      "sd": 10.0,
+      "history": [
+        {
+          "hands": 10000,
+          "winrate_standard_error": 9.0,
+          "winrate_interval": [
+            -11.454009245539133,
+            14.768926372610956
+          ],
+          "risk_interval": [
+            1.8512638489144126e-05,
+            0.9993344301100253
+          ],
+          "expected_risk": 0.325608658279243,
+          "median_risk": 0.14694601483886516,
+          "p_risk_above_10pct": 0.5423
+        },
+        {
+          "hands": 50000,
+          "winrate_standard_error": 4.024922359499621,
+          "winrate_interval": [
+            -4.736415086970703,
+            9.899926274578277
+          ],
+          "risk_interval": [
+            0.0006670408847830324,
+            0.8325276863869561
+          ],
+          "expected_risk": 0.19030896109099632,
+          "median_risk": 0.09122953755563078,
+          "p_risk_above_10pct": 0.4817
+        },
+        {
+          "hands": 200000,
+          "winrate_standard_error": 2.0124611797498106,
+          "winrate_interval": [
+            -0.9835961625767324,
+            6.750054596022192
+          ],
+          "risk_interval": [
+            0.00648975268454109,
+            0.40185683285298496
+          ],
+          "expected_risk": 0.11037293069072748,
+          "median_risk": 0.07700039109136882,
+          "p_risk_above_10pct": 0.40135
+        },
+        {
+          "hands": 1000000,
+          "winrate_standard_error": 0.9,
+          "winrate_interval": [
+            1.219028621797556,
+            4.73276187517695
+          ],
+          "risk_interval": [
+            0.025297833338553382,
+            0.17540146969400333
+          ],
+          "expected_risk": 0.07983453506392084,
+          "median_risk": 0.07287956162138359,
+          "p_risk_above_10pct": 0.25375
+        }
+      ]
+    },
+    {
+      "id": "regulars",
+      "label": "Regulars, $2/$4 2009: Normal(+2.6, 2.5\u00b2)",
+      "kind": "normal",
+      "mean": 2.644,
+      "sd": 2.456,
+      "history": [
+        {
+          "hands": 10000,
+          "winrate_standard_error": 9.0,
+          "winrate_interval": [
+            -1.9751922371519104,
+            7.312538932507509
+          ],
+          "risk_interval": [
+            0.004362644232640111,
+            0.5270130873245373
+          ],
+          "expected_risk": 0.1347573558833254,
+          "median_risk": 0.08668956603636943,
+          "p_risk_above_10pct": 0.45375
+        },
+        {
+          "hands": 50000,
+          "winrate_standard_error": 4.024922359499621,
+          "winrate_interval": [
+            -1.368497440756173,
+            6.8496762278847445
+          ],
+          "risk_interval": [
+            0.006053563481177052,
+            0.4498480581664389
+          ],
+          "expected_risk": 0.1215674994923992,
+          "median_risk": 0.08330071095193788,
+          "p_risk_above_10pct": 0.4346
+        },
+        {
+          "hands": 200000,
+          "winrate_standard_error": 2.0124611797498106,
+          "winrate_interval": [
+            -0.19393651671508394,
+            5.90792002147052
+          ],
+          "risk_interval": [
+            0.011624241049790577,
+            0.3096946513613171
+          ],
+          "expected_risk": 0.09943976202978438,
+          "median_risk": 0.0780176434888464,
+          "p_risk_above_10pct": 0.3808
+        },
+        {
+          "hands": 1000000,
+          "winrate_standard_error": 0.9,
+          "winrate_interval": [
+            1.301590427397122,
+            4.614117641196328
+          ],
+          "risk_interval": [
+            0.027289295160238484,
+            0.16901326569193434
+          ],
+          "expected_risk": 0.0798017015494449,
+          "median_risk": 0.07360411107379096,
+          "p_risk_above_10pct": 0.24675
+        }
+      ]
+    },
+    {
+      "id": "players",
+      "label": "Players with 1,000+ hands, $2/$4 2009 (mixture)",
+      "kind": "mixture",
+      "mean": -1.176221232368226,
+      "sd": 5.332854877949943,
+      "history": [
+        {
+          "hands": 10000,
+          "winrate_standard_error": 9.0,
+          "winrate_interval": [
+            -9.431267963687407,
+            7.324082313304742
+          ],
+          "risk_interval": [
+            0.004134384823218601,
+            0.9945752490778869
+          ],
+          "expected_risk": 0.3386685205086657,
+          "median_risk": 0.2301638359464451,
+          "p_risk_above_10pct": 0.69925
+        },
+        {
+          "hands": 50000,
+          "winrate_standard_error": 4.024922359499621,
+          "winrate_interval": [
+            -4.096786869203111,
+            6.780195452902717
+          ],
+          "risk_interval": [
+            0.005949796469586451,
+            0.7804175342690797
+          ],
+          "expected_risk": 0.21414308436499513,
+          "median_risk": 0.14181073838198704,
+          "p_risk_above_10pct": 0.6122
+        },
+        {
+          "hands": 200000,
+          "winrate_standard_error": 2.0124611797498106,
+          "winrate_interval": [
+            -0.9653840775955329,
+            5.775094542892724
+          ],
+          "risk_interval": [
+            0.012380735354969943,
+            0.4064065457757959
+          ],
+          "expected_risk": 0.12779594411060688,
+          "median_risk": 0.098040666128725,
+          "p_risk_above_10pct": 0.48935
+        },
+        {
+          "hands": 1000000,
+          "winrate_standard_error": 0.9,
+          "winrate_interval": [
+            1.1547877879154815,
+            4.547648209857625
+          ],
+          "risk_interval": [
+            0.028175669015385336,
+            0.18352967481985574
+          ],
+          "expected_risk": 0.08513070643363894,
+          "median_risk": 0.0777619189604826,
+          "p_risk_above_10pct": 0.2946
+        }
+      ]
+    }
+  ],
+  "population_priors": {
+    "file": "configs/population_priors.json",
+    "sha256": "396fdfb593500047d95c187781005e4388ddbb230af2ff2ad5d40132ea73231c",
+    "source": {
+      "data": "PartyPoker and Ongame no-limit hold'em, $2/$4, 1\u201323 July 2009, HandHQ logs",
+      "citation": "Kim (2024), Recording and Describing Poker Hands, arXiv:2312.11753",
+      "url": "https://zenodo.org/doi/10.5281/zenodo.10796885",
+      "license": "CC BY 4.0",
+      "method": "Hierarchical Normal model (empirical Bayes): each player's observed win rate ~ Normal(true win rate, standard error^2), true win rates ~ Normal(mean, sd^2), fitted by maximum likelihood within each volume bracket. Standard errors from each player's own per-hand standard deviation.",
+      "intervals": "95%, resampling players (2,000 bootstrap samples)",
+      "population": "Players with at least 1,000 usable hands at one site in the 23 days; IDs are per site",
+      "fitted": "2026-11-01"
+    },
+    "checks": {
+      "rake_bb100_per_seat": {
+        "Ongame": 4.58,
+        "PartyPoker": 3.81
+      },
+      "mean_net_bb100_per_seat": {
+        "Ongame": -4.58,
+        "PartyPoker": -3.81
+      },
+      "later_minus_earlier_half": {
+        "about": "Each player's hands split in time order into two halves, fitted separately; later minus earlier mean, bb/100",
+        "1,000\u20132,499": {
+          "earlier": 0.9,
+          "later": -8.79,
+          "difference": -9.68,
+          "difference_ci": [
+            -12.24,
+            -7.06
+          ]
+        },
+        "2,500\u20134,999": {
+          "earlier": 2.72,
+          "later": -2.0,
+          "difference": -4.72,
+          "difference_ci": [
+            -7.48,
+            -2.04
+          ]
+        },
+        "5,000\u20139,999": {
+          "earlier": 3.69,
+          "later": -1.32,
+          "difference": -5.01,
+          "difference_ci": [
+            -7.59,
+            -2.4
+          ]
+        },
+        "10,000+": {
+          "earlier": 2.57,
+          "later": 2.41,
+          "difference": -0.16,
+          "difference_ci": [
+            -1.81,
+            1.57
+          ]
+        }
+      },
+      "regulars_prediction": {
+        "about": "Predict each regular's later half from the earlier half; squared error relative to using the earlier-half win rate as it is, and coverage of 95% predictive intervals",
+        "players": 175,
+        "weak_prior": {
+          "squared_error_vs_raw": 0.634,
+          "coverage95": 0.977
+        },
+        "fitted_prior": {
+          "squared_error_vs_raw": 0.538,
+          "coverage95": 0.954
+        }
+      },
+      "normal_shape_loglik_gain_of_npmle": {
+        "regulars": 0.58,
+        "players_1000_plus": 1.99
+      }
+    },
+    "priors": {
+      "regulars": {
+        "kind": "normal",
+        "label": "Regulars, $2/$4 2009: Normal(+2.6, 2.5\u00b2)",
+        "population": "Players with 10,000+ hands in the 23 days",
+        "players": 175,
+        "mean": 2.644,
+        "sd": 2.456,
+        "mean_ci": [
+          1.65,
+          3.68
+        ],
+        "sd_ci": [
+          0.0,
+          3.54
+        ]
+      },
+      "players": {
+        "kind": "mixture",
+        "label": "Players with 1,000+ hands, $2/$4 2009 (mixture)",
+        "population": "Players with 1,000+ hands in the 23 days, weighted by player",
+        "players": 1347,
+        "mean": -1.176,
+        "sd": 5.333,
+        "mean_ci": [
+          -1.97,
+          -0.35
+        ],
+        "sd_ci": [
+          3.66,
+          6.76
+        ],
+        "components": [
+          {
+            "hands": "1,000\u20132,499",
+            "players": 690,
+            "mean": -3.571,
+            "sd": 6.009,
+            "mean_ci": [
+              -5.01,
+              -2.19
+            ],
+            "sd_ci": [
+              2.66,
+              8.12
+            ]
+          },
+          {
+            "hands": "2,500\u20134,999",
+            "players": 302,
+            "mean": 0.62,
+            "sd": 2.599,
+            "mean_ci": [
+              -0.79,
+              2.01
+            ],
+            "sd_ci": [
+              0.0,
+              5.45
+            ]
+          },
+          {
+            "hands": "5,000\u20139,999",
+            "players": 180,
+            "mean": 1.276,
+            "sd": 3.1,
+            "mean_ci": [
+              -0.15,
+              2.75
+            ],
+            "sd_ci": [
+              0.0,
+              5.34
+            ]
+          },
+          {
+            "hands": "10,000+",
+            "players": 175,
+            "mean": 2.644,
+            "sd": 2.456,
+            "mean_ci": [
+              1.65,
+              3.68
+            ],
+            "sd_ci": [
+              0.0,
+              3.54
+            ]
+          }
+        ]
+      }
+    }
+  },
   "provenance": {
-    "timestamp_utc": "2026-10-22T15:01:36+00:00",
-    "git_commit": "d38b4ac",
-    "code_changed_since_commit": false,
+    "timestamp_utc": "2026-11-01T05:57:00+00:00",
+    "git_commit": "2a015ef",
+    "code_changed_since_commit": true,
     "platform": "macOS-26.6.2-arm64-arm-64bit",
     "packages": {
       "python": "3.12.14",
       "numpy": "2.5.4",
       "scipy": "1.18.1",
-      "pandas": "3.0.6",
+      "pandas": "3.1.0",
       "matplotlib": "3.11.2"
     },
     "parameters": {
@@ -123,6 +503,10 @@
           "kind": "weakly-informative",
           "std": 10.0
         },
+        "compare_priors": [
+          "regulars",
+          "players"
+        ],
         "n_draws": 20000,
         "seed": 0,
         "mc_paths": [
@@ -134,8 +518,9 @@
       },
       "engine": {
         "risk": "finite-horizon Brownian formula per posterior draw (no simulation noise)",
-        "posterior": "Normal-Normal conjugate update, standard deviation held fixed",
-        "monte_carlo_interval": "binomial 95% interval at the plug-in risk"
+        "posterior": "Normal-Normal conjugate update, standard deviation held fixed; a mixture prior updates each component and reweights them",
+        "monte_carlo_interval": "binomial 95% interval at the plug-in risk",
+        "population_priors": "configs/population_priors.json (sha256 396fdfb59350)"
       }
     }
   }

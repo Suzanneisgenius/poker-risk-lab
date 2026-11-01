@@ -45,7 +45,7 @@ function intervals(host, rows, { lo, hi, step, format, title, ref }) {
     const bar = node("span", "bar " + r.kind, track);
     bar.style.left = at(r.lo, lo, hi) + "%";
     bar.style.width = Math.max(0.4, at(r.hi, lo, hi) - at(r.lo, lo, hi)) + "%";
-    const value = node("span", "value", track, r.text);
+    const value = node("span", "value " + r.kind, track, r.text);
     const start = at(r.lo, lo, hi), end = at(r.hi, lo, hi);
     // After the bar if there is room, else inside a long bar, else before it.
     if (end <= 72) value.style.left = end + 1.5 + "%";

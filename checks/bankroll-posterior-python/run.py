@@ -4,10 +4,11 @@ The page (server/bankroll_posterior.js) and this script compute the same model
 separately:
 
                          page                          this script
-  posterior              its own conjugate update      src.bayes.normal_normal_posterior
+  posterior              its own conjugate update      src.bayes.update (Normal or mixture)
   normal CDF, quantile   Chebyshev erfc, AS 241        scipy log_ndtr (in src.validation), norm.ppf
   model risk R(mu)       brownFinite                   src.validation.brownian_ruin_finite
   average risk           closed form                   adaptive quadrature over the posterior
+  mixture quantiles      bisection on its normal CDF   Brent's method on scipy's CDF
   bankroll needed        bisection                     Brent's method
 
 The average risk is also compared with src.bayes.posterior_risk, the research
@@ -42,16 +43,20 @@ from scipy import integrate, optimize  # noqa: E402
 from scipy.stats import norm  # noqa: E402
 
 from src.bayes import (  # noqa: E402
-    flat_prior, normal_normal_posterior, posterior_risk, skeptical_prior, weakly_informative_prior,
+    MixturePosterior, flat_prior, population_priors, posterior_risk, skeptical_prior, update, weakly_informative_prior,
 )
 from src.validation import brownian_ruin_finite  # noqa: E402
 
-PRIORS = {"none": flat_prior(), "weak": weakly_informative_prior(10.0), "skeptical": skeptical_prior(2.0)}
+PRIORS = {"none": flat_prior(), "weak": weakly_informative_prior(10.0), "skeptical": skeptical_prior(2.0),
+          **population_priors()}
 LEVEL = 0.95
 MC_DRAWS, MC_SEED = 20_000, 0
 # The page's normal CDF has a relative error below 1.2e-7; everything else is
-# exact to rounding, so these leave room only for that.
-TOLERANCE = {"probability": 1e-6, "win_rate": 1e-9, "bankroll_relative": 1e-5, "hands": 1, "mc_se": 4.0}
+# exact to rounding, so these leave room only for that. A mixture posterior's
+# quantiles come from inverting that CDF, so they carry its error (about 1e-7
+# bb/100) instead of being exact to rounding.
+TOLERANCE = {"probability": 1e-6, "win_rate": 1e-9, "mixture_quantile": 1e-6, "bankroll_relative": 1e-5,
+             "hands": 1, "mc_se": 4.0}
 
 
 def risk(mu: float, sd: float, bank: float, thr: float, horizon: int) -> float:
@@ -72,6 +77,19 @@ def average_risk(mean: float, std: float, sd: float, bank: float, thr: float, ho
     return value
 
 
+def posterior_average_risk(post, sd: float, bank: float, thr: float, horizon: int) -> float:
+    """E[R(mu)] over a Normal or mixture posterior: quadrature per Normal component."""
+    if isinstance(post, MixturePosterior):
+        return sum(w * average_risk(m, s, sd, bank, thr, horizon) for w, m, s in zip(post.weights, post.means, post.stds))
+    return average_risk(post.mean, post.std, sd, bank, thr, horizon)
+
+
+def components(post) -> list[tuple[float, float, float]]:
+    if isinstance(post, MixturePosterior):
+        return list(zip(post.weights, post.means, post.stds))
+    return [(1.0, post.mean, post.std)]
+
+
 def bankroll_for(risk_at, target: float, thr: float, scale: float) -> float:
     high = thr + max(1.0, scale)
     while risk_at(high) > target:
@@ -81,23 +99,30 @@ def bankroll_for(risk_at, target: float, thr: float, scale: float) -> float:
 
 def evaluate(p: dict, sd: float, prior: str, hands: int) -> dict:
     se = p["seMultiplier"] * sd / math.sqrt(hands / 100)
-    post = normal_normal_posterior(p["winRate"], se, PRIORS[prior])
+    post = update(p["winRate"], se, PRIORS[prior])
+    mixture = isinstance(post, MixturePosterior)
     low, high = post.credible_interval(LEVEL)
-    credible = post.mean - float(norm.ppf(p["credibility"])) * post.std
-    prior_precision = 0.0 if math.isinf(PRIORS[prior].std) else 1 / PRIORS[prior].std ** 2
+    credible = post.quantile(1 - p["credibility"]) if mixture else post.mean - float(norm.ppf(p["credibility"])) * post.std
+    median = post.quantile(0.5) if mixture else post.mean
+    if mixture:
+        # For a mixture, the page reports the posterior variance over se^2.
+        data_weight = min(1.0, post.std ** 2 / se ** 2)
+    else:
+        prior_precision = 0.0 if math.isinf(PRIORS[prior].std) else 1 / PRIORS[prior].std ** 2
+        data_weight = (1 / se ** 2) / (1 / se ** 2 + prior_precision)
     bank, thr, horizon, target = p["bank"] * p["bbPerBuyIn"], p["thr"] * p["bbPerBuyIn"], p["horizon"], p["target"]
     scale = sd * math.sqrt(horizon / 100)
     target_win_rate = optimize.brentq(lambda mu: risk(mu, sd, bank, thr, horizon) - target, -1e4, 1e4,
                                       xtol=1e-13, rtol=1e-15, maxiter=500)
     return {
-        "post": post, "se": se, "interval": [low, high], "credible": credible,
-        "data_weight": (1 / se ** 2) / (1 / se ** 2 + prior_precision),
+        "post": post, "se": se, "interval": [low, high], "credible": credible, "mixture": mixture,
+        "data_weight": data_weight,
         "plug_in": risk(p["winRate"], sd, bank, thr, horizon),
-        "average": average_risk(post.mean, post.std, sd, bank, thr, horizon),
-        "median": risk(post.mean, sd, bank, thr, horizon),
+        "average": posterior_average_risk(post, sd, bank, thr, horizon),
+        "median": risk(median, sd, bank, thr, horizon),
         "risk_interval": [risk(high, sd, bank, thr, horizon), risk(low, sd, bank, thr, horizon)],
         "upper": risk(credible, sd, bank, thr, horizon),
-        "prob_at_most_target": float(norm.sf((target_win_rate - post.mean) / post.std)),
+        "prob_at_most_target": sum(w * float(norm.sf((target_win_rate - m) / s)) for w, m, s in components(post)),
         "bankroll_credible": bankroll_for(lambda b: risk(credible, sd, b, thr, horizon), target, thr, scale),
         "params": (bank, thr, horizon, target, scale),
     }
@@ -111,7 +136,7 @@ class Diff:
     """Largest differences by kind, and every comparison that broke tolerance."""
 
     def __init__(self) -> None:
-        self.max = {"probability": 0.0, "win_rate": 0.0, "bankroll_relative": 0.0, "hands": 0.0}
+        self.max = {"probability": 0.0, "win_rate": 0.0, "mixture_quantile": 0.0, "bankroll_relative": 0.0, "hands": 0.0}
         self.count = 0
         self.failures: list[str] = []
 
@@ -132,12 +157,18 @@ def compare_case(case: dict, mc: bool = True, seed: int = MC_SEED) -> dict:
     post = main["post"]
 
     w = web["winRate"]
+    quantile = "mixture_quantile" if main["mixture"] else "win_rate"
     d.add("win_rate", "standard error", w["standardError"], main["se"])
     d.add("win_rate", "posterior mean", w["mean"], post.mean)
     d.add("win_rate", "posterior sd", w["sd"], post.std)
     for i in (0, 1):
-        d.add("win_rate", f"win-rate interval[{i}]", w["interval"][i], main["interval"][i])
-    d.add("win_rate", "credible win rate", w["credible"], main["credible"])
+        d.add(quantile, f"win-rate interval[{i}]", w["interval"][i], main["interval"][i])
+    d.add(quantile, "credible win rate", w["credible"], main["credible"])
+    for k, (wk, mk, sk) in enumerate(components(post)):
+        web_k = w["components"][k]
+        d.add("probability", f"component {k} weight", web_k["weight"], wk)
+        d.add("win_rate", f"component {k} mean", web_k["mean"], mk)
+        d.add("win_rate", f"component {k} sd", web_k["sd"], sk)
     d.add("probability", "P(win rate > 0)", w["probPositive"], post.prob_positive)
     d.add("probability", "data weight", w["dataWeight"], main["data_weight"])
 
@@ -151,7 +182,7 @@ def compare_case(case: dict, mc: bool = True, seed: int = MC_SEED) -> dict:
     b = web["bankroll"]
     d.add("bankroll_relative", "bankroll (posterior bound)", b["credible"]["bb"], main["bankroll_credible"])
     d.add("bankroll_relative", "bankroll (average risk)", b["average"]["bb"],
-          bankroll_for(lambda x: average_risk(post.mean, post.std, inp["sd"], x, thr, horizon), target, thr, scale))
+          bankroll_for(lambda x: posterior_average_risk(post, inp["sd"], x, thr, horizon), target, thr, scale))
     d.add("bankroll_relative", "bankroll (observed win rate)", b["plugIn"]["bb"],
           bankroll_for(lambda x: risk(inp["winRate"], inp["sd"], x, thr, horizon), target, thr, scale))
 
@@ -171,7 +202,7 @@ def compare_case(case: dict, mc: bool = True, seed: int = MC_SEED) -> dict:
             name = f"{kind} {row.get('sd', row.get('prior', row.get('hands')))}"
             d.add("win_rate", f"{name} posterior mean", row["posteriorMean"], py["post"].mean)
             for i in (0, 1):
-                d.add("win_rate", f"{name} interval[{i}]", row["interval"][i], py["interval"][i])
+                d.add("mixture_quantile" if py["mixture"] else "win_rate", f"{name} interval[{i}]", row["interval"][i], py["interval"][i])
             d.add("probability", f"{name} P(win rate > 0)", row["probPositive"], py["post"].prob_positive)
             d.add("probability", f"{name} average risk", row["averageRisk"], py["average"])
             d.add("probability", f"{name} upper risk", row["upperRisk"], py["upper"])
@@ -199,7 +230,7 @@ def compare_case(case: dict, mc: bool = True, seed: int = MC_SEED) -> dict:
     for i, buy_ins in enumerate(curve["bankroll"]):
         x = buy_ins * inp["bbPerBuyIn"]
         d.add("probability", f"curve plug-in {i}", curve["plugIn"][i], risk(inp["winRate"], inp["sd"], x, thr, horizon))
-        d.add("probability", f"curve average {i}", curve["average"][i], average_risk(post.mean, post.std, inp["sd"], x, thr, horizon))
+        d.add("probability", f"curve average {i}", curve["average"][i], posterior_average_risk(post, inp["sd"], x, thr, horizon))
         d.add("probability", f"curve upper {i}", curve["upper"][i], risk(main["credible"], inp["sd"], x, thr, horizon))
 
     out = {

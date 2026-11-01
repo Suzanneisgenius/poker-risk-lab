@@ -1,9 +1,9 @@
 {
  "model": {
   "name": "bankroll-posterior",
-  "version": "2026-10-22",
+  "version": "2026-11-01",
   "likelihood": "observed win rate ~ Normal(true win rate, (volatility / sqrt(hands / 100))^2), volatility held fixed",
-  "posterior": "Normal-Normal conjugate update",
+  "posterior": "Normal-Normal conjugate update; a mixture prior updates each component and reweights them",
   "risk": "finite-horizon Brownian first passage; average over the posterior in closed form"
  },
  "cases": [
@@ -26,6 +26,7 @@
      "sdSource": "assumed",
      "prior": "weak",
      "priorLabel": "Weakly informative, Normal(0, 10²)",
+     "priorFromData": false,
      "bank": 30,
      "thr": 0,
      "bbPerBuyIn": 100,
@@ -49,7 +50,14 @@
      ],
      "probPositive": 0.7912014039091712,
      "dataWeight": 0.8316008316008315,
-     "credible": -0.1273129330788123
+     "credible": -0.1273129330788123,
+     "components": [
+      {
+       "weight": 1,
+       "mean": 3.326403326403326,
+       "sd": 4.103646773287979
+      }
+     ]
     },
     "risk": {
      "plugIn": 0.03988426233571903,
@@ -205,6 +213,36 @@
        "averageRisk": 0.2581843820972124,
        "upperRisk": 0.3937686986123349,
        "requiredBuyIns": 63.311385957168184
+      },
+      {
+       "prior": "regulars",
+       "label": "Regulars, $2/$4 2009: Normal(+2.6, 2.5²)",
+       "current": false,
+       "dataWeight": 0.22950881548452137,
+       "posteriorMean": 2.9552139537970112,
+       "interval": [
+        -1.270112712783812,
+        7.180540620377835
+       ],
+       "probPositive": 0.9147826367619978,
+       "averageRisk": 0.11355032459564418,
+       "upperRisk": 0.18314624511214855,
+       "requiredBuyIns": 46.56866824986335
+      },
+      {
+       "prior": "players",
+       "label": "Players with 1,000+ hands, $2/$4 2009 (mixture)",
+       "current": false,
+       "dataWeight": 0.4103833301776159,
+       "posteriorMean": 1.8233767321658318,
+       "interval": [
+        -4.165661930148009,
+        7.3284787047524205
+       ],
+       "probPositive": 0.7524430408804925,
+       "averageRisk": 0.20283896165002147,
+       "upperRisk": 0.34402798383214417,
+       "requiredBuyIns": 59.716672945954215
       }
      ],
      "sample": [
@@ -291,7 +329,7 @@
       {
        "id": "prior",
        "range": [
-        0.15146979429459828,
+        0.11355032459564418,
         0.2581843820972124
        ]
       }
@@ -554,10 +592,20 @@
     },
     "model": {
      "name": "bankroll-posterior",
-     "version": "2026-10-22",
+     "version": "2026-11-01",
      "likelihood": "observed win rate ~ Normal(true win rate, (volatility / sqrt(hands / 100))^2), volatility held fixed",
-     "posterior": "Normal-Normal conjugate update",
+     "posterior": "Normal-Normal conjugate update; a mixture prior updates each component and reweights them",
      "risk": "finite-horizon Brownian first passage; average over the posterior in closed form"
+    },
+    "priorSource": {
+     "data": "PartyPoker and Ongame no-limit hold'em, $2/$4, 1–23 July 2009, HandHQ logs",
+     "citation": "Kim (2024), Recording and Describing Poker Hands, arXiv:2312.11753",
+     "url": "https://zenodo.org/doi/10.5281/zenodo.10796885",
+     "license": "CC BY 4.0",
+     "method": "Hierarchical Normal model (empirical Bayes): each player's observed win rate ~ Normal(true win rate, standard error^2), true win rates ~ Normal(mean, sd^2), fitted by maximum likelihood within each volume bracket. Standard errors from each player's own per-hand standard deviation.",
+     "intervals": "95%, resampling players (2,000 bootstrap samples)",
+     "population": "Players with at least 1,000 usable hands at one site in the 23 days; IDs are per site",
+     "fitted": "2026-11-01"
     }
    }
   },
@@ -580,6 +628,7 @@
      "sdSource": "tracker",
      "prior": "none",
      "priorLabel": "None (results only)",
+     "priorFromData": false,
      "bank": 30,
      "thr": 0,
      "bbPerBuyIn": 100,
@@ -603,7 +652,14 @@
      ],
      "probPositive": 0.8266927786622958,
      "dataWeight": 1,
-     "credible": 0.4231097573151139
+     "credible": 0.4231097573151139,
+     "components": [
+      {
+       "weight": 1,
+       "mean": 4,
+       "sd": 4.25
+      }
+     ]
     },
     "risk": {
      "plugIn": 0.027883094080809353,
@@ -774,6 +830,36 @@
        "averageRisk": 0.2295213521971372,
        "upperRisk": 0.35924176693130294,
        "requiredBuyIns": 59.51661912856755
+      },
+      {
+       "prior": "regulars",
+       "label": "Regulars, $2/$4 2009: Normal(+2.6, 2.5²)",
+       "current": false,
+       "dataWeight": 0.2503455984609891,
+       "posteriorMean": 2.983468631513101,
+       "interval": [
+        -1.184332623699634,
+        7.151269886725837
+       ],
+       "probPositive": 0.9196939353472947,
+       "averageRisk": 0.09453637689817151,
+       "upperRisk": 0.15241659357746995,
+       "requiredBuyIns": 43.0875744275026
+      },
+      {
+       "prior": "players",
+       "label": "Players with 1,000+ hands, $2/$4 2009 (mixture)",
+       "current": false,
+       "dataWeight": 0.4306658763272049,
+       "posteriorMean": 1.9359977626004774,
+       "interval": [
+        -3.802894070703862,
+        7.292172445388443
+       ],
+       "probPositive": 0.7696011317999418,
+       "averageRisk": 0.17518147999344344,
+       "upperRisk": 0.29755834725256103,
+       "requiredBuyIns": 55.157526199844284
       }
      ],
      "sample": [
@@ -861,7 +947,7 @@
       {
        "id": "prior",
        "range": [
-        0.1310657548330338,
+        0.09453637689817151,
         0.2295213521971372
        ]
       }
@@ -1124,10 +1210,20 @@
     },
     "model": {
      "name": "bankroll-posterior",
-     "version": "2026-10-22",
+     "version": "2026-11-01",
      "likelihood": "observed win rate ~ Normal(true win rate, (volatility / sqrt(hands / 100))^2), volatility held fixed",
-     "posterior": "Normal-Normal conjugate update",
+     "posterior": "Normal-Normal conjugate update; a mixture prior updates each component and reweights them",
      "risk": "finite-horizon Brownian first passage; average over the posterior in closed form"
+    },
+    "priorSource": {
+     "data": "PartyPoker and Ongame no-limit hold'em, $2/$4, 1–23 July 2009, HandHQ logs",
+     "citation": "Kim (2024), Recording and Describing Poker Hands, arXiv:2312.11753",
+     "url": "https://zenodo.org/doi/10.5281/zenodo.10796885",
+     "license": "CC BY 4.0",
+     "method": "Hierarchical Normal model (empirical Bayes): each player's observed win rate ~ Normal(true win rate, standard error^2), true win rates ~ Normal(mean, sd^2), fitted by maximum likelihood within each volume bracket. Standard errors from each player's own per-hand standard deviation.",
+     "intervals": "95%, resampling players (2,000 bootstrap samples)",
+     "population": "Players with at least 1,000 usable hands at one site in the 23 days; IDs are per site",
+     "fitted": "2026-11-01"
     }
    }
   },
@@ -1149,6 +1245,7 @@
      "sdSource": "assumed",
      "prior": "weak",
      "priorLabel": "Weakly informative, Normal(0, 10²)",
+     "priorFromData": false,
      "bank": 30,
      "thr": 0,
      "bbPerBuyIn": 100,
@@ -1172,7 +1269,14 @@
      ],
      "probPositive": 0.7553585717486604,
      "dataWeight": 0.8605851979345955,
-     "credible": -0.5607143109663904
+     "credible": -0.5607143109663904,
+     "components": [
+      {
+       "weight": 1,
+       "mean": 2.581755593803787,
+       "sd": 3.7338291614026007
+      }
+     ]
     },
     "risk": {
      "plugIn": 0.07169150210480218,
@@ -1328,6 +1432,36 @@
        "averageRisk": 0.262916157559986,
        "upperRisk": 0.3980700311422237,
        "requiredBuyIns": 63.61732508936279
+      },
+      {
+       "prior": "regulars",
+       "label": "Regulars, $2/$4 2009: Normal(+2.6, 2.5²)",
+       "current": false,
+       "dataWeight": 0.2713185212479921,
+       "posteriorMean": 2.7405893935642855,
+       "interval": [
+        -1.368497440756172,
+        6.849676227884743
+       ],
+       "probPositive": 0.9044300013249843,
+       "averageRisk": 0.12236439217064136,
+       "upperRisk": 0.19693597586655204,
+       "requiredBuyIns": 47.85053207751916
+      },
+      {
+       "prior": "players",
+       "label": "Players with 1,000+ hands, $2/$4 2009 (mixture)",
+       "current": false,
+       "dataWeight": 0.4621710881235195,
+       "posteriorMean": 1.5850283542241956,
+       "interval": [
+        -4.096786866393236,
+        6.7801953749510515
+       ],
+       "probPositive": 0.7337561490771167,
+       "averageRisk": 0.21402254260330558,
+       "upperRisk": 0.3604689611096354,
+       "requiredBuyIns": 60.918129440468384
       }
      ],
      "sample": [
@@ -1414,7 +1548,7 @@
       {
        "id": "prior",
        "range": [
-        0.18060953402784033,
+        0.12236439217064136,
         0.262916157559986
        ]
       }
@@ -1677,10 +1811,20 @@
     },
     "model": {
      "name": "bankroll-posterior",
-     "version": "2026-10-22",
+     "version": "2026-11-01",
      "likelihood": "observed win rate ~ Normal(true win rate, (volatility / sqrt(hands / 100))^2), volatility held fixed",
-     "posterior": "Normal-Normal conjugate update",
+     "posterior": "Normal-Normal conjugate update; a mixture prior updates each component and reweights them",
      "risk": "finite-horizon Brownian first passage; average over the posterior in closed form"
+    },
+    "priorSource": {
+     "data": "PartyPoker and Ongame no-limit hold'em, $2/$4, 1–23 July 2009, HandHQ logs",
+     "citation": "Kim (2024), Recording and Describing Poker Hands, arXiv:2312.11753",
+     "url": "https://zenodo.org/doi/10.5281/zenodo.10796885",
+     "license": "CC BY 4.0",
+     "method": "Hierarchical Normal model (empirical Bayes): each player's observed win rate ~ Normal(true win rate, standard error^2), true win rates ~ Normal(mean, sd^2), fitted by maximum likelihood within each volume bracket. Standard errors from each player's own per-hand standard deviation.",
+     "intervals": "95%, resampling players (2,000 bootstrap samples)",
+     "population": "Players with at least 1,000 usable hands at one site in the 23 days; IDs are per site",
+     "fitted": "2026-11-01"
     }
    }
   },
@@ -1702,6 +1846,7 @@
      "sdSource": "assumed",
      "prior": "skeptical",
      "priorLabel": "Skeptical, Normal(0, 2²)",
+     "priorFromData": false,
      "bank": 20,
      "thr": 0,
      "bbPerBuyIn": 100,
@@ -1725,7 +1870,14 @@
      ],
      "probPositive": 0.5391783826319031,
      "dataWeight": 0.016260162601626018,
-     "credible": -1.4743795312293835
+     "credible": -1.4743795312293835,
+     "components": [
+      {
+       "weight": 1,
+       "mean": 0.1951219512195122,
+       "sd": 1.9836731962683511
+      }
+     ]
     },
     "risk": {
      "plugIn": 0.01851980007734781,
@@ -1896,6 +2048,36 @@
        "averageRisk": 0.40965150599431854,
        "upperRisk": 0.5201913599079526,
        "requiredBuyIns": 54.52464205583496
+      },
+      {
+       "prior": "regulars",
+       "label": "Regulars, $2/$4 2009: Normal(+2.6, 2.5²)",
+       "current": false,
+       "dataWeight": 0.02431919089644972,
+       "posteriorMean": 2.8715303500271836,
+       "interval": [
+        -1.883248638766855,
+        7.626309338821223
+       ],
+       "probPositive": 0.8817284164788735,
+       "averageRisk": 0.25866431548765006,
+       "upperRisk": 0.36045599735288925,
+       "requiredBuyIns": 44.78018261749058
+      },
+      {
+       "prior": "players",
+       "label": "Players with 1,000+ hands, $2/$4 2009 (mixture)",
+       "current": false,
+       "dataWeight": 0.08642814116980538,
+       "posteriorMean": 0.23759832288267752,
+       "interval": [
+        -10.461904485648217,
+        8.078220615246614
+       ],
+       "probPositive": 0.5773429478330004,
+       "averageRisk": 0.41461075045001233,
+       "upperRisk": 0.6333514476383222,
+       "requiredBuyIns": 61.64139086215115
       }
      ],
      "sample": [
@@ -1984,7 +2166,7 @@
        "id": "prior",
        "range": [
         0.21676128533361383,
-        0.40965150599431854
+        0.41461075045001233
        ]
       }
      ],
@@ -2246,10 +2428,20 @@
     },
     "model": {
      "name": "bankroll-posterior",
-     "version": "2026-10-22",
+     "version": "2026-11-01",
      "likelihood": "observed win rate ~ Normal(true win rate, (volatility / sqrt(hands / 100))^2), volatility held fixed",
-     "posterior": "Normal-Normal conjugate update",
+     "posterior": "Normal-Normal conjugate update; a mixture prior updates each component and reweights them",
      "risk": "finite-horizon Brownian first passage; average over the posterior in closed form"
+    },
+    "priorSource": {
+     "data": "PartyPoker and Ongame no-limit hold'em, $2/$4, 1–23 July 2009, HandHQ logs",
+     "citation": "Kim (2024), Recording and Describing Poker Hands, arXiv:2312.11753",
+     "url": "https://zenodo.org/doi/10.5281/zenodo.10796885",
+     "license": "CC BY 4.0",
+     "method": "Hierarchical Normal model (empirical Bayes): each player's observed win rate ~ Normal(true win rate, standard error^2), true win rates ~ Normal(mean, sd^2), fitted by maximum likelihood within each volume bracket. Standard errors from each player's own per-hand standard deviation.",
+     "intervals": "95%, resampling players (2,000 bootstrap samples)",
+     "population": "Players with at least 1,000 usable hands at one site in the 23 days; IDs are per site",
+     "fitted": "2026-11-01"
     }
    }
   },
@@ -2274,6 +2466,7 @@
      "sdSource": "assumed",
      "prior": "weak",
      "priorLabel": "Weakly informative, Normal(0, 10²)",
+     "priorFromData": false,
      "bank": 50,
      "thr": 10,
      "bbPerBuyIn": 100,
@@ -2297,7 +2490,14 @@
      ],
      "probPositive": 0.9998976911050522,
      "dataWeight": 0.9955077711825389,
-     "credible": 1.3863212309248072
+     "credible": 1.3863212309248072,
+     "components": [
+      {
+       "weight": 1,
+       "mean": 2.4887694279563473,
+       "sd": 0.6702409132141373
+      }
+     ]
     },
     "risk": {
      "plugIn": 0.10869564271961692,
@@ -2468,6 +2668,36 @@
        "averageRisk": 0.15492151928266962,
        "upperRisk": 0.32246796925807436,
        "requiredBuyIns": 157.76766969589517
+      },
+      {
+       "prior": "regulars",
+       "label": "Regulars, $2/$4 2009: Normal(+2.6, 2.5²)",
+       "current": false,
+       "dataWeight": 0.9303968758570246,
+       "posteriorMean": 2.5100228498765884,
+       "interval": [
+        1.2400605748128233,
+        3.7799851249403535
+       ],
+       "probPositive": 0.9999464199036404,
+       "averageRisk": 0.12481635666099966,
+       "upperRisk": 0.2663287707737938,
+       "requiredBuyIns": 141.69863585557323
+      },
+      {
+       "prior": "players",
+       "label": "Players with 1,000+ hands, $2/$4 2009 (mixture)",
+       "current": false,
+       "dataWeight": 0.9565950018564154,
+       "posteriorMean": 2.4362708119676757,
+       "interval": [
+        1.1482097801701654,
+        3.7237337859961395
+       ],
+       "probPositive": 0.9998940465999004,
+       "averageRisk": 0.1333275094555924,
+       "upperRisk": 0.28576257381546666,
+       "requiredBuyIns": 147.32416895218194
       }
      ],
      "sample": [
@@ -2555,7 +2785,7 @@
       {
        "id": "prior",
        "range": [
-        0.12715759449811326,
+        0.12481635666099966,
         0.15492151928266962
        ]
       }
@@ -2818,10 +3048,20 @@
     },
     "model": {
      "name": "bankroll-posterior",
-     "version": "2026-10-22",
+     "version": "2026-11-01",
      "likelihood": "observed win rate ~ Normal(true win rate, (volatility / sqrt(hands / 100))^2), volatility held fixed",
-     "posterior": "Normal-Normal conjugate update",
+     "posterior": "Normal-Normal conjugate update; a mixture prior updates each component and reweights them",
      "risk": "finite-horizon Brownian first passage; average over the posterior in closed form"
+    },
+    "priorSource": {
+     "data": "PartyPoker and Ongame no-limit hold'em, $2/$4, 1–23 July 2009, HandHQ logs",
+     "citation": "Kim (2024), Recording and Describing Poker Hands, arXiv:2312.11753",
+     "url": "https://zenodo.org/doi/10.5281/zenodo.10796885",
+     "license": "CC BY 4.0",
+     "method": "Hierarchical Normal model (empirical Bayes): each player's observed win rate ~ Normal(true win rate, standard error^2), true win rates ~ Normal(mean, sd^2), fitted by maximum likelihood within each volume bracket. Standard errors from each player's own per-hand standard deviation.",
+     "intervals": "95%, resampling players (2,000 bootstrap samples)",
+     "population": "Players with at least 1,000 usable hands at one site in the 23 days; IDs are per site",
+     "fitted": "2026-11-01"
     }
    }
   },
@@ -2845,6 +3085,7 @@
      "sdSource": "assumed",
      "prior": "none",
      "priorLabel": "None (results only)",
+     "priorFromData": false,
      "bank": 100,
      "thr": 0,
      "bbPerBuyIn": 100,
@@ -2868,7 +3109,14 @@
      ],
      "probPositive": 0.11783996478389677,
      "dataWeight": 1,
-     "credible": -3.640923107611771
+     "credible": -3.640923107611771,
+     "components": [
+      {
+       "weight": 1,
+       "mean": -3,
+       "sd": 2.5298221281347035
+      }
+     ]
     },
     "risk": {
      "plugIn": 0.1774280860367643,
@@ -3039,6 +3287,36 @@
        "averageRisk": 0.07105794505479332,
        "upperRisk": 0.04286730010651356,
        "requiredBuyIns": 85.3983369370518
+      },
+      {
+       "prior": "regulars",
+       "label": "Regulars, $2/$4 2009: Normal(+2.6, 2.5²)",
+       "current": false,
+       "dataWeight": 0.4851968349901415,
+       "posteriorMean": -0.09445093668435867,
+       "interval": [
+        -3.5482499224235116,
+        3.3593480490547942
+       ],
+       "probPositive": 0.47862725491853464,
+       "averageRisk": 0.035148316914975705,
+       "upperRisk": 0.011629205620945635,
+       "requiredBuyIns": 67.73425614658133
+      },
+      {
+       "prior": "players",
+       "label": "Players with 1,000+ hands, $2/$4 2009 (mixture)",
+       "current": false,
+       "dataWeight": 0.8733607174861193,
+       "posteriorMean": -2.1622789462412015,
+       "interval": [
+        -7.025852843453944,
+        2.2173586873126903
+       ],
+       "probPositive": 0.1812016827385946,
+       "averageRisk": 0.19833583665936375,
+       "upperRisk": 0.13460412305659647,
+       "requiredBuyIns": 106.00395737280061
       }
      ],
      "sample": [
@@ -3126,7 +3404,7 @@
       {
        "id": "prior",
        "range": [
-        0.07105794505479332,
+        0.035148316914975705,
         0.2947222360733416
        ]
       }
@@ -3389,10 +3667,20 @@
     },
     "model": {
      "name": "bankroll-posterior",
-     "version": "2026-10-22",
+     "version": "2026-11-01",
      "likelihood": "observed win rate ~ Normal(true win rate, (volatility / sqrt(hands / 100))^2), volatility held fixed",
-     "posterior": "Normal-Normal conjugate update",
+     "posterior": "Normal-Normal conjugate update; a mixture prior updates each component and reweights them",
      "risk": "finite-horizon Brownian first passage; average over the posterior in closed form"
+    },
+    "priorSource": {
+     "data": "PartyPoker and Ongame no-limit hold'em, $2/$4, 1–23 July 2009, HandHQ logs",
+     "citation": "Kim (2024), Recording and Describing Poker Hands, arXiv:2312.11753",
+     "url": "https://zenodo.org/doi/10.5281/zenodo.10796885",
+     "license": "CC BY 4.0",
+     "method": "Hierarchical Normal model (empirical Bayes): each player's observed win rate ~ Normal(true win rate, standard error^2), true win rates ~ Normal(mean, sd^2), fitted by maximum likelihood within each volume bracket. Standard errors from each player's own per-hand standard deviation.",
+     "intervals": "95%, resampling players (2,000 bootstrap samples)",
+     "population": "Players with at least 1,000 usable hands at one site in the 23 days; IDs are per site",
+     "fitted": "2026-11-01"
     }
    }
   },
@@ -3417,6 +3705,7 @@
      "sdSource": "assumed",
      "prior": "weak",
      "priorLabel": "Weakly informative, Normal(0, 10²)",
+     "priorFromData": false,
      "bank": 25,
      "thr": 0,
      "bbPerBuyIn": 200,
@@ -3440,7 +3729,14 @@
      ],
      "probPositive": 0.6590738121941467,
      "dataWeight": 0.9466708740927737,
-     "credible": -2.012828948044942
+     "credible": -2.012828948044942,
+     "components": [
+      {
+       "weight": 1,
+       "mean": 0.9466708740927737,
+       "sd": 2.3093099815145273
+      }
+     ]
     },
     "risk": {
      "plugIn": 0.4150176731445571,
@@ -3611,6 +3907,36 @@
        "averageRisk": 0.5186867149285497,
        "upperRisk": 0.8239285576549035,
        "requiredBuyIns": 141.9033434142993
+      },
+      {
+       "prior": "regulars",
+       "label": "Regulars, $2/$4 2009: Normal(+2.6, 2.5²)",
+       "current": false,
+       "dataWeight": 0.5170850177255516,
+       "posteriorMean": 1.7939122308591933,
+       "interval": [
+        -1.5512084725136606,
+        5.139032934232047
+       ],
+       "probPositive": 0.8533900208215357,
+       "averageRisk": 0.3374624693407401,
+       "upperRisk": 0.653741026893669,
+       "requiredBuyIns": 115.60600444098344
+      },
+      {
+       "prior": "players",
+       "label": "Players with 1,000+ hands, $2/$4 2009 (mixture)",
+       "current": false,
+       "dataWeight": 0.6992592829859432,
+       "posteriorMean": 0.9034256728998601,
+       "interval": [
+        -3.102556434037142,
+        4.708840595378597
+       ],
+       "probPositive": 0.6825877364549316,
+       "averageRisk": 0.4545615077467876,
+       "upperRisk": 0.8358412047120187,
+       "requiredBuyIns": 144.2123683724958
       }
      ],
      "sample": [
@@ -3698,7 +4024,7 @@
       {
        "id": "prior",
        "range": [
-        0.4506187927528644,
+        0.3374624693407401,
         0.5186867149285497
        ]
       }
@@ -3961,10 +4287,20 @@
     },
     "model": {
      "name": "bankroll-posterior",
-     "version": "2026-10-22",
+     "version": "2026-11-01",
      "likelihood": "observed win rate ~ Normal(true win rate, (volatility / sqrt(hands / 100))^2), volatility held fixed",
-     "posterior": "Normal-Normal conjugate update",
+     "posterior": "Normal-Normal conjugate update; a mixture prior updates each component and reweights them",
      "risk": "finite-horizon Brownian first passage; average over the posterior in closed form"
+    },
+    "priorSource": {
+     "data": "PartyPoker and Ongame no-limit hold'em, $2/$4, 1–23 July 2009, HandHQ logs",
+     "citation": "Kim (2024), Recording and Describing Poker Hands, arXiv:2312.11753",
+     "url": "https://zenodo.org/doi/10.5281/zenodo.10796885",
+     "license": "CC BY 4.0",
+     "method": "Hierarchical Normal model (empirical Bayes): each player's observed win rate ~ Normal(true win rate, standard error^2), true win rates ~ Normal(mean, sd^2), fitted by maximum likelihood within each volume bracket. Standard errors from each player's own per-hand standard deviation.",
+     "intervals": "95%, resampling players (2,000 bootstrap samples)",
+     "population": "Players with at least 1,000 usable hands at one site in the 23 days; IDs are per site",
+     "fitted": "2026-11-01"
     }
    }
   },
@@ -3988,6 +4324,7 @@
      "sdSource": "assumed",
      "prior": "none",
      "priorLabel": "None (results only)",
+     "priorFromData": false,
      "bank": 40,
      "thr": 0,
      "bbPerBuyIn": 100,
@@ -4011,7 +4348,14 @@
      ],
      "probPositive": 0.8019280466576534,
      "dataWeight": 1,
-     "credible": 0.04883918550005095
+     "credible": 0.04883918550005095,
+     "components": [
+      {
+       "weight": 1,
+       "mean": 6,
+       "sd": 7.071067811865475
+      }
+     ]
     },
     "risk": {
      "plugIn": 0.006843542767473929,
@@ -4182,6 +4526,36 @@
        "averageRisk": 0.20465584785903787,
        "upperRisk": 0.3160888903680414,
        "requiredBuyIns": 72.09448137362911
+      },
+      {
+       "prior": "regulars",
+       "label": "Regulars, $2/$4 2009: Normal(+2.6, 2.5²)",
+       "current": false,
+       "dataWeight": 0.10765175060165691,
+       "posteriorMean": 3.0052792750191606,
+       "interval": [
+        -1.5419163822618125,
+        7.552474932300134
+       ],
+       "probPositive": 0.9024013442379833,
+       "averageRisk": 0.0816750587109201,
+       "upperRisk": 0.1307164586709942,
+       "requiredBuyIns": 53.41752096941581
+      },
+      {
+       "prior": "players",
+       "label": "Players with 1,000+ hands, $2/$4 2009 (mixture)",
+       "current": false,
+       "dataWeight": 0.2557458351892688,
+       "posteriorMean": 1.4008594078785093,
+       "interval": [
+        -6.496930250836664,
+        8.02528108166948
+       ],
+       "probPositive": 0.6858375415259153,
+       "averageRisk": 0.19237169645831337,
+       "upperRisk": 0.32766081154773213,
+       "requiredBuyIns": 73.06623091376377
       }
      ],
      "sample": [
@@ -4269,7 +4643,7 @@
       {
        "id": "prior",
        "range": [
-        0.1323794153429012,
+        0.0816750587109201,
         0.20465584785903787
        ]
       }
@@ -4532,10 +4906,20 @@
     },
     "model": {
      "name": "bankroll-posterior",
-     "version": "2026-10-22",
+     "version": "2026-11-01",
      "likelihood": "observed win rate ~ Normal(true win rate, (volatility / sqrt(hands / 100))^2), volatility held fixed",
-     "posterior": "Normal-Normal conjugate update",
+     "posterior": "Normal-Normal conjugate update; a mixture prior updates each component and reweights them",
      "risk": "finite-horizon Brownian first passage; average over the posterior in closed form"
+    },
+    "priorSource": {
+     "data": "PartyPoker and Ongame no-limit hold'em, $2/$4, 1–23 July 2009, HandHQ logs",
+     "citation": "Kim (2024), Recording and Describing Poker Hands, arXiv:2312.11753",
+     "url": "https://zenodo.org/doi/10.5281/zenodo.10796885",
+     "license": "CC BY 4.0",
+     "method": "Hierarchical Normal model (empirical Bayes): each player's observed win rate ~ Normal(true win rate, standard error^2), true win rates ~ Normal(mean, sd^2), fitted by maximum likelihood within each volume bracket. Standard errors from each player's own per-hand standard deviation.",
+     "intervals": "95%, resampling players (2,000 bootstrap samples)",
+     "population": "Players with at least 1,000 usable hands at one site in the 23 days; IDs are per site",
+     "fitted": "2026-11-01"
     }
    }
   },
@@ -4559,6 +4943,7 @@
      "sdSource": "assumed",
      "prior": "skeptical",
      "priorLabel": "Skeptical, Normal(0, 2²)",
+     "priorFromData": false,
      "bank": 40,
      "thr": 0,
      "bbPerBuyIn": 100,
@@ -4582,7 +4967,14 @@
      ],
      "probPositive": 0.5913193168086124,
      "dataWeight": 0.07407407407407408,
-     "credible": -1.1752563747523124
+     "credible": -1.1752563747523124,
+     "components": [
+      {
+       "weight": 1,
+       "mean": 0.4444444444444445,
+       "sd": 1.9245008972987525
+      }
+     ]
     },
     "risk": {
      "plugIn": 0.006843542767473929,
@@ -4753,6 +5145,36 @@
        "averageRisk": 0.20465584785903787,
        "upperRisk": 0.3160888903680414,
        "requiredBuyIns": 72.09448137362911
+      },
+      {
+       "prior": "regulars",
+       "label": "Regulars, $2/$4 2009: Normal(+2.6, 2.5²)",
+       "current": false,
+       "dataWeight": 0.10765175060165691,
+       "posteriorMean": 3.0052792750191606,
+       "interval": [
+        -1.5419163822618125,
+        7.552474932300134
+       ],
+       "probPositive": 0.9024013442379833,
+       "averageRisk": 0.0816750587109201,
+       "upperRisk": 0.1307164586709942,
+       "requiredBuyIns": 53.41752096941581
+      },
+      {
+       "prior": "players",
+       "label": "Players with 1,000+ hands, $2/$4 2009 (mixture)",
+       "current": false,
+       "dataWeight": 0.2557458351892688,
+       "posteriorMean": 1.4008594078785093,
+       "interval": [
+        -6.496930250836664,
+        8.02528108166948
+       ],
+       "probPositive": 0.6858375415259153,
+       "averageRisk": 0.19237169645831337,
+       "upperRisk": 0.32766081154773213,
+       "requiredBuyIns": 73.06623091376377
       }
      ],
      "sample": [
@@ -4840,7 +5262,7 @@
       {
        "id": "prior",
        "range": [
-        0.1323794153429012,
+        0.0816750587109201,
         0.20465584785903787
        ]
       }
@@ -5103,10 +5525,20 @@
     },
     "model": {
      "name": "bankroll-posterior",
-     "version": "2026-10-22",
+     "version": "2026-11-01",
      "likelihood": "observed win rate ~ Normal(true win rate, (volatility / sqrt(hands / 100))^2), volatility held fixed",
-     "posterior": "Normal-Normal conjugate update",
+     "posterior": "Normal-Normal conjugate update; a mixture prior updates each component and reweights them",
      "risk": "finite-horizon Brownian first passage; average over the posterior in closed form"
+    },
+    "priorSource": {
+     "data": "PartyPoker and Ongame no-limit hold'em, $2/$4, 1–23 July 2009, HandHQ logs",
+     "citation": "Kim (2024), Recording and Describing Poker Hands, arXiv:2312.11753",
+     "url": "https://zenodo.org/doi/10.5281/zenodo.10796885",
+     "license": "CC BY 4.0",
+     "method": "Hierarchical Normal model (empirical Bayes): each player's observed win rate ~ Normal(true win rate, standard error^2), true win rates ~ Normal(mean, sd^2), fitted by maximum likelihood within each volume bracket. Standard errors from each player's own per-hand standard deviation.",
+     "intervals": "95%, resampling players (2,000 bootstrap samples)",
+     "population": "Players with at least 1,000 usable hands at one site in the 23 days; IDs are per site",
+     "fitted": "2026-11-01"
     }
    }
   },
@@ -5133,6 +5565,7 @@
      "sdSource": "sessions",
      "prior": "weak",
      "priorLabel": "Weakly informative, Normal(0, 10²)",
+     "priorFromData": false,
      "bank": 40,
      "thr": 0,
      "bbPerBuyIn": 100,
@@ -5159,7 +5592,14 @@
      ],
      "probPositive": 0.9619610193737042,
      "dataWeight": 0.9566657135997,
-     "credible": 1.940736081910551
+     "credible": 1.940736081910551,
+     "components": [
+      {
+       "weight": 1,
+       "mean": 3.692729654494842,
+       "sd": 2.0816888912683376
+      }
+     ]
     },
     "risk": {
      "plugIn": 0.020639851510182772,
@@ -5360,6 +5800,36 @@
        "averageRisk": 0.14839945929413312,
        "upperRisk": 0.23715038518487916,
        "requiredBuyIns": 69.70329382192159
+      },
+      {
+       "prior": "regulars",
+       "label": "Regulars, $2/$4 2009: Normal(+2.6, 2.5²)",
+       "current": false,
+       "dataWeight": 0.5711164525893235,
+       "posteriorMean": 3.3384776063486177,
+       "interval": [
+        0.18604256235407135,
+        6.490912650343164
+       ],
+       "probPositive": 0.98103601401877,
+       "averageRisk": 0.06173177725074382,
+       "upperRisk": 0.09555245415495417,
+       "requiredBuyIns": 49.55343800288529
+      },
+      {
+       "prior": "players",
+       "label": "Players with 1,000+ hands, $2/$4 2009 (mixture)",
+       "current": false,
+       "dataWeight": 0.7053251144929693,
+       "posteriorMean": 2.9752942703437695,
+       "interval": [
+        -0.532301078514724,
+        6.48988073978216
+       ],
+       "probPositive": 0.952259029824714,
+       "averageRisk": 0.08586360882895323,
+       "upperRisk": 0.1360907309959899,
+       "requiredBuyIns": 56.26521363159796
       }
      ],
      "sample": [
@@ -5710,10 +6180,20 @@
     },
     "model": {
      "name": "bankroll-posterior",
-     "version": "2026-10-22",
+     "version": "2026-11-01",
      "likelihood": "observed win rate ~ Normal(true win rate, (volatility / sqrt(hands / 100))^2), volatility held fixed",
-     "posterior": "Normal-Normal conjugate update",
+     "posterior": "Normal-Normal conjugate update; a mixture prior updates each component and reweights them",
      "risk": "finite-horizon Brownian first passage; average over the posterior in closed form"
+    },
+    "priorSource": {
+     "data": "PartyPoker and Ongame no-limit hold'em, $2/$4, 1–23 July 2009, HandHQ logs",
+     "citation": "Kim (2024), Recording and Describing Poker Hands, arXiv:2312.11753",
+     "url": "https://zenodo.org/doi/10.5281/zenodo.10796885",
+     "license": "CC BY 4.0",
+     "method": "Hierarchical Normal model (empirical Bayes): each player's observed win rate ~ Normal(true win rate, standard error^2), true win rates ~ Normal(mean, sd^2), fitted by maximum likelihood within each volume bracket. Standard errors from each player's own per-hand standard deviation.",
+     "intervals": "95%, resampling players (2,000 bootstrap samples)",
+     "population": "Players with at least 1,000 usable hands at one site in the 23 days; IDs are per site",
+     "fitted": "2026-11-01"
     }
    }
   },
@@ -5741,6 +6221,7 @@
      "sdSource": "sessions",
      "prior": "none",
      "priorLabel": "None (results only)",
+     "priorFromData": false,
      "bank": 40,
      "thr": 0,
      "bbPerBuyIn": 100,
@@ -5767,7 +6248,14 @@
      ],
      "probPositive": 0.8326532568895514,
      "dataWeight": 1,
-     "credible": 0.4924794615621564
+     "credible": 0.4924794615621564,
+     "components": [
+      {
+       "weight": 1,
+       "mean": 3.86,
+       "sd": 4.001230487189337
+      }
+     ]
     },
     "risk": {
      "plugIn": 0.020639851510182772,
@@ -5968,6 +6456,36 @@
        "averageRisk": 0.2678361392944292,
        "upperRisk": 0.44630073250617264,
        "requiredBuyIns": 91.86565936496255
+      },
+      {
+       "prior": "regulars",
+       "label": "Regulars, $2/$4 2009: Normal(+2.6, 2.5²)",
+       "current": false,
+       "dataWeight": 0.2736591878559271,
+       "posteriorMean": 2.9767695724328074,
+       "interval": [
+        -1.1257123605855388,
+        7.079251505451154
+       ],
+       "probPositive": 0.9225092251038527,
+       "averageRisk": 0.10005720164925813,
+       "upperRisk": 0.16204958082428794,
+       "requiredBuyIns": 60.061505517749865
+      },
+      {
+       "prior": "players",
+       "label": "Players with 1,000+ hands, $2/$4 2009 (mixture)",
+       "current": false,
+       "dataWeight": 0.454068577342317,
+       "posteriorMean": 1.988711916462878,
+       "interval": [
+        -3.5220760405415366,
+        7.181821746324861
+       ],
+       "probPositive": 0.7810210306829753,
+       "averageRisk": 0.1945852007426271,
+       "upperRisk": 0.3513455803529979,
+       "requiredBuyIns": 82.26762238761121
       }
      ],
      "sample": [
@@ -6055,7 +6573,7 @@
       {
        "id": "prior",
        "range": [
-        0.14611730336875037,
+        0.10005720164925813,
         0.2678361392944292
        ]
       }
@@ -6318,10 +6836,2518 @@
     },
     "model": {
      "name": "bankroll-posterior",
-     "version": "2026-10-22",
+     "version": "2026-11-01",
      "likelihood": "observed win rate ~ Normal(true win rate, (volatility / sqrt(hands / 100))^2), volatility held fixed",
-     "posterior": "Normal-Normal conjugate update",
+     "posterior": "Normal-Normal conjugate update; a mixture prior updates each component and reweights them",
      "risk": "finite-horizon Brownian first passage; average over the posterior in closed form"
+    },
+    "priorSource": {
+     "data": "PartyPoker and Ongame no-limit hold'em, $2/$4, 1–23 July 2009, HandHQ logs",
+     "citation": "Kim (2024), Recording and Describing Poker Hands, arXiv:2312.11753",
+     "url": "https://zenodo.org/doi/10.5281/zenodo.10796885",
+     "license": "CC BY 4.0",
+     "method": "Hierarchical Normal model (empirical Bayes): each player's observed win rate ~ Normal(true win rate, standard error^2), true win rates ~ Normal(mean, sd^2), fitted by maximum likelihood within each volume bracket. Standard errors from each player's own per-hand standard deviation.",
+     "intervals": "95%, resampling players (2,000 bootstrap samples)",
+     "population": "Players with at least 1,000 usable hands at one site in the 23 days; IDs are per site",
+     "fitted": "2026-11-01"
+    }
+   }
+  },
+  {
+   "id": "case-study-10k-plus-3-regulars",
+   "input": {
+    "hands": 10000,
+    "winRate": 3,
+    "sd": 90,
+    "prior": "regulars",
+    "bank": 30,
+    "horizon": 100000
+   },
+   "result": {
+    "inputs": {
+     "hands": 10000,
+     "winRate": 3,
+     "sd": 90,
+     "sdSource": "assumed",
+     "prior": "regulars",
+     "priorLabel": "Regulars, $2/$4 2009: Normal(+2.6, 2.5²)",
+     "priorFromData": true,
+     "bank": 30,
+     "thr": 0,
+     "bbPerBuyIn": 100,
+     "horizon": 100000,
+     "target": 0.05,
+     "credibility": 0.8,
+     "margin": 1,
+     "sampleLevel": 0.95,
+     "sdRange": null,
+     "seMultiplier": 1
+    },
+    "winRate": {
+     "observed": 3,
+     "standardError": 9,
+     "mean": 2.6686733476777995,
+     "sd": 2.369362713529396,
+     "level": 0.95,
+     "interval": [
+      -1.9751922371519095,
+      7.3125389325075085
+     ],
+     "probPositive": 0.8699860808446224,
+     "dataWeight": 0.06930715639831338,
+     "credible": 0.6745673779355212,
+     "components": [
+      {
+       "weight": 1,
+       "mean": 2.6686733476777995,
+       "sd": 2.369362713529396
+      }
+     ]
+    },
+    "risk": {
+     "plugIn": 0.07169150210480218,
+     "average": 0.1357323977803267,
+     "median": 0.0860359493395565,
+     "interval": [
+      0.00429908744838511,
+      0.5331305660718375
+     ],
+     "upper": 0.22389012660764482,
+     "probAtMostTarget": 0.34327703981007507,
+     "targetWinRate": 3.6247960488506124,
+     "target": 0.05,
+     "credibility": 0.8
+    },
+    "bankroll": {
+     "current": {
+      "bb": 3000,
+      "buyIns": 30
+     },
+     "credible": {
+      "bb": 5024.262391149377,
+      "buyIns": 50.24262391149377,
+      "met": false,
+      "moreBuyIns": 20.242623911493773
+     },
+     "average": {
+      "bb": 4518.444828786402,
+      "buyIns": 45.184448287864015,
+      "met": false,
+      "moreBuyIns": 15.184448287864015
+     },
+     "plugIn": {
+      "bb": 3360.8481153998523,
+      "buyIns": 33.608481153998525,
+      "met": false,
+      "moreBuyIns": 3.608481153998523
+     }
+    },
+    "sampleSize": {
+     "level": 0.95,
+     "margin": 1,
+     "z": 1.9599639845400536,
+     "currentHalfWidth": 17.639675860860482,
+     "totalHands": 3111582,
+     "moreHands": 3101582
+    },
+    "sensitivity": {
+     "volatility": [
+      {
+       "sd": 70,
+       "current": false,
+       "bound": null,
+       "handsForMargin": 1882315,
+       "posteriorMean": 2.6830204192707305,
+       "interval": [
+        -1.8591884169890025,
+        7.225229255530463
+       ],
+       "probPositive": 0.8765116126692625,
+       "averageRisk": 0.07111511054589276,
+       "upperRisk": 0.1082046799840984,
+       "requiredBuyIns": 37.42614900016036
+      },
+      {
+       "sd": 90,
+       "current": true,
+       "bound": null,
+       "handsForMargin": 3111582,
+       "posteriorMean": 2.6686733476777995,
+       "interval": [
+        -1.9751922371519095,
+        7.3125389325075085
+       ],
+       "probPositive": 0.8699860808446224,
+       "averageRisk": 0.1357323977803267,
+       "upperRisk": 0.22389012660764482,
+       "requiredBuyIns": 50.24262391149377
+      },
+      {
+       "sd": 120,
+       "current": false,
+       "bound": null,
+       "handsForMargin": 5531701,
+       "posteriorMean": 2.6583127474939734,
+       "interval": [
+        -2.0576008853498124,
+        7.37422638033776
+       ],
+       "probPositive": 0.8653794278493465,
+       "averageRisk": 0.2513753414440057,
+       "upperRisk": 0.37379872828338195,
+       "requiredBuyIns": 69.14146691058721
+      },
+      {
+       "sd": 150,
+       "current": false,
+       "bound": null,
+       "handsForMargin": 8643283,
+       "posteriorMean": 2.653294685631687,
+       "interval": [
+        -2.0971219796299674,
+        7.4037113508933405
+       ],
+       "probPositive": 0.8631796785134669,
+       "averageRisk": 0.36275527901065774,
+       "upperRisk": 0.4841384575296834,
+       "requiredBuyIns": 87.8821481189421
+      }
+     ],
+     "prior": [
+      {
+       "prior": "none",
+       "label": "None (results only)",
+       "current": false,
+       "dataWeight": 1,
+       "posteriorMean": 3,
+       "interval": [
+        -14.639675860860482,
+        20.639675860860482
+       ],
+       "probPositive": 0.6305586537204085,
+       "averageRisk": 0.31260156051943255,
+       "upperRisk": 0.8252037470379319,
+       "requiredBuyIns": 97.26718584441403
+      },
+      {
+       "prior": "weak",
+       "label": "Weakly informative, Normal(0, 10²)",
+       "current": false,
+       "dataWeight": 0.5524861878453038,
+       "posteriorMean": 1.6574585635359114,
+       "interval": [
+        -11.45400924553913,
+        14.768926372610952
+       ],
+       "probPositive": 0.5978417538642529,
+       "averageRisk": 0.3266539209049026,
+       "upperRisk": 0.7692370744822901,
+       "requiredBuyIns": 91.57875786083831
+      },
+      {
+       "prior": "skeptical",
+       "label": "Skeptical, Normal(0, 2²)",
+       "current": false,
+       "dataWeight": 0.047058823529411764,
+       "posteriorMean": 0.1411764705882353,
+       "interval": [
+        -3.6854064896809273,
+        3.967759430857398
+       ],
+       "probPositive": 0.5288224963889417,
+       "averageRisk": 0.3091132175901622,
+       "upperRisk": 0.4722519703563247,
+       "requiredBuyIns": 68.82702593090278
+      },
+      {
+       "prior": "regulars",
+       "label": "Regulars, $2/$4 2009: Normal(+2.6, 2.5²)",
+       "current": true,
+       "dataWeight": 0.06930715639831338,
+       "posteriorMean": 2.6686733476777995,
+       "interval": [
+        -1.9751922371519095,
+        7.3125389325075085
+       ],
+       "probPositive": 0.8699860808446224,
+       "averageRisk": 0.1357323977803267,
+       "upperRisk": 0.22389012660764482,
+       "requiredBuyIns": 50.24262391149377
+      },
+      {
+       "prior": "players",
+       "label": "Players with 1,000+ hands, $2/$4 2009 (mixture)",
+       "current": false,
+       "dataWeight": 0.21326682728101215,
+       "posteriorMean": 0.16703365864366213,
+       "interval": [
+        -9.431267935806034,
+        7.324082202161401
+       ],
+       "probPositive": 0.5656525252810978,
+       "averageRisk": 0.3394114043568575,
+       "upperRisk": 0.6519078638228953,
+       "requiredBuyIns": 81.74422336095216
+      }
+     ],
+     "sample": [
+      {
+       "hands": 2500,
+       "multiple": 0.25,
+       "current": false,
+       "posteriorMean": 2.6505065497661415,
+       "interval": [
+        -2.1189728252866096,
+        7.419985924818892
+       ],
+       "probPositive": 0.8619662377675144,
+       "averageRisk": 0.13904160377721847,
+       "upperRisk": 0.23065802818149628,
+       "requiredBuyIns": 50.82280311452052
+      },
+      {
+       "hands": 10000,
+       "multiple": 1,
+       "current": true,
+       "posteriorMean": 2.6686733476777995,
+       "interval": [
+        -1.9751922371519095,
+        7.3125389325075085
+       ],
+       "probPositive": 0.8699860808446224,
+       "averageRisk": 0.1357323977803267,
+       "upperRisk": 0.22389012660764482,
+       "requiredBuyIns": 50.24262391149377
+      },
+      {
+       "hands": 40000,
+       "multiple": 4,
+       "current": false,
+       "posteriorMean": 2.7257051383124895,
+       "interval": [
+        -1.4996215282683338,
+        6.951031804893313
+       ],
+       "probPositive": 0.8969474442369403,
+       "averageRisk": 0.12516511299005534,
+       "upperRisk": 0.20254243956703327,
+       "requiredBuyIns": 48.359730179500865
+      },
+      {
+       "hands": 160000,
+       "multiple": 16,
+       "current": false,
+       "posteriorMean": 2.8375537071014696,
+       "interval": [
+        -0.4141154901477724,
+        6.089222904350711
+       ],
+       "probPositive": 0.9563997193670994,
+       "averageRisk": 0.10373615660179875,
+       "upperRisk": 0.1597038026378905,
+       "requiredBuyIns": 44.279125937316195
+      }
+     ]
+    },
+    "sources": {
+     "items": [
+      {
+       "id": "winRate",
+       "range": [
+        0.00429908744838511,
+        0.5331305660718375
+       ]
+      },
+      {
+       "id": "volatility",
+       "range": [
+        0.07111511054589276,
+        0.36275527901065774
+       ],
+       "values": [
+        70,
+        90,
+        120,
+        150
+       ]
+      },
+      {
+       "id": "prior",
+       "range": [
+        0.1357323977803267,
+        0.3394114043568575
+       ]
+      }
+     ],
+     "widest": "winRate"
+    },
+    "curve": {
+     "bankroll": [
+      0,
+      1.0885901847490318,
+      2.1771803694980636,
+      3.265770554247095,
+      4.354360738996127,
+      5.442950923745159,
+      6.53154110849419,
+      7.620131293243223,
+      8.708721477992254,
+      9.797311662741286,
+      10.885901847490318,
+      11.97449203223935,
+      13.06308221698838,
+      14.151672401737413,
+      15.240262586486446,
+      16.328852771235475,
+      17.41744295598451,
+      18.50603314073354,
+      19.594623325482573,
+      20.683213510231603,
+      21.771803694980637,
+      22.860393879729667,
+      23.9489840644787,
+      25.03757424922773,
+      26.12616443397676,
+      27.21475461872579,
+      28.303344803474825,
+      29.391934988223863,
+      30.480525172972893,
+      31.56911535772192,
+      32.65770554247095,
+      33.74629572721999,
+      34.83488591196902,
+      35.92347609671805,
+      37.01206628146708,
+      38.10065646621611,
+      39.189246650965146,
+      40.277836835714176,
+      41.366427020463206,
+      42.45501720521224,
+      43.543607389961274,
+      44.6321975747103,
+      45.720787759459334,
+      46.80937794420837,
+      47.8979681289574,
+      48.98655831370644,
+      50.07514849845546,
+      51.16373868320449,
+      52.25232886795352,
+      53.34091905270256,
+      54.42950923745158,
+      55.51809942220062,
+      56.60668960694965,
+      57.69527979169869,
+      58.783869976447725,
+      59.87246016119675,
+      60.961050345945786,
+      62.0496405306948,
+      63.13823071544384,
+      64.22682090019288,
+      65.3154110849419
+     ],
+     "plugIn": [
+      1,
+      0.9170151439533545,
+      0.8404828055348801,
+      0.7699247472257863,
+      0.7048978432404948,
+      0.6449913965560157,
+      0.5898246725778216,
+      0.5390446318532951,
+      0.4923238455807472,
+      0.44935857890501507,
+      0.40986702814668063,
+      0.3735876991873312,
+      0.34027791523370865,
+      0.3097124431142956,
+      0.2816822281275668,
+      0.2559932282661064,
+      0.23246533938899316,
+      0.2109314036098564,
+      0.1912362938131125,
+      0.1732360678091181,
+      0.15679718619311384,
+      0.1417957884854472,
+      0.12811702260404562,
+      0.11565442315666391,
+      0.10430933444210018,
+      0.09399037441825517,
+      0.08461293623234607,
+      0.07609872421635085,
+      0.06837532696109742,
+      0.061375813791274575,
+      0.055038352443961436,
+      0.049305858004284664,
+      0.04412567074287494,
+      0.03944924866505426,
+      0.03523188029279941,
+      0.031432416082815315,
+      0.02801301709653935,
+      0.0249389197040338,
+      0.02217821523712529,
+      0.019701643616784812,
+      0.01748240007158848,
+      0.01549595414220839,
+      0.013719880234071245,
+      0.012133699038605485,
+      0.010718729194371127,
+      0.009457948603986313,
+      0.00833586486205301,
+      0.0073383942840049635,
+      0.006452749056603287,
+      0.005667332058244746,
+      0.004971638921815952,
+      0.004356166934949043,
+      0.003812330392588576,
+      0.003332382035093909,
+      0.002909340221963274,
+      0.0025369215069233645,
+      0.0022094782947935016,
+      0.0019219412743861986,
+      0.0016697663348958828,
+      0.0014488856858780519,
+      0.0012556629131306946
+     ],
+     "average": [
+      1,
+      0.9189518952548599,
+      0.8459868328552912,
+      0.7801087229962527,
+      0.7204631657465423,
+      0.6663154344671198,
+      0.6170321117347182,
+      0.5720657360291651,
+      0.530941934474573,
+      0.49324860982890933,
+      0.45862682190472687,
+      0.42676319515757477,
+      0.39738347862128,
+      0.3702468479474728,
+      0.3451414119998951,
+      0.32188023703547564,
+      0.3002979553407096,
+      0.2802478809437632,
+      0.2615995470108104,
+      0.24423659734694386,
+      0.22805497708257258,
+      0.21296137716632288,
+      0.198871894783091,
+      0.18571087787411675,
+      0.17340992691619586,
+      0.16190703125396633,
+      0.15114582073688548,
+      0.14107491631373398,
+      0.1316473656780855,
+      0.12282015211527489,
+      0.11455376643812674,
+      0.10681183336721137,
+      0.099560784955057,
+      0.09276957470862304,
+      0.08640942696056651,
+      0.08045361680252586,
+      0.07487727654381457,
+      0.06965722521410445,
+      0.06477181810358448,
+      0.060200813741012285,
+      0.055925256059346416,
+      0.0519273697989381,
+      0.048190467456853875,
+      0.044698866313940266,
+      0.04143781426390908,
+      0.03839342333539549,
+      0.035552609942326105,
+      0.032903041023171375,
+      0.030433085338421904,
+      0.028131769290182445,
+      0.02598873671006651,
+      0.02399421213324655,
+      0.02213896713898727,
+      0.02041428939247333,
+      0.018811954070284072,
+      0.017324197393358453,
+      0.015943692027509476,
+      0.014663524143158932,
+      0.013477171953544007,
+      0.01237848557470447,
+      0.01136166807152601
+     ],
+     "upper": [
+      1,
+      0.959934136829858,
+      0.9206307714882092,
+      0.8821178357970543,
+      0.8444216348728295,
+      0.807566715155942,
+      0.7715757429652232,
+      0.7364694846758115,
+      0.7022666239943312,
+      0.6689836838133185,
+      0.6366349786826364,
+      0.6052325907091987,
+      0.5747863324129989,
+      0.5453037260832453,
+      0.5167899986635538,
+      0.48924809134642605,
+      0.46267868312464855,
+      0.4370802275608161,
+      0.4124490020167628,
+      0.3887791685467379,
+      0.3660628456117023,
+      0.34429018972405634,
+      0.3234494860870871,
+      0.3035272472546022,
+      0.284508318805604,
+      0.2663759910076563,
+      0.2491121154314702,
+      0.23269722547834645,
+      0.21711065979138144,
+      0.20233068754039038,
+      0.1883346345987753,
+      0.1750990096674025,
+      0.1625996294451339,
+      0.150811741997133,
+      0.13971014752949462,
+      0.12926931584118204,
+      0.1194634997907081,
+      0.1102668441845045,
+      0.10165348956551255,
+      0.09359767045327527,
+      0.08607380765981712,
+      0.07905659437801572,
+      0.07252107581022574,
+      0.06644272217387417,
+      0.060797494986973594,
+      0.05556190659941554,
+      0.05071307299502619,
+      0.046228759944267714,
+      0.04208742263783786,
+      0.03826823897698903,
+      0.03475113673700274,
+      0.03151681485580323,
+      0.028546759130162563,
+      0.02582325262736765,
+      0.023329381140696503,
+      0.02104903403273459,
+      0.018966900821660207,
+      0.017068463872380778,
+      0.015339987557090502,
+      0.013768504248750417,
+      0.012341797506490948
+     ]
+    },
+    "model": {
+     "name": "bankroll-posterior",
+     "version": "2026-11-01",
+     "likelihood": "observed win rate ~ Normal(true win rate, (volatility / sqrt(hands / 100))^2), volatility held fixed",
+     "posterior": "Normal-Normal conjugate update; a mixture prior updates each component and reweights them",
+     "risk": "finite-horizon Brownian first passage; average over the posterior in closed form"
+    },
+    "priorSource": {
+     "data": "PartyPoker and Ongame no-limit hold'em, $2/$4, 1–23 July 2009, HandHQ logs",
+     "citation": "Kim (2024), Recording and Describing Poker Hands, arXiv:2312.11753",
+     "url": "https://zenodo.org/doi/10.5281/zenodo.10796885",
+     "license": "CC BY 4.0",
+     "method": "Hierarchical Normal model (empirical Bayes): each player's observed win rate ~ Normal(true win rate, standard error^2), true win rates ~ Normal(mean, sd^2), fitted by maximum likelihood within each volume bracket. Standard errors from each player's own per-hand standard deviation.",
+     "intervals": "95%, resampling players (2,000 bootstrap samples)",
+     "population": "Players with at least 1,000 usable hands at one site in the 23 days; IDs are per site",
+     "fitted": "2026-11-01"
+    }
+   }
+  },
+  {
+   "id": "case-study-10k-plus-3-all-players",
+   "input": {
+    "hands": 10000,
+    "winRate": 3,
+    "sd": 90,
+    "prior": "players",
+    "bank": 30,
+    "horizon": 100000
+   },
+   "result": {
+    "inputs": {
+     "hands": 10000,
+     "winRate": 3,
+     "sd": 90,
+     "sdSource": "assumed",
+     "prior": "players",
+     "priorLabel": "Players with 1,000+ hands, $2/$4 2009 (mixture)",
+     "priorFromData": true,
+     "bank": 30,
+     "thr": 0,
+     "bbPerBuyIn": 100,
+     "horizon": 100000,
+     "target": 0.05,
+     "credibility": 0.8,
+     "margin": 1,
+     "sampleLevel": 0.95,
+     "sdRange": null,
+     "seMultiplier": 1
+    },
+    "winRate": {
+     "observed": 3,
+     "standardError": 9,
+     "mean": 0.16703365864366213,
+     "sd": 4.1562739334362915,
+     "level": 0.95,
+     "interval": [
+      -9.431267935806034,
+      7.324082202161401
+     ],
+     "probPositive": 0.5656525252810978,
+     "dataWeight": 0.21326682728101215,
+     "credible": -2.9197794900156655,
+     "components": [
+      {
+       "weight": 0.4361166990986906,
+       "mean": -1.5449553562405312,
+       "sd": 4.99748249122663,
+       "group": "1,000–2,499"
+      },
+      {
+       "weight": 0.2567230468465438,
+       "mean": 0.8031971151071267,
+       "sd": 2.4969701239430955,
+       "group": "2,500–4,999"
+      },
+      {
+       "weight": 0.1529929412467077,
+       "mean": 1.4588456020306808,
+       "sd": 2.931002157162805,
+       "group": "5,000–9,999"
+      },
+      {
+       "weight": 0.154167312808058,
+       "mean": 2.6686733476777995,
+       "sd": 2.369362713529396,
+       "group": "10,000+"
+      }
+     ]
+    },
+    "risk": {
+     "plugIn": 0.07169150210480218,
+     "average": 0.3394114043568575,
+     "median": 0.2299452866923875,
+     "interval": [
+      0.004263712329531904,
+      0.9948642037450242
+     ],
+     "upper": 0.6519078638228953,
+     "probAtMostTarget": 0.18689946664620766,
+     "targetWinRate": 3.6247960488506124,
+     "target": 0.05,
+     "credibility": 0.8
+    },
+    "bankroll": {
+     "current": {
+      "bb": 3000,
+      "buyIns": 30
+     },
+     "credible": {
+      "bb": 8174.4223360952155,
+      "buyIns": 81.74422336095216,
+      "met": false,
+      "moreBuyIns": 51.744223360952155
+     },
+     "average": {
+      "bb": 9125.36285295203,
+      "buyIns": 91.2536285295203,
+      "met": false,
+      "moreBuyIns": 61.2536285295203
+     },
+     "plugIn": {
+      "bb": 3360.8481153998523,
+      "buyIns": 33.608481153998525,
+      "met": false,
+      "moreBuyIns": 3.608481153998523
+     }
+    },
+    "sampleSize": {
+     "level": 0.95,
+     "margin": 1,
+     "z": 1.9599639845400536,
+     "currentHalfWidth": 17.639675860860482,
+     "totalHands": 3111582,
+     "moreHands": 3101582
+    },
+    "sensitivity": {
+     "volatility": [
+      {
+       "sd": 70,
+       "current": false,
+       "bound": null,
+       "handsForMargin": 1882315,
+       "posteriorMean": 0.6184462111794343,
+       "interval": [
+        -7.823295137779478,
+        7.230999445034338
+       ],
+       "probPositive": 0.6069388348676843,
+       "averageRisk": 0.24419993689807074,
+       "upperRisk": 0.4937216564278981,
+       "requiredBuyIns": 62.68818708437766
+      },
+      {
+       "sd": 90,
+       "current": true,
+       "bound": null,
+       "handsForMargin": 3111582,
+       "posteriorMean": 0.16703365864366213,
+       "interval": [
+        -9.431267935806034,
+        7.324082202161401
+       ],
+       "probPositive": 0.5656525252810978,
+       "averageRisk": 0.3394114043568575,
+       "upperRisk": 0.6519078638228953,
+       "requiredBuyIns": 81.74422336095216
+      },
+      {
+       "sd": 120,
+       "current": false,
+       "bound": null,
+       "handsForMargin": 5531701,
+       "posteriorMean": -0.27814522731252084,
+       "interval": [
+        -10.89247632921483,
+        7.375897886723603
+       ],
+       "probPositive": 0.5312684633038789,
+       "averageRisk": 0.45520438856133955,
+       "upperRisk": 0.7536944215206051,
+       "requiredBuyIns": 107.15301443720632
+      },
+      {
+       "sd": 150,
+       "current": false,
+       "bound": null,
+       "handsForMargin": 8643283,
+       "posteriorMean": -0.5467632042998947,
+       "interval": [
+        -11.720181918917927,
+        7.3932666726140095
+       ],
+       "probPositive": 0.5127855217979982,
+       "averageRisk": 0.543700721839889,
+       "upperRisk": 0.7967192053832757,
+       "requiredBuyIns": 129.9426506000556
+      }
+     ],
+     "prior": [
+      {
+       "prior": "none",
+       "label": "None (results only)",
+       "current": false,
+       "dataWeight": 1,
+       "posteriorMean": 3,
+       "interval": [
+        -14.639675860860482,
+        20.639675860860482
+       ],
+       "probPositive": 0.6305586537204085,
+       "averageRisk": 0.31260156051943255,
+       "upperRisk": 0.8252037470379319,
+       "requiredBuyIns": 97.26718584441403
+      },
+      {
+       "prior": "weak",
+       "label": "Weakly informative, Normal(0, 10²)",
+       "current": false,
+       "dataWeight": 0.5524861878453038,
+       "posteriorMean": 1.6574585635359114,
+       "interval": [
+        -11.45400924553913,
+        14.768926372610952
+       ],
+       "probPositive": 0.5978417538642529,
+       "averageRisk": 0.3266539209049026,
+       "upperRisk": 0.7692370744822901,
+       "requiredBuyIns": 91.57875786083831
+      },
+      {
+       "prior": "skeptical",
+       "label": "Skeptical, Normal(0, 2²)",
+       "current": false,
+       "dataWeight": 0.047058823529411764,
+       "posteriorMean": 0.1411764705882353,
+       "interval": [
+        -3.6854064896809273,
+        3.967759430857398
+       ],
+       "probPositive": 0.5288224963889417,
+       "averageRisk": 0.3091132175901622,
+       "upperRisk": 0.4722519703563247,
+       "requiredBuyIns": 68.82702593090278
+      },
+      {
+       "prior": "regulars",
+       "label": "Regulars, $2/$4 2009: Normal(+2.6, 2.5²)",
+       "current": false,
+       "dataWeight": 0.06930715639831338,
+       "posteriorMean": 2.6686733476777995,
+       "interval": [
+        -1.9751922371519095,
+        7.3125389325075085
+       ],
+       "probPositive": 0.8699860808446224,
+       "averageRisk": 0.1357323977803267,
+       "upperRisk": 0.22389012660764482,
+       "requiredBuyIns": 50.24262391149377
+      },
+      {
+       "prior": "players",
+       "label": "Players with 1,000+ hands, $2/$4 2009 (mixture)",
+       "current": true,
+       "dataWeight": 0.21326682728101215,
+       "posteriorMean": 0.16703365864366213,
+       "interval": [
+        -9.431267935806034,
+        7.324082202161401
+       ],
+       "probPositive": 0.5656525252810978,
+       "averageRisk": 0.3394114043568575,
+       "upperRisk": 0.6519078638228953,
+       "requiredBuyIns": 81.74422336095216
+      }
+     ],
+     "sample": [
+      {
+       "hands": 2500,
+       "multiple": 0.25,
+       "current": false,
+       "posteriorMean": -0.7153696935628362,
+       "interval": [
+        -12.221123882484008,
+        7.399905034306924
+       ],
+       "probPositive": 0.501896347623965,
+       "averageRisk": 0.4005168687714253,
+       "upperRisk": 0.8185969508345636,
+       "requiredBuyIns": 96.54186332646427
+      },
+      {
+       "hands": 10000,
+       "multiple": 1,
+       "current": true,
+       "posteriorMean": 0.16703365864366213,
+       "interval": [
+        -9.431267935806034,
+        7.324082202161401
+       ],
+       "probPositive": 0.5656525252810978,
+       "averageRisk": 0.3394114043568575,
+       "upperRisk": 0.6519078638228953,
+       "requiredBuyIns": 81.74422336095216
+      },
+      {
+       "hands": 40000,
+       "multiple": 4,
+       "current": false,
+       "posteriorMean": 1.407186799710258,
+       "interval": [
+        -4.780655702564178,
+        6.901116962999973
+       ],
+       "probPositive": 0.7047364533877849,
+       "averageRisk": 0.2318041497037951,
+       "upperRisk": 0.3965339919455827,
+       "requiredBuyIns": 63.508143777214045
+      },
+      {
+       "hands": 160000,
+       "multiple": 16,
+       "current": false,
+       "posteriorMean": 2.315739763686574,
+       "interval": [
+        -1.3699755789139343,
+        5.955869038379337
+       ],
+       "probPositive": 0.8937289741011338,
+       "averageRisk": 0.137954627588405,
+       "upperRisk": 0.2158712160561353,
+       "requiredBuyIns": 49.54516781367198
+      }
+     ]
+    },
+    "sources": {
+     "items": [
+      {
+       "id": "winRate",
+       "range": [
+        0.004263712329531904,
+        0.9948642037450242
+       ]
+      },
+      {
+       "id": "volatility",
+       "range": [
+        0.24419993689807074,
+        0.543700721839889
+       ],
+       "values": [
+        70,
+        90,
+        120,
+        150
+       ]
+      },
+      {
+       "id": "prior",
+       "range": [
+        0.1357323977803267,
+        0.3394114043568575
+       ]
+      }
+     ],
+     "widest": "winRate"
+    },
+    "curve": {
+     "bankroll": [
+      0,
+      1.97716195147294,
+      3.95432390294588,
+      5.9314858544188205,
+      7.90864780589176,
+      9.8858097573647,
+      11.862971708837641,
+      13.84013366031058,
+      15.81729561178352,
+      17.79445756325646,
+      19.7716195147294,
+      21.74878146620234,
+      23.725943417675282,
+      25.70310536914822,
+      27.68026732062116,
+      29.6574292720941,
+      31.63459122356704,
+      33.61175317503998,
+      35.58891512651292,
+      37.56607707798586,
+      39.5432390294588,
+      41.52040098093175,
+      43.49756293240468,
+      45.47472488387763,
+      47.451886835350564,
+      49.42904878682351,
+      51.40621073829644,
+      53.383372689769374,
+      55.36053464124232,
+      57.337696592715254,
+      59.3148585441882,
+      61.292020495661134,
+      63.26918244713408,
+      65.24634439860702,
+      67.22350635007996,
+      69.20066830155291,
+      71.17783025302585,
+      73.15499220449878,
+      75.13215415597172,
+      77.10931610744466,
+      79.0864780589176,
+      81.06364001039054,
+      83.0408019618635,
+      85.01796391333643,
+      86.99512586480937,
+      88.97228781628229,
+      90.94944976775525,
+      92.92661171922816,
+      94.90377367070113,
+      96.88093562217405,
+      98.85809757364702,
+      100.83525952511995,
+      102.81242147659287,
+      104.78958342806581,
+      106.76674537953875,
+      108.74390733101171,
+      110.72106928248463,
+      112.69823123395757,
+      114.67539318543051,
+      116.65255513690346,
+      118.6297170883764
+     ],
+     "plugIn": [
+      1,
+      0.8540832434290224,
+      0.7281778507744088,
+      0.6196692619462245,
+      0.5262794277467007,
+      0.44602199724394054,
+      0.37716384481285664,
+      0.31819201961301585,
+      0.2677853257103779,
+      0.22478985104293828,
+      0.1881978598299909,
+      0.15712954739494442,
+      0.1308172300424988,
+      0.10859160674307124,
+      0.08986978491656254,
+      0.0741448104301994,
+      0.06097651172983086,
+      0.04998341622864318,
+      0.04083560972261501,
+      0.03324846943570039,
+      0.026977085083262877,
+      0.021811312981709338,
+      0.017571387893390026,
+      0.014104027677632532,
+      0.01127897646210602,
+      0.0089859400245372,
+      0.007131873241970305,
+      0.005638584324837858,
+      0.004440624436550665,
+      0.003483434446169499,
+      0.0027217231565281703,
+      0.002118053537636647,
+      0.0016416153881284746,
+      0.0012671645319600503,
+      0.0009741101968513779,
+      0.0007457336594597908,
+      0.0005685226089782939,
+      0.00043160699264789277,
+      0.0003262833714087451,
+      0.00024561603302314427,
+      0.0001841042807678709,
+      0.00013740643318202033,
+      0.00010211212845514279,
+      0.00007555552011400573,
+      0.00005566287388613774,
+      0.000040828925509958795,
+      0.00002981713392002362,
+      0.00002167966336413795,
+      0.000015693552822547817,
+      0.00001131008414446578,
+      0.000008114845236237308,
+      0.000005796405909304744,
+      0.000004121886686465762,
+      0.000002918010373419958,
+      0.0000020564880573592596,
+      0.0000014428108702470122,
+      0.000001007701629462677,
+      7.006313159969005e-7,
+      4.849288643350554e-7,
+      3.3411308786217657e-7,
+      2.291564731435254e-7
+     ],
+     "average": [
+      1.0000000000000002,
+      0.9077362678406233,
+      0.8298714740129634,
+      0.7631200472155006,
+      0.7050952425546514,
+      0.6540341582429059,
+      0.608615070419846,
+      0.5678334856116504,
+      0.5309163640297151,
+      0.4972618591203598,
+      0.466396214221624,
+      0.43794246998927644,
+      0.4115975807525871,
+      0.3871154036532771,
+      0.364293947142377,
+      0.34296572618140264,
+      0.32299040877993074,
+      0.30424916973271815,
+      0.286640328179622,
+      0.2700759587774342,
+      0.25447924685706247,
+      0.2397824159488823,
+      0.22592509825113977,
+      0.21285304960869206,
+      0.20051713355229595,
+      0.18887251614888628,
+      0.17787802640027625,
+      0.16749564681790186,
+      0.1576901063955458,
+      0.14842855407984817,
+      0.13968029542219518,
+      0.1314165786954869,
+      0.12361041960481338,
+      0.11623645598320351,
+      0.10927082567068523,
+      0.10269106222398969,
+      0.0964760042692104,
+      0.09060571524755813,
+      0.08506141105898027,
+      0.07982539371442648,
+      0.07488098959219008,
+      0.07021249127887683,
+      0.06580510227878318,
+      0.061644884111177904,
+      0.05771870549514585,
+      0.05401419345607513,
+      0.05051968628498223,
+      0.04722418834861366,
+      0.04411732679068447,
+      0.04118931018772348,
+      0.038430889231198584,
+      0.03583331950445341,
+      0.03338832641168935,
+      0.031088072299302726,
+      0.02892512578950654,
+      0.026892433324068783,
+      0.02498329289360717,
+      0.023191329906262007,
+      0.021510475129574526,
+      0.019934944621609423,
+      0.018459221552169863
+     ],
+     "upper": [
+      1,
+      0.9881884552061355,
+      0.9747490711147899,
+      0.959638175752568,
+      0.9428288395699512,
+      0.9243123265263927,
+      0.9040992370994235,
+      0.8822202974976037,
+      0.8587267580617731,
+      0.8336903742113365,
+      0.8072029548799682,
+      0.7793754755352692,
+      0.7503367646357408,
+      0.7202317822891756,
+      0.6892195155848473,
+      0.6574705626206414,
+      0.6251647473298754,
+      0.5924879606076587,
+      0.559629238249266,
+      0.5267779041999329,
+      0.4941205558011933,
+      0.4618381878286763,
+      0.43010350614807,
+      0.3990784851354819,
+      0.36891221911963523,
+      0.3397391099929067,
+      0.31167742260544623,
+      0.2848282277759471,
+      0.25927474056235733,
+      0.23508204948047445,
+      0.21229722115460753,
+      0.1909497548478269,
+      0.1710523527724405,
+      0.15260196525548045,
+      0.1355810648688814,
+      0.11995910057990503,
+      0.10569408179983054,
+      0.09273424279744485,
+      0.08101974012304135,
+      0.07048433923188555,
+      0.06105705114078236,
+      0.05266368541420868,
+      0.04522829176876547,
+      0.038674468826164876,
+      0.03292652477573095,
+      0.02791048069770236,
+      0.023554912855868117,
+      0.019791635241142733,
+      0.016556227928757737,
+      0.013788420335570928,
+      0.011432341205253327,
+      0.009436649118100778,
+      0.007754558559305425,
+      0.0063437771490340335,
+      0.005166369621324587,
+      0.00418856362946506,
+      0.003380511551158423,
+      0.002716021265352018,
+      0.0021722674676447644,
+      0.0017294935683595779,
+      0.0013707126520679123
+     ]
+    },
+    "model": {
+     "name": "bankroll-posterior",
+     "version": "2026-11-01",
+     "likelihood": "observed win rate ~ Normal(true win rate, (volatility / sqrt(hands / 100))^2), volatility held fixed",
+     "posterior": "Normal-Normal conjugate update; a mixture prior updates each component and reweights them",
+     "risk": "finite-horizon Brownian first passage; average over the posterior in closed form"
+    },
+    "priorSource": {
+     "data": "PartyPoker and Ongame no-limit hold'em, $2/$4, 1–23 July 2009, HandHQ logs",
+     "citation": "Kim (2024), Recording and Describing Poker Hands, arXiv:2312.11753",
+     "url": "https://zenodo.org/doi/10.5281/zenodo.10796885",
+     "license": "CC BY 4.0",
+     "method": "Hierarchical Normal model (empirical Bayes): each player's observed win rate ~ Normal(true win rate, standard error^2), true win rates ~ Normal(mean, sd^2), fitted by maximum likelihood within each volume bracket. Standard errors from each player's own per-hand standard deviation.",
+     "intervals": "95%, resampling players (2,000 bootstrap samples)",
+     "population": "Players with at least 1,000 usable hands at one site in the 23 days; IDs are per site",
+     "fitted": "2026-11-01"
+    }
+   }
+  },
+  {
+   "id": "losing-20k-minus-8-all-players",
+   "input": {
+    "hands": 20000,
+    "winRate": -8,
+    "sd": 100,
+    "prior": "players",
+    "bank": 50,
+    "horizon": 100000,
+    "target": 10,
+    "credibility": 90
+   },
+   "result": {
+    "inputs": {
+     "hands": 20000,
+     "winRate": -8,
+     "sd": 100,
+     "sdSource": "assumed",
+     "prior": "players",
+     "priorLabel": "Players with 1,000+ hands, $2/$4 2009 (mixture)",
+     "priorFromData": true,
+     "bank": 50,
+     "thr": 0,
+     "bbPerBuyIn": 100,
+     "horizon": 100000,
+     "target": 0.1,
+     "credibility": 0.9,
+     "margin": 1,
+     "sampleLevel": 0.95,
+     "sdRange": null,
+     "seMultiplier": 1
+    },
+    "winRate": {
+     "observed": -8,
+     "standardError": 7.071067811865475,
+     "mean": -3.3487140988515445,
+     "sd": 4.76547187067703,
+     "level": 0.95,
+     "interval": [
+      -13.427488113392315,
+      4.583037296681779
+     ],
+     "probPositive": 0.2661189677583383,
+     "dataWeight": 0.4541944430042807,
+     "credible": -9.958855260806036,
+     "components": [
+      {
+       "weight": 0.620009726238113,
+       "mean": -5.4282320842802205,
+       "sd": 4.578943142385493,
+       "group": "1,000–2,499"
+      },
+      {
+       "weight": 0.19464876978170695,
+       "mean": -0.4059287953454373,
+       "sd": 2.439439091686878,
+       "group": "2,500–4,999"
+      },
+      {
+       "weight": 0.10585475932065792,
+       "mean": -0.21942627075994012,
+       "sd": 2.8391421355333337,
+       "group": "5,000–9,999"
+      },
+      {
+       "weight": 0.07948674465952221,
+       "mean": 1.4981547665959642,
+       "sd": 2.3200404156140997,
+       "group": "10,000+"
+      }
+     ]
+    },
+    "risk": {
+     "plugIn": 0.8873363746870886,
+     "average": 0.4359256120029873,
+     "median": 0.35272801180966046,
+     "interval": [
+      0.005796713416901601,
+      0.9980615889591066
+     ],
+     "upper": 0.9652571545281108,
+     "probAtMostTarget": 0.2449111126542395,
+     "targetWinRate": 0.25497136600324666,
+     "target": 0.1,
+     "credibility": 0.9
+    },
+    "bankroll": {
+     "current": {
+      "bb": 5000,
+      "buyIns": 50
+     },
+     "credible": {
+      "bb": 14384.148184609738,
+      "buyIns": 143.84148184609737,
+      "met": false,
+      "moreBuyIns": 93.84148184609738
+     },
+     "average": {
+      "bb": 11441.996158832502,
+      "buyIns": 114.41996158832502,
+      "met": false,
+      "moreBuyIns": 64.41996158832502
+     },
+     "plugIn": {
+      "bb": 12486.360555900137,
+      "buyIns": 124.86360555900137,
+      "met": false,
+      "moreBuyIns": 74.86360555900137
+     }
+    },
+    "sampleSize": {
+     "level": 0.95,
+     "margin": 1,
+     "z": 1.9599639845400536,
+     "currentHalfWidth": 13.859038243496775,
+     "totalHands": 3841459,
+     "moreHands": 3821459
+    },
+    "sensitivity": {
+     "volatility": [
+      {
+       "sd": 70,
+       "current": false,
+       "bound": null,
+       "handsForMargin": 1882315,
+       "posteriorMean": -4.715177131605444,
+       "interval": [
+        -13.132314073749082,
+        2.7806823194127865
+       ],
+       "probPositive": 0.1364028810417621,
+       "averageRisk": 0.5053401250195536,
+       "upperRisk": 0.9951386301842182,
+       "requiredBuyIns": 133.6813233639002
+      },
+      {
+       "sd": 90,
+       "current": false,
+       "bound": null,
+       "handsForMargin": 3111582,
+       "posteriorMean": -3.7176049340202892,
+       "interval": [
+        -13.367273532799071,
+        4.122054914378179
+       ],
+       "probPositive": 0.22992598637588219,
+       "averageRisk": 0.4477947078871877,
+       "upperRisk": 0.9778401870626094,
+       "requiredBuyIns": 140.43872459187386
+      },
+      {
+       "sd": 100,
+       "current": true,
+       "bound": null,
+       "handsForMargin": 3841459,
+       "posteriorMean": -3.3487140988515445,
+       "interval": [
+        -13.427488113392315,
+        4.583037296681779
+       ],
+       "probPositive": 0.2661189677583383,
+       "averageRisk": 0.4359256120029873,
+       "upperRisk": 0.9652571545281108,
+       "requiredBuyIns": 143.84148184609737
+      },
+      {
+       "sd": 120,
+       "current": false,
+       "bound": null,
+       "handsForMargin": 5531701,
+       "posteriorMean": -2.800736295603331,
+       "interval": [
+        -13.493202686796131,
+        5.25547278911763
+       ],
+       "probPositive": 0.3202615607002845,
+       "averageRisk": 0.4325285092370498,
+       "upperRisk": 0.9381862081752195,
+       "requiredBuyIns": 151.0520306039897
+      },
+      {
+       "sd": 150,
+       "current": false,
+       "bound": null,
+       "handsForMargin": 8643283,
+       "posteriorMean": -2.2857113649975065,
+       "interval": [
+        -13.529871743241122,
+        5.892693779759649
+       ],
+       "probPositive": 0.37073881866141384,
+       "averageRisk": 0.4554881738650473,
+       "upperRisk": 0.9035731997511286,
+       "requiredBuyIns": 162.9741545593489
+      }
+     ],
+     "prior": [
+      {
+       "prior": "none",
+       "label": "None (results only)",
+       "current": false,
+       "dataWeight": 1,
+       "posteriorMean": -8,
+       "interval": [
+        -21.859038243496773,
+        5.859038243496773
+       ],
+       "probPositive": 0.1289495263830981,
+       "averageRisk": 0.6955799160405449,
+       "upperRisk": 0.9999705785258886,
+       "requiredBuyIns": 213.59957691829905
+      },
+      {
+       "prior": "weak",
+       "label": "Weakly informative, Normal(0, 10²)",
+       "current": false,
+       "dataWeight": 0.6666666666666666,
+       "posteriorMean": -5.333333333333333,
+       "interval": [
+        -16.649190674095045,
+        5.98252400742838
+       ],
+       "probPositive": 0.17780553468371207,
+       "averageRisk": 0.5789755201908964,
+       "upperRisk": 0.9962363831817282,
+       "requiredBuyIns": 170.95189918529974
+      },
+      {
+       "prior": "skeptical",
+       "label": "Skeptical, Normal(0, 2²)",
+       "current": false,
+       "dataWeight": 0.07407407407407408,
+       "posteriorMean": -0.5925925925925927,
+       "interval": [
+        -4.364545039513164,
+        3.179359854327979
+       ],
+       "probPositive": 0.3790715598616776,
+       "averageRisk": 0.1862253651603951,
+       "upperRisk": 0.3849273722609106,
+       "requiredBuyIns": 78.34160914805456
+      },
+      {
+       "prior": "regulars",
+       "label": "Regulars, $2/$4 2009: Normal(+2.6, 2.5²)",
+       "current": false,
+       "dataWeight": 0.10765175060165691,
+       "posteriorMean": 1.4981547665959642,
+       "interval": [
+        -3.049040890685009,
+        6.045350423876937
+       ],
+       "probPositive": 0.7407778016318174,
+       "averageRisk": 0.08751876970675093,
+       "upperRisk": 0.2212331646839936,
+       "requiredBuyIns": 64.29763762127963
+      },
+      {
+       "prior": "players",
+       "label": "Players with 1,000+ hands, $2/$4 2009 (mixture)",
+       "current": true,
+       "dataWeight": 0.4541944430042807,
+       "posteriorMean": -3.3487140988515445,
+       "interval": [
+        -13.427488113392315,
+        4.583037296681779
+       ],
+       "probPositive": 0.2661189677583383,
+       "averageRisk": 0.4359256120029873,
+       "upperRisk": 0.9652571545281108,
+       "requiredBuyIns": 143.84148184609737
+      }
+     ],
+     "sample": [
+      {
+       "hands": 5000,
+       "multiple": 0.25,
+       "current": false,
+       "posteriorMean": -1.8353941531850642,
+       "interval": [
+        -13.541991119272886,
+        6.472429347513314
+       ],
+       "probPositive": 0.41392254606747436,
+       "averageRisk": 0.33494710200969324,
+       "upperRisk": 0.9428963915385632,
+       "requiredBuyIns": 136.4097781750326
+      },
+      {
+       "hands": 20000,
+       "multiple": 1,
+       "current": true,
+       "posteriorMean": -3.3487140988515445,
+       "interval": [
+        -13.427488113392315,
+        4.583037296681779
+       ],
+       "probPositive": 0.2661189677583383,
+       "averageRisk": 0.4359256120029873,
+       "upperRisk": 0.9652571545281108,
+       "requiredBuyIns": 143.84148184609737
+      },
+      {
+       "hands": 80000,
+       "multiple": 4,
+       "current": false,
+       "posteriorMean": -6.061636627121164,
+       "interval": [
+        -12.575750606023789,
+        0.46981856340836003
+       ],
+       "probPositive": 0.03604104778348149,
+       "averageRisk": 0.6662432180628687,
+       "upperRisk": 0.9748494210251961,
+       "requiredBuyIns": 148.32905499490883
+      },
+      {
+       "hands": 320000,
+       "multiple": 16,
+       "current": false,
+       "posteriorMean": -7.5469933483463,
+       "interval": [
+        -10.937565936320741,
+        -4.069417484172577
+       ],
+       "probPositive": 0.000010345263334643106,
+       "averageRisk": 0.828247236295496,
+       "upperRisk": 0.9607138811946606,
+       "requiredBuyIns": 142.06773300272187
+      }
+     ]
+    },
+    "sources": {
+     "items": [
+      {
+       "id": "winRate",
+       "range": [
+        0.005796713416901601,
+        0.9980615889591066
+       ]
+      },
+      {
+       "id": "volatility",
+       "range": [
+        0.4325285092370498,
+        0.5053401250195536
+       ],
+       "values": [
+        70,
+        90,
+        100,
+        120,
+        150
+       ]
+      },
+      {
+       "id": "prior",
+       "range": [
+        0.08751876970675093,
+        0.6955799160405449
+       ]
+      }
+     ],
+     "widest": "winRate"
+    },
+    "curve": {
+     "bankroll": [
+      0,
+      3.1165654399987766,
+      6.233130879997553,
+      9.349696319996331,
+      12.466261759995106,
+      15.582827199993883,
+      18.699392639992663,
+      21.815958079991436,
+      24.932523519990212,
+      28.049088959988993,
+      31.165654399987766,
+      34.282219839986546,
+      37.398785279985326,
+      40.5153507199841,
+      43.63191615998287,
+      46.74848159998165,
+      49.865047039980425,
+      52.981612479979205,
+      56.098177919977985,
+      59.21474335997676,
+      62.33130879997553,
+      65.44787423997431,
+      68.56443967997309,
+      71.68100511997186,
+      74.79757055997065,
+      77.91413599996942,
+      81.0307014399682,
+      84.14726687996698,
+      87.26383231996574,
+      90.38039775996452,
+      93.4969631999633,
+      96.61352863996208,
+      99.73009407996085,
+      102.84665951995963,
+      105.96322495995841,
+      109.07979039995718,
+      112.19635583995597,
+      115.31292127995474,
+      118.42948671995352,
+      121.54605215995228,
+      124.66261759995106,
+      127.77918303994984,
+      130.89574847994862,
+      134.01231391994742,
+      137.12887935994618,
+      140.24544479994495,
+      143.36201023994371,
+      146.4785756799425,
+      149.5951411199413,
+      152.71170655994007,
+      155.82827199993883,
+      158.94483743993763,
+      162.0614028799364,
+      165.17796831993516,
+      168.29453375993396,
+      171.41109919993272,
+      174.5276646399315,
+      177.64423007993028,
+      180.76079551992905,
+      183.87736095992784,
+      186.9939263999266
+     ],
+     "plugIn": [
+      1,
+      0.9995398919554215,
+      0.9988334790339765,
+      0.9977997533306496,
+      0.9963407874618605,
+      0.9943405744384493,
+      0.9916644391622271,
+      0.9881592040234866,
+      0.983654283419449,
+      0.9779638585690136,
+      0.9708902432841717,
+      0.9622284932911598,
+      0.9517722379000277,
+      0.9393206267965482,
+      0.924686191817198,
+      0.9077033307054888,
+      0.8882370350958846,
+      0.8661914168294319,
+      0.8415175432815682,
+      0.8142200804923679,
+      0.7843622671644276,
+      0.7520688046602468,
+      0.717526345814122,
+      0.6809813916340489,
+      0.6427355457104776,
+      0.603138204685633,
+      0.562576939150801,
+      0.521466703073547,
+      0.4802365931738548,
+      0.43931700137006896,
+      0.39912647637407384,
+      0.3600591639125304,
+      0.32247362559288095,
+      0.286683483523139,
+      0.25295026019237143,
+      0.2214786513101799,
+      0.1924143174184345,
+      0.16584412862602088,
+      0.14179865984642256,
+      0.12025662144087858,
+      0.10115082871960752,
+      0.08437526651150744,
+      0.0697927919628825,
+      0.05724303701542545,
+      0.04655011653193795,
+      0.0375298121479941,
+      0.029995978261837954,
+      0.02376599780170679,
+      0.018665194889767193,
+      0.014530183798361964,
+      0.011211194691937027,
+      0.008573464176775927,
+      0.006497811767166823,
+      0.00488054246091825,
+      0.0036328221608486816,
+      0.002679668832590523,
+      0.001958690561736193,
+      0.001418684637767878,
+      0.0010181918489499944,
+      0.0007240793837088734,
+      0.000510205728538922
+     ],
+     "average": [
+      1,
+      0.9450631044594937,
+      0.8956370912779794,
+      0.8504467076382966,
+      0.8085801835188372,
+      0.7693798046482859,
+      0.7323678969515725,
+      0.6971957191554395,
+      0.6636076365125919,
+      0.6314156210241296,
+      0.6004808765497124,
+      0.5707004697354315,
+      0.541997535872199,
+      0.5143140755493621,
+      0.4876056525213407,
+      0.4618375001127581,
+      0.4369816768019907,
+      0.4130150027997381,
+      0.3899176422665937,
+      0.36767213636990687,
+      0.34626253581864813,
+      0.3256740186096383,
+      0.30589259822301473,
+      0.2869049058105611,
+      0.26869804436645695,
+      0.25125948155378497,
+      0.2345769583056694,
+      0.21863839848905448,
+      0.20343181130313998,
+      0.18894518300520205,
+      0.17516635823900453,
+      0.16208291385847123,
+      0.14968202983893658,
+      0.1379503627856769,
+      0.12687392781514772,
+      0.11643799432575203,
+      0.10662700051546531,
+      0.09742449056033443,
+      0.08881307724883834,
+      0.08077443166879283,
+      0.07328930034862094,
+      0.06633754913116847,
+      0.05989823205785815,
+      0.05394968270065165,
+      0.04846962472134964,
+      0.043435297971488436,
+      0.038823596169668476,
+      0.03461121209560815,
+      0.030774786303703096,
+      0.027291055560596068,
+      0.02413699752563272,
+      0.021289968593300405,
+      0.01872783227633058,
+      0.01642907600211559,
+      0.014372914700812424,
+      0.012539380061328223,
+      0.010909394804942093,
+      0.00946483176272984,
+      0.0081885579326969,
+      0.0070644640292612864,
+      0.006077480318065163
+     ],
+     "upper": [
+      1,
+      0.9999402085628437,
+      0.9998389599855722,
+      0.9996774433118198,
+      0.9994305635720366,
+      0.999065498908038,
+      0.998540124894467,
+      0.997801357498905,
+      0.9967834892493002,
+      0.9954066175578435,
+      0.9935752878918918,
+      0.9911774951866705,
+      0.9880842017826057,
+      0.9841495362917712,
+      0.979211832317609,
+      0.9730956464961742,
+      0.9656148603607122,
+      0.9565769197214917,
+      0.9457881997685088,
+      0.9330604068001273,
+      0.9182178429147552,
+      0.901105274260629,
+      0.881596063744973,
+      0.8596001632384181,
+      0.8350715158748713,
+      0.8080144026430253,
+      0.7784882838682075,
+      0.7466107375645804,
+      0.7125581818310682,
+      0.676564182062254,
+      0.6389152743770132,
+      0.5999443627515519,
+      0.5600218576754069,
+      0.5195454617462721,
+      0.4789282034713077,
+      0.4385857309466203,
+      0.3989240483768264,
+      0.3603273420936111,
+      0.323147058319155,
+      0.2876926466304317,
+      0.25422433560520175,
+      0.22294819303834085,
+      0.19401358246628114,
+      0.16751298310318644,
+      0.143484006475337,
+      0.12191333044544492,
+      0.10274218693025979,
+      0.08587298721114368,
+      0.0711766490208425,
+      0.05850020047748656,
+      0.04767427305651865,
+      0.03852015314203057,
+      0.03085613239588434,
+      0.024502974195752085,
+      0.01928839020014243,
+      0.015050492196287402,
+      0.011640245622266392,
+      0.008922999871090232,
+      0.006779205496558683,
+      0.005104449872290789,
+      0.0038089518798523595
+     ]
+    },
+    "model": {
+     "name": "bankroll-posterior",
+     "version": "2026-11-01",
+     "likelihood": "observed win rate ~ Normal(true win rate, (volatility / sqrt(hands / 100))^2), volatility held fixed",
+     "posterior": "Normal-Normal conjugate update; a mixture prior updates each component and reweights them",
+     "risk": "finite-horizon Brownian first passage; average over the posterior in closed form"
+    },
+    "priorSource": {
+     "data": "PartyPoker and Ongame no-limit hold'em, $2/$4, 1–23 July 2009, HandHQ logs",
+     "citation": "Kim (2024), Recording and Describing Poker Hands, arXiv:2312.11753",
+     "url": "https://zenodo.org/doi/10.5281/zenodo.10796885",
+     "license": "CC BY 4.0",
+     "method": "Hierarchical Normal model (empirical Bayes): each player's observed win rate ~ Normal(true win rate, standard error^2), true win rates ~ Normal(mean, sd^2), fitted by maximum likelihood within each volume bracket. Standard errors from each player's own per-hand standard deviation.",
+     "intervals": "95%, resampling players (2,000 bootstrap samples)",
+     "population": "Players with at least 1,000 usable hands at one site in the 23 days; IDs are per site",
+     "fitted": "2026-11-01"
+    }
+   }
+  },
+  {
+   "id": "1m-hands-plus-2-all-players-threshold",
+   "input": {
+    "hands": 1000000,
+    "winRate": 2,
+    "sd": 85,
+    "prior": "players",
+    "bank": 40,
+    "thr": 5,
+    "horizon": 500000,
+    "target": 2,
+    "credibility": 95
+   },
+   "result": {
+    "inputs": {
+     "hands": 1000000,
+     "winRate": 2,
+     "sd": 85,
+     "sdSource": "assumed",
+     "prior": "players",
+     "priorLabel": "Players with 1,000+ hands, $2/$4 2009 (mixture)",
+     "priorFromData": true,
+     "bank": 40,
+     "thr": 5,
+     "bbPerBuyIn": 100,
+     "horizon": 500000,
+     "target": 0.02,
+     "credibility": 0.95,
+     "margin": 1,
+     "sampleLevel": 0.95,
+     "sdRange": null,
+     "seMultiplier": 1
+    },
+    "winRate": {
+     "observed": 2,
+     "standardError": 0.85,
+     "mean": 1.93355398857032,
+     "sd": 0.8215602301345227,
+     "level": 0.95,
+     "interval": [
+      0.321862024777989,
+      3.5425939857944986
+     ],
+     "probPositive": 0.9906209138278265,
+     "dataWeight": 0.9342023691884983,
+     "credible": 0.5814632813451236,
+     "components": [
+      {
+       "weight": 0.25572474957961966,
+       "mean": 1.8907145260619158,
+       "sd": 0.8416215453155609,
+       "group": "1,000–2,499"
+      },
+      {
+       "weight": 0.3333040662844382,
+       "mean": 1.8666564312443756,
+       "sd": 0.8078910062330303,
+       "group": "2,500–4,999"
+      },
+      {
+       "weight": 0.18713941031980308,
+       "mean": 1.9493743043793854,
+       "sd": 0.8197433695189684,
+       "group": "5,000–9,999"
+      },
+      {
+       "weight": 0.22383177381613906,
+       "mean": 2.0688865806116157,
+       "sd": 0.8032537147701793,
+       "group": "10,000+"
+      }
+     ]
+    },
+    "risk": {
+     "plugIn": 0.13625309329871002,
+     "average": 0.17330097127574295,
+     "median": 0.1443726985169959,
+     "interval": [
+      0.0322302243650323,
+      0.4733090836442714
+     ],
+     "upper": 0.4054917096937794,
+     "probAtMostTarget": 0.005195425956540042,
+     "targetWinRate": 4.0370216234560985,
+     "target": 0.02,
+     "credibility": 0.95
+    },
+    "bankroll": {
+     "current": {
+      "bb": 4000,
+      "buyIns": 40
+     },
+     "credible": {
+      "bb": 12028.345939530172,
+      "buyIns": 120.28345939530172,
+      "met": false,
+      "moreBuyIns": 80.28345939530172
+     },
+     "average": {
+      "bb": 8810.677934511055,
+      "buyIns": 88.10677934511055,
+      "met": false,
+      "moreBuyIns": 48.10677934511055
+     },
+     "plugIn": {
+      "bb": 7206.823942150531,
+      "buyIns": 72.06823942150531,
+      "met": false,
+      "moreBuyIns": 32.06823942150531
+     }
+    },
+    "sampleSize": {
+     "level": 0.95,
+     "margin": 1,
+     "z": 1.9599639845400536,
+     "currentHalfWidth": 1.6659693868590455,
+     "totalHands": 2775454,
+     "moreHands": 1775454
+    },
+    "sensitivity": {
+     "volatility": [
+      {
+       "sd": 70,
+       "current": false,
+       "bound": null,
+       "handsForMargin": 1882315,
+       "posteriorMean": 1.9542534101129014,
+       "interval": [
+        0.613465270370782,
+        3.2938012180051923
+       ],
+       "probPositive": 0.9978489755581332,
+       "averageRisk": 0.08156395122176584,
+       "upperRisk": 0.23001591588283124,
+       "requiredBuyIns": 86.29721077324389
+      },
+      {
+       "sd": 85,
+       "current": true,
+       "bound": null,
+       "handsForMargin": 2775454,
+       "posteriorMean": 1.93355398857032,
+       "interval": [
+        0.321862024777989,
+        3.5425939857944986
+       ],
+       "probPositive": 0.9906209138278265,
+       "averageRisk": 0.17330097127574295,
+       "upperRisk": 0.4054917096937794,
+       "requiredBuyIns": 120.28345939530172
+      },
+      {
+       "sd": 90,
+       "current": false,
+       "bound": null,
+       "handsForMargin": 3111582,
+       "posteriorMean": 1.9259183412859375,
+       "interval": [
+        0.225716956494909,
+        3.6228065768456146
+       ],
+       "probPositive": 0.9867687403169223,
+       "averageRisk": 0.205949157668194,
+       "upperRisk": 0.45701374035245346,
+       "requiredBuyIns": 131.8061405663374
+      },
+      {
+       "sd": 120,
+       "current": false,
+       "bound": null,
+       "handsForMargin": 5531701,
+       "posteriorMean": 1.8732149091298544,
+       "interval": [
+        -0.3379416827313869,
+        4.074312909007634
+       ],
+       "probPositive": 0.9517608517560663,
+       "averageRisk": 0.3871438822005655,
+       "upperRisk": 0.6767394580178931,
+       "requiredBuyIns": 201.54105909916947
+      },
+      {
+       "sd": 150,
+       "current": false,
+       "bound": null,
+       "handsForMargin": 8643283,
+       "posteriorMean": 1.810545445721403,
+       "interval": [
+        -0.8765670758069821,
+        4.47419492253608
+       ],
+       "probPositive": 0.9076950876789931,
+       "averageRisk": 0.5231708584502739,
+       "upperRisk": 0.7899948946427712,
+       "requiredBuyIns": 271.1330086894534
+      }
+     ],
+     "prior": [
+      {
+       "prior": "none",
+       "label": "None (results only)",
+       "current": false,
+       "dataWeight": 1,
+       "posteriorMean": 2,
+       "interval": [
+        0.3340306131409545,
+        3.6659693868590457
+       ],
+       "probPositive": 0.9906872105789689,
+       "averageRisk": 0.1664030266342812,
+       "upperRisk": 0.4003183068119263,
+       "requiredBuyIns": 119.4577785853974
+      },
+      {
+       "prior": "weak",
+       "label": "Weakly informative, Normal(0, 10²)",
+       "current": false,
+       "dataWeight": 0.9928268261808434,
+       "posteriorMean": 1.9856536523616868,
+       "interval": [
+        0.3256701632880381,
+        3.6456371414353352
+       ],
+       "probPositive": 0.9904733623695281,
+       "averageRisk": 0.16806278521132637,
+       "upperRisk": 0.40267790418190924,
+       "requiredBuyIns": 119.8345607060322
+      },
+      {
+       "prior": "skeptical",
+       "label": "Skeptical, Normal(0, 2²)",
+       "current": false,
+       "dataWeight": 0.8470089994706194,
+       "posteriorMean": 1.6940179989412387,
+       "interval": [
+        0.16077486300955157,
+        3.2272611348729257
+       ],
+       "probPositive": 0.9848247013716254,
+       "averageRisk": 0.20507050910743896,
+       "upperRisk": 0.45063492225443613,
+       "requiredBuyIns": 127.43880996741107
+      },
+      {
+       "prior": "regulars",
+       "label": "Regulars, $2/$4 2009: Normal(+2.6, 2.5²)",
+       "current": false,
+       "dataWeight": 0.8930332599198512,
+       "posteriorMean": 2.0688865806116157,
+       "interval": [
+        0.49453822921405544,
+        3.643234932009176
+       ],
+       "probPositive": 0.9949971574995355,
+       "averageRisk": 0.15477208043143423,
+       "upperRisk": 0.36421669306186555,
+       "requiredBuyIns": 113.64582621038495
+      },
+      {
+       "prior": "players",
+       "label": "Players with 1,000+ hands, $2/$4 2009 (mixture)",
+       "current": true,
+       "dataWeight": 0.9342023691884983,
+       "posteriorMean": 1.93355398857032,
+       "interval": [
+        0.321862024777989,
+        3.5425939857944986
+       ],
+       "probPositive": 0.9906209138278265,
+       "averageRisk": 0.17330097127574295,
+       "upperRisk": 0.4054917096937794,
+       "requiredBuyIns": 120.28345939530172
+      }
+     ],
+     "sample": [
+      {
+       "hands": 250000,
+       "multiple": 0.25,
+       "current": false,
+       "posteriorMean": 1.7643960020649638,
+       "interval": [
+        -1.2216054625572468,
+        4.712938239115282
+       ],
+       "probPositive": 0.8786138136307692,
+       "averageRisk": 0.24653730616806416,
+       "upperRisk": 0.7481171708509803,
+       "requiredBuyIns": 177.73532821088997
+      },
+      {
+       "hands": 1000000,
+       "multiple": 1,
+       "current": true,
+       "posteriorMean": 1.93355398857032,
+       "interval": [
+        0.321862024777989,
+        3.5425939857944986
+       ],
+       "probPositive": 0.9906209138278265,
+       "averageRisk": 0.17330097127574295,
+       "upperRisk": 0.4054917096937794,
+       "requiredBuyIns": 120.28345939530172
+      },
+      {
+       "hands": 4000000,
+       "multiple": 4,
+       "current": false,
+       "posteriorMean": 1.9827828712355193,
+       "interval": [
+        1.1570672404353946,
+        2.8083258754228364
+       ],
+       "probPositive": 0.9999987292962058,
+       "averageRisk": 0.1462749070832272,
+       "upperRisk": 0.24615761992139223,
+       "requiredBuyIns": 93.5826731011804
+      },
+      {
+       "hands": 16000000,
+       "multiple": 16,
+       "current": false,
+       "posteriorMean": 1.995655158709745,
+       "interval": [
+        1.5800903738904295,
+        2.4112090325533395
+       ],
+       "probPositive": 1,
+       "averageRisk": 0.13880472881932715,
+       "upperRisk": 0.18454521152601872,
+       "requiredBuyIns": 82.01150980691128
+      }
+     ]
+    },
+    "sources": {
+     "items": [
+      {
+       "id": "winRate",
+       "range": [
+        0.0322302243650323,
+        0.4733090836442714
+       ]
+      },
+      {
+       "id": "volatility",
+       "range": [
+        0.08156395122176584,
+        0.5231708584502739
+       ],
+       "values": [
+        70,
+        85,
+        90,
+        120,
+        150
+       ]
+      },
+      {
+       "id": "prior",
+       "range": [
+        0.15477208043143423,
+        0.20507050910743896
+       ]
+      }
+     ],
+     "widest": "volatility"
+    },
+    "curve": {
+     "bankroll": [
+      5,
+      7.497808286898204,
+      9.995616573796408,
+      12.493424860694613,
+      14.991233147592816,
+      17.489041434491018,
+      19.986849721389223,
+      22.48465800828743,
+      24.98246629518563,
+      27.480274582083833,
+      29.97808286898204,
+      32.47589115588025,
+      34.97369944277845,
+      37.47150772967665,
+      39.96931601657486,
+      42.467124303473064,
+      44.96493259037126,
+      47.46274087726947,
+      49.960549164167666,
+      52.45835745106588,
+      54.95616573796408,
+      57.45397402486228,
+      59.95178231176049,
+      62.449590598658695,
+      64.9473988855569,
+      67.4452071724551,
+      69.9430154593533,
+      72.44082374625151,
+      74.93863203314972,
+      77.43644032004792,
+      79.93424860694613,
+      82.4320568938443,
+      84.92986518074252,
+      87.42767346764074,
+      89.92548175453894,
+      92.42329004143714,
+      94.92109832833533,
+      97.41890661523355,
+      99.91671490213176,
+      102.41452318902996,
+      104.91233147592816,
+      107.41013976282636,
+      109.90794804972457,
+      112.40575633662279,
+      114.90356462352098,
+      117.4013729104192,
+      119.89918119731739,
+      122.39698948421557,
+      124.89479777111379,
+      127.39260605801199,
+      129.8904143449102,
+      132.3882226318084,
+      134.8860309187066,
+      137.38383920560483,
+      139.88164749250302,
+      142.3794557794012,
+      144.87726406629943,
+      147.37507235319762,
+      149.87288064009584,
+      152.37068892699403,
+      154.86849721389225
+     ],
+     "plugIn": [
+      1,
+      0.8693012065306744,
+      0.7554948093109404,
+      0.6564098901565847,
+      0.5701543028211093,
+      0.4950787920287537,
+      0.4297457449150365,
+      0.37290197573275824,
+      0.323455022161151,
+      0.28045249902934716,
+      0.24306411402353742,
+      0.21056600111444906,
+      0.18232707199739792,
+      0.1577971246340962,
+      0.13649648176658494,
+      0.11800696168623485,
+      0.10196400914843631,
+      0.08804983661741735,
+      0.07598744543334619,
+      0.06553541338812413,
+      0.05648334990169175,
+      0.04864793279004081,
+      0.041869451755830865,
+      0.03600879342716866,
+      0.03094481120669915,
+      0.026572030534558498,
+      0.022798646556830907,
+      0.019544776749524574,
+      0.01674093588437985,
+      0.014326704930793747,
+      0.012249569149433296,
+      0.010463903818798808,
+      0.008930088807981736,
+      0.007613735621011974,
+      0.0064850126373969955,
+      0.005518056100524264,
+      0.004690455996026931,
+      0.003982807346881164,
+      0.003378318657765938,
+      0.0028624702914213664,
+      0.002422716474687257,
+      0.0020482259723608284,
+      0.0017296546805164099,
+      0.0014589485484206527,
+      0.0012291716509733005,
+      0.001034356481232494,
+      0.000869373584505173,
+      0.0007298181745681264,
+      0.0006119115709660079,
+      0.000512415570695099,
+      0.0004285581055809715,
+      0.0003579687438135025,
+      0.0002986227748333268,
+      0.0002487927746960706,
+      0.00020700668720520732,
+      0.00017201157706943875,
+      0.0001427423173036593,
+      0.00011829456594715129,
+      0.0000979014685581402,
+      0.00008091359428435394,
+      0.00006678167584520038
+     ],
+     "average": [
+      1,
+      0.8720901437428634,
+      0.762241611525476,
+      0.6676508566869854,
+      0.5859845925896211,
+      0.5152960171099674,
+      0.4539567010719364,
+      0.40060108847849174,
+      0.3540811732986668,
+      0.31342940559226873,
+      0.27782826664897753,
+      0.24658526018491173,
+      0.2191123113357749,
+      0.19490876039177213,
+      0.17354729426014515,
+      0.15466228361721956,
+      0.13794009398662066,
+      0.12311101955235063,
+      0.1099425533014329,
+      0.09823375913417712,
+      0.08781056881119106,
+      0.07852183515682593,
+      0.07023598091950242,
+      0.06283820821904679,
+      0.05622813366674352,
+      0.05031777879074855,
+      0.04502987221646939,
+      0.040296403171215515,
+      0.03605739016692205,
+      0.032259830120106865,
+      0.02885679932148548,
+      0.02580668254758727,
+      0.02307251055471652,
+      0.02062138942996494,
+      0.018424007944474557,
+      0.01645421126998427,
+      0.01468863126426698,
+      0.01310636507012918,
+      0.011688695059104286,
+      0.01041884422792165,
+      0.009281762058648415,
+      0.008263936611242728,
+      0.007353229254234096,
+      0.0065387289753281175,
+      0.0058106236654848036,
+      0.005160086151198657,
+      0.004579173071758113,
+      0.004060734970705443,
+      0.0035983362014992094,
+      0.003186183443126906,
+      0.0028190617876659987,
+      0.0024922775031835523,
+      0.002201606695781554,
+      0.001943249197296719,
+      0.001713787092886434,
+      0.0015101473777786403,
+      0.0013295682967701312,
+      0.0011695689752579677,
+      0.0010279219980591351,
+      0.0009026286331771964,
+      0.0007918964329933088
+     ],
+     "upper": [
+      1,
+      0.9440742237029505,
+      0.8904011857800058,
+      0.8389387954034251,
+      0.7896442596512658,
+      0.7424739644203013,
+      0.6973833816116873,
+      0.6543270018492622,
+      0.6132582917301016,
+      0.5741296743390271,
+      0.5368925314778146,
+      0.5014972257568113,
+      0.46789316952077503,
+      0.4360289073943039,
+      0.40585214043098816,
+      0.3773098113585508,
+      0.35034825434763217,
+      0.32491330581072997,
+      0.3009504267973456,
+      0.2784048338167064,
+      0.2572216354479884,
+      0.23734597246170053,
+      0.21872315943999102,
+      0.20129882608951166,
+      0.18501905661400153,
+      0.16983052567061024,
+      0.15568062958332024,
+      0.14251761163350393,
+      0.13029068039388622,
+      0.11895012021845941,
+      0.10844739314673932,
+      0.09873523162509082,
+      0.08976772158933324,
+      0.08150037559003329,
+      0.07389019577337894,
+      0.0668957266550152,
+      0.06047709774053944,
+      0.05459605615354925,
+      0.04921598952942837,
+      0.04430193951988052,
+      0.0398206063292075,
+      0.035740344768293235,
+      0.03203115236620831,
+      0.028664650122448093,
+      0.02561405651538616,
+      0.02285415540500424,
+      0.02036125848091503,
+      0.018113162910775898,
+      0.016089104840130115,
+      0.014269709383291624,
+      0.012636937726929557,
+      0.01117403194435807,
+      0.009865458090037226,
+      0.008696848111287073,
+      0.0076549410785215965,
+      0.00672752419721038,
+      0.005903374025010792,
+      0.005172198276776301,
+      0.00452457855906958,
+      0.003951914334966943,
+      0.0034463683798415254
+     ]
+    },
+    "model": {
+     "name": "bankroll-posterior",
+     "version": "2026-11-01",
+     "likelihood": "observed win rate ~ Normal(true win rate, (volatility / sqrt(hands / 100))^2), volatility held fixed",
+     "posterior": "Normal-Normal conjugate update; a mixture prior updates each component and reweights them",
+     "risk": "finite-horizon Brownian first passage; average over the posterior in closed form"
+    },
+    "priorSource": {
+     "data": "PartyPoker and Ongame no-limit hold'em, $2/$4, 1–23 July 2009, HandHQ logs",
+     "citation": "Kim (2024), Recording and Describing Poker Hands, arXiv:2312.11753",
+     "url": "https://zenodo.org/doi/10.5281/zenodo.10796885",
+     "license": "CC BY 4.0",
+     "method": "Hierarchical Normal model (empirical Bayes): each player's observed win rate ~ Normal(true win rate, standard error^2), true win rates ~ Normal(mean, sd^2), fitted by maximum likelihood within each volume bracket. Standard errors from each player's own per-hand standard deviation.",
+     "intervals": "95%, resampling players (2,000 bootstrap samples)",
+     "population": "Players with at least 1,000 usable hands at one site in the 23 days; IDs are per site",
+     "fitted": "2026-11-01"
     }
    }
   }

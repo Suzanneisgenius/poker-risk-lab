@@ -29,6 +29,12 @@ const CASES = [
   // standard error widened for a win rate that drifts.
   { id: "sessions-estimated-volatility", hands: 180412, winRate: 3.86, sd: 90.4, sdSource: "sessions", sdRange: [82.9, 99.6], prior: "weak", bank: 40, horizon: 200000 },
   { id: "sessions-widened-for-drift", hands: 180412, winRate: 3.86, sd: 90.4, sdSource: "sessions", sdRange: [82.9, 99.6], seMultiplier: 1.88, prior: "none", bank: 40, horizon: 200000 },
+  // Priors estimated from real hands (configs/population_priors.json): the
+  // regulars' Normal and the all-players mixture, as in case study chapter 2.
+  { id: "case-study-10k-plus-3-regulars", hands: 10000, winRate: 3, sd: 90, prior: "regulars", bank: 30, horizon: 100000 },
+  { id: "case-study-10k-plus-3-all-players", hands: 10000, winRate: 3, sd: 90, prior: "players", bank: 30, horizon: 100000 },
+  { id: "losing-20k-minus-8-all-players", hands: 20000, winRate: -8, sd: 100, prior: "players", bank: 50, horizon: 100000, target: 10, credibility: 90 },
+  { id: "1m-hands-plus-2-all-players-threshold", hands: 1000000, winRate: 2, sd: 85, prior: "players", bank: 40, thr: 5, horizon: 500000, target: 2, credibility: 95 },
 ];
 
 const cases = CASES.map(({ id, ...input }) => ({ id, input, result: computeBankrollPosterior(input) }));

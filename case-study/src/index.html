@@ -77,9 +77,18 @@
     <button type="button" data-value="1000000" aria-pressed="false">1M</button>
   </div>
   <div class="chart" id="chart-uncertainty" role="img" aria-labelledby="uncertainty-explain"></div>
+  <div class="legend" aria-hidden="true"><span><i style="background:var(--accent)"></i>Simulation noise</span><span><i style="background:var(--warn)"></i>Win rate, prior N(0, 10²)</span><span><i style="background:var(--pos)"></i>Win rate, priors from real hands</span><span><i style="border-left:2px dashed var(--text);border-radius:0;width:2px"></i>Risk at exactly +3 bb/100</span></div>
   <p class="explain" id="uncertainty-explain" aria-live="polite"></p>
-  <p class="method"><strong>Method.</strong> Suppose a player's results so far average exactly +3 bb/100. The win rate's standard error is 90 / √(hands / 100); a Normal posterior (weakly informative prior, N(0, 10²)) is pushed through the risk formula with {{u_draws}} draws. Simulation intervals are binomial 95% ranges at the same win rate.</p>
-  <p class="limits"><strong>Limits.</strong> The swing size is treated as known, and results are assumed independent; both make these intervals narrower than a full analysis would.</p>
+  <p class="explain"><strong>Which players are you compared with?</strong> The prior N(0, {{p_weak_sd}}²) is an assumption. Real hands put true win rates much closer together. In {{p_data}}, the {{p_reg_players}} regulars with 10,000+ hands had true win rates averaging <strong>{{p_reg_mean}} bb/100</strong> with a standard deviation of <strong>{{p_reg_sd}}</strong> (at most {{p_reg_sd_hi}}). Across all {{p_all_players}} players with 1,000+ hands they averaged {{p_all_mean}}, with a standard deviation of {{p_all_sd}}. The assumed {{p_weak_sd}} is about {{p_sd_ratio}} times the regulars' spread, and a centre of 0 is not neutral: the average seat lost the rake, {{p_rake_lo}} to {{p_rake_hi}} bb/100.</p>
+  <div class="table-wrap"><table>
+    <caption>Risk of ruin after a history averaging +3 bb/100, under each prior: median, with the 95% interval below it</caption>
+    <thead><tr><th scope="col">Hands</th><th scope="col" class="num">N(0, {{p_weak_sd}}²)</th><th scope="col" class="num">Regulars</th><th scope="col" class="num">All players</th></tr></thead>
+    <tbody id="table-priors"></tbody>
+  </table></div>
+  <p class="explain">With few hands, the comparison group moves the answer more than the results do: after {{h_few}} hands the median risk is <strong>{{h_few_reg}}</strong> with the regulars' prior and <strong>{{h_few_all}}</strong> with the all-players prior ({{h_few_ref}} with N(0, {{p_weak_sd}}²)). By {{h_many}} hands the three agree, at {{h_many_lo}} to {{h_many_hi}} average risk.</p>
+  <p class="explain"><strong>Only the regulars' estimate is clean.</strong> Players with fewer hands did {{p_drop_lo}} to {{p_drop_hi}} bb/100 worse in the later half of their hands than in the earlier half, as if many stopped after a losing run; the regulars changed by {{p_reg_drop}} ({{p_reg_drop_ci}}). Predicting each regular's later half from the earlier half, the fitted prior cut the squared error to {{p_pred_fit}} of using the earlier half as it is (N(0, {{p_weak_sd}}²): {{p_pred_weak}}), and its 95% intervals covered {{p_cov_fit}} of results (N(0, {{p_weak_sd}}²): {{p_cov_weak}}, too wide). <a href="../#bankroll">Try both priors on your own results</a>: the Bankroll Risk tool computes them on the server as you change the inputs.</p>
+  <p class="method"><strong>Method.</strong> Suppose a player's results so far average exactly +3 bb/100. The win rate's standard error is 90 / √(hands / 100); a Normal posterior (weakly informative prior, N(0, 10²)) is pushed through the risk formula with {{u_draws}} draws. Simulation intervals are binomial 95% ranges at the same win rate. The priors from real hands come from a hierarchical Normal model fitted within four groups of players by hands played. The all-players prior is the mixture of the groups, weighted by players; its posterior reweights them by how well each predicts the observed win rate. Every prior uses the same draws and seed. Real-hand intervals: {{p_intervals}}. The live tool computes the same posteriors in closed form, and <code>checks/bankroll-posterior-python/</code> compares them with this code.</p>
+  <p class="limits"><strong>Limits.</strong> The swing size is treated as known, and results are assumed independent; both make these intervals narrower than a full analysis would. The priors from real hands describe one stake on two sites in July 2009, after rake. “Regulars” means 10,000+ hands in those 23 days, not over a career. The all-players centre depends on when players stopped, so treat it as approximate. The fit was made outside this repository, which records only its summary numbers (<code>{{p_file}}</code>). Data: <a href="{{p_url}}">PHH dataset</a>, {{p_citation}}, {{p_license}}.</p>
 </section>
 
 <section aria-labelledby="q3">
@@ -134,7 +143,7 @@
 <section aria-labelledby="not">
   <h2 id="not">What this does not show</h2>
   <ul>
-    <li>That any of these models describes real poker results in full. Agreement with the exact value checks the arithmetic, not the model; the real-hand fit in section 3 checks only the shape and carry-over of 100-hand results, for one stake in 2009.</li>
+    <li>That any of these models describes real poker results in full. Agreement with the exact value checks the arithmetic, not the model; the real-hand fits cover one stake on two sites in 2009: section 3 checks only the shape and carry-over of 100-hand results, and section 2 how far apart players' win rates are.</li>
     <li>A recommended bankroll. Every number is a conditional model estimate, not financial or gambling advice.</li>
     <li>Anything about the Preflop ranges, which are illustrative demonstration data.</li>
   </ul>
@@ -178,18 +187,27 @@
   const u = DATA.uncertainty;
   const history = Object.fromEntries(u.history.map((h) => [String(h.hands), h]));
   const signed = (v) => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(1);
+  const priorName = { reference: "Prior N(0, 10²)", regulars: "Regulars' prior", players: "All players' prior" };
+  const priorPhrase = { regulars: "the regulars' prior", players: "the all-players prior" };
+  const priorAt = (p, hands) => p.history.find((x) => x.hands === hands);
   choice(document.getElementById("ctl-history"), (value) => {
     const h = history[value];
     const rows = u.monte_carlo.map((m) => ({ label: `Simulation, ${num(m.paths)} paths`, lo: m.interval[0], hi: m.interval[1], kind: "noise", text: `±${(m.halfwidth * 100).toFixed(2)} pts` }));
-    rows.push({ label: `Win rate known from ${num(h.hands)} hands`, lo: h.risk_interval[0], hi: h.risk_interval[1], kind: "parameter", text: `${pct(h.risk_interval[0])}–${pct(h.risk_interval[1])}` });
+    for (const p of u.priors) {
+      const x = priorAt(p, h.hands);
+      rows.push({ label: priorName[p.id], lo: x.risk_interval[0], hi: x.risk_interval[1], kind: p.id === "reference" ? "parameter" : "fitted", text: `${pct(x.risk_interval[0])}–${pct(x.risk_interval[1])}` });
+    }
     intervals(document.getElementById("chart-uncertainty"), rows,
       { lo: 0, hi: 1, step: 0.2, format: (v) => Math.round(v * 100) + "%", title: "Risk of ruin, 95% interval", ref: u.plug_in_risk });
     const mc = u.monte_carlo;
     document.getElementById("uncertainty-explain").textContent =
       `After ${num(h.hands)} hands averaging +3 bb/100, the true win rate could plausibly be anywhere from ${signed(h.winrate_interval[0])} to ${signed(h.winrate_interval[1])} bb/100, ` +
       `so the risk could be anywhere from ${pct(h.risk_interval[0])} to ${pct(h.risk_interval[1])}. ` +
-      `Simulation error at ${num(mc[0].paths)} paths is ±${(mc[0].halfwidth * 100).toFixed(2)} points; ${num(mc[mc.length - 1].paths / mc[0].paths)} times more paths shrinks it to ±${(mc[mc.length - 1].halfwidth * 100).toFixed(2)}, but leaves the win-rate interval exactly where it is.`;
+      `Simulation error at ${num(mc[0].paths)} paths is ±${(mc[0].halfwidth * 100).toFixed(2)} points; ${num(mc[mc.length - 1].paths / mc[0].paths)} times more paths shrinks it to ±${(mc[mc.length - 1].halfwidth * 100).toFixed(2)}, but leaves the win-rate interval exactly where it is. ` +
+      u.priors.filter((p) => p.id !== "reference").map((p) => { const x = priorAt(p, h.hands); return `With ${priorPhrase[p.id]} from real hands, the win rate is ${signed(x.winrate_interval[0])} to ${signed(x.winrate_interval[1])} and the risk ${pct(x.risk_interval[0])} to ${pct(x.risk_interval[1])}.`; }).join(" ");
   });
+  document.getElementById("table-priors").innerHTML = u.history.map((h) => `<tr><th scope="row">${num(h.hands)}</th>` +
+    u.priors.map((p) => { const x = priorAt(p, h.hands); return `<td class="num">${pct(x.median_risk)}<span class="cell-sub">${pct(x.risk_interval[0])}–${pct(x.risk_interval[1])}</span></td>`; }).join("") + "</tr>").join("");
 }
 
 // 3. Model assumptions

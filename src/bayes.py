@@ -17,15 +17,22 @@ ruin-risk function:
 approximated with deterministic posterior draws. It reports the plug-in risk and
 the uncertainty-integrated risk side by side, with credible intervals and
 threshold-exceedance probabilities.
+
+A prior can also be a mixture of Normals (one per group of players); the
+posterior is then a mixture of the groups' Normal posteriors, reweighted by how
+well each group predicts the observed edge. Priors estimated from real hands
+are in configs/population_priors.json (``population_priors``).
 """
 
 from __future__ import annotations
 
+import json
+import os
 from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
-from scipy import stats
+from scipy import optimize, special, stats
 
 from src.validation import brownian_ruin_finite
 
@@ -57,6 +64,44 @@ def flat_prior() -> Prior:
 
 
 @dataclass(frozen=True)
+class MixturePrior:
+    """Mixture of Normal priors: weight_k * N(mean_k, std_k^2), weights summing to 1."""
+    weights: tuple[float, ...]
+    means: tuple[float, ...]
+    stds: tuple[float, ...]
+    name: str = "mixture"
+
+    @property
+    def mean(self) -> float:
+        return float(np.dot(self.weights, self.means))
+
+    @property
+    def std(self) -> float:
+        w, m, s = (np.asarray(a, dtype=float) for a in (self.weights, self.means, self.stds))
+        return float(np.sqrt(w @ (s ** 2 + m ** 2) - self.mean ** 2))
+
+
+POPULATION_PRIORS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                 "configs", "population_priors.json")
+
+
+def population_priors(path: str = POPULATION_PRIORS) -> dict[str, Prior | MixturePrior]:
+    """Priors estimated from real hands, by id. Mixture weights are each group's share of players."""
+    with open(path) as f:
+        spec = json.load(f)["priors"]
+    out: dict[str, Prior | MixturePrior] = {}
+    for key, p in spec.items():
+        if p["kind"] == "normal":
+            out[key] = Prior(p["mean"], p["sd"], key)
+        else:
+            players = [c["players"] for c in p["components"]]
+            out[key] = MixturePrior(tuple(n / sum(players) for n in players),
+                                    tuple(c["mean"] for c in p["components"]),
+                                    tuple(c["sd"] for c in p["components"]), key)
+    return out
+
+
+@dataclass(frozen=True)
 class Posterior:
     mean: float
     std: float
@@ -69,6 +114,63 @@ class Posterior:
 
     def draws(self, n: int, seed: int = 0) -> np.ndarray:
         return np.random.default_rng(seed).normal(self.mean, self.std, size=n)
+
+
+@dataclass(frozen=True)
+class MixturePosterior:
+    """Mixture of Normal posteriors; same interface as ``Posterior``."""
+    weights: tuple[float, ...]
+    means: tuple[float, ...]
+    stds: tuple[float, ...]
+    prior: MixturePrior
+
+    @property
+    def mean(self) -> float:
+        return float(np.dot(self.weights, self.means))
+
+    @property
+    def std(self) -> float:
+        w, m, s = (np.asarray(a, dtype=float) for a in (self.weights, self.means, self.stds))
+        return float(np.sqrt(w @ (s ** 2 + m ** 2) - self.mean ** 2))
+
+    @property
+    def prob_positive(self) -> float:
+        return 1.0 - self.cdf(0.0)
+
+    def cdf(self, x: float) -> float:
+        return float(np.dot(self.weights, stats.norm.cdf(x, self.means, self.stds)))
+
+    def quantile(self, q: float) -> float:
+        lo = min(m - 12 * s for m, s in zip(self.means, self.stds))
+        hi = max(m + 12 * s for m, s in zip(self.means, self.stds))
+        return float(optimize.brentq(lambda x: self.cdf(x) - q, lo, hi, xtol=1e-12, rtol=1e-14, maxiter=500))
+
+    def credible_interval(self, level: float = 0.95) -> tuple[float, float]:
+        return (self.quantile(0.5 - level / 2), self.quantile(0.5 + level / 2))
+
+    def draws(self, n: int, seed: int = 0) -> np.ndarray:
+        rng = np.random.default_rng(seed)
+        k = rng.choice(len(self.weights), size=n, p=self.weights)
+        return rng.normal(np.asarray(self.means)[k], np.asarray(self.stds)[k])
+
+
+def mixture_posterior(mu_hat: float, se: float, prior: MixturePrior) -> MixturePosterior:
+    """Each component's conjugate update, reweighted by w_k N(mu_hat; m_k, t_k^2 + se^2)."""
+    if se <= 0:
+        raise ValueError("Standard error must be positive.")
+    m, t = np.asarray(prior.means, dtype=float), np.asarray(prior.stds, dtype=float)
+    log_w = np.log(prior.weights) + stats.norm.logpdf(mu_hat, m, np.sqrt(t ** 2 + se ** 2))
+    weights = np.exp(log_w - special.logsumexp(log_w))
+    var = 1.0 / (1.0 / t ** 2 + 1.0 / se ** 2)
+    means = var * (m / t ** 2 + mu_hat / se ** 2)
+    return MixturePosterior(tuple(weights.tolist()), tuple(means.tolist()), tuple(np.sqrt(var).tolist()), prior)
+
+
+def update(mu_hat: float, se: float, prior: Prior | MixturePrior) -> Posterior | MixturePosterior:
+    """Posterior for mu under either kind of prior."""
+    if isinstance(prior, MixturePrior):
+        return mixture_posterior(mu_hat, se, prior)
+    return normal_normal_posterior(mu_hat, se, prior)
 
 
 def normal_normal_posterior(
@@ -109,7 +211,7 @@ def conditional_ruin_risk(
 
 
 def posterior_risk(
-    posterior: Posterior,
+    posterior: Posterior | MixturePosterior,
     std_bb100: float,
     bankroll_bb: float,
     n_hands: int,

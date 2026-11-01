@@ -92,6 +92,18 @@ function render(inputs) {
   const worst = assumptions.diffusion_checks.reduce((w, c) =>
     (c.dependent.formula - c.dependent.simulated > w.dependent.formula - w.dependent.simulated ? c : w));
   const signed = (v, d) => (v < 0 ? "−" : "") + Math.abs(v).toFixed(d);
+  const plus = (v, d) => (v > 0 ? "+" : "") + signed(v, d);
+  // Chapter 2 under priors estimated from real hands.
+  const pop = uncertainty.population_priors;
+  const priorBy = Object.fromEntries(uncertainty.priors.map((p) => [p.id, p]));
+  const priorAt = (id, hands) => priorBy[id].history.find((h) => h.hands === hands);
+  const fewHands = uncertainty.history[0].hands, manyHands = uncertainty.history.at(-1).hands;
+  const longRun = uncertainty.priors.map((p) => priorAt(p.id, manyHands).expected_risk);
+  const halves = Object.entries(pop.checks.later_minus_earlier_half).filter(([group]) => group !== "about");
+  const otherDrops = halves.filter(([group]) => group !== "10,000+").map(([, h]) => -h.difference);
+  const regularsHalves = pop.checks.later_minus_earlier_half["10,000+"];
+  const rake = Object.values(pop.checks.rake_bb100_per_seat);
+  const prediction = pop.checks.regulars_prediction;
   const risks = assumptions.rows.map((r) => r.risk);
   const calcPlus3 = calc.single_seed.rows.find((r) => r.winrate_bb100 === 3);
   const multiPlus3 = calc.multi_seed.rows.find((r) => r.winrate_bb100 === 3);
@@ -113,6 +125,38 @@ function render(inputs) {
     u50_lo: pct(historyBy[50000].risk_interval[0]),
     u50_hi: pct(historyBy[50000].risk_interval[1]),
     u_draws: int(uncertainty.provenance.parameters.config.n_draws),
+    p_data: pop.source.data,
+    p_citation: pop.source.citation,
+    p_url: pop.source.url,
+    p_license: pop.source.license,
+    p_intervals: pop.source.intervals,
+    p_file: pop.file,
+    p_weak_sd: String(priorBy.reference.sd),
+    p_reg_players: int(pop.priors.regulars.players),
+    p_reg_mean: plus(pop.priors.regulars.mean, 1),
+    p_reg_sd: pop.priors.regulars.sd.toFixed(1),
+    p_reg_sd_hi: pop.priors.regulars.sd_ci[1].toFixed(1),
+    p_sd_ratio: String(Math.round(priorBy.reference.sd / pop.priors.regulars.sd)),
+    p_all_players: int(pop.priors.players.players),
+    p_all_mean: plus(pop.priors.players.mean, 1),
+    p_all_sd: pop.priors.players.sd.toFixed(1),
+    p_rake_lo: Math.min(...rake).toFixed(1),
+    p_rake_hi: Math.max(...rake).toFixed(1),
+    p_drop_lo: Math.min(...otherDrops).toFixed(1),
+    p_drop_hi: Math.max(...otherDrops).toFixed(1),
+    p_reg_drop: signed(regularsHalves.difference, 1),
+    p_reg_drop_ci: `${signed(regularsHalves.difference_ci[0], 1)} to ${plus(regularsHalves.difference_ci[1], 1)}`,
+    p_pred_fit: prediction.fitted_prior.squared_error_vs_raw.toFixed(2),
+    p_pred_weak: prediction.weak_prior.squared_error_vs_raw.toFixed(2),
+    p_cov_fit: pct(prediction.fitted_prior.coverage95),
+    p_cov_weak: pct(prediction.weak_prior.coverage95),
+    h_few: int(fewHands),
+    h_few_ref: pct(priorAt("reference", fewHands).median_risk),
+    h_few_reg: pct(priorAt("regulars", fewHands).median_risk),
+    h_few_all: pct(priorAt("players", fewHands).median_risk),
+    h_many: int(manyHands),
+    h_many_lo: pct(Math.min(...longRun)),
+    h_many_hi: pct(Math.max(...longRun)),
     a_min: pct(Math.min(...risks)),
     a_max: pct(Math.max(...risks)),
     a_base: pct(modelBy.gaussian.risk),
@@ -234,6 +278,7 @@ function render(inputs) {
     p_numbers: int(posterior.comparisons),
     p_prob: tenPower(Math.max(...posterior.cases.map((c) => c.largest_difference.probability)), 1),
     p_bank: tenPower(Math.max(...posterior.cases.map((c) => c.largest_difference.bankroll_relative)), 1),
+    p_mix: tenPower(Math.max(...posterior.cases.map((c) => c.largest_difference.mixture_quantile ?? 0)), 1),
     p_se: Math.max(...posterior.cases.map((c) => Math.abs(c.posterior_draws.difference_in_se))).toFixed(2),
     p_draws: int(posterior.cases[0].posterior_draws.draws),
     p_text: ok.posterior ? "within tolerance in every case" : `outside tolerance in ${posterior.cases.filter((c) => !c.passed).length} of ${posterior.cases.length} cases`,
@@ -300,7 +345,9 @@ function render(inputs) {
     index: {
       overview: { rows: overview.rows, reference_risk: overview.reference_risk },
       noise: { exact_risk: noise.exact_risk, rows: noise.rows.map(({ paths, estimates, theory_95, min, max, wilson_intervals_covering_exact }) => ({ paths, estimates, theory_95, min, max, wilson_intervals_covering_exact })) },
-      uncertainty: { plug_in_risk: uncertainty.plug_in_risk, history: uncertainty.history, monte_carlo: uncertainty.monte_carlo },
+      uncertainty: { plug_in_risk: uncertainty.plug_in_risk, history: uncertainty.history, monte_carlo: uncertainty.monte_carlo,
+        priors: uncertainty.priors.map(({ id, history }) => ({ id, history: history.map(({ hands, winrate_interval, risk_interval, median_risk, expected_risk }) =>
+          ({ hands, winrate_interval, risk_interval, median_risk, expected_risk })) })) },
       assumptions: Object.fromEntries([["rows", assumptions.rows], ["matched", assumptions.variance_matched], ["fitted", assumptions.fitted.rows]].map(([key, rows]) =>
         [key, rows.map(({ model, label, risk, wilson95, risk_vs_baseline, per_step_sd_bb, total_sd_ratio, long_run_sd_bb100, diffusion_risk }) =>
           ({ model, label, risk, wilson95, risk_vs_baseline, per_step_sd_bb, total_sd_ratio, long_run_sd_bb100, diffusion_risk }))])),

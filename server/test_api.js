@@ -155,7 +155,8 @@ async function main() {
     assert.equal(posteriorResult.model.name, "bankroll-posterior");
     assert.equal(posteriorResult.inputs.sdSource, "assumed");
     assert.ok(posteriorResult.bankroll.credible.buyIns > posteriorResult.bankroll.plugIn.buyIns);
-    assert.equal(posteriorResult.sensitivity.prior.length, 3);
+    assert.equal(posteriorResult.sensitivity.prior.length, 5);
+    assert.equal(posteriorResult.priorSource.license, "CC BY 4.0");
     assert.equal(posteriorResult.curve.bankroll.length, 61);
     const badResults = await post("/api/bankroll-posterior", { hands: 40000, winRate: 4, sd: 90, bank: 10, thr: 10, horizon: 100000 });
     assert.equal(badResults.status, 400);
