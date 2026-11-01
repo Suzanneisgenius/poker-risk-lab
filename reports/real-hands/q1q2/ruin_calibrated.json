@@ -1,0 +1,85 @@
+{
+ "scenario": {
+  "winrate_bb100": 3.0,
+  "std_bb100": 90.0,
+  "bankroll_bb": 3000.0,
+  "n_hands": 100000,
+  "ruin_threshold_bb": 0.0,
+  "n_paths": 40000,
+  "seed": 20240601,
+  "step_hands": 100
+ },
+ "runs": [
+  {
+   "label": "Normal (case study baseline)",
+   "model": "gaussian",
+   "params": {},
+   "risk_of_ruin": 0.070475,
+   "mc_se": 0.0012797292133006107,
+   "p95_max_drawdown": 4018.5755958705304
+  },
+  {
+   "label": "t, df 3 (case study)",
+   "model": "student_t",
+   "params": {
+    "df": 3.0
+   },
+   "risk_of_ruin": 0.064425,
+   "mc_se": 0.0012275424572596256,
+   "p95_max_drawdown": 3924.740781803876
+  },
+  {
+   "label": "t, df 7 (data, likelihood fit)",
+   "model": "student_t",
+   "params": {
+    "df": 7.0
+   },
+   "risk_of_ruin": 0.06725,
+   "mc_se": 0.0012522723096435534,
+   "p95_max_drawdown": 3998.8248909002855
+  },
+  {
+   "label": "t, df 10 (data, kurtosis)",
+   "model": "student_t",
+   "params": {
+    "df": 10.0
+   },
+   "risk_of_ruin": 0.069,
+   "mc_se": 0.0012672706893162172,
+   "p95_max_drawdown": 3966.745089897735
+  },
+  {
+   "label": "AR(1), phi 0.3 (case study)",
+   "model": "ar1",
+   "params": {
+    "phi": 0.3
+   },
+   "risk_of_ruin": 0.202525,
+   "mc_se": 0.002009406780464075,
+   "p95_max_drawdown": 5263.272770528724
+  },
+  {
+   "label": "AR(1), phi 0.01 (data, upper end)",
+   "model": "ar1",
+   "params": {
+    "phi": 0.01
+   },
+   "risk_of_ruin": 0.073375,
+   "mc_se": 0.0013037552432780472,
+   "p95_max_drawdown": 4050.4321292430895
+  },
+  {
+   "label": "Regimes (case study)",
+   "model": "regime_switching",
+   "params": {
+    "p_stay_normal": 0.98,
+    "p_stay_adverse": 0.9,
+    "mu_adverse": -5.0,
+    "vol_mult": 1.6
+   },
+   "risk_of_ruin": 0.11655,
+   "mc_se": 0.001604416541145098,
+   "p95_max_drawdown": 4575.218309420492
+  }
+ ]
+}

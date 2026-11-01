@@ -1,5 +1,5 @@
 {
-  "about": "Priors for the true win rate (bb/100, net of rake) estimated from real hands. Read by the live calculation (server/bankroll_posterior.js) and the research code (src/bayes.py, case study chapter 2). The fit was made outside this repository; only these summary numbers are recorded here.",
+  "about": "Priors for the true win rate (bb/100, net of rake) estimated from real hands. Read by the live calculation (server/bankroll_posterior.js) and the research code (src/bayes.py, case study chapter 2). Copied from reports/real-hands/q3/results.json, made by research/real-hands/analyze_q3.py; tests/test_real_hands.py checks the copy. The hands themselves are not in this repository.",
   "source": {
     "data": "PartyPoker and Ongame no-limit hold'em, $2/$4, 1–23 July 2009, HandHQ logs",
     "citation": "Kim (2024), Recording and Describing Poker Hands, arXiv:2312.11753",

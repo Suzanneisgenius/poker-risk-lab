@@ -1,0 +1,3 @@
+# Extra packages for the real-hand analyses (research/real-hands).
+-r ../../requirements-research.txt
+pyarrow>=15

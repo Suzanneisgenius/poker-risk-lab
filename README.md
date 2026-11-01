@@ -154,6 +154,12 @@ provenance are in [`reports/case-study/`](reports/case-study/). The older
 `reports/figures/` outputs predate the bridge correction and are not the current
 case-study results.
 
+Settings fitted to real hand histories come from the scripts in
+[`research/real-hands/`](research/real-hands/), with saved aggregate results in
+[`reports/real-hands/`](reports/real-hands/). The hands (PHH dataset, about
+1.3 GB) are downloaded separately and never committed; the folder's README has
+the commands.
+
 Run the automated checks:
 
 ```bash
@@ -197,3 +203,6 @@ not guarantees or financial or gambling advice.
 Project software and documentation are available under the [MIT License](LICENSE),
 copyright 2026 Xinrui Song. Third-party components retain their own copyright
 and license notices, including the vendored [Chart.js license](dashboard/vendor/Chart.js-LICENSE.md).
+The aggregate results in [`reports/real-hands/`](reports/real-hands/) are derived
+from the PHH dataset and keep its CC BY 4.0 license; that folder's README gives
+the attribution.

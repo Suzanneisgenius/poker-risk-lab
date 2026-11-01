@@ -57,6 +57,29 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-11-01 — The real-hand fitting code is in the repository
+
+- `research/real-hands/` holds the scripts behind every number taken from real
+  hands:
+  - `fetch_data.py` downloads the PHH dataset subset at its pinned commit;
+  - `build_tables.py` does the hand-by-hand accounting;
+  - `analyze_q1q2.py` fits tails and carry-over (case study §3);
+  - `analyze_q3.py` fits the win-rate priors (case study §2 and the live tool);
+  - two figure scripts and `ruin_calibrated.py`.
+  Its README gives the commands, the data source and the limits.
+- `reports/real-hands/` saves their aggregate results and figures (CC BY 4.0,
+  attributed). The hands and the tables built from them stay outside the
+  repository, and `.gitignore` now excludes `*.phhs`, `*.parquet` and `/data/`.
+- Rerun inside the repository, both analyses reproduce the earlier results
+  exactly; only provenance differs. `build_tables.py` is byte-identical to the
+  script that built the tables, as its recorded sha256 shows.
+- `tests/test_real_hands.py` checks that the numbers copied into
+  `configs/case_study/assumptions.yaml` and `configs/population_priors.json`
+  match the saved results, and that those results came from the scripts in
+  this folder.
+- The case study, methodology and README now point to these scripts instead of
+  saying the fit was made outside the repository.
+
 ## 2026-11-01 — Priors for the win rate estimated from real hands
 
 - Bankroll Risk (live, computed on the server) offers two new priors for the

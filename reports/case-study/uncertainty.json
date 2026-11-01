@@ -301,7 +301,7 @@
   ],
   "population_priors": {
     "file": "configs/population_priors.json",
-    "sha256": "396fdfb593500047d95c187781005e4388ddbb230af2ff2ad5d40132ea73231c",
+    "sha256": "af0bc52039b72b9201489fbf23fa4e49a229a21cb57ef9ccca96dfbf5eda02df",
     "source": {
       "data": "PartyPoker and Ongame no-limit hold'em, $2/$4, 1\u201323 July 2009, HandHQ logs",
       "citation": "Kim (2024), Recording and Describing Poker Hands, arXiv:2312.11753",
@@ -471,9 +471,9 @@
     }
   },
   "provenance": {
-    "timestamp_utc": "2026-11-01T05:57:09+00:00",
-    "git_commit": "137b7f2",
-    "code_changed_since_commit": false,
+    "timestamp_utc": "2026-11-01T06:23:12+00:00",
+    "git_commit": "02acd8a",
+    "code_changed_since_commit": true,
     "platform": "macOS-26.6.2-arm64-arm-64bit",
     "packages": {
       "python": "3.12.14",
@@ -520,7 +520,7 @@
         "risk": "finite-horizon Brownian formula per posterior draw (no simulation noise)",
         "posterior": "Normal-Normal conjugate update, standard deviation held fixed; a mixture prior updates each component and reweights them",
         "monte_carlo_interval": "binomial 95% interval at the plug-in risk",
-        "population_priors": "configs/population_priors.json (sha256 396fdfb59350)"
+        "population_priors": "configs/population_priors.json (sha256 af0bc52039b7)"
       }
     }
   }

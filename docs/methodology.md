@@ -208,9 +208,9 @@ intervals, and threshold-exceedance probabilities — always displaying the
 plug-in and uncertainty-integrated numbers **side by side**.
 
 **Priors estimated from real hands.** The default prior is an assumption.
-`configs/population_priors.json` records two priors fitted outside this
-repository to PartyPoker and Ongame \$2/\$4 hands from July 2009 (PHH dataset,
-CC BY 4.0), with a hierarchical Normal model $\hat\mu_i \sim \mathcal{N}(\mu_i, s_i^2)$,
+`configs/population_priors.json` records two priors fitted to PartyPoker and
+Ongame \$2/\$4 hands from July 2009 (PHH dataset, CC BY 4.0) by
+`research/real-hands/analyze_q3.py`, with a hierarchical Normal model $\hat\mu_i \sim \mathcal{N}(\mu_i, s_i^2)$,
 $\mu_i \sim \mathcal{N}(m, \tau^2)$ fitted within four groups of players by hands
 played. Regulars (10,000+ hands in the 23 days) give $\mathcal{N}(2.64, 2.46^2)$;
 all players with 1,000+ hands give a four-component mixture with mean −1.18 and

@@ -28,8 +28,9 @@ spread_paths: 4000           # unabsorbed paths used to measure how much the 100
 # of dependence itself rather than of a wider total.
 variance_matched: [ar1, regime_switching]
 
-# Settings fitted to real hands. The fit was made outside this repository from
-# public data; only these summary numbers are recorded here. Within each
+# Settings fitted to real hands, copied from reports/real-hands/q1q2/results.json
+# (research/real-hands/analyze_q1q2.py; tests/test_real_hands.py checks the
+# copy). The hands themselves are not in this repository. Within each
 # player, 100-hand blocks were standardized by the player's own mean and SD,
 # so the numbers describe the shape and dependence of one player's results.
 fitted:
