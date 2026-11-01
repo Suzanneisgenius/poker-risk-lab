@@ -20,7 +20,7 @@ from typing import Any
 import numpy as np
 
 from src.bayes import (
-    Prior, empirical_prior, normal_normal_posterior, posterior_risk,
+    Prior, flat_prior, normal_normal_posterior, posterior_risk,
     skeptical_prior, weakly_informative_prior,
 )
 from src.experiments._provenance import provenance
@@ -35,8 +35,8 @@ def _prior_from_cfg(pc: dict[str, Any]) -> Prior:
         return skeptical_prior(pc.get("std", 2.0))
     if kind == "weakly-informative":
         return weakly_informative_prior(pc.get("std", 10.0))
-    if kind == "empirical":
-        return empirical_prior()
+    if kind == "flat":
+        return flat_prior()
     return Prior(pc.get("mean", 0.0), pc.get("std", 5.0), "custom")
 
 

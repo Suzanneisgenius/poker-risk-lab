@@ -11,12 +11,18 @@ baseline. That way differences in ruin risk isolate *higher moments* (heavy
 tails, shocks) or *serial dependence* (regime clustering, autocorrelation) rather
 than a trivial change in edge or volatility.
 
+The same per-step variance is not the same variance of the total: dependence
+between steps widens the total (``total_variance``). ``variance_matched_sigma``
+gives the per-step sigma that matches the total instead, which separates the
+effect of dependence from the effect of a wider total.
+
 None of these alternatives is claimed to be the true poker-generating process.
 They are controlled model-risk scenarios.
 """
 
 from __future__ import annotations
 
+import inspect
 from typing import Any, Callable
 
 import numpy as np
@@ -134,6 +140,80 @@ MODELS: dict[str, Callable] = {
     "ar1": ar1,
     "regime_switching": regime_switching,
 }
+
+
+# ---------------------------------------------------------------------------
+# Long-run variance: how much the total over all steps varies
+# ---------------------------------------------------------------------------
+
+
+def _defaults(model: Callable) -> dict[str, Any]:
+    return {k: p.default for k, p in inspect.signature(model).parameters.items()
+            if p.default is not inspect.Parameter.empty}
+
+
+def _decaying_cross(w: np.ndarray, r: float) -> float:
+    """sum over j < k of w_j w_k r^(k-j), in one pass."""
+    carry = total = 0.0
+    for k in range(1, w.size):
+        carry = r * (carry + w[k - 1])
+        total += w[k] * carry
+    return total
+
+
+def total_variance(model_key: str, sizes: np.ndarray, winrate_bb100: float,
+                   std_bb100: float, **params) -> float:
+    """Exact variance (bb^2) of the sum of all increments, as simulated.
+
+    With independent steps this is sigma^2 * hands / 100 whatever their shape.
+    AR(1) adds the cross terms phi^|j-k|. Regime switching adds its wider
+    adverse-regime steps and its drift, which persists between steps with
+    correlation lambda^|j-k|, lambda = p_stay_normal + p_stay_adverse - 1.
+    Both start from their stationary distribution, as the simulations do.
+    """
+    p = {**_defaults(MODELS[model_key]), **params}
+    w = np.sqrt(sizes / 100.0)
+    if model_key == "ar1":
+        unit = float(np.sum(w ** 2)) + 2.0 * _decaying_cross(w, p["phi"])
+        return std_bb100 ** 2 * unit
+    if model_key == "regime_switching":
+        pi_adverse = (1 - p["p_stay_normal"]) / ((1 - p["p_stay_normal"]) + (1 - p["p_stay_adverse"]))
+        pi_normal = 1 - pi_adverse
+        mu_normal = (winrate_bb100 - pi_adverse * p["mu_adverse"]) / pi_normal
+        lam = p["p_stay_normal"] + p["p_stay_adverse"] - 1
+        h = sizes / 100.0
+        vol = std_bb100 ** 2 * (pi_normal + pi_adverse * p["vol_mult"] ** 2) * float(np.sum(h))
+        drift_var = pi_adverse * pi_normal * (mu_normal - p["mu_adverse"]) ** 2
+        return vol + drift_var * (float(np.sum(h ** 2)) + 2.0 * _decaying_cross(h, lam))
+    return std_bb100 ** 2 * float(np.sum(w ** 2))
+
+
+def long_run_sd(model_key: str, sizes: np.ndarray, winrate_bb100: float,
+                std_bb100: float, **params) -> float:
+    """Standard deviation per 100 hands implied by the total's variance.
+
+    Equal to ``std_bb100`` for independent steps; it is the sigma a Brownian
+    motion needs to vary over the whole horizon as much as the model does.
+    """
+    var = total_variance(model_key, sizes, winrate_bb100, std_bb100, **params)
+    return float(np.sqrt(var / (np.sum(sizes) / 100.0)))
+
+
+def variance_matched_sigma(model_key: str, sizes: np.ndarray, winrate_bb100: float,
+                           std_bb100: float, **params) -> float:
+    """Per-step sigma at which the model's total varies exactly as much as
+    independent Normal steps with ``std_bb100`` do.
+
+    Every model's total variance is sigma^2 * A + D, where D (regime switching
+    only) comes from the drift moving between regimes and does not scale with
+    sigma.
+    """
+    target = std_bb100 ** 2 * float(np.sum(sizes)) / 100.0
+    d = total_variance(model_key, sizes, winrate_bb100, 0.0, **params)
+    a = (total_variance(model_key, sizes, winrate_bb100, std_bb100, **params) - d) / std_bb100 ** 2
+    if target <= d:
+        raise ValueError("The drift alone varies more than the target; no sigma matches it.")
+    return float(np.sqrt((target - d) / a))
 
 
 # ---------------------------------------------------------------------------

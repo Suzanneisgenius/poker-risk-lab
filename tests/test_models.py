@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from scipy import stats
 
-from src.models import MODELS, run_model
+from src.models import MODELS, long_run_sd, run_model, total_variance, variance_matched_sigma
 
 SIZES = np.array([100.0] * 400)   # 400 steps of 100 hands
 MU, SIGMA = 2.0, 90.0
@@ -75,3 +75,45 @@ def test_dependence_raises_ruin_vs_gaussian():
     a = run_model("ar1", MU, SIGMA, 1500.0, 100000, n_paths=8000, seed=3,
                   params={"phi": 0.4})
     assert a["risk_of_ruin"] > g["risk_of_ruin"]
+
+
+@pytest.mark.parametrize("key, params", [
+    ("gaussian", {}),
+    ("student_t", {"df": 4.0}),
+    ("ar1", {"phi": 0.4}),
+    ("regime_switching", {"p_stay_normal": 0.98, "p_stay_adverse": 0.90, "mu_adverse": -5.0, "vol_mult": 1.6}),
+])
+def test_total_variance_matches_simulated_totals(key, params):
+    incr, _ = _increments(key, n_paths=12000, seed=7, **params)
+    # 12,000 totals give the variance to about 1.3% (one standard error).
+    assert incr.sum(axis=1).var() == pytest.approx(total_variance(key, SIZES, MU, SIGMA, **params), rel=0.05)
+
+
+def test_total_variance_with_a_partial_last_step():
+    sizes = np.array([100.0] * 10 + [40.0])
+    assert total_variance("gaussian", sizes, MU, SIGMA) == pytest.approx(SIGMA ** 2 * 10.4)
+    # phi = 0 is independent steps.
+    assert total_variance("ar1", sizes, MU, SIGMA, phi=0.0) == pytest.approx(SIGMA ** 2 * 10.4)
+
+
+def test_ar1_long_run_sd_approaches_the_infinite_horizon_value():
+    # Over many steps the total's variance per step tends to (1 + phi) / (1 - phi).
+    sizes = np.array([100.0] * 20000)
+    assert long_run_sd("ar1", sizes, MU, SIGMA, phi=0.3) == pytest.approx(SIGMA * np.sqrt(1.3 / 0.7), rel=1e-4)
+
+
+@pytest.mark.parametrize("key, params", [
+    ("gaussian", {}),
+    ("ar1", {"phi": 0.3}),
+    ("regime_switching", {}),
+])
+def test_variance_matched_sigma_gives_the_baseline_total(key, params):
+    s = variance_matched_sigma(key, SIZES, MU, SIGMA, **params)
+    assert total_variance(key, SIZES, MU, s, **params) == pytest.approx(SIGMA ** 2 * SIZES.sum() / 100, rel=1e-12)
+    assert long_run_sd(key, SIZES, MU, s, **params) == pytest.approx(SIGMA, rel=1e-12)
+    assert s <= SIGMA
+
+
+def test_variance_matched_sigma_refuses_when_drift_alone_is_wider():
+    with pytest.raises(ValueError):
+        variance_matched_sigma("regime_switching", SIZES, MU, 1.0, mu_adverse=-50.0)

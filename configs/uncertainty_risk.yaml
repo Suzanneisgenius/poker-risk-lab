@@ -10,7 +10,7 @@ data:
   n_blocks: 50             # ~50k hands: SE of the edge is non-trivial
   seed: 1
 prior:
-  kind: weakly-informative   # skeptical | weakly-informative | empirical | custom
+  kind: weakly-informative   # skeptical | weakly-informative | flat | custom
   std: 10.0
 risk:
   bankroll_bb: 2000.0

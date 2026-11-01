@@ -42,11 +42,11 @@ from scipy import integrate, optimize  # noqa: E402
 from scipy.stats import norm  # noqa: E402
 
 from src.bayes import (  # noqa: E402
-    empirical_prior, normal_normal_posterior, posterior_risk, skeptical_prior, weakly_informative_prior,
+    flat_prior, normal_normal_posterior, posterior_risk, skeptical_prior, weakly_informative_prior,
 )
 from src.validation import brownian_ruin_finite  # noqa: E402
 
-PRIORS = {"none": empirical_prior(), "weak": weakly_informative_prior(10.0), "skeptical": skeptical_prior(2.0)}
+PRIORS = {"none": flat_prior(), "weak": weakly_informative_prior(10.0), "skeptical": skeptical_prior(2.0)}
 LEVEL = 0.95
 MC_DRAWS, MC_SEED = 20_000, 0
 # The page's normal CDF has a relative error below 1.2e-7; everything else is

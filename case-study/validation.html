@@ -65,6 +65,7 @@ h2+article{margin-top:16px}
 .chart{margin:8px 0 0;font-family:var(--sans)}
 .row{display:grid;grid-template-columns:minmax(0,13rem) minmax(0,1fr);gap:4px 14px;align-items:center;margin:0 0 10px}
 .row-label{font-size:14px;color:var(--muted);line-height:1.3}
+.row-group{margin:16px 0 8px;font-size:13.5px;font-weight:650;color:var(--text)}.row-group:first-child{margin-top:0}
 .track{position:relative;height:26px;border-radius:3px;background:var(--track)}
 .bar{position:absolute;top:6px;height:14px;border-radius:2px;min-width:3px}
 .bar.noise{background:var(--accent)}.bar.parameter{background:var(--warn)}.bar.model{background:var(--ruin)}
@@ -95,6 +96,8 @@ th,td{padding:7px 14px 7px 0;text-align:left;vertical-align:top;border-bottom:1p
 thead th{color:var(--muted);font-weight:600;border-bottom-color:var(--text)}
 td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 td.num{font:14.5px/1.6 var(--mono)}
+th.group{padding-top:14px;color:var(--text);font-weight:650;border-bottom-color:var(--line)}
+table.row-labels tbody th[scope="row"]{min-width:11rem}
 code{font:14px/1.4 var(--mono);background:var(--code);padding:1px 5px;border-radius:3px;overflow-wrap:anywhere}
 /* Reproduce: one command per figure, shown as a terminal line */
 .repro{margin:16px 0 0}
@@ -141,7 +144,7 @@ figure{margin:16px 0 0}
 <header class="article-head">
   <h1 id="title">How the numbers are checked</h1>
   <p class="lede">For each check: the benchmark, the conditions, the quantity compared, what was found, and what the check cannot show. Independent implementations are marked as such; checks written in this repository against its own reference code are marked internal.</p>
-  <p class="byline">Xinrui Song · Updated 2026-10-29 · <a href="./">Back to the case study</a></p>
+  <p class="byline">Xinrui Song · Updated 2026-10-31 · <a href="./">Back to the case study</a></p>
 </header>
 
 <section aria-labelledby="summary">
@@ -354,10 +357,11 @@ function intervals(host, rows, { lo, hi, step, format, title, ref }) {
   axis(host, lo, hi, step, format, title);
 }
 
-// rows: [{label, value, lo, hi, color, text}]
+// rows: [{label, value, lo, hi, color, text}], or {heading} to start a group.
 function points(host, rows, { lo, hi, step, format, title, ref }) {
   host.replaceChildren();
   for (const r of rows) {
+    if (r.heading) { node("p", "row-group", host, r.heading); continue; }
     const track = row(host, r.label);
     reference(track, ref, lo, hi);
     const w = node("span", "whisker", track);

@@ -8,7 +8,7 @@ from src.bayes import (
     Posterior,
     Prior,
     conditional_ruin_risk,
-    empirical_prior,
+    flat_prior,
     normal_normal_posterior,
     posterior_risk,
     skeptical_prior,
@@ -29,7 +29,7 @@ def test_conjugate_posterior_closed_form():
 
 
 def test_flat_prior_equals_likelihood():
-    post = normal_normal_posterior(3.0, 2.5, empirical_prior())
+    post = normal_normal_posterior(3.0, 2.5, flat_prior())
     assert post.mean == pytest.approx(3.0)
     assert post.std == pytest.approx(2.5)
 
@@ -55,7 +55,7 @@ def test_credible_interval_contains_mean():
 def test_posterior_integrated_risk_exceeds_plug_in():
     # In this scenario risk is low and averaging over the posterior raises it.
     # Not a general rule: see the next test.
-    post = normal_normal_posterior(1.5, 2.0, empirical_prior())
+    post = normal_normal_posterior(1.5, 2.0, flat_prior())
     out = posterior_risk(post, std_bb100=100.0, bankroll_bb=2000.0,
                          n_hands=100_000, plug_in_winrate=post.mean,
                          n_draws=8000, seed=1)

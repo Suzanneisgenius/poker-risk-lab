@@ -1,7 +1,7 @@
 # Methodology
 
-*Bankroll Risk Lab — uncertainty-aware simulation and validation of stochastic
-ruin models.*
+*Risk Lab, the research view of the Poker Analytics Suite — uncertainty-aware
+simulation and validation of stochastic ruin models.*
 
 This document defines the stochastic model, the estimands, and the assumptions.
 Poker bankroll management is the **motivating case study**; the same machinery
@@ -207,24 +207,51 @@ posterior-integrated expected risk, the posterior median risk, credible
 intervals, and threshold-exceedance probabilities — always displaying the
 plug-in and uncertainty-integrated numbers **side by side**.
 
+**Next step: an unknown $\sigma$.** The posterior above treats $\sigma$ as known.
+A Normal–Inverse-Gamma prior on $(\mu,\sigma^2)$ keeps the joint posterior in
+closed form. With a flat prior and $n$ equal blocks, the marginal posterior of
+$\mu$ is Student-t with $n-1$ degrees of freedom, whose standard deviation is
+wider than the known-$\sigma$ one by $\sqrt{(n-1)/(n-3)}$: about 6% at 20 blocks
+and 1% at 100. Ruin risk also depends on $\sigma$ directly, so a joint posterior
+would draw $\sigma$ as well as $\mu$ in the risk integral. Neither is implemented
+yet.
+
 ---
 
 ## 7. Assumptions, and how violating each one biases risk
 
 | Assumption | If violated… | Direction of bias in reported ruin risk |
 |---|---|---|
-| Independent increments | Streaks / session dependence exist | Understated (dependence fattens the loss tail and clusters drawdowns) |
+| Independent increments | Streaks / session dependence exist | Understated when results carry over, by about as much as the dependence widens the long-run variance (below) |
 | Stationary drift $\mu$ | Edge changes with form, games, adaptation | Either sign; a declining edge understates risk |
-| Constant volatility $\sigma$ | Variance regime-switches | Usually understated (high-variance regimes dominate ruin) |
-| Normal increments | Real returns are heavier-tailed | Understated (Gaussian thins the downside tail) |
+| Constant volatility $\sigma$ | Variance regime-switches | Understated when the high-variance regime widens the long-run variance; little change when it does not (below) |
+| Normal increments | Real returns are heavier-tailed | Small at the same variance over long horizons; in the case study heavy tails lowered risk slightly |
 | Fixed threshold $b$ | Player moves down / reloads | Overstated if the player de-risks; not modeled here |
 | No deposits/withdrawals | Bankroll is topped up or skimmed | Either sign |
-| No stake changes | Player moves up/down in stakes | Either sign; §policies studies this explicitly |
+| No stake changes | Player moves up/down in stakes | Either sign; not studied here |
 | No behavioral adaptation | Tilt, fatigue, game selection | Typically understated |
 
 The project's experiments are built to *quantify* several of these biases rather
 than assume them away: §5 (monitoring), §6 (parameter uncertainty), and the
 model-risk stress tests (Gaussian vs Student-t / regime-switching / shock).
+
+**Dependence acts through the long-run variance.** What matters for a
+finite-horizon ruin risk is mainly how much the total over the horizon varies,
+$\sigma_{LR}^2 = \mathrm{Var}(\sum_k X_k)/(H/100)$, not how much one step does.
+In case study §3 (`reports/case-study/assumptions.json`), AR(1) with
+$\phi = 0.3$ raises risk ×2.87 and regime switching ×1.65 at the same edge;
+with each step narrowed until the total varies as much as the baseline's
+(`src/models.py` `variance_matched_sigma`), they give ×0.97 and ×1.01. The §3.2
+formula with $\sigma_{LR}$ in place of $\sigma$ (`long_run_sd`) comes within about
+5% of their simulated risk, a little above it because it monitors
+continuously. It needs the horizon to span many swings: with $\phi = 0.9$ over
+10,000 hands and 10 buy-ins it gives 77% against a simulated 56%. In data, the session
+import's stability check (`src/inference.py`,
+`standalone/shared/sessions.js`) compares the between-group, batch-means
+standard error of the win rate with the independent one; a ratio well above 1
+points to drift or carry-over between sessions. Settings fitted to public hand
+histories (case study §3) show neither carry-over nor a wider long-run total in
+100-hand blocks.
 
 ---
 

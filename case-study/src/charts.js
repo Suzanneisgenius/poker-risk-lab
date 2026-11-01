@@ -55,10 +55,11 @@ function intervals(host, rows, { lo, hi, step, format, title, ref }) {
   axis(host, lo, hi, step, format, title);
 }
 
-// rows: [{label, value, lo, hi, color, text}]
+// rows: [{label, value, lo, hi, color, text}], or {heading} to start a group.
 function points(host, rows, { lo, hi, step, format, title, ref }) {
   host.replaceChildren();
   for (const r of rows) {
+    if (r.heading) { node("p", "row-group", host, r.heading); continue; }
     const track = row(host, r.label);
     reference(track, ref, lo, hi);
     const w = node("span", "whisker", track);

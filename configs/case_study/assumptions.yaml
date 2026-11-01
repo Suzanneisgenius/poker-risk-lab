@@ -21,3 +21,38 @@ params:
 n_paths: 40000
 seed: 20240601
 spread_paths: 4000           # unabsorbed paths used to measure how much the 100k-hand total varies
+
+# The same two dependent models with the per-step standard deviation lowered
+# until the 100,000-hand total varies exactly as much as the baseline's
+# (src/models.py variance_matched_sigma). What risk is left over is the effect
+# of dependence itself rather than of a wider total.
+variance_matched: [ar1, regime_switching]
+
+# Settings fitted to real hands. The fit was made outside this repository from
+# public data; only these summary numbers are recorded here. Within each
+# player, 100-hand blocks were standardized by the player's own mean and SD,
+# so the numbers describe the shape and dependence of one player's results.
+fitted:
+  source:
+    data: "PartyPoker and Ongame no-limit hold'em, $2/$4, 1–23 July 2009, HandHQ logs"
+    citation: "Kim (2024), Recording and Describing Poker Hands, arXiv:2312.11753"
+    url: "https://zenodo.org/doi/10.5281/zenodo.10796885"
+    license: "CC BY 4.0"
+    min_hands: 5000
+    players: 355               # each with at least min_hands hands
+    blocks: 45367              # consecutive 100-hand blocks per player
+    student_t_df: {estimate: 7.04, ci95: [6.51, 7.64]}        # shared df, likelihood fit
+    lag1_correlation: {estimate: -0.0021, ci95: [-0.0112, 0.0073]}
+    variance_ratio_5000_hands: {estimate: 0.97, ci95: [0.92, 1.03]}
+    intervals: "95%, resampling players (2,000 bootstrap samples)"
+  rows:
+    - {model: student_t, params: {df: 7.0}, label: "Real hands: tails (Student-t, df 7)"}
+    - {model: ar1, params: {phi: 0.01}, label: "Real hands: carry-over at its upper bound (φ 0.01)"}
+
+# Where the Brownian formula with the long-run standard deviation stops
+# working: the AR(1) model with stronger carry-over and a shorter horizon.
+diffusion_checks:
+  - {model: ar1, params: {phi: 0.3}, bankroll_bb: 3000.0, n_hands: 100000}
+  - {model: ar1, params: {phi: 0.9}, bankroll_bb: 3000.0, n_hands: 100000}
+  - {model: ar1, params: {phi: 0.3}, bankroll_bb: 1000.0, n_hands: 10000}
+  - {model: ar1, params: {phi: 0.9}, bankroll_bb: 1000.0, n_hands: 10000}

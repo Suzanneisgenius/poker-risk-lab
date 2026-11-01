@@ -18,9 +18,9 @@ def test_pipeline_runs_and_understates():
 
 
 def test_skeptical_prior_lowers_prob_positive():
-    cfg_emp = {**DEFAULT, "prior": {"kind": "empirical"}}
+    cfg_flat = {**DEFAULT, "prior": {"kind": "flat"}}
     cfg_skep = {**DEFAULT, "prior": {"kind": "skeptical", "std": 2.0}}
-    p_emp = run(cfg_emp)["posterior"].prob_positive
+    p_flat = run(cfg_flat)["posterior"].prob_positive
     p_skep = run(cfg_skep)["posterior"].prob_positive
     # A skeptical prior (centered at 0) should not raise confidence in an edge.
-    assert p_skep <= p_emp + 1e-9
+    assert p_skep <= p_flat + 1e-9

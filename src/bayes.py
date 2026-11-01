@@ -48,9 +48,12 @@ def weakly_informative_prior(std: float = 10.0) -> Prior:
     return Prior(0.0, std, "weakly-informative")
 
 
-def empirical_prior() -> Prior:
-    """A flat prior (infinite variance): the posterior equals the likelihood."""
-    return Prior(0.0, float("inf"), "empirical-flat")
+def flat_prior() -> Prior:
+    """A flat prior (infinite variance): the posterior equals the likelihood.
+
+    Not estimated from data. (Named empirical_prior until 2026-10-31.)
+    """
+    return Prior(0.0, float("inf"), "flat")
 
 
 @dataclass(frozen=True)

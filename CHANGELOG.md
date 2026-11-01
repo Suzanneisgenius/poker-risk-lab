@@ -57,6 +57,33 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-10-31 — Case study §3: dependence acts through the long-run variance
+
+- Case study §3 adds the two dependent models with each step narrowed until
+  the 100,000-hand total varies as much as the baseline's. AR(1) (φ 0.3) falls
+  from 20.25% to 6.84% and regimes from 11.65% to 7.11%, against 7.05%: almost
+  all of the rise came from the wider total, not from dependence itself.
+- A table puts each model's simulated risk next to the finite-horizon Brownian
+  formula with its long-run standard deviation (21.19% for AR(1), 12.01% for
+  regimes). It also records where that formula fails: with φ 0.9 over 10,000
+  hands it gives 77.1% against a simulated 55.9%.
+- Two rows use settings fitted to public hand histories (PHH dataset, HandHQ
+  logs, PartyPoker and Ongame $2/$4, July 2009; CC BY 4.0): Student-t with
+  df 7 gives 6.73% and AR(1) at the top of the fitted correlation interval
+  (φ 0.01) 7.34%. The fit was made outside this repository; only its summary
+  numbers are recorded, in `configs/case_study/assumptions.yaml`.
+- The five original rows are unchanged to the last digit. `rows` in
+  `assumptions.json` still holds only them; the new results are in
+  `variance_matched`, `fitted` and `diffusion_checks`.
+- `src/models.py` gains `total_variance`, `long_run_sd` and
+  `variance_matched_sigma`, with tests against simulated totals.
+- `empirical_prior()` is now `flat_prior()` (prior kind `flat`): it was always
+  a flat prior, not one estimated from data.
+- Methodology: the title uses the Risk Lab name; §7's table now follows the
+  case study (dependence and regimes act through the long-run variance; heavy
+  tails at the same variance barely move risk) and no longer points to a
+  missing §policies; §6 describes an unknown-σ posterior as the next step.
+
 ## 2026-10-29 — Repository name and MIT license
 
 - Rename the GitHub repository to `poker-risk-lab` and update the source link,

@@ -84,7 +84,8 @@
 
 <section aria-labelledby="q3">
   <h2 id="q3" class="chapter"><span class="chapter-n">3 </span>If results are not independent or not Normal, is the estimate still reliable?</h2>
-  <div class="chart" id="chart-assumptions" role="img" aria-label="Risk of ruin with 95% intervals under five models of how results arrive"></div>
+  <div class="chart" id="chart-assumptions" role="img" aria-label="Risk of ruin with 95% intervals: five stress tests, two dependent models with the baseline's long-run spread, and two settings fitted to real hands. The table below gives the numbers."></div>
+  <div class="legend" aria-hidden="true"><span><i style="background:var(--accent)"></i>Baseline</span><span><i style="background:var(--ruin)"></i>Stress test</span><span><i style="background:var(--dim)"></i>Same long-run spread</span><span><i style="background:var(--pos)"></i>Fitted to real hands</span><span><i style="border-left:2px dashed var(--text);border-radius:0;width:2px"></i>Baseline risk</span></div>
   <div class="control" role="group" aria-label="Model details" id="ctl-model">
     <span>Details for</span>
     <button type="button" data-value="gaussian" aria-pressed="false">Baseline</button>
@@ -95,8 +96,15 @@
   </div>
   <div class="model-card" id="model-card" aria-live="polite"></div>
   <p class="explain">Same edge everywhere. Changing the <em>shape</em> of a 100-hand result barely moves risk ({{a_t}} with heavy tails, {{a_shock}} with rare shocks, against {{a_base}}). Letting swings carry over from one step to the next raises it to <strong>{{a_ar1}}</strong> (×{{a_ar1_x}}): each step still has the same spread, but the 100,000-hand total varies {{a_ar1_total}}× as much.</p>
-  <p class="method"><strong>Method.</strong> {{a_paths}} paths per model, one seed. All five models are compared using ruin observed at 100-hand checkpoints; the bridge correction is exact only for Normal steps, so it is not used here. This holds the observation grid fixed. It does not establish equal monitoring bias across models or determine their continuously monitored ruin probabilities. Intervals are Wilson 95%.</p>
-  <p class="limits"><strong>Limits.</strong> These are controlled stress tests, not estimates of how real results arrive. The regime model's steps are also wider (standard deviation about {{a_regime_sd}} instead of 90).</p>
+  <p class="explain"><strong>The dependence, or the wider total?</strong> Narrow each step until the 100,000-hand total varies exactly as much as the baseline's, and risk falls back to <strong>{{m_ar1}}</strong> with carry-over and <strong>{{m_regime}}</strong> with regimes. Almost all of the rise came from the wider total, so one number predicts the risk: the long-run spread, how much the total varies per 100 hands. Put it into the Brownian formula in place of 90 and it gives {{d_ar1}} for carry-over and {{d_regime}} for regimes, close to the simulated {{a_ar1}} and {{a_regime}}.</p>
+  <div class="table-wrap"><table class="row-labels">
+    <caption>Simulated risk against the Brownian formula with each model's long-run spread</caption>
+    <thead><tr><th scope="col">Model</th><th scope="col" class="num">One step (bb)</th><th scope="col" class="num">Long run (bb/100)</th><th scope="col" class="num">Simulated</th><th scope="col" class="num">Formula</th></tr></thead>
+    <tbody id="table-diffusion"></tbody>
+  </table></div>
+  <p class="explain"><strong>Fitted to real hands.</strong> In {{f_blocks}} blocks of 100 hands from {{f_players}} players with at least {{f_min_hands}} hands each ({{f_data}}), a player's results were only mildly heavy-tailed: Student-t with {{f_df}} degrees of freedom (95% interval {{f_df_lo}}–{{f_df_hi}}). Neighbouring blocks did not carry over (correlation {{f_rho}}, interval {{f_rho_lo}} to {{f_rho_hi}}), and the total over 5,000 hands varied as much as independent blocks give (ratio {{f_vr}}, {{f_vr_lo}}–{{f_vr_hi}}). With those settings risk is <strong>{{f_t}}</strong>, and <strong>{{f_ar1}}</strong> at the top of the correlation interval: within {{f_gap}} points of the baseline. The carry-over and regime settings above are stress tests, far stronger than anything in these data.</p>
+  <p class="method"><strong>Method.</strong> {{a_paths}} paths per model, one seed. All models are compared using ruin observed at 100-hand checkpoints; the bridge correction is exact only for Normal steps, so it is not used here. This holds the observation grid fixed. It does not establish equal monitoring bias across models or determine their continuously monitored ruin probabilities. Intervals are Wilson 95%. The long-run spread comes from the exact variance of each model's 100,000-hand total. The formula is the finite-horizon Brownian first passage; it checks ruin continuously, so it sits a little above the checkpoints even for the baseline ({{d_base}} against {{a_base}}). Real-hand intervals: {{f_intervals}}.</p>
+  <p class="limits"><strong>Limits.</strong> The stress tests are controlled scenarios, not estimates of how real results arrive. The regime model's steps are also wider (standard deviation about {{a_regime_sd}} instead of 90). The formula needs the horizon to span many swings: with φ {{dc_phi}} over {{dc_hands}} hands and {{dc_bi}} buy-ins it gives {{dc_formula}} against a simulated {{dc_sim}} (baseline at those settings: {{dc_base_formula}} against {{dc_base_sim}}). The real-hand fit covers one stake on two sites in one month of 2009, and only regular players; it was made outside this repository, which records only its summary numbers (<code>configs/case_study/assumptions.yaml</code>). Data: <a href="{{f_url}}">PHH dataset</a>, {{f_citation}}, {{f_license}}.</p>
 </section>
 
 <section aria-labelledby="investigation">
@@ -126,7 +134,7 @@
 <section aria-labelledby="not">
   <h2 id="not">What this does not show</h2>
   <ul>
-    <li>That any of these models describes real poker results. Agreement with the exact value checks the arithmetic, not the model.</li>
+    <li>That any of these models describes real poker results in full. Agreement with the exact value checks the arithmetic, not the model; the real-hand fit in section 3 checks only the shape and carry-over of 100-hand results, for one stake in 2009.</li>
     <li>A recommended bankroll. Every number is a conditional model estimate, not financial or gambling advice.</li>
     <li>Anything about the Preflop ranges, which are illustrative demonstration data.</li>
   </ul>
@@ -187,10 +195,20 @@
 // 3. Model assumptions
 {
   const a = DATA.assumptions;
-  const top = Math.ceil(Math.max(...a.rows.map((r) => r.wilson95[1])) * 20) / 20 + 0.05;
+  const groups = [
+    ["Stress tests", a.rows, "var(--ruin)"],
+    ["Same long-run spread as the baseline", a.matched, "var(--dim)"],
+    ["Fitted to real hands", a.fitted, "var(--pos)"],
+  ];
+  const all = groups.flatMap(([, rows]) => rows);
+  const top = Math.ceil(Math.max(...all.map((r) => r.wilson95[1])) * 20) / 20 + 0.05;
   points(document.getElementById("chart-assumptions"),
-    a.rows.map((r, i) => ({ label: r.label, value: r.risk, lo: r.wilson95[0], hi: r.wilson95[1], color: i === 0 ? "var(--accent)" : "var(--ruin)", text: `${pct(r.risk)} (×${r.risk_vs_baseline.toFixed(2)})` })),
-    { lo: 0, hi: top, step: 0.05, format: (v) => Math.round(v * 100) + "%", title: "Risk of ruin with 95% interval" });
+    groups.flatMap(([heading, rows, color]) => [{ heading }, ...rows.map((r) => ({ label: r.label, value: r.risk, lo: r.wilson95[0], hi: r.wilson95[1],
+      color: r === a.rows[0] ? "var(--accent)" : color, text: `${pct(r.risk)} (×${r.risk_vs_baseline.toFixed(2)})` }))]),
+    { lo: 0, hi: top, step: 0.05, format: (v) => Math.round(v * 100) + "%", title: "Risk of ruin with 95% interval", ref: a.rows[0].risk });
+  document.getElementById("table-diffusion").innerHTML = groups.map(([heading, rows]) =>
+    `<tr><th scope="colgroup" colspan="5" class="group">${heading}</th></tr>` + rows.map((r) =>
+      `<tr><th scope="row">${r.label}</th><td class="num">${r.per_step_sd_bb.toFixed(0)}</td><td class="num">${r.long_run_sd_bb100.toFixed(1)}</td><td class="num">${pct(r.risk, 2)}</td><td class="num">${pct(r.diffusion_risk, 2)}</td></tr>`).join("")).join("");
   const byKey = Object.fromEntries(a.rows.map((r) => [r.model, r]));
   const about = {
     gaussian: "Each 100-hand result is independent and Normal: the model the Risk Lab uses.",

@@ -57,6 +57,7 @@ h2+article{margin-top:16px}
 .chart{margin:8px 0 0;font-family:var(--sans)}
 .row{display:grid;grid-template-columns:minmax(0,13rem) minmax(0,1fr);gap:4px 14px;align-items:center;margin:0 0 10px}
 .row-label{font-size:14px;color:var(--muted);line-height:1.3}
+.row-group{margin:16px 0 8px;font-size:13.5px;font-weight:650;color:var(--text)}.row-group:first-child{margin-top:0}
 .track{position:relative;height:26px;border-radius:3px;background:var(--track)}
 .bar{position:absolute;top:6px;height:14px;border-radius:2px;min-width:3px}
 .bar.noise{background:var(--accent)}.bar.parameter{background:var(--warn)}.bar.model{background:var(--ruin)}
@@ -87,6 +88,8 @@ th,td{padding:7px 14px 7px 0;text-align:left;vertical-align:top;border-bottom:1p
 thead th{color:var(--muted);font-weight:600;border-bottom-color:var(--text)}
 td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 td.num{font:14.5px/1.6 var(--mono)}
+th.group{padding-top:14px;color:var(--text);font-weight:650;border-bottom-color:var(--line)}
+table.row-labels tbody th[scope="row"]{min-width:11rem}
 code{font:14px/1.4 var(--mono);background:var(--code);padding:1px 5px;border-radius:3px;overflow-wrap:anywhere}
 /* Reproduce: one command per figure, shown as a terminal line */
 .repro{margin:16px 0 0}

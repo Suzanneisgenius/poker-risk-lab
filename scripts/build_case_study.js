@@ -85,6 +85,13 @@ function render(inputs) {
   const noiseBy = Object.fromEntries(noise.rows.map((r) => [r.paths, r]));
   const historyBy = Object.fromEntries(uncertainty.history.map((h) => [h.hands, h]));
   const modelBy = Object.fromEntries(assumptions.rows.map((r) => [r.model, r]));
+  const matchedBy = Object.fromEntries(assumptions.variance_matched.map((r) => [r.model, r]));
+  const fitBy = Object.fromEntries(assumptions.fitted.rows.map((r) => [r.model, r]));
+  const fit = assumptions.fitted.source;
+  // The setting where the long-run formula is furthest from the simulation.
+  const worst = assumptions.diffusion_checks.reduce((w, c) =>
+    (c.dependent.formula - c.dependent.simulated > w.dependent.formula - w.dependent.simulated ? c : w));
+  const signed = (v, d) => (v < 0 ? "−" : "") + Math.abs(v).toFixed(d);
   const risks = assumptions.rows.map((r) => r.risk);
   const calcPlus3 = calc.single_seed.rows.find((r) => r.winrate_bb100 === 3);
   const multiPlus3 = calc.multi_seed.rows.find((r) => r.winrate_bb100 === 3);
@@ -113,8 +120,41 @@ function render(inputs) {
     a_shock: pct(modelBy.shock_mixture.risk),
     a_ar1: pct(modelBy.ar1.risk),
     a_ar1_x: modelBy.ar1.risk_vs_baseline.toFixed(2),
+    a_regime: pct(modelBy.regime_switching.risk),
     a_ar1_total: modelBy.ar1.total_sd_ratio.toFixed(2),
     a_regime_sd: modelBy.regime_switching.per_step_sd_bb.toFixed(0),
+    m_ar1: pct(matchedBy.ar1.risk),
+    m_regime: pct(matchedBy.regime_switching.risk),
+    d_base: pct(modelBy.gaussian.diffusion_risk),
+    d_ar1: pct(modelBy.ar1.diffusion_risk),
+    d_regime: pct(modelBy.regime_switching.diffusion_risk),
+    dc_phi: String(worst.params.phi),
+    dc_hands: int(worst.n_hands),
+    dc_bi: String(worst.bankroll_bb / 100),
+    dc_formula: pct(worst.dependent.formula),
+    dc_sim: pct(worst.dependent.simulated),
+    dc_base_formula: pct(worst.baseline.formula),
+    dc_base_sim: pct(worst.baseline.simulated),
+    f_data: fit.data,
+    f_citation: fit.citation,
+    f_url: fit.url,
+    f_license: fit.license,
+    f_intervals: fit.intervals,
+    f_min_hands: int(fit.min_hands),
+    f_players: int(fit.players),
+    f_blocks: int(fit.blocks),
+    f_df: fit.student_t_df.estimate.toFixed(1),
+    f_df_lo: fit.student_t_df.ci95[0].toFixed(1),
+    f_df_hi: fit.student_t_df.ci95[1].toFixed(1),
+    f_rho: signed(fit.lag1_correlation.estimate, 3),
+    f_rho_lo: signed(fit.lag1_correlation.ci95[0], 3),
+    f_rho_hi: signed(fit.lag1_correlation.ci95[1], 3),
+    f_vr: fit.variance_ratio_5000_hands.estimate.toFixed(2),
+    f_vr_lo: fit.variance_ratio_5000_hands.ci95[0].toFixed(2),
+    f_vr_hi: fit.variance_ratio_5000_hands.ci95[1].toFixed(2),
+    f_t: pct(fitBy.student_t.risk),
+    f_ar1: pct(fitBy.ar1.risk),
+    f_gap: points(Math.max(...assumptions.fitted.rows.map((r) => Math.abs(r.risk - modelBy.gaussian.risk)))),
     a_paths: int(assumptions.n_paths),
     c_before: pct(calcPlus3.functional_fix_2026_10_05.risk, 2),
     c_stream: pct(calcPlus3.new_streams_endpoint_only.risk, 2),
@@ -261,7 +301,9 @@ function render(inputs) {
       overview: { rows: overview.rows, reference_risk: overview.reference_risk },
       noise: { exact_risk: noise.exact_risk, rows: noise.rows.map(({ paths, estimates, theory_95, min, max, wilson_intervals_covering_exact }) => ({ paths, estimates, theory_95, min, max, wilson_intervals_covering_exact })) },
       uncertainty: { plug_in_risk: uncertainty.plug_in_risk, history: uncertainty.history, monte_carlo: uncertainty.monte_carlo },
-      assumptions: { rows: assumptions.rows.map(({ model, label, risk, wilson95, risk_vs_baseline, per_step_sd_bb, total_sd_ratio }) => ({ model, label, risk, wilson95, risk_vs_baseline, per_step_sd_bb, total_sd_ratio })) },
+      assumptions: Object.fromEntries([["rows", assumptions.rows], ["matched", assumptions.variance_matched], ["fitted", assumptions.fitted.rows]].map(([key, rows]) =>
+        [key, rows.map(({ model, label, risk, wilson95, risk_vs_baseline, per_step_sd_bb, total_sd_ratio, long_run_sd_bb100, diffusion_risk }) =>
+          ({ model, label, risk, wilson95, risk_vs_baseline, per_step_sd_bb, total_sd_ratio, long_run_sd_bb100, diffusion_risk }))])),
       calc: calc.single_seed.rows,
       reproduce,
     },

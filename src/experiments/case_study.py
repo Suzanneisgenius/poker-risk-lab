@@ -18,13 +18,14 @@ import argparse
 import json
 import math
 import os
+from itertools import count
 from typing import Any
 
 import numpy as np
 
 from src.bayes import Prior, normal_normal_posterior, posterior_risk, skeptical_prior, weakly_informative_prior
 from src.experiments._provenance import provenance
-from src.models import MODELS, run_model
+from src.models import MODELS, long_run_sd, run_model, variance_matched_sigma
 from src.simulation import _step_sizes, simulate_bankroll
 from src.validation import brownian_ruin_finite
 
@@ -57,9 +58,9 @@ def wilson(successes: int, total: int, z: float = Z95) -> tuple[float, float]:
     return centre - half, centre + half
 
 
-def exact_risk(sc: dict[str, Any], winrate: float | None = None) -> float:
+def exact_risk(sc: dict[str, Any], winrate: float | None = None, std: float | None = None) -> float:
     return brownian_ruin_finite(
-        sc["winrate_bb100"] if winrate is None else winrate, sc["std_bb100"],
+        sc["winrate_bb100"] if winrate is None else winrate, sc["std_bb100"] if std is None else std,
         sc["bankroll_bb"], sc["n_hands"], sc.get("ruin_threshold_bb", 0.0))["probability"]
 
 
@@ -166,44 +167,96 @@ def case_uncertainty(cfg: dict[str, Any]) -> dict[str, Any]:
 # Case 3: model assumptions
 # ---------------------------------------------------------------------------
 
-def case_assumptions(cfg: dict[str, Any]) -> dict[str, Any]:
-    sc = cfg["scenario"]
-    n = cfg["n_paths"]
+MATCHED_LABELS = {
+    "ar1": "Swings carry over, same long-run spread",
+    "regime_switching": "Clustered regimes, same long-run spread",
+}
+
+
+def _assumption_row(cfg: dict[str, Any], sizes: np.ndarray, index: int, key: str,
+                    params: dict[str, Any], std: float, label: str) -> dict[str, Any]:
+    """Ruin risk for one model with per-step standard deviation ``std``."""
+    sc, n = cfg["scenario"], cfg["n_paths"]
+    r = run_model(key, winrate_bb100=sc["winrate_bb100"], std_bb100=std,
+                  bankroll_bb=sc["bankroll_bb"], n_hands=sc["n_hands"],
+                  ruin_threshold_bb=sc.get("ruin_threshold_bb", 0.0), n_paths=n,
+                  seed=cfg["seed"], step_hands=sc["step_hands"], params=params)
+    ruined = int(round(r["risk_of_ruin"] * n))
+    # How much the 100k-hand total varies without absorption, relative to
+    # independent Normal steps with the scenario's standard deviation: measured
+    # on simulated paths (total_sd_ratio) and exact (long_run_sd_ratio).
+    rng = np.random.default_rng([cfg["seed"], index, 1])
+    incr, _ = MODELS[key](rng, cfg["spread_paths"], sizes, sc["winrate_bb100"], std, **params)
+    totals = incr.sum(axis=1)
+    step_sd = float(incr[:, 1:].std())
+    long_run = long_run_sd(key, sizes, sc["winrate_bb100"], std, **params)
+    return {
+        "model": key,
+        "label": label,
+        "params": params,
+        "step_sigma_bb100": std,
+        "risk": r["risk_of_ruin"],
+        "ruined": ruined,
+        "wilson95": list(wilson(ruined, n)),
+        "p95_max_drawdown_bi": r["p95_max_drawdown"] / 100,
+        "per_step_sd_bb": step_sd,
+        "total_sd_ratio": float(totals.std() / (sc["std_bb100"] * math.sqrt(sc["n_hands"] / 100))),
+        "long_run_sd_bb100": long_run,
+        "long_run_sd_ratio": long_run / sc["std_bb100"],
+        # The finite-horizon Brownian formula with the long-run standard
+        # deviation. It monitors continuously, so it sits a little above the
+        # 100-hand checkpoints even for the baseline.
+        "diffusion_risk": exact_risk(sc, std=long_run),
+        "realized_winrate_bb100": float(totals.mean() / sc["n_hands"] * 100),
+        "info": r["info"],
+    }
+
+
+def _diffusion_check(cfg: dict[str, Any], check: dict[str, Any]) -> dict[str, Any]:
+    """Simulated risk against the long-run Brownian formula at other settings,
+    next to the baseline at the same settings (whose gap is monitoring alone)."""
+    sc = {**cfg["scenario"], "bankroll_bb": check["bankroll_bb"], "n_hands": check["n_hands"]}
     sizes = np.asarray(_step_sizes(sc["n_hands"], sc["step_hands"]), dtype=np.float64)
-    rows = []
-    for index, key in enumerate(cfg["models"]):
-        params = cfg.get("params", {}).get(key, {})
+    out: dict[str, Any] = {"model": check["model"], "params": check["params"],
+                           "bankroll_bb": sc["bankroll_bb"], "n_hands": sc["n_hands"]}
+    for name, key, params in (("dependent", check["model"], check["params"]), ("baseline", "gaussian", {})):
         r = run_model(key, winrate_bb100=sc["winrate_bb100"], std_bb100=sc["std_bb100"],
                       bankroll_bb=sc["bankroll_bb"], n_hands=sc["n_hands"],
-                      ruin_threshold_bb=sc.get("ruin_threshold_bb", 0.0), n_paths=n,
+                      ruin_threshold_bb=sc.get("ruin_threshold_bb", 0.0), n_paths=cfg["n_paths"],
                       seed=cfg["seed"], step_hands=sc["step_hands"], params=params)
-        ruined = int(round(r["risk_of_ruin"] * n))
-        # How much the 100k-hand total varies without absorption, relative to
-        # independent Normal steps with the same per-step standard deviation.
-        rng = np.random.default_rng([cfg["seed"], index, 1])
-        incr, _ = MODELS[key](rng, cfg["spread_paths"], sizes, sc["winrate_bb100"], sc["std_bb100"], **params)
-        totals = incr.sum(axis=1)
-        step_sd = float(incr[:, 1:].std())
-        rows.append({
-            "model": key,
-            "label": LABELS[key],
-            "risk": r["risk_of_ruin"],
-            "ruined": ruined,
-            "wilson95": list(wilson(ruined, n)),
-            "p95_max_drawdown_bi": r["p95_max_drawdown"] / 100,
-            "per_step_sd_bb": step_sd,
-            "total_sd_ratio": float(totals.std() / (sc["std_bb100"] * math.sqrt(sc["n_hands"] / 100))),
-            "realized_winrate_bb100": float(totals.mean() / sc["n_hands"] * 100),
-            "info": r["info"],
-        })
+        long_run = long_run_sd(key, sizes, sc["winrate_bb100"], sc["std_bb100"], **params)
+        out[name] = {"simulated": r["risk_of_ruin"], "formula": exact_risk(sc, std=long_run),
+                     "long_run_sd_bb100": long_run}
+    return out
+
+
+def case_assumptions(cfg: dict[str, Any]) -> dict[str, Any]:
+    sc = cfg["scenario"]
+    sizes = np.asarray(_step_sizes(sc["n_hands"], sc["step_hands"]), dtype=np.float64)
+    index = count()   # seeds each row's spread sample: stress tests first, as before
+    rows = [_assumption_row(cfg, sizes, next(index), key, cfg.get("params", {}).get(key, {}),
+                            sc["std_bb100"], LABELS[key]) for key in cfg["models"]]
+    matched = []
+    for key in cfg.get("variance_matched", []):
+        params = cfg.get("params", {}).get(key, {})
+        std = variance_matched_sigma(key, sizes, sc["winrate_bb100"], sc["std_bb100"], **params)
+        matched.append(_assumption_row(cfg, sizes, next(index), key, params, std, MATCHED_LABELS[key]))
+    fitted = cfg.get("fitted", {})
+    fitted_rows = [_assumption_row(cfg, sizes, next(index), f["model"], f["params"], sc["std_bb100"], f["label"])
+                   for f in fitted.get("rows", [])]
     base = rows[0]["risk"]
-    for row in rows:
+    for row in rows + matched + fitted_rows:
         row["risk_vs_baseline"] = row["risk"] / base if base > 0 else float("nan")
     return {
         "question": "If results are not independent or not Normal, is the estimate still reliable?",
         "monitoring": "Ruin checked at 100-hand step ends for every model.",
-        "n_paths": n,
+        "n_paths": cfg["n_paths"],
         "rows": rows,
+        "variance_matched": matched,
+        "fitted": {"source": fitted.get("source"), "rows": fitted_rows},
+        "diffusion": "Finite-horizon Brownian first-passage formula (src/validation.py) with sigma set to "
+                     "the model's long-run standard deviation (src/models.py long_run_sd); continuous monitoring.",
+        "diffusion_checks": [_diffusion_check(cfg, c) for c in cfg.get("diffusion_checks", [])],
         "provenance": provenance(
             experiment="case_study.assumptions", config=cfg,
             engine={"module": "src/models.py run_model", "bridge": False,
@@ -275,20 +328,27 @@ def figure_uncertainty(res: dict[str, Any], path: str) -> None:
 
 def figure_assumptions(res: dict[str, Any], path: str) -> None:
     plt = _style()
-    fig, ax = plt.subplots(figsize=(8, 3.6))
-    rows = res["rows"]
-    for y, row in enumerate(rows):
+    groups = [(res["rows"], RUIN), (res["variance_matched"], MUTED), (res["fitted"]["rows"], POS)]
+    placed, y = [], 0.0
+    for rows, color in groups:
+        for row in rows:
+            placed.append((y, row, ACC if not placed else color))
+            y += 1
+        y += 0.5
+    fig, ax = plt.subplots(figsize=(8, 0.42 * y + 1.2))
+    for y, row, color in placed:
         lo, hi = row["wilson95"]
-        color = ACC if y == 0 else RUIN
         ax.plot([lo * 100, hi * 100], [y, y], color=color, lw=2)
         ax.scatter([row["risk"] * 100], [y], color=color, s=36, zorder=3)
-        ax.text(hi * 100 + 0.4, y, f"{pct(row['risk'])}  (×{row['risk_vs_baseline']:.2f})", va="center", fontsize=8.5, color=MUTED)
-    ax.set_yticks(range(len(rows)), [r["label"] for r in rows])
+        ax.scatter([row["diffusion_risk"] * 100], [y], marker="D", s=22, facecolors="none", edgecolors=WARN, lw=1, zorder=4)
+        ax.text(max(hi, row["diffusion_risk"]) * 100 + 0.4, y, f"{pct(row['risk'])}  (×{row['risk_vs_baseline']:.2f})", va="center", fontsize=8.5, color=MUTED)
+    ax.set_yticks([p[0] for p in placed], [p[1]["label"] for p in placed])
     ax.invert_yaxis()
-    ax.set_xlim(0, max(r["wilson95"][1] for r in rows) * 100 * 1.35)
-    ax.set_xlabel(f"Risk of ruin (%) with 95% interval — {res['n_paths']:,} paths per model, same edge")
+    ax.set_xlim(0, max(max(r["wilson95"][1], r["diffusion_risk"]) for _, r, _ in placed) * 100 * 1.35)
+    ax.set_xlabel(f"Risk of ruin (%) with 95% interval — {res['n_paths']:,} paths per model, same edge; "
+                  "◇ Brownian formula with the long-run spread")
     ax.grid(axis="x", alpha=0.5)
-    ax.set_title("Same edge: dependence between results moves risk most")
+    ax.set_title("Same edge: risk follows how much the long-run total varies")
     fig.tight_layout()
     fig.savefig(path, dpi=150, bbox_inches="tight")
     plt.close(fig)
