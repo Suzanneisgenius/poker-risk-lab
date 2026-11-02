@@ -437,7 +437,14 @@ for (const hands of [100, 150, 99999, 100000, 250000, 333333, 500000, 1000000]) 
     assert.ok(simulationPathSteps({ hands, paths: maxPaths + 100, step: 100 }, true) > MAX_PATH_STEPS, `${hands} hands: the page should not cut paths further than needed`);
   }
 }
-assert.equal(budget.maxBankrollPaths(1000000), 5500);
+assert.equal(budget.maxBankrollPaths(1000000), 3300);
+assert.equal(budget.maxBankrollPaths(400000), 11500);
 assert.equal(budget.maxBankrollPaths(100000), 20000);
+// Risk Lab has no paths budget on the page: its detailed run at the longest
+// horizon must fit under the ceiling as it is.
+assert.ok(
+  simulationPathSteps({ hands: 300000, paths: 16000, step: 100 }, true) <= MAX_PATH_STEPS,
+  "the detailed Risk Lab run (16,000 paths × 300,000 hands) must fit the work ceiling",
+);
 
 process.stdout.write("Brownian, posterior bankroll, client-IP, rate-limit cost, work-ceiling, error-type, and frontend-limit unit tests passed.\n");

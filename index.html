@@ -2813,7 +2813,7 @@ function markBankrollDirty(message='Inputs changed. Choose Run simulation to upd
   setBankrollState(bkResultBasis?'stale':'empty',message);
 }
 // Mirrors the server's work ceiling (MAX_PATH_STEPS in server/compute.js): the main fan plus nine curve runs of clamp(10% of paths, 200, 500) paths, each over ceil(hands/100) steps.
-const BK_MAX_PATH_STEPS=100000000;
+const BK_MAX_PATH_STEPS=64000000;
 function bankrollPathSteps(hands,paths){return Math.ceil(hands/100)*(paths+9*clamp(Math.round(paths*0.1),200,500));}
 function maxBankrollPaths(hands){let paths=20000;while(paths>100&&bankrollPathSteps(hands,paths)>BK_MAX_PATH_STEPS)paths-=100;return paths;}
 async function runBankroll(){

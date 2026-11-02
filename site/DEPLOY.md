@@ -18,8 +18,10 @@ is an optional research overview.
   artifact described in [`GITHUB_PAGES.md`](../GITHUB_PAGES.md). It is separate
   from the server-backed app and does not calculate new ranges or bankrolls.
 
-- **The app, publicly.** Deploy the Node service as described in
-  [`SECURE_DEPLOY.md`](../SECURE_DEPLOY.md) (configuration in `render.yaml`).
+- **The app, publicly.** It runs at
+  <https://poker-analytics-suite.onrender.com/>. Deploy the Node service as
+  described in [`SECURE_DEPLOY.md`](../SECURE_DEPLOY.md) (configuration in
+  `render.yaml`).
   On a free plan the service sleeps when idle, so the first visit after a pause
   can take a while to load.
 - **The case study, as static pages.** `case-study/index.html` and

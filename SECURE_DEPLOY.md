@@ -21,8 +21,11 @@ Server-side execution is an architecture choice, not source-code secrecy.
    `Suzanneisgenius/poker-risk-lab`, branch `main`. Do not create a new
    repository, reinitialize Git, or change its visibility.
 2. In Render, choose **New → Blueprint**, connect that GitHub repository, and
-   review the root-level `render.yaml`. If a Render service already serves this
-   repository, update that service instead of creating a duplicate.
+   review the root-level `render.yaml`. The Blueprint creates the web service
+   `poker-analytics-suite`. If an older service set up by hand also deploys
+   this repository (as the earlier Python/Streamlit service did), suspend it
+   once the new one passes the deploy check, so a push does not build both.
+   Build minutes are shared across the workspace.
 3. The service must be a **Node Web Service**, not a Static Site:
 
    | Setting | Value |
@@ -62,7 +65,7 @@ It waits up to 150 s for a sleeping service to start, then checks:
 - With `--heavy`: how long the largest Risk Lab and Bankroll runs the page
   offers take, against their route timeouts (see below).
 
-A run with `--heavy` uses about 85 of the 100 rate-limit points an address gets
+A run with `--heavy` uses about 70 of the 100 rate-limit points an address gets
 per minute, so wait a minute before running it again.
 
 Then check by hand what the script cannot:
@@ -75,8 +78,9 @@ Then check by hand what the script cannot:
   optional saved-results overview, not the main application.
 - Repeat the main route on a narrow screen and check the browser console.
 
-Record the deployed commit and URL after these checks. Until then, describe the
-release as prepared or pushed, not publicly verified.
+The service is at <https://poker-analytics-suite.onrender.com/>. Its first
+deploy (commit `3fcb028`) passed every check on 2026-11-01. Run the check again
+after each deploy; until it passes, describe a release as pushed, not verified.
 
 ## Free-service expectations
 
@@ -102,31 +106,35 @@ source is separately available in the public GitHub repository.
 
 ### Speed on the Free instance
 
-The Free instance has 0.1 CPU (Starter 0.5, Standard 1).
+The Free instance has 0.1 CPU (Starter 0.5, Standard 1). Measured on the
+deployed service with `--heavy` on 2026-11-01:
 
-- **Measured locally, on one core (Apple silicon):** everyday runs take under
-  0.4 s. The largest runs the page offers take 1.9 s (Risk Lab detailed,
-  16,000 paths × 300,000 hands) and 2.9 s (Bankroll, 20,000 paths × 400,000
-  hands).
-- **Expected on Free:** roughly 10–15 times longer, at a tenth of a core and on
-  slower cores. That is about 20–30 s and 30–45 s, against route timeouts of
-  55 s and 45 s. Two such runs at once share the CPU and can time out. This is
-  an estimate; `--heavy` measures it on the real service.
+- **Everyday requests** answer in 0.5–0.8 s, most of it network time.
+- **Risk Lab, detailed run at the longest horizon** (16,000 paths × 300,000
+  hands, 61.5 million path-steps): 21.8 s of its 55 s timeout.
+- **Bankroll, 98 million path-steps** (20,000 paths × 400,000 hands): 31.1 s
+  of its 45 s timeout. That is about 0.32 s per million path-steps, 11 times
+  slower than one local core. Two such runs at once share the CPU, so both
+  would time out.
 - **Memory:** six near-ceiling runs at once peaked at 111 MB locally, well
   under the 512 MB limit.
 
-If the heavy runs come close to their timeouts:
+The work ceiling is therefore 64 million path-steps: `MAX_PATH_STEPS` in
+`server/compute.js`, mirrored by `BK_MAX_PATH_STEPS` in
+`standalone/build/app.js`. `server/test_unit.js` checks that the two match and
+that the detailed Risk Lab run fits. The largest bankroll run takes about 20 s.
+At long horizons the page lowers the number of paths so the run fits: at most
+16,800 paths at 300,000 hands, 11,500 at 400,000 and 3,300 at 1,000,000.
 
-- A Starter instance (0.5 CPU) makes them about five times faster. Changing
-  the plan is a separate decision.
+If runs still come close to their timeouts:
+
+- A Starter instance (0.5 CPU) makes them about five times faster, and the
+  ceiling could go back up. Change `plan` in `render.yaml`, not only in the
+  dashboard: the Blueprint syncs that file. Changing the plan is a separate
+  decision.
 - `CALC_WORKERS=1` runs one calculation at a time, so a second heavy run does
   not slow the first. It waits instead, and can reach the page's 60–70 s
   timeout.
-- Or lower the work ceiling. `MAX_PATH_STEPS` in `server/compute.js` and
-  `BK_MAX_PATH_STEPS` in `standalone/build/app.js` must change together
-  (`server/test_unit.js` checks this). The detailed Risk Lab run at 300,000
-  hands needs 61.5 million path-steps, so a lower ceiling also needs a shorter
-  Risk Lab horizon.
 
 ## Repository rename
 

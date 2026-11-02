@@ -57,6 +57,33 @@ How each change splits up at the same seed:
   Carlo convergence experiment keeps endpoint-only monitoring on purpose,
   because that is its estimand.
 
+## 2026-11-01 — Live on Render; work ceiling sized for the Free instance
+
+- The app is live at <https://poker-analytics-suite.onrender.com/>, created
+  from `render.yaml` on Render's Free instance. The first deploy (commit
+  `3fcb028`) passed every check of `npm run check:deploy -- … --heavy`.
+- Measured there: everyday requests answer in 0.5–0.8 s. The detailed Risk
+  Lab run at the longest horizon (61.5 million path-steps) took 21.8 s of its
+  55 s timeout. A bankroll run of 98 million path-steps took 31.1 s of its
+  45 s timeout, about 0.32 s per million path-steps.
+- The bankroll work ceiling goes from 100 to 64 million path-steps, server
+  (`MAX_PATH_STEPS`) and page (`BK_MAX_PATH_STEPS`) together, so the largest
+  bankroll run takes about 20 s. Results of runs that fit are unchanged. At
+  long horizons the page lowers the number of paths sooner:
+
+  | Hands | Most paths before | Most paths now |
+  |---:|---:|---:|
+  | 300,000 | 20,000 | 16,800 |
+  | 400,000 | 20,000 | 11,500 |
+  | 1,000,000 | 5,500 | 3,300 |
+
+  Risk Lab is unaffected. `server/test_unit.js` now also checks that its
+  detailed run fits under the ceiling.
+- The deploy check's heavy bankroll run is at the new ceiling (11,500 paths ×
+  400,000 hands); a run with `--heavy` uses about 70 rate-limit points.
+- README, the case study footer and `SECURE_DEPLOY.md` give the live URL.
+  `SECURE_DEPLOY.md` records the measured speeds in place of the estimate.
+
 ## 2026-11-01 — Deploy checks for Render
 
 - `render.yaml` deploys a commit only after its GitHub checks (Node and

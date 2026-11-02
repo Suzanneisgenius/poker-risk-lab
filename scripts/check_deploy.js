@@ -9,7 +9,7 @@
 //   node scripts/check_deploy.js https://<your-app>.onrender.com [--commit <sha>] [--heavy]
 //
 // It sends only GET requests and calculation POSTs. A run with --heavy uses
-// about 85 of the 100 rate-limit points one address gets per minute, so wait a
+// about 70 of the 100 rate-limit points one address gets per minute, so wait a
 // minute between runs.
 
 // A sleeping free Render service takes about a minute to start.
@@ -153,8 +153,8 @@ async function checkHeavy(base, seed) {
   const runs = [
     { label: "Risk Lab, detailed run at the longest horizon (16,000 paths × 300,000 hands)", endpoint: "/api/risk-lab", serverMs: 55000, pageMs: 70000,
       body: { wr: 3, sd: 90, bank: 3000, thr: 0, hands: 300000, paths: 16000, seed, includeCurve: true } },
-    { label: "Bankroll simulation near the work ceiling (20,000 paths × 400,000 hands)", endpoint: "/api/bankroll", serverMs: 45000, pageMs: 60000,
-      body: { wr: 3, sd: 90, bank: 3000, thr: 0, hands: 400000, paths: 20000, seed } },
+    { label: "Bankroll simulation at the work ceiling (11,500 paths × 400,000 hands)", endpoint: "/api/bankroll", serverMs: 45000, pageMs: 60000,
+      body: { wr: 3, sd: 90, bank: 3000, thr: 0, hands: 400000, paths: 11500, seed } },
   ];
   for (const run of runs) {
     try {

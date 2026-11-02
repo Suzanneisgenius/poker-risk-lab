@@ -45,7 +45,7 @@ async function main() {
     assert.doesNotMatch(full.stdout, /^FAIL/m);
     assert.match(full.stdout, /PASS  the deployed commit is fedcba9/);
     assert.match(full.stdout, /PASS  \/api\/bankroll-posterior answers/);
-    assert.match(full.stdout, /Bankroll simulation near the work ceiling/);
+    assert.match(full.stdout, /Bankroll simulation at the work ceiling/);
     assert.match(full.stdout, /All checks passed\./);
 
     const wrongCommit = await runCheck(["http://127.0.0.1:4196", "--commit", "abc1234"]);

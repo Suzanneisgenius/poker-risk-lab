@@ -9,10 +9,11 @@ rates, and assumptions about how returns evolve. Poker bankrolls provide the
 case study; a Python research engine and an interactive web app make the
 experiments reproducible and explorable.
 
+[Live app](https://poker-analytics-suite.onrender.com/) ·
 [Source repository](https://github.com/Suzanneisgenius/poker-risk-lab) ·
 [Research case study](case-study/index.html) ·
 [Validation records](checks/README.md) ·
-[Run the app](#run-locally) ·
+[Run locally](#run-locally) ·
 [Reproduce the research](#reproduce-and-check)
 
 ![Three views of uncertainty in one bankroll scenario: simulation noise, uncertainty in the win rate, and sensitivity to model assumptions.](reports/case-study/overview.png)
@@ -126,10 +127,12 @@ and `/case-study/validation.html` for the validation page. The web suite needs
 the Node server; opening its main HTML file directly will not run the tools.
 Plotly charts require an internet connection.
 
-**Demo access:** local setup is documented here; no public demo URL is currently
-listed. The full app requires a Node service; uploading `site/index.html` alone
+**Live app:** <https://poker-analytics-suite.onrender.com/> runs the full app on
+Render's free plan. After 15 minutes without visitors it sleeps, and the next
+visit takes about a minute to start. The largest simulations take around 20 s
+there. The full app requires a Node service; uploading `site/index.html` alone
 to a static host does not provide its calculation API. See
-[deployment instructions](SECURE_DEPLOY.md) for running the full app on Render.
+[deployment instructions](SECURE_DEPLOY.md) for running it on Render.
 The repository and calculation source are public; calculations execute on the
 Node server and are not bundled into the browser interface.
 

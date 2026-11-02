@@ -21,10 +21,15 @@ const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 // route timeouts on a small shared CPU. One "path-step" advances one bankroll
 // path by one 100-hand increment.
 //
+// Measured on Render's Free instance (0.1 CPU, 2026-11-01): about 0.32 s per
+// million path-steps, so a request at this ceiling takes about 20 s of the 45 s
+// bankroll timeout. It still fits the page's detailed Risk Lab run at the
+// longest horizon (16,000 paths × 300,000 hands with the curve: 61.5M).
+//
 // Equity needs no separate ceiling: the evaluator ranks ~10M hands/s, and the
 // largest accepted request (exact heads-up preflop, 1,712,304 runouts, i.e.
 // ~3.4M evaluations) takes well under a second.
-const MAX_PATH_STEPS = 100000000;
+const MAX_PATH_STEPS = 64000000;
 const CURVE_POINTS = 9;
 
 // Identifies the bankroll model in every bankroll result, so an exported
